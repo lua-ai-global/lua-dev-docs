@@ -1,0 +1,513 @@
+---
+title: "Baskets API"
+description: "Shopping cart management for e-commerce"
+---
+
+## Overview
+
+The Baskets API provides complete shopping cart functionality with item management, status tracking, and checkout capabilities.
+
+```typescript
+import { Baskets, BasketStatus } from 'lua-cli';
+
+// Create basket
+const basket = await Baskets.create({ currency: 'USD' });
+
+// Add item
+await Baskets.addItem(basket.id, {
+  id: productId,
+  price: 29.99,
+  quantity: 2
+});
+
+// Checkout
+const order = await Baskets.placeOrder(orderData, basket.id);
+```
+
+## Basket Statuses
+
+```typescript
+import { BasketStatus } from 'lua-cli';
+```
+
+<Tabs>
+  <Tab title="ACTIVE">
+    Currently being used for shopping
+    
+    Default status for new baskets
+  </Tab>
+  <Tab title="CHECKED_OUT">
+    Converted to an order
+    
+    Set automatically during checkout
+  </Tab>
+  <Tab title="ABANDONED">
+    User left without completing purchase
+    
+    Can be set manually or by TTL
+  </Tab>
+  <Tab title="EXPIRED">
+    TTL (time-to-live) exceeded
+    
+    Automatically set after expiration
+  </Tab>
+</Tabs>
+
+## Methods
+
+### create()
+
+Create a new shopping basket.
+
+```typescript
+Baskets.create(data: BasketInput): Promise<Basket>
+```
+
+<ParamField path="data.currency" type="string" default="USD">
+  Currency code (USD, EUR, GBP, etc.)
+</ParamField>
+
+<ParamField path="data.metadata" type="object">
+  Custom metadata to store with basket
+</ParamField>
+
+**Example:**
+
+```typescript
+const basket = await Baskets.create({
+  currency: 'USD',
+  metadata: {
+    source: 'web',
+    campaign: 'summer_sale',
+    userAgent: 'mobile'
+  }
+});
+
+console.log(basket.id); // "basket_abc123"
+```
+
+### get()
+
+Retrieve baskets, optionally filtered by status.
+
+```typescript
+Baskets.get(status?: BasketStatus): Promise<Basket[]>
+```
+
+**Examples:**
+
+```typescript
+// Get all baskets
+const allBaskets = await Baskets.get();
+
+// Get only active baskets
+const activeBaskets = await Baskets.get(BasketStatus.ACTIVE);
+
+// Get abandoned baskets
+const abandoned = await Baskets.get(BasketStatus.ABANDONED);
+```
+
+### getById()
+
+Get a specific basket by ID.
+
+```typescript
+Baskets.getById(basketId: string): Promise<Basket>
+```
+
+**Example:**
+
+```typescript
+const basket = await Baskets.getById('basket_abc123');
+
+console.log(basket.common.totalAmount);  // 59.98
+console.log(basket.common.itemCount);    // 2
+```
+
+### addItem()
+
+Add an item to a basket.
+
+```typescript
+Baskets.addItem(basketId: string, item: BasketItem): Promise<Basket>
+```
+
+<ParamField path="basketId" type="string" required>
+  ID of the basket
+</ParamField>
+
+<ParamField path="item.id" type="string" required>
+  Product ID
+</ParamField>
+
+<ParamField path="item.price" type="number" required>
+  Item price
+</ParamField>
+
+<ParamField path="item.quantity" type="number" required>
+  Quantity to add
+</ParamField>
+
+<ParamField path="item.SKU" type="string">
+  Stock keeping unit
+</ParamField>
+
+**Example:**
+
+```typescript
+const updated = await Baskets.addItem('basket_abc123', {
+  id: 'product_xyz',
+  price: 29.99,
+  quantity: 2,
+  SKU: 'SHIRT-M-BLUE'
+});
+
+console.log(updated.common.totalAmount); // 59.98
+```
+
+### removeItem()
+
+Remove an item from a basket.
+
+```typescript
+Baskets.removeItem(basketId: string, itemId: string): Promise<Basket>
+```
+
+**Example:**
+
+```typescript
+await Baskets.removeItem('basket_abc123', 'item_xyz');
+```
+
+### clear()
+
+Remove all items from a basket.
+
+```typescript
+Baskets.clear(basketId: string): Promise<Basket>
+```
+
+**Example:**
+
+```typescript
+const emptyBasket = await Baskets.clear('basket_abc123');
+
+console.log(emptyBasket.common.itemCount); // 0
+```
+
+### updateStatus()
+
+Update basket status.
+
+```typescript
+Baskets.updateStatus(basketId: string, status: BasketStatus): Promise<Basket>
+```
+
+**Example:**
+
+```typescript
+await Baskets.updateStatus('basket_abc123', BasketStatus.ABANDONED);
+```
+
+### updateMetadata()
+
+Update basket metadata.
+
+```typescript
+Baskets.updateMetadata(basketId: string, metadata: object): Promise<Basket>
+```
+
+**Example:**
+
+```typescript
+await Baskets.updateMetadata('basket_abc123', {
+  notes: 'Gift wrapping requested',
+  giftMessage: 'Happy Birthday!',
+  deliveryDate: '2025-12-25'
+});
+```
+
+### placeOrder()
+
+Convert basket to order (checkout).
+
+```typescript
+Baskets.placeOrder(orderData: OrderData, basketId: string): Promise<Order>
+```
+
+<ParamField path="orderData.shippingAddress" type="object" required>
+  Shipping address information
+</ParamField>
+
+<ParamField path="orderData.paymentMethod" type="string" required>
+  Payment method (e.g., 'stripe', 'paypal')
+</ParamField>
+
+<ParamField path="basketId" type="string" required>
+  Basket ID to convert to order
+</ParamField>
+
+**Example:**
+
+```typescript
+const order = await Baskets.placeOrder({
+  shippingAddress: {
+    street: '123 Main St',
+    city: 'New York',
+    state: 'NY',
+    zip: '10001',
+    country: 'USA'
+  },
+  paymentMethod: 'stripe'
+}, 'basket_abc123');
+
+console.log(order.id);     // "order_def456"
+console.log(order.common.status); // "pending"
+```
+
+## Basket Type
+
+```typescript
+interface Basket {
+  id: string;
+  common: {
+    status: BasketStatus;
+    totalAmount: number;
+    itemCount: number;
+    currency: string;
+    items: BasketItem[];
+  };
+  metadata?: object;
+  createdAt: number;
+  updatedAt: number;
+}
+```
+
+## Complete Shopping Flow Example
+
+```typescript
+import { LuaTool, Products, Baskets } from 'lua-cli';
+import { z } from 'zod';
+
+// Tool 1: Create Basket
+export class CreateBasketTool implements LuaTool {
+  name = "create_basket";
+  description = "Start a new shopping session";
+  inputSchema = z.object({});
+
+  async execute(input: any) {
+    const basket = await Baskets.create({
+      currency: 'USD',
+      metadata: { createdBy: 'chat' }
+    });
+    
+    return {
+      basketId: basket.id,
+      message: "Shopping basket created! Start adding items."
+    };
+  }
+}
+
+// Tool 2: Add to Basket
+export class AddToBasketTool implements LuaTool {
+  name = "add_to_basket";
+  description = "Add a product to shopping basket";
+  
+  inputSchema = z.object({
+    basketId: z.string(),
+    productId: z.string(),
+    quantity: z.number().min(1).default(1)
+  });
+
+  async execute(input: z.infer<typeof this.inputSchema>) {
+    // Get product details
+    const product = await Products.getById(input.productId);
+    
+    // Check stock
+    if (!product.inStock) {
+      return {
+        success: false,
+        message: `${product.name} is out of stock`
+      };
+    }
+    
+    // Add to basket
+    const basket = await Baskets.addItem(input.basketId, {
+      id: input.productId,
+      price: product.price,
+      quantity: input.quantity,
+      SKU: product.sku
+    });
+    
+    return {
+      basketId: basket.id,
+      itemCount: basket.common.itemCount,
+      total: `$${basket.common.totalAmount.toFixed(2)}`,
+      message: `Added ${input.quantity}x ${product.name} to basket`
+    };
+  }
+}
+
+// Tool 3: Checkout
+export class CheckoutTool implements LuaTool {
+  name = "checkout";
+  description = "Complete purchase and create order";
+  
+  inputSchema = z.object({
+    basketId: z.string(),
+    shippingAddress: z.object({
+      street: z.string(),
+      city: z.string(),
+      state: z.string(),
+      zip: z.string()
+    }),
+    paymentMethod: z.string().default('stripe')
+  });
+
+  async execute(input: z.infer<typeof this.inputSchema>) {
+    // Get basket
+    const basket = await Baskets.getById(input.basketId);
+    
+    // Verify basket has items
+    if (basket.common.itemCount === 0) {
+      return {
+        success: false,
+        message: "Cannot checkout empty basket"
+      };
+    }
+    
+    // Place order
+    const order = await Baskets.placeOrder({
+      shippingAddress: input.shippingAddress,
+      paymentMethod: input.paymentMethod
+    }, input.basketId);
+    
+    return {
+      success: true,
+      orderId: order.id,
+      total: `$${basket.common.totalAmount.toFixed(2)}`,
+      status: order.common.status,
+      message: "Order placed successfully!"
+    };
+  }
+}
+```
+
+## Best Practices
+
+<AccordionGroup>
+  <Accordion title="Verify Basket Exists">
+    ```typescript
+    const basket = await Baskets.getById(basketId);
+    
+    if (!basket) {
+      throw new Error(`Basket not found: ${basketId}`);
+    }
+    ```
+  </Accordion>
+
+  <Accordion title="Check Items Before Checkout">
+    ```typescript
+    const basket = await Baskets.getById(basketId);
+    
+    if (basket.common.itemCount === 0) {
+      return {
+        success: false,
+        message: "Cannot checkout empty basket"
+      };
+    }
+    ```
+  </Accordion>
+
+  <Accordion title="Store Metadata">
+    Use metadata for tracking:
+    ```typescript
+    await Baskets.updateMetadata(basketId, {
+      source: 'mobile_app',
+      promotionCode: 'SUMMER2025',
+      referralSource: 'instagram'
+    });
+    ```
+  </Accordion>
+
+  <Accordion title="Handle Abandoned Baskets">
+    ```typescript
+    // Mark as abandoned after timeout
+    setTimeout(async () => {
+      await Baskets.updateStatus(
+        basketId,
+        BasketStatus.ABANDONED
+      );
+    }, 30 * 60 * 1000); // 30 minutes
+    ```
+  </Accordion>
+</AccordionGroup>
+
+## Common Patterns
+
+### View Cart
+
+```typescript
+export class ViewCartTool implements LuaTool {
+  async execute(input: { basketId: string }) {
+    const basket = await Baskets.getById(input.basketId);
+    
+    return {
+      items: basket.common.items.map(item => ({
+        product: item.id,
+        quantity: item.quantity,
+        price: `$${item.price}`,
+        subtotal: `$${(item.price * item.quantity).toFixed(2)}`
+      })),
+      total: `$${basket.common.totalAmount.toFixed(2)}`,
+      itemCount: basket.common.itemCount
+    };
+  }
+}
+```
+
+### Apply Discount
+
+```typescript
+export class ApplyDiscountTool implements LuaTool {
+  async execute(input: { basketId: string; code: string }) {
+    const basket = await Baskets.getById(input.basketId);
+    
+    // Apply discount logic
+    const discountPercent = getDiscountForCode(input.code);
+    const discountAmount = basket.common.totalAmount * (discountPercent / 100);
+    
+    await Baskets.updateMetadata(input.basketId, {
+      discountCode: input.code,
+      discountAmount,
+      originalTotal: basket.common.totalAmount
+    });
+    
+    return {
+      discount: `${discountPercent}%`,
+      saved: `$${discountAmount.toFixed(2)}`,
+      newTotal: `$${(basket.common.totalAmount - discountAmount).toFixed(2)}`
+    };
+  }
+}
+```
+
+## Next Steps
+
+<CardGroup cols={2}>
+  <Card
+    title="Orders API"
+    icon="receipt"
+    href="/api/orders"
+  >
+    Manage orders after checkout
+  </Card>
+  <Card
+    title="Basket Examples"
+    icon="layer-group"
+    href="/examples/baskets"
+  >
+    See complete workflow examples
+  </Card>
+</CardGroup>
+

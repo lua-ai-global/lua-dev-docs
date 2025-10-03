@@ -1,0 +1,349 @@
+---
+title: "Multi-Skill Projects"
+description: "Organizing tools into multiple skills"
+---
+
+## Overview
+
+You can define multiple skills in one project to organize tools logically.
+
+```typescript
+// Single project, multiple skills
+const catalogSkill = new LuaSkill({...});
+const cartSkill = new LuaSkill({...});
+const orderSkill = new LuaSkill({...});
+```
+
+## When to Use Multiple Skills
+
+<Tabs>
+  <Tab title="Use Multiple When">
+    ✅ Tools serve different purposes
+    
+    ✅ Different teams own different skills
+    
+    ✅ Skills need different deployment schedules
+    
+    ✅ Clear logical separation
+  </Tab>
+
+  <Tab title="Use Single When">
+    ✅ Tools work together closely
+    
+    ✅ Small to medium number (< 20 tools)
+    
+    ✅ All tools deploy together
+    
+    ✅ Simple use case
+  </Tab>
+</Tabs>
+
+## Example: E-commerce Platform
+
+```typescript
+import { LuaSkill } from "lua-cli";
+import {
+  SearchProductsTool,
+  GetProductTool
+} from "./tools/ProductTools";
+import {
+  CreateBasketTool,
+  AddItemTool
+} from "./tools/BasketTools";
+import {
+  CreateOrderTool,
+  TrackOrderTool
+} from "./tools/OrderTools";
+
+// Skill 1: Product Catalog
+const catalogSkill = new LuaSkill({
+  name: "catalog-skill",
+  version: "1.0.0",
+  description: "Product browsing and search",
+  context: `
+    Use search_products when users want to find items.
+    Use get_product for detailed product information.
+  `,
+  tools: [
+    new SearchProductsTool(),
+    new GetProductTool()
+  ]
+});
+
+// Skill 2: Shopping Cart
+const cartSkill = new LuaSkill({
+  name: "cart-skill",
+  version: "1.0.0",
+  description: "Shopping cart management",
+  context: `
+    Use create_basket to start shopping.
+    Use add_item to add products to cart.
+  `,
+  tools: [
+    new CreateBasketTool(),
+    new AddItemTool()
+  ]
+});
+
+// Skill 3: Order Management
+const orderSkill = new LuaSkill({
+  name: "order-skill",
+  version: "1.0.0",
+  description: "Order creation and tracking",
+  context: `
+    Use create_order to finalize purchase.
+    Use track_order for delivery status.
+  `,
+  tools: [
+    new CreateOrderTool(),
+    new TrackOrderTool()
+  ]
+});
+```
+
+## Benefits
+
+<CardGroup cols={2}>
+  <Card title="Logical Organization" icon="folder-tree">
+    Group related tools together
+  </Card>
+  <Card title="Independent Versions" icon="code-branch">
+    Version each skill separately
+  </Card>
+  <Card title="Clear Ownership" icon="users">
+    Different teams maintain different skills
+  </Card>
+  <Card title="Flexible Deployment" icon="rocket">
+    Deploy skills independently
+  </Card>
+</CardGroup>
+
+## How It Works
+
+### Configuration
+
+`lua.skill.yaml` tracks all skills:
+
+```yaml
+agent:
+  agentId: agent_abc123
+  orgId: org_xyz789
+
+skills:
+  - name: catalog-skill
+    version: 1.0.0
+    skillId: skill_abc123
+  - name: cart-skill
+    version: 1.0.0
+    skillId: skill_def456
+  - name: order-skill
+    version: 1.0.0
+    skillId: skill_ghi789
+```
+
+### Deployment
+
+All skills push and deploy together:
+
+```bash
+lua push    # Uploads all 3 skills
+lua deploy  # Deploys all 3 skills
+```
+
+## Real-World Examples
+
+### Customer Service Platform
+
+```typescript
+// FAQ & Knowledge Base
+const knowledgeSkill = new LuaSkill({
+  name: "knowledge-skill",
+  tools: [
+    new SearchArticlesTool(),
+    new GetArticleTool()
+  ]
+});
+
+// Ticket Management
+const ticketSkill = new LuaSkill({
+  name: "ticket-skill",
+  tools: [
+    new CreateTicketTool(),
+    new UpdateTicketTool(),
+    new GetTicketStatusTool()
+  ]
+});
+
+// Account Management
+const accountSkill = new LuaSkill({
+  name: "account-skill",
+  tools: [
+    new GetAccountTool(),
+    new UpdateAccountTool(),
+    new ResetPasswordTool()
+  ]
+});
+```
+
+### Restaurant Management
+
+```typescript
+// Menu & Orders
+const menuSkill = new LuaSkill({
+  name: "menu-skill",
+  tools: [
+    new ShowMenuTool(),
+    new CreateOrderTool()
+  ]
+});
+
+// Reservations
+const reservationSkill = new LuaSkill({
+  name: "reservation-skill",
+  tools: [
+    new MakeReservationTool(),
+    new CheckAvailabilityTool(),
+    new CancelReservationTool()
+  ]
+});
+
+// Loyalty Program
+const loyaltySkill = new LuaSkill({
+  name: "loyalty-skill",
+  tools: [
+    new CheckPointsTool(),
+    new RedeemRewardTool()
+  ]
+});
+```
+
+## Best Practices
+
+<AccordionGroup>
+  <Accordion title="Keep Skills Focused">
+    Each skill should have a clear, single purpose:
+    
+    ✅ Good: "product-catalog-skill", "order-management-skill"
+    
+    ❌ Bad: "general-skill", "everything-skill"
+  </Accordion>
+
+  <Accordion title="Limit Tools Per Skill">
+    Keep skills manageable:
+    - Small: 2-5 tools
+    - Medium: 6-10 tools
+    - Large: 11-20 tools
+    - Too large: > 20 tools (consider splitting)
+  </Accordion>
+
+  <Accordion title="Version Independently">
+    Each skill can have its own version:
+    ```typescript
+    const skill1 = new LuaSkill({
+      name: "skill-1",
+      version: "2.0.0"  // Major update
+    });
+    
+    const skill2 = new LuaSkill({
+      name: "skill-2",
+      version: "1.0.1"  // Bug fix only
+    });
+    ```
+  </Accordion>
+
+  <Accordion title="Share Common Code">
+    Use services for shared logic:
+    ```typescript
+    // services/ApiClient.ts
+    export class ApiClient {
+      // Shared API logic
+    }
+    
+    // Use in multiple skills
+    import { ApiClient } from '../services/ApiClient';
+    ```
+  </Accordion>
+</AccordionGroup>
+
+## Migration Strategies
+
+### From Single to Multiple Skills
+
+<Steps>
+  <Step title="Identify Groups">
+    Group related tools together
+  </Step>
+  
+  <Step title="Create New Skills">
+    Define new LuaSkill instances
+  </Step>
+  
+  <Step title="Move Tools">
+    Assign tools to appropriate skills
+  </Step>
+  
+  <Step title="Update Context">
+    Write specific context for each skill
+  </Step>
+  
+  <Step title="Test">
+    Test all skills together
+  </Step>
+  
+  <Step title="Deploy">
+    Push and deploy as usual
+  </Step>
+</Steps>
+
+### Example Migration
+
+**Before (Single Skill):**
+```typescript
+const allInOne = new LuaSkill({
+  name: "all-in-one",
+  tools: [
+    new SearchProductsTool(),
+    new CreateBasketTool(),
+    new CreateOrderTool(),
+    // 20 more tools...
+  ]
+});
+```
+
+**After (Multiple Skills):**
+```typescript
+const productsSkill = new LuaSkill({
+  name: "products",
+  tools: [new SearchProductsTool(), ...]
+});
+
+const cartSkill = new LuaSkill({
+  name: "cart",
+  tools: [new CreateBasketTool(), ...]
+});
+
+const orderSkill = new LuaSkill({
+  name: "orders",
+  tools: [new CreateOrderTool(), ...]
+});
+```
+
+## Next Steps
+
+<CardGroup cols={2}>
+  <Card
+    title="Best Practices"
+    icon="star"
+    href="/template/best-practices"
+  >
+    Advanced tips and patterns
+  </Card>
+  <Card
+    title="Tool Examples"
+    icon="layer-group"
+    href="/examples/overview"
+  >
+    See working multi-skill examples
+  </Card>
+</CardGroup>
+

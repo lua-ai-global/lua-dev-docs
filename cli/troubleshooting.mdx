@@ -1,0 +1,602 @@
+---
+title: "Troubleshooting"
+description: "Common issues and solutions for Lua CLI"
+---
+
+## Common Errors
+
+### Authentication Errors
+
+<AccordionGroup>
+  <Accordion title="No API key found">
+    **Error:**
+    ```
+    ❌ No API key found. Run `lua auth configure` first.
+    ```
+    
+    **Cause**: You haven't set up authentication yet.
+    
+    **Solution**:
+    ```bash
+    lua auth configure
+    ```
+    
+    Choose authentication method and follow prompts.
+  </Accordion>
+
+  <Accordion title="Invalid API key">
+    **Error:**
+    ```
+    ❌ API key validation failed
+    ```
+    
+    **Causes**:
+    - Key was revoked
+    - Key was copied incorrectly
+    - Extra spaces in key
+    
+    **Solutions**:
+    1. Verify you copied the complete key
+    2. Remove any extra spaces
+    3. Generate new key via email method:
+       ```bash
+       lua auth configure
+       ```
+  </Accordion>
+
+  <Accordion title="OTP not received">
+    **Problem**: Email OTP code not received
+    
+    **Solutions**:
+    1. Check spam/junk folder
+    2. Wait 5 minutes (can be delayed)
+    3. Try again with `lua auth configure`
+    4. Use API Key method if available
+  </Accordion>
+</AccordionGroup>
+
+### Project Initialization Errors
+
+<AccordionGroup>
+  <Accordion title="No lua.skill.yaml found">
+    **Error:**
+    ```
+    ❌ No lua.skill.yaml found. Please run this command from a skill directory.
+    ```
+    
+    **Cause**: You're not in a skill project directory.
+    
+    **Solution**:
+    1. Navigate to your skill directory:
+       ```bash
+       cd my-skill
+       ```
+    2. Or initialize a new project:
+       ```bash
+       lua init
+       ```
+  </Accordion>
+
+  <Accordion title="Directory not empty">
+    **Error:**
+    ```
+    ❌ Directory is not empty. Please use an empty directory.
+    ```
+    
+    **Cause**: `lua init` requires an empty directory.
+    
+    **Solution**:
+    ```bash
+    mkdir my-new-skill
+    cd my-new-skill
+    lua init
+    ```
+  </Accordion>
+
+  <Accordion title="Permission denied">
+    **Error:**
+    ```
+    EACCES: permission denied
+    ```
+    
+    **Solutions**:
+    - Check directory permissions
+    - Don't use sudo (creates permission issues later)
+    - Use a directory you own:
+      ```bash
+      cd ~/projects
+      mkdir my-skill
+      cd my-skill
+      lua init
+      ```
+  </Accordion>
+</AccordionGroup>
+
+### Compilation Errors
+
+<AccordionGroup>
+  <Accordion title="No index.ts found">
+    **Error:**
+    ```
+    ❌ No index.ts found in current directory or src/ directory
+    ```
+    
+    **Cause**: Missing main skill file.
+    
+    **Solution**: Create `src/index.ts`:
+    ```typescript
+    import { LuaSkill } from "lua-cli";
+    
+    const skill = new LuaSkill({
+      name: "my-skill",
+      description: "My skill description",
+      context: "How to use this skill",
+      tools: []
+    });
+    ```
+  </Accordion>
+
+  <Accordion title="TypeScript compilation error">
+    **Error:**
+    ```
+    ❌ Compilation failed:
+    src/tools/MyTool.ts:10:5 - error TS2322: Type 'string' is not assignable to type 'number'.
+    ```
+    
+    **Cause**: TypeScript type error in your code.
+    
+    **Solution**: Fix the specific error mentioned:
+    ```typescript
+    // Error at line 10
+    const age: number = "25";  // ❌ Wrong type
+    const age: number = 25;    // ✅ Correct
+    ```
+  </Accordion>
+
+  <Accordion title="Cannot find module">
+    **Error:**
+    ```
+    ❌ Cannot find module 'lua-cli'
+    ```
+    
+    **Cause**: Dependencies not installed.
+    
+    **Solution**:
+    ```bash
+    npm install
+    ```
+  </Accordion>
+
+  <Accordion title="Tool name invalid">
+    **Error:**
+    ```
+    ❌ Tool names can only contain alphanumeric characters, hyphens (-), and underscores (_).
+    ```
+    
+    **Cause**: Tool name contains invalid characters.
+    
+    **Solution**: Fix tool name:
+    ```typescript
+    // ❌ Invalid
+    name = "get weather";    // Spaces
+    name = "get.weather";    // Dots
+    name = "get@weather";    // Special chars
+    
+    // ✅ Valid
+    name = "get_weather";
+    name = "get-weather";
+    name = "getWeather";
+    ```
+  </Accordion>
+</AccordionGroup>
+
+### Version Management Errors
+
+<AccordionGroup>
+  <Accordion title="Version already exists">
+    **Error:**
+    ```
+    ❌ Version 1.0.0 already exists on the server
+    ```
+    
+    **Cause**: You've already pushed this version number.
+    
+    **Solution**: Increment version in `lua.skill.yaml`:
+    ```yaml
+    skills:
+      - name: my-skill
+        version: 1.0.1  # Increment this
+    ```
+    
+    Then push again:
+    ```bash
+    lua push
+    ```
+  </Accordion>
+
+  <Accordion title="Version mismatch">
+    **Error:**
+    ```
+    ❌ Version mismatch: config has 1.0.1, deploy.json has 1.0.0
+    ```
+    
+    **Cause**: Changed version but didn't recompile.
+    
+    **Solution**: Recompile after version change:
+    ```bash
+    lua compile
+    lua push
+    ```
+  </Accordion>
+</AccordionGroup>
+
+### Dev Mode Errors
+
+<AccordionGroup>
+  <Accordion title="Port already in use">
+    **Error:**
+    ```
+    ❌ EADDRINUSE: address already in use :::3000
+    ```
+    
+    **Cause**: Port 3000 is being used by another process.
+    
+    **Solutions**:
+    1. Stop the other process
+    2. Or kill process on port 3000:
+       ```bash
+       # macOS/Linux
+       lsof -ti:3000 | xargs kill -9
+       
+       # Windows
+       netstat -ano | findstr :3000
+       taskkill /PID <PID> /F
+       ```
+  </Accordion>
+
+  <Accordion title="Skill not found in sandbox">
+    **Error:**
+    ```
+    💡 The skill doesn't exist on the server.
+    Please run "lua push" first to deploy your skill, then try "lua dev" again.
+    ```
+    
+    **Cause**: Skill hasn't been pushed to server yet.
+    
+    **Solution**:
+    ```bash
+    lua push  # Push first
+    lua dev   # Then start dev mode
+    ```
+  </Accordion>
+
+  <Accordion title="Changes not reloading">
+    **Problem**: File changes not detected in dev mode.
+    
+    **Solutions**:
+    1. Verify file is in `src/` directory
+    2. Check file is actually saved
+    3. Look for compilation errors in terminal
+    4. Restart dev mode:
+       ```bash
+       # Ctrl+C to stop
+       lua dev  # Start again
+       ```
+  </Accordion>
+</AccordionGroup>
+
+### Deployment Errors
+
+<AccordionGroup>
+  <Accordion title="No versions available">
+    **Error:**
+    ```
+    ❌ No versions available to deploy
+    ```
+    
+    **Cause**: You haven't pushed any versions yet.
+    
+    **Solution**:
+    ```bash
+    lua push  # Push a version first
+    lua deploy
+    ```
+  </Accordion>
+
+  <Accordion title="Deploy failed">
+    **Error:**
+    ```
+    ❌ Deployment failed: [error message]
+    ```
+    
+    **Solutions**:
+    1. Check API key is valid
+    2. Verify you have deploy permissions
+    3. Check network connection
+    4. Try again - might be temporary server issue
+  </Accordion>
+</AccordionGroup>
+
+## Platform-Specific Issues
+
+### macOS
+
+<AccordionGroup>
+  <Accordion title="Keychain access denied">
+    **Error**: Permission denied accessing keychain
+    
+    **Solution**: Grant Terminal/iTerm access:
+    1. System Preferences → Security & Privacy
+    2. Privacy → Automation
+    3. Enable Terminal for Keychain Access
+    4. Restart terminal
+  </Accordion>
+
+  <Accordion title="Command not found: lua">
+    **Cause**: CLI not in PATH
+    
+    **Solutions**:
+    1. Reinstall globally:
+       ```bash
+       npm install -g lua-cli
+       ```
+    2. Or use npx:
+       ```bash
+       npx lua-cli [command]
+       ```
+  </Accordion>
+</AccordionGroup>
+
+### Windows
+
+<AccordionGroup>
+  <Accordion title="PowerShell execution policy">
+    **Error**: Script execution disabled
+    
+    **Solution**: Enable script execution:
+    ```powershell
+    Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser
+    ```
+  </Accordion>
+
+  <Accordion title="Path too long">
+    **Error**: `ENAMETOOLONG`
+    
+    **Solution**: Use shorter directory paths:
+    ```bash
+    # Instead of
+    C:\Users\YourName\Documents\Projects\MyCompany\Skills\my-skill
+    
+    # Use
+    C:\projects\my-skill
+    ```
+  </Accordion>
+</AccordionGroup>
+
+### Linux
+
+<AccordionGroup>
+  <Accordion title="libsecret not found">
+    **Error**: Cannot find libsecret
+    
+    **Solution**: Install libsecret:
+    ```bash
+    # Ubuntu/Debian
+    sudo apt-get install libsecret-1-dev
+    
+    # Fedora/RHEL
+    sudo dnf install libsecret-devel
+    
+    # Arch
+    sudo pacman -S libsecret
+    ```
+  </Accordion>
+
+  <Accordion title="EACCES: permission denied">
+    **Error**: Permission denied on global install
+    
+    **Solution**: Configure npm to install globally without sudo:
+    ```bash
+    mkdir ~/.npm-global
+    npm config set prefix '~/.npm-global'
+    echo 'export PATH=~/.npm-global/bin:$PATH' >> ~/.bashrc
+    source ~/.bashrc
+    npm install -g lua-cli
+    ```
+  </Accordion>
+</AccordionGroup>
+
+## Node.js Issues
+
+<AccordionGroup>
+  <Accordion title="Node version too old">
+    **Error**: Requires Node.js >= 16.0.0
+    
+    **Solution**: Update Node.js:
+    1. Visit https://nodejs.org
+    2. Download LTS version
+    3. Or use nvm:
+       ```bash
+       nvm install --lts
+       nvm use --lts
+       ```
+  </Accordion>
+
+  <Accordion title="npm WARN deprecated">
+    **Warning**: Package deprecated warnings
+    
+    **Solution**: Usually safe to ignore deprecated warnings from dependencies. Update if issues occur:
+    ```bash
+    npm update
+    ```
+  </Accordion>
+
+  <Accordion title="Dependency conflicts">
+    **Error**: Conflicting peer dependencies
+    
+    **Solution**: Clear cache and reinstall:
+    ```bash
+    rm -rf node_modules package-lock.json
+    npm install
+    ```
+  </Accordion>
+</AccordionGroup>
+
+## Network Issues
+
+<AccordionGroup>
+  <Accordion title="Connection timeout">
+    **Error**: `ETIMEDOUT` or `ECONNREFUSED`
+    
+    **Solutions**:
+    1. Check internet connection
+    2. Check if behind firewall/proxy
+    3. Try again - might be temporary
+    4. Check server status
+  </Accordion>
+
+  <Accordion title="SSL certificate error">
+    **Error**: `UNABLE_TO_VERIFY_LEAF_SIGNATURE`
+    
+    **Solutions**:
+    1. Check system date/time is correct
+    2. Update CA certificates
+    3. If behind corporate proxy, may need proxy config
+  </Accordion>
+
+  <Accordion title="Corporate proxy">
+    **Problem**: Behind corporate proxy
+    
+    **Solution**: Configure npm proxy:
+    ```bash
+    npm config set proxy http://proxy.company.com:8080
+    npm config set https-proxy http://proxy.company.com:8080
+    ```
+  </Accordion>
+</AccordionGroup>
+
+## Environment Variable Issues
+
+<AccordionGroup>
+  <Accordion title="Variable not found">
+    **Problem**: `env('MY_VAR')` returns undefined
+    
+    **Solutions**:
+    1. Check spelling in `.env` file:
+       ```bash
+       # .env
+       MY_VAR=value  # Correct spelling
+       ```
+    2. Ensure `.env` is in project root
+    3. Restart command (variables loaded at startup)
+    4. Check `lua.skill.yaml`:
+       ```yaml
+       skill:
+         env:
+           MY_VAR: value
+       ```
+  </Accordion>
+
+  <Accordion title="Changes not taking effect">
+    **Problem**: Updated `.env` but changes not visible
+    
+    **Solution**: Restart the CLI command:
+    ```bash
+    # Stop current process (Ctrl+C)
+    lua dev  # Start again
+    ```
+  </Accordion>
+</AccordionGroup>
+
+## Getting Help
+
+### Diagnostic Information
+
+When reporting issues, include:
+
+```bash
+# CLI version
+lua --version
+
+# Node version
+node --version
+
+# npm version
+npm --version
+
+# Operating system
+uname -a  # macOS/Linux
+ver       # Windows
+
+# Error message
+# Copy full error from terminal
+```
+
+### Support Channels
+
+<CardGroup cols={3}>
+  <Card title="Documentation" icon="book" href="/">
+    Search these docs first
+  </Card>
+  <Card title="GitHub Issues" icon="github" href="https://github.com/lua-ai/lua-cli/issues">
+    Report bugs or request features
+  </Card>
+  <Card title="Email Support" icon="envelope" href="mailto:support@lua.ai">
+    Contact support team
+  </Card>
+</CardGroup>
+
+## Prevention Tips
+
+<AccordionGroup>
+  <Accordion title="Keep CLI Updated">
+    ```bash
+    npm update -g lua-cli
+    ```
+    
+    Or check current version:
+    ```bash
+    lua --version
+    ```
+  </Accordion>
+
+  <Accordion title="Commit lua.skill.yaml">
+    Always commit `lua.skill.yaml` to git:
+    ```bash
+    git add lua.skill.yaml
+    git commit -m "Update skill config"
+    ```
+  </Accordion>
+
+  <Accordion title="Don't Commit .env">
+    Add to `.gitignore`:
+    ```
+    .env
+    .env.local
+    ```
+  </Accordion>
+
+  <Accordion title="Test Before Deploy">
+    Always test locally:
+    ```bash
+    lua test  # Test tools
+    lua dev   # Test conversationally
+    lua push  # Push to sandbox
+    lua dev   # Test in sandbox
+    lua deploy  # Then deploy
+    ```
+  </Accordion>
+</AccordionGroup>
+
+## Still Having Issues?
+
+If your issue isn't covered here:
+
+1. **Search GitHub Issues**: Someone may have had the same problem
+2. **Create New Issue**: Include diagnostic information
+3. **Email Support**: For urgent issues or account problems
+
+<Card title="Contact Support" icon="life-ring" href="mailto:support@lua.ai">
+  support@lua.ai - We're here to help!
+</Card>
+

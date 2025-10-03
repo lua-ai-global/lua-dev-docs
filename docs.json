@@ -1,68 +1,100 @@
 {
   "$schema": "https://mintlify.com/docs.json",
   "theme": "mint",
-  "name": "Mint Starter Kit",
+  "name": "Lua CLI",
   "colors": {
-    "primary": "#16A34A",
-    "light": "#07C983",
-    "dark": "#15803D"
+    "primary": "#ff173a",
+    "light": "#fe1052",
+    "dark": "#fe1052"
   },
   "favicon": "/favicon.svg",
   "navigation": {
     "tabs": [
       {
-        "tab": "Guides",
+        "tab": "Documentation",
         "groups": [
           {
-            "group": "Getting started",
+            "group": "Getting Started",
             "pages": [
               "index",
-              "quickstart",
-              "development"
+              "getting-started/quick-start",
+              "getting-started/installation",
+              "getting-started/first-skill"
             ]
           },
           {
-            "group": "Customization",
+            "group": "Core Concepts",
             "pages": [
-              "essentials/settings",
-              "essentials/navigation"
+              "concepts/skills-and-tools",
+              "concepts/platform-apis",
+              "concepts/environment-variables",
+              "concepts/workflows"
             ]
           },
           {
-            "group": "Writing content",
+            "group": "CLI Reference",
             "pages": [
-              "essentials/markdown",
-              "essentials/code",
-              "essentials/images",
-              "essentials/reusable-snippets"
-            ]
-          },
-          {
-            "group": "AI tools",
-            "pages": [
-              "ai-tools/cursor",
-              "ai-tools/claude-code",
-              "ai-tools/windsurf"
+              "cli/overview",
+              "cli/authentication",
+              "cli/skill-management",
+              "cli/development",
+              "cli/troubleshooting"
             ]
           }
         ]
       },
       {
-        "tab": "API reference",
+        "tab": "API Reference",
         "groups": [
           {
-            "group": "API documentation",
+            "group": "Core Classes",
             "pages": [
-              "api-reference/introduction"
+              "api/overview",
+              "api/luaskill",
+              "api/luatool"
             ]
           },
           {
-            "group": "Endpoint examples",
+            "group": "Platform APIs",
             "pages": [
-              "api-reference/endpoint/get",
-              "api-reference/endpoint/create",
-              "api-reference/endpoint/delete",
-              "api-reference/endpoint/webhook"
+              "api/user",
+              "api/data",
+              "api/products",
+              "api/baskets",
+              "api/orders"
+            ]
+          },
+          {
+            "group": "Utilities",
+            "pages": [
+              "api/environment"
+            ]
+          }
+        ]
+      },
+      {
+        "tab": "Template Guide",
+        "groups": [
+          {
+            "group": "Template",
+            "pages": [
+              "template/overview",
+              "template/project-structure",
+              "template/building-skills",
+              "template/multi-skill-projects",
+              "template/best-practices"
+            ]
+          },
+          {
+            "group": "Tool Examples",
+            "pages": [
+              "examples/overview",
+              "examples/weather",
+              "examples/user-data",
+              "examples/products",
+              "examples/baskets",
+              "examples/custom-data",
+              "examples/payment"
             ]
           }
         ]
@@ -71,14 +103,19 @@
     "global": {
       "anchors": [
         {
-          "anchor": "Documentation",
-          "href": "https://mintlify.com/docs",
-          "icon": "book-open-cover"
+          "anchor": "GitHub",
+          "href": "https://github.com/lua-ai/lua-cli",
+          "icon": "github"
         },
         {
-          "anchor": "Blog",
-          "href": "https://mintlify.com/blog",
-          "icon": "newspaper"
+          "anchor": "Platform",
+          "href": "https://heylua.ai",
+          "icon": "globe"
+        },
+        {
+          "anchor": "npm Package",
+          "href": "https://www.npmjs.com/package/lua-cli",
+          "icon": "box"
         }
       ]
     }
@@ -91,32 +128,27 @@
     "links": [
       {
         "label": "Support",
-        "href": "mailto:hi@mintlify.com"
+        "href": "mailto:support@lua.ai"
       }
     ],
     "primary": {
       "type": "button",
-      "label": "Dashboard",
-      "href": "https://dashboard.mintlify.com"
+      "label": "Platform",
+      "href": "https://heylua.ai"
     }
   },
   "contextual": {
     "options": [
-     "copy",
-     "view",
-     "chatgpt",
-     "claude",
-     "perplexity",
-     "mcp",
-     "cursor",
-     "vscode"
-   ]
+      "copy",
+      "view",
+      "chatgpt",
+      "claude",
+      "cursor"
+    ]
   },
   "footer": {
     "socials": {
-      "x": "https://x.com/mintlify",
-      "github": "https://github.com/mintlify",
-      "linkedin": "https://linkedin.com/company/mintlify"
+      "github": "https://github.com/lua-ai/lua-cli"
     }
   }
 }

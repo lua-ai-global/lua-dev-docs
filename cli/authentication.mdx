@@ -1,0 +1,387 @@
+---
+title: "Authentication"
+description: "Configure API key authentication for Lua CLI"
+---
+
+## Overview
+
+Lua CLI requires authentication to access the platform and deploy skills. Authentication is done via API key stored securely in your system keychain.
+
+## Commands
+
+<CardGroup cols={3}>
+  <Card title="configure" icon="key">
+    Set up authentication
+  </Card>
+  <Card title="key" icon="eye">
+    Display stored key
+  </Card>
+  <Card title="logout" icon="right-from-bracket">
+    Remove credentials
+  </Card>
+</CardGroup>
+
+## lua auth configure
+
+Set up API key authentication.
+
+```bash
+lua auth configure
+```
+
+### Authentication Methods
+
+<Tabs>
+  <Tab title="Email (Recommended)">
+    **Email OTP Authentication**
+
+    1. Choose "Email" when prompted
+    2. Enter your email address
+    3. Check email for 6-digit code
+    4. Enter the OTP code
+    5. API key automatically generated and saved
+
+    ```bash
+    $ lua auth configure
+    ? Choose authentication method: Email
+    ? Enter your email address: you@example.com
+    📧 Sending OTP to your email...
+    ✅ OTP sent successfully!
+    ? Enter the OTP code: 123456
+    🔐 Verifying OTP...
+    ✅ OTP verified successfully!
+    🔑 Generating API key...
+    ✅ API key generated and saved securely.
+    ```
+
+    **Features:**
+    - No existing account needed
+    - Automatic key generation
+    - Most secure method
+    - No manual key management
+  </Tab>
+
+  <Tab title="API Key">
+    **Existing API Key**
+
+    Use if you already have an API key:
+
+    1. Choose "API Key" when prompted
+    2. Enter your existing API key
+    3. Key is validated with server
+    4. Key is saved securely
+
+    ```bash
+    $ lua auth configure
+    ? Choose authentication method: API Key
+    ? Enter your API key: lsk_abc123def456...
+    🔐 Validating API key...
+    ✅ API key validated and saved securely.
+    ```
+
+    **When to use:**
+    - You have an existing API key
+    - Setting up on multiple machines
+    - Automating CI/CD pipelines
+  </Tab>
+</Tabs>
+
+### Where Credentials are Stored
+
+Credentials are stored securely in your system keychain:
+
+<Tabs>
+  <Tab title="macOS">
+    **Keychain**
+    
+    Stored in macOS Keychain with encryption
+    
+    View in Keychain Access app:
+    - Service: `lua-cli`
+    - Account: Your email or user ID
+  </Tab>
+
+  <Tab title="Windows">
+    **Credential Vault**
+    
+    Stored in Windows Credential Manager
+    
+    View in Control Panel:
+    - Control Panel → Credential Manager
+    - Look for `lua-cli` entries
+  </Tab>
+
+  <Tab title="Linux">
+    **libsecret**
+    
+    Stored using libsecret keyring
+    
+    Requires `libsecret` to be installed:
+    ```bash
+    # Ubuntu/Debian
+    sudo apt-get install libsecret-1-dev
+    
+    # Fedora/RHEL
+    sudo dnf install libsecret-devel
+    ```
+  </Tab>
+</Tabs>
+
+<Warning>
+Never commit API keys to version control or share them publicly!
+</Warning>
+
+## lua auth key
+
+Display your stored API key.
+
+```bash
+lua auth key
+```
+
+### Security Confirmation
+
+For security, you must confirm before displaying the key:
+
+```bash
+$ lua auth key
+? This will display your API key. Are you sure you want to continue? Yes
+🔑 Your API key:
+lsk_abc123def456...
+```
+
+<Note>
+Only displays key after explicit confirmation to prevent accidental exposure.
+</Note>
+
+### Use Cases
+
+- **Copying to another machine**: Get key to set up elsewhere
+- **CI/CD configuration**: Copy key for automated deployments
+- **Verification**: Confirm which key is currently configured
+- **Sharing with team**: Share key with team members (use with caution)
+
+## lua auth logout
+
+Delete stored API key from your system.
+
+```bash
+lua auth logout
+```
+
+### Confirmation Required
+
+```bash
+$ lua auth logout
+? Are you sure you want to delete your API key? This action cannot be undone. Yes
+✅ API key deleted successfully.
+```
+
+### What Happens
+
+<Steps>
+  <Step title="Key Removed">
+    API key deleted from system keychain
+  </Step>
+  
+  <Step title="CLI Access Lost">
+    You'll need to run `lua auth configure` to use CLI again
+  </Step>
+  
+  <Step title="Key Still Valid">
+    The key is NOT invalidated on the server - it just removes local copy
+  </Step>
+</Steps>
+
+<Note>
+After logout, the key still works if used elsewhere. To fully revoke access, regenerate a new key.
+</Note>
+
+## Troubleshooting
+
+<AccordionGroup>
+  <Accordion title="No API key found">
+    **Error**: `❌ No API key found. Run lua auth configure first.`
+    
+    **Solution**: Run `lua auth configure` to set up authentication
+    
+    ```bash
+    lua auth configure
+    ```
+  </Accordion>
+
+  <Accordion title="OTP not received">
+    **Problem**: Didn't receive OTP email
+    
+    **Solutions**:
+    1. Check spam/junk folder
+    2. Wait a few minutes (can take up to 5 min)
+    3. Try again with `lua auth configure`
+    4. Use API Key method instead
+  </Accordion>
+
+  <Accordion title="Invalid OTP">
+    **Error**: `❌ Invalid OTP code`
+    
+    **Solutions**:
+    - Double-check the code from email
+    - OTP expires after 10 minutes
+    - You have 3 attempts
+    - Request new OTP by running command again
+  </Accordion>
+
+  <Accordion title="API key validation failed">
+    **Error**: `❌ API key validation failed`
+    
+    **Solutions**:
+    - Verify you copied the complete key
+    - Check key hasn't been revoked
+    - Ensure no extra spaces
+    - Generate new key via email method
+  </Accordion>
+
+  <Accordion title="Keychain access denied (macOS)">
+    **Error**: Permission denied accessing keychain
+    
+    **Solution**: Grant Terminal access to keychain:
+    1. System Preferences → Security & Privacy
+    2. Privacy → Automation
+    3. Enable Terminal for Keychain Access
+  </Accordion>
+
+  <Accordion title="libsecret not found (Linux)">
+    **Error**: `libsecret` not installed
+    
+    **Solution**: Install libsecret:
+    ```bash
+    # Ubuntu/Debian
+    sudo apt-get install libsecret-1-dev
+    
+    # Fedora/RHEL
+    sudo dnf install libsecret-devel
+    
+    # Arch
+    sudo pacman -S libsecret
+    ```
+  </Accordion>
+</AccordionGroup>
+
+## Best Practices
+
+<AccordionGroup>
+  <Accordion title="Use Email Authentication">
+    Recommended for individual developers:
+    - Automatic key management
+    - More secure than manual keys
+    - Easy to set up
+    - No key to remember
+  </Accordion>
+
+  <Accordion title="Keep Keys Private">
+    Never share or expose your API key:
+    - Don't commit to git
+    - Don't share in chat/email
+    - Don't log in console
+    - Use logout when done on shared machines
+  </Accordion>
+
+  <Accordion title="Use Separate Keys for CI/CD">
+    For automated deployments:
+    - Generate dedicated CI/CD key
+    - Store as environment variable
+    - Rotate regularly
+    - Revoke when no longer needed
+  </Accordion>
+
+  <Accordion title="Logout on Shared Machines">
+    When using shared computers:
+    ```bash
+    lua auth logout  # Before leaving
+    ```
+  </Accordion>
+</AccordionGroup>
+
+## CI/CD Configuration
+
+For automated deployments:
+
+<Tabs>
+  <Tab title="GitHub Actions">
+    ```yaml
+    name: Deploy Skill
+    on: [push]
+    
+    jobs:
+      deploy:
+        runs-on: ubuntu-latest
+        steps:
+          - uses: actions/checkout@v2
+          
+          - name: Setup Node
+            uses: actions/setup-node@v2
+            with:
+              node-version: '16'
+          
+          - name: Install Lua CLI
+            run: npm install -g lua-cli
+          
+          - name: Configure Auth
+            env:
+              LUA_API_KEY: ${{ secrets.LUA_API_KEY }}
+            run: |
+              # Store key for CLI
+              echo "$LUA_API_KEY" | lua auth configure --api-key
+          
+          - name: Deploy
+            run: |
+              lua push
+              lua deploy
+    ```
+    
+    Add `LUA_API_KEY` to GitHub Secrets
+  </Tab>
+
+  <Tab title="GitLab CI">
+    ```yaml
+    deploy:
+      script:
+        - npm install -g lua-cli
+        - echo "$LUA_API_KEY" | lua auth configure --api-key
+        - lua push
+        - lua deploy
+      only:
+        - main
+    ```
+    
+    Add `LUA_API_KEY` to GitLab CI/CD Variables
+  </Tab>
+
+  <Tab title="Environment Variable">
+    Set environment variable:
+    ```bash
+    export LUA_API_KEY=lsk_your_key_here
+    ```
+    
+    CLI will automatically use it if set
+  </Tab>
+</Tabs>
+
+## Next Steps
+
+<CardGroup cols={2}>
+  <Card
+    title="Initialize Project"
+    icon="plus"
+    href="/cli/skill-management"
+  >
+    Create your first skill after authentication
+  </Card>
+  <Card
+    title="Development Mode"
+    icon="code"
+    href="/cli/development"
+  >
+    Start building with live reload
+  </Card>
+</CardGroup>
+

@@ -1,0 +1,427 @@
+---
+title: "Orders API"
+description: "Order creation and management"
+---
+
+## Overview
+
+The Orders API manages order creation, status tracking, and fulfillment.
+
+```typescript
+import { Orders, OrderStatus } from 'lua-cli';
+
+// Create order
+const order = await Orders.create({
+  basketId: 'basket_abc123',
+  data: { shippingAddress, paymentMethod }
+});
+
+// Update status
+await Orders.updateStatus(OrderStatus.FULFILLED, order.id);
+```
+
+## Order Statuses
+
+```typescript
+import { OrderStatus } from 'lua-cli';
+```
+
+<Steps>
+  <Step title="PENDING">
+    Order created, not yet confirmed
+    
+    Initial status for new orders
+  </Step>
+  <Step title="CONFIRMED">
+    Order confirmed, being processed
+    
+    Payment successful, ready for fulfillment
+  </Step>
+  <Step title="FULFILLED">
+    Order completed and delivered
+    
+    Final status for successful orders
+  </Step>
+  <Step title="CANCELLED">
+    Order cancelled by user or system
+    
+    No further processing
+  </Step>
+</Steps>
+
+## Methods
+
+### create()
+
+Create a new order.
+
+```typescript
+Orders.create(orderData: OrderInput): Promise<Order>
+```
+
+<ParamField path="orderData.basketId" type="string" required>
+  ID of the basket to convert to order
+</ParamField>
+
+<ParamField path="orderData.data" type="object" required>
+  Order details (shipping, payment, etc.)
+</ParamField>
+
+**Example:**
+
+```typescript
+const order = await Orders.create({
+  basketId: 'basket_abc123',
+  data: {
+    shippingAddress: {
+      street: '123 Main St',
+      city: 'New York',
+      zip: '10001'
+    },
+    paymentMethod: 'stripe',
+    customerEmail: 'customer@example.com'
+  }
+});
+
+console.log(order.id); // "order_def456"
+```
+
+### get()
+
+Retrieve orders, optionally filtered by status.
+
+```typescript
+Orders.get(status?: OrderStatus): Promise<Order[]>
+```
+
+**Examples:**
+
+```typescript
+// Get all orders
+const allOrders = await Orders.get();
+
+// Get pending orders only
+const pending = await Orders.get(OrderStatus.PENDING);
+
+// Get fulfilled orders
+const fulfilled = await Orders.get(OrderStatus.FULFILLED);
+```
+
+### getById()
+
+Get a specific order by ID.
+
+```typescript
+Orders.getById(orderId: string): Promise<Order>
+```
+
+**Example:**
+
+```typescript
+const order = await Orders.getById('order_def456');
+
+console.log(order.common.status);      // "fulfilled"
+console.log(order.common.totalAmount); // 59.98
+```
+
+### updateStatus()
+
+Update order status.
+
+```typescript
+Orders.updateStatus(status: OrderStatus, orderId: string): Promise<Order>
+```
+
+**Example:**
+
+```typescript
+// Confirm order
+await Orders.updateStatus(OrderStatus.CONFIRMED, orderId);
+
+// Mark as fulfilled
+await Orders.updateStatus(OrderStatus.FULFILLED, orderId);
+
+// Cancel order
+await Orders.updateStatus(OrderStatus.CANCELLED, orderId);
+```
+
+### updateData()
+
+Update order data/metadata.
+
+```typescript
+Orders.updateData(data: object, orderId: string): Promise<Order>
+```
+
+**Example:**
+
+```typescript
+await Orders.updateData({
+  trackingNumber: 'TRACK123456',
+  carrier: 'UPS',
+  estimatedDelivery: '2025-10-10',
+  notes: 'Fragile - handle with care'
+}, orderId);
+```
+
+## Order Type
+
+```typescript
+interface Order {
+  id: string;
+  common: {
+    status: OrderStatus;
+    totalAmount: number;
+    itemCount: number;
+    currency: string;
+    items: OrderItem[];
+  };
+  data?: object;
+  createdAt: number;
+  updatedAt: number;
+}
+```
+
+## Complete Examples
+
+### Create Order Tool
+
+```typescript
+import { LuaTool, Orders } from 'lua-cli';
+import { z } from 'zod';
+
+export class CreateOrderTool implements LuaTool {
+  name = "create_order";
+  description = "Create order from basket";
+  
+  inputSchema = z.object({
+    basketId: z.string(),
+    shippingAddress: z.object({
+      street: z.string(),
+      city: z.string(),
+      zip: z.string()
+    }),
+    paymentMethod: z.string().default('stripe')
+  });
+
+  async execute(input: z.infer<typeof this.inputSchema>) {
+    const order = await Orders.create({
+      basketId: input.basketId,
+      data: {
+        shippingAddress: input.shippingAddress,
+        paymentMethod: input.paymentMethod
+      }
+    });
+    
+    return {
+      orderId: order.id,
+      status: order.common.status,
+      total: `$${order.common.totalAmount.toFixed(2)}`,
+      message: "Order created successfully!"
+    };
+  }
+}
+```
+
+### Track Order Tool
+
+```typescript
+export class TrackOrderTool implements LuaTool {
+  name = "track_order";
+  description = "Get order status and tracking info";
+  
+  inputSchema = z.object({
+    orderId: z.string()
+  });
+
+  async execute(input: z.infer<typeof this.inputSchema>) {
+    const order = await Orders.getById(input.orderId);
+    
+    return {
+      orderId: order.id,
+      status: order.common.status,
+      total: `$${order.common.totalAmount.toFixed(2)}`,
+      itemCount: order.common.itemCount,
+      trackingNumber: order.data?.trackingNumber,
+      estimatedDelivery: order.data?.estimatedDelivery,
+      message: this.getStatusMessage(order.common.status)
+    };
+  }
+  
+  private getStatusMessage(status: string): string {
+    switch (status) {
+      case 'pending': return 'Order is being processed';
+      case 'confirmed': return 'Order confirmed and being prepared';
+      case 'fulfilled': return 'Order delivered!';
+      case 'cancelled': return 'Order was cancelled';
+      default: return 'Unknown status';
+    }
+  }
+}
+```
+
+### Update Order Status Tool
+
+```typescript
+export class UpdateOrderStatusTool implements LuaTool {
+  name = "update_order_status";
+  description = "Update order fulfillment status";
+  
+  inputSchema = z.object({
+    orderId: z.string(),
+    status: z.enum(['pending', 'confirmed', 'fulfilled', 'cancelled'])
+  });
+
+  async execute(input: z.infer<typeof this.inputSchema>) {
+    const statusMap = {
+      'pending': OrderStatus.PENDING,
+      'confirmed': OrderStatus.CONFIRMED,
+      'fulfilled': OrderStatus.FULFILLED,
+      'cancelled': OrderStatus.CANCELLED
+    };
+    
+    await Orders.updateStatus(statusMap[input.status], input.orderId);
+    
+    return {
+      success: true,
+      message: `Order status updated to ${input.status}`
+    };
+  }
+}
+```
+
+## Use Cases
+
+### Order Fulfillment Workflow
+
+```typescript
+// 1. Create order
+const order = await Orders.create({ basketId, data });
+
+// 2. Confirm payment
+await Orders.updateStatus(OrderStatus.CONFIRMED, order.id);
+
+// 3. Add tracking info
+await Orders.updateData({
+  trackingNumber: 'TRACK123',
+  carrier: 'UPS',
+  shippedAt: new Date().toISOString()
+}, order.id);
+
+// 4. Mark as delivered
+await Orders.updateStatus(OrderStatus.FULFILLED, order.id);
+```
+
+### Customer Service Lookup
+
+```typescript
+// Find customer's orders
+const userOrders = await Orders.get();
+
+// Filter recent orders
+const recent = userOrders.filter(order => {
+  const orderDate = new Date(order.createdAt);
+  const thirtyDaysAgo = new Date();
+  thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+  return orderDate > thirtyDaysAgo;
+});
+```
+
+### Order Analytics
+
+```typescript
+// Get all orders
+const orders = await Orders.get();
+
+// Calculate metrics
+const totalRevenue = orders.reduce((sum, order) => 
+  sum + order.common.totalAmount, 0
+);
+
+const avgOrderValue = totalRevenue / orders.length;
+
+const fulfillmentRate = orders.filter(o => 
+  o.common.status === OrderStatus.FULFILLED
+).length / orders.length;
+```
+
+## Best Practices
+
+<AccordionGroup>
+  <Accordion title="Store Tracking Information">
+    ```typescript
+    await Orders.updateData({
+      trackingNumber: 'TRACK123456',
+      carrier: 'UPS',
+      trackingUrl: 'https://track.ups.com/...',
+      estimatedDelivery: '2025-10-10'
+    }, orderId);
+    ```
+  </Accordion>
+
+  <Accordion title="Send Status Notifications">
+    ```typescript
+    async updateOrderStatus(orderId: string, status: OrderStatus) {
+      // Update status
+      await Orders.updateStatus(status, orderId);
+      
+      // Send notification
+      const order = await Orders.getById(orderId);
+      await sendEmail(order.data.customerEmail, {
+        subject: `Order ${orderId} - ${status}`,
+        body: getEmailTemplate(status, order)
+      });
+    }
+    ```
+  </Accordion>
+
+  <Accordion title="Handle Cancellations Gracefully">
+    ```typescript
+    async cancelOrder(orderId: string, reason: string) {
+      const order = await Orders.getById(orderId);
+      
+      // Can only cancel if not fulfilled
+      if (order.common.status === OrderStatus.FULFILLED) {
+        throw new Error('Cannot cancel fulfilled order');
+      }
+      
+      // Update status and add reason
+      await Orders.updateStatus(OrderStatus.CANCELLED, orderId);
+      await Orders.updateData({
+        cancellationReason: reason,
+        cancelledAt: new Date().toISOString()
+      }, orderId);
+    }
+    ```
+  </Accordion>
+
+  <Accordion title="Validate Order Exists">
+    ```typescript
+    const order = await Orders.getById(orderId);
+    
+    if (!order) {
+      throw new Error(`Order not found: ${orderId}`);
+    }
+    ```
+  </Accordion>
+</AccordionGroup>
+
+## Next Steps
+
+<CardGroup cols={2}>
+  <Card
+    title="Baskets API"
+    icon="cart-shopping"
+    href="/api/baskets"
+  >
+    Create baskets before orders
+  </Card>
+  <Card
+    title="Order Examples"
+    icon="layer-group"
+    href="/examples/baskets"
+  >
+    See complete order workflows
+  </Card>
+</CardGroup>
+

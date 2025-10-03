@@ -1,0 +1,236 @@
+---
+title: "Installation"
+description: "Install Lua CLI and set up your development environment"
+---
+
+## Prerequisites
+
+<CardGroup cols={2}>
+  <Card
+    title="Node.js"
+    icon="node-js"
+  >
+    Version 16.0.0 or higher
+  </Card>
+  <Card
+    title="npm"
+    icon="npm"
+  >
+    Version 7.0.0 or higher
+  </Card>
+</CardGroup>
+
+## Installation Methods
+
+### Global Installation (Recommended)
+
+Install Lua CLI globally to use it from anywhere:
+
+```bash
+npm install -g lua-cli
+```
+
+Verify installation:
+
+```bash
+lua --version
+```
+
+### Using npx (No Installation)
+
+Run Lua CLI without installing:
+
+```bash
+npx lua-cli [command]
+```
+
+<Note>
+Using npx is great for trying out Lua CLI, but global installation is recommended for regular use.
+</Note>
+
+## Authentication
+
+After installation, set up your credentials:
+
+```bash
+lua auth configure
+```
+
+### Authentication Methods
+
+<Tabs>
+  <Tab title="Email (Recommended)">
+    **Email Authentication with OTP**
+
+    1. Choose "Email" when prompted
+    2. Enter your email address
+    3. Check your email for a 6-digit code
+    4. Enter the OTP code
+    5. API key automatically generated and saved
+
+    ```bash
+    $ lua auth configure
+    ? Choose authentication method: Email
+    ? Enter your email address: you@example.com
+    📧 Sending OTP to your email...
+    ✅ OTP sent successfully!
+    ? Enter the OTP code: 123456
+    🔐 Verifying OTP...
+    ✅ OTP verified successfully!
+    🔑 Generating API key...
+    ✅ API key generated and saved securely.
+    ```
+  </Tab>
+
+  <Tab title="API Key">
+    **Existing API Key**
+
+    If you already have an API key:
+
+    1. Choose "API Key" when prompted
+    2. Enter your API key
+    3. Key is validated and saved
+
+    ```bash
+    $ lua auth configure
+    ? Choose authentication method: API Key
+    ? Enter your API key: lsk_abc123def456...
+    🔐 Validating API key...
+    ✅ API key validated and saved securely.
+    ```
+  </Tab>
+</Tabs>
+
+### Where Credentials are Stored
+
+Credentials are stored securely in your system keychain:
+
+- **macOS**: Keychain
+- **Windows**: Credential Vault  
+- **Linux**: libsecret
+
+<Warning>
+Never commit your API key to version control or share it publicly.
+</Warning>
+
+## Verify Installation
+
+Check that everything is working:
+
+```bash
+# Check CLI version
+lua --version
+
+# View stored API key
+lua auth key
+
+# Get help
+lua --help
+```
+
+## Development Tools
+
+While not required, these tools enhance the development experience:
+
+<CardGroup cols={2}>
+  <Card
+    title="VS Code"
+    icon="code"
+  >
+    Recommended editor with TypeScript support
+  </Card>
+  <Card
+    title="Git"
+    icon="git"
+  >
+    Version control for your skills
+  </Card>
+</CardGroup>
+
+## TypeScript Setup
+
+The template project includes TypeScript configuration. No additional setup needed!
+
+When you run `lua init`, you get:
+- `tsconfig.json` - TypeScript configuration
+- `package.json` - Dependencies
+- Full type definitions for all Lua APIs
+
+## Troubleshooting
+
+<AccordionGroup>
+  <Accordion title="Command not found: lua">
+    **Problem**: The CLI isn't in your PATH
+    
+    **Solutions**:
+    - Reinstall globally: `npm install -g lua-cli`
+    - Use npx instead: `npx lua-cli [command]`
+    - Check npm global path: `npm config get prefix`
+  </Accordion>
+
+  <Accordion title="Permission denied">
+    **Problem**: Need sudo for global installation
+    
+    **Solution on Unix**:
+    ```bash
+    sudo npm install -g lua-cli
+    ```
+    
+    **Better solution**: Configure npm to install globally without sudo:
+    ```bash
+    mkdir ~/.npm-global
+    npm config set prefix '~/.npm-global'
+    export PATH=~/.npm-global/bin:$PATH
+    ```
+  </Accordion>
+
+  <Accordion title="API key not found">
+    **Problem**: Authentication not configured
+    
+    **Solution**:
+    ```bash
+    lua auth configure
+    ```
+  </Accordion>
+
+  <Accordion title="Node.js version too old">
+    **Problem**: Node.js version is below 16.0.0
+    
+    **Solution**: Update Node.js
+    - Visit https://nodejs.org
+    - Download and install LTS version
+    - Or use nvm: `nvm install --lts`
+  </Accordion>
+</AccordionGroup>
+
+## Next Steps
+
+<Steps>
+  <Step title="Create Your First Project">
+    ```bash
+    mkdir my-skill && cd my-skill
+    lua init
+    ```
+  </Step>
+  
+  <Step title="Explore the Template">
+    Learn about the example tools and skills included
+    
+    <Card
+      title="Template Guide"
+      icon="layer-group"
+      href="/template/overview"
+    />
+  </Step>
+  
+  <Step title="Start Building">
+    Begin customizing tools for your use case
+    
+    <Card
+      title="Building Skills"
+      icon="hammer"
+      href="/template/building-skills"
+    />
+  </Step>
+</Steps>
+

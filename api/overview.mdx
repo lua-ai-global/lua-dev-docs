@@ -1,0 +1,417 @@
+---
+title: "API Overview"
+description: "Complete API reference for building Lua AI skills"
+---
+
+## Available APIs
+
+Lua CLI provides a comprehensive set of APIs for building AI skills:
+
+<CardGroup cols={2}>
+  <Card
+    title="Core Classes"
+    icon="puzzle-piece"
+  >
+    **LuaSkill** and **LuaTool** - Core building blocks
+  </Card>
+  <Card
+    title="Platform APIs"
+    icon="server"
+  >
+    **User, Data, Products, Baskets, Orders** - Built-in services
+  </Card>
+  <Card
+    title="Environment"
+    icon="key"
+  >
+    **env()** - Secure configuration management
+  </Card>
+  <Card
+    title="Type Definitions"
+    icon="code"
+  >
+    Full TypeScript support with autocomplete
+  </Card>
+</CardGroup>
+
+## Installation
+
+```bash
+npm install lua-cli zod
+```
+
+<Note>
+`zod` is a peer dependency required for schema validation
+</Note>
+
+## Quick Start
+
+### Import APIs
+
+```typescript
+// Core classes
+import { LuaSkill, LuaTool } from 'lua-cli';
+
+// Platform APIs
+import { User, Data, Products, Baskets, Orders } from 'lua-cli';
+
+// Utilities
+import { env } from 'lua-cli';
+
+// Type definitions
+import { BasketStatus, OrderStatus } from 'lua-cli';
+
+// Schema validation
+import { z } from 'zod';
+```
+
+### Create a Skill
+
+```typescript
+import { LuaSkill, LuaTool } from 'lua-cli';
+import { z } from 'zod';
+
+// Define a tool
+class MyTool implements LuaTool {
+  name = "my_tool";
+  description = "What the tool does";
+  inputSchema = z.object({
+    param: z.string()
+  });
+
+  async execute(input: any) {
+    return { result: "success" };
+  }
+}
+
+// Create a skill
+const skill = new LuaSkill({
+  name: "my-skill",
+  version: "1.0.0",
+  description: "My custom skill",
+  context: "When to use this skill and its tools",
+  tools: [new MyTool()]
+});
+```
+
+## Core Classes
+
+<CardGroup cols={2}>
+  <Card
+    title="LuaSkill"
+    icon="puzzle-piece"
+    href="/api/luaskill"
+  >
+    Collection of related tools
+    
+    ```typescript
+    new LuaSkill({
+      name: "skill-name",
+      tools: [...]
+    })
+    ```
+  </Card>
+  <Card
+    title="LuaTool"
+    icon="wrench"
+    href="/api/luatool"
+  >
+    Individual function the AI can call
+    
+    ```typescript
+    class MyTool implements LuaTool {
+      name = "tool_name"
+      execute(input) { ... }
+    }
+    ```
+  </Card>
+</CardGroup>
+
+## Platform APIs
+
+### User API
+
+Access current user's information:
+
+```typescript
+import { User } from 'lua-cli';
+
+const user = await User.get();
+// { id, email, name, ... }
+```
+
+<Card title="Full Documentation" href="/api/user" />
+
+### Data API
+
+Custom data storage with vector search:
+
+```typescript
+import { Data } from 'lua-cli';
+
+// Create
+await Data.create('collection', data, searchText);
+
+// Search semantically
+const results = await Data.search('collection', 'query', 10, 0.7);
+
+// Get/Update/Delete
+await Data.get('collection', filter);
+await Data.update('collection', id, data);
+await Data.delete('collection', id);
+```
+
+<Card title="Full Documentation" href="/api/data" />
+
+### Products API
+
+E-commerce product catalog:
+
+```typescript
+import { Products } from 'lua-cli';
+
+// Search
+const products = await Products.search('laptop');
+
+// CRUD
+await Products.create({ name, price });
+await Products.update({ price }, id);
+await Products.getById(id);
+await Products.delete(id);
+```
+
+<Card title="Full Documentation" href="/api/products" />
+
+### Baskets API
+
+Shopping cart management:
+
+```typescript
+import { Baskets, BasketStatus } from 'lua-cli';
+
+// Create basket
+const basket = await Baskets.create({ currency: 'USD' });
+
+// Add items
+await Baskets.addItem(basket.id, {
+  id: productId,
+  price: 29.99,
+  quantity: 2
+});
+
+// Checkout
+const order = await Baskets.placeOrder(orderData, basket.id);
+```
+
+<Card title="Full Documentation" href="/api/baskets" />
+
+### Orders API
+
+Order processing and tracking:
+
+```typescript
+import { Orders, OrderStatus } from 'lua-cli';
+
+// Create order
+const order = await Orders.create({
+  basketId,
+  data: { shippingAddress, paymentMethod }
+});
+
+// Update status
+await Orders.updateStatus(OrderStatus.FULFILLED, orderId);
+```
+
+<Card title="Full Documentation" href="/api/orders" />
+
+## Environment Variables
+
+Secure configuration management:
+
+```typescript
+import { env } from 'lua-cli';
+
+const apiKey = env('EXTERNAL_API_KEY');
+const baseUrl = env('API_BASE_URL') || 'https://default.com';
+```
+
+<Card title="Full Documentation" href="/api/environment" />
+
+## Type Definitions
+
+All APIs are fully typed for TypeScript:
+
+```typescript
+import { 
+  LuaSkill, 
+  LuaTool, 
+  BasketStatus, 
+  OrderStatus 
+} from 'lua-cli';
+
+// Autocomplete and type checking work everywhere
+const user = await User.get();  // user is typed
+const products = await Products.get(); // products is typed
+```
+
+## Common Patterns
+
+### External API Integration
+
+```typescript
+export class WeatherTool implements LuaTool {
+  name = "get_weather";
+  description = "Get current weather";
+  inputSchema = z.object({ city: z.string() });
+
+  async execute(input: any) {
+    const response = await fetch(
+      `https://api.weather.com?city=${input.city}`
+    );
+    return await response.json();
+  }
+}
+```
+
+### Using Platform APIs
+
+```typescript
+export class ShoppingTool implements LuaTool {
+  async execute(input: any) {
+    // Search products
+    const products = await Products.search(input.query);
+    
+    // Create basket
+    const basket = await Baskets.create({ currency: 'USD' });
+    
+    // Add item
+    await Baskets.addItem(basket.id, {
+      id: products.data[0].id,
+      price: products.data[0].price,
+      quantity: 1
+    });
+    
+    return { basketId: basket.id };
+  }
+}
+```
+
+### Custom Data with Search
+
+```typescript
+export class CreateNoteTool implements LuaTool {
+  async execute(input: any) {
+    // Create with search indexing
+    const note = await Data.create('notes', {
+      title: input.title,
+      content: input.content
+    }, `${input.title} ${input.content}`);
+    
+    return { noteId: note.id };
+  }
+}
+
+export class SearchNotesTool implements LuaTool {
+  async execute(input: any) {
+    // Semantic search
+    const results = await Data.search(
+      'notes',
+      input.query,
+      10,
+      0.7
+    );
+    
+    return { notes: results.data };
+  }
+}
+```
+
+## API Reference Pages
+
+<CardGroup cols={3}>
+  <Card title="LuaSkill" href="/api/luaskill" icon="puzzle-piece">
+    Skill class API
+  </Card>
+  <Card title="LuaTool" href="/api/luatool" icon="wrench">
+    Tool interface
+  </Card>
+  <Card title="User" href="/api/user" icon="user">
+    User data API
+  </Card>
+  <Card title="Data" href="/api/data" icon="database">
+    Custom data API
+  </Card>
+  <Card title="Products" href="/api/products" icon="box">
+    Products API
+  </Card>
+  <Card title="Baskets" href="/api/baskets" icon="cart-shopping">
+    Baskets API
+  </Card>
+  <Card title="Orders" href="/api/orders" icon="receipt">
+    Orders API
+  </Card>
+  <Card title="Environment" href="/api/environment" icon="key">
+    Environment utilities
+  </Card>
+</CardGroup>
+
+## Best Practices
+
+<AccordionGroup>
+  <Accordion title="Use TypeScript">
+    All APIs are fully typed. Use TypeScript for:
+    - Autocomplete
+    - Type checking
+    - Better IDE support
+  </Accordion>
+
+  <Accordion title="Validate Inputs">
+    Always use Zod schemas for input validation:
+    ```typescript
+    inputSchema = z.object({
+      email: z.string().email(),
+      age: z.number().min(0)
+    });
+    ```
+  </Accordion>
+
+  <Accordion title="Handle Errors">
+    Implement proper error handling:
+    ```typescript
+    try {
+      const result = await api.call();
+      return result;
+    } catch (error) {
+      throw new Error(`Operation failed: ${error.message}`);
+    }
+    ```
+  </Accordion>
+
+  <Accordion title="Use Environment Variables">
+    Never hardcode secrets:
+    ```typescript
+    const apiKey = env('API_KEY');
+    if (!apiKey) {
+      throw new Error('API_KEY not configured');
+    }
+    ```
+  </Accordion>
+</AccordionGroup>
+
+## Next Steps
+
+<Steps>
+  <Step title="Explore Core Classes">
+    Learn about [LuaSkill](/api/luaskill) and [LuaTool](/api/luatool)
+  </Step>
+  <Step title="Study Platform APIs">
+    Explore [User](/api/user), [Data](/api/data), [Products](/api/products), etc.
+  </Step>
+  <Step title="See Examples">
+    Check out [Tool Examples](/examples/overview) for working code
+  </Step>
+  <Step title="Build Something">
+    Follow the [First Skill tutorial](/getting-started/first-skill)
+  </Step>
+</Steps>
+

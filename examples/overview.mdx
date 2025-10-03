@@ -1,0 +1,313 @@
+---
+title: "Tool Examples Overview"
+description: "Learn from 30+ working tool examples"
+---
+
+## Available Examples
+
+The template project includes 30+ working tools demonstrating all major patterns and use cases.
+
+<CardGroup cols={2}>
+  <Card title="Weather Tool" icon="cloud" href="/examples/weather">
+    External API integration
+  </Card>
+  <Card title="User Data Tools" icon="user" href="/examples/user-data">
+    User profile management (2 tools)
+  </Card>
+  <Card title="Products Tools" icon="box" href="/examples/products">
+    E-commerce catalog (6 tools)
+  </Card>
+  <Card title="Baskets Tools" icon="cart-shopping" href="/examples/baskets">
+    Shopping cart workflow (9 tools)
+  </Card>
+  <Card title="Custom Data Tools" icon="database" href="/examples/custom-data">
+    Vector search database (6 tools)
+  </Card>
+  <Card title="Payment Tool" icon="credit-card" href="/examples/payment">
+    Stripe integration
+  </Card>
+</CardGroup>
+
+## Learning Path
+
+<Steps>
+  <Step title="Start Simple">
+    **Weather Tool** - External API integration
+    
+    Shows how to call external APIs and handle responses
+  </Step>
+
+  <Step title="Platform APIs">
+    **User Data Tools** - Simple platform API usage
+    
+    Learn how to use Lua's built-in APIs
+  </Step>
+
+  <Step title="CRUD Operations">
+    **Products Tools** - Complete CRUD pattern
+    
+    Create, read, update, delete with pagination
+  </Step>
+
+  <Step title="Vector Search">
+    **Custom Data Tools** - Semantic search
+    
+    Most powerful feature! Build searchable knowledge bases
+  </Step>
+
+  <Step title="Complex Workflows">
+    **Baskets Tools** - Multi-step processes
+    
+    Handle complex business logic and state
+  </Step>
+</Steps>
+
+## Tool Categories
+
+### External APIs (1 tool)
+
+Tools that integrate with external services:
+
+<Card title="GetWeatherTool" icon="cloud">
+  **File**: `GetWeatherTool.ts`
+  
+  **What it does**: Fetches real-time weather using Open-Meteo API
+  
+  **Learn**:
+  - Making HTTP requests
+  - Handling API responses
+  - Error handling
+  - No API key required
+</Card>
+
+### Platform APIs (27 tools)
+
+Tools using Lua's built-in platform APIs:
+
+<Tabs>
+  <Tab title="User (2 tools)">
+    - `get_user_data` - Retrieve user info
+    - `update_user_data` - Update profile
+    
+    **Learn**: Basic platform API usage
+  </Tab>
+
+  <Tab title="Products (6 tools)">
+    - `search_products` - Search catalog
+    - `get_all_products` - List with pagination
+    - `create_product` - Add new items
+    - `update_product` - Modify existing
+    - `get_product_by_id` - Get specific
+    - `delete_product` - Remove items
+    
+    **Learn**: Complete CRUD operations
+  </Tab>
+
+  <Tab title="Baskets (9 tools)">
+    - `create_basket` - Start shopping
+    - `get_baskets` - List carts
+    - `add_to_basket` - Add items
+    - `remove_from_basket` - Remove items
+    - `clear_basket` - Empty cart
+    - `update_basket_status` - Change status
+    - `update_basket_metadata` - Add notes
+    - `checkout_basket` - Convert to order
+    - `get_basket_by_id` - View specific
+    
+    **Learn**: Multi-step workflows
+  </Tab>
+
+  <Tab title="Orders (4 tools)">
+    - `create_order` - From basket
+    - `update_order_status` - Track fulfillment
+    - `get_order_by_id` - Order details
+    - `get_user_orders` - List user orders
+    
+    **Learn**: Order management
+  </Tab>
+
+  <Tab title="Custom Data (6 tools)">
+    - `create_movie` - Add with indexing
+    - `get_movies` - List all
+    - `get_movie_by_id` - Get specific
+    - `update_movie` - Modify
+    - `search_movies` - **Semantic search**
+    - `delete_movie` - Remove
+    
+    **Learn**: **Vector search** (most powerful!)
+  </Tab>
+</Tabs>
+
+### Integrations (2 tools)
+
+<CardGroup cols={2}>
+  <Card title="Payment Tool" icon="credit-card">
+    Stripe payment link creation
+    
+    **Learn**: Environment variables, external services
+  </Card>
+  <Card title="Create Post Tool" icon="pen">
+    Simple example
+    
+    **Learn**: Basic tool structure
+  </Card>
+</CardGroup>
+
+## Quick Reference
+
+| Tool | Complexity | Best For Learning |
+|------|-----------|-------------------|
+| CreatePostTool | ⭐ Easy | Tool basics |
+| GetWeatherTool | ⭐⭐ Medium | External APIs |
+| UserDataTools | ⭐ Easy | Platform APIs |
+| ProductsTools | ⭐⭐ Medium | CRUD operations |
+| CustomDataTools | ⭐⭐⭐ Advanced | Vector search |
+| BasketsTools | ⭐⭐⭐ Complex | Workflows |
+| OrderTools | ⭐⭐ Medium | Order management |
+| PaymentTool | ⭐⭐⭐ Advanced | Integrations |
+
+## How to Use These Examples
+
+### Approach 1: Copy and Modify
+
+1. Find similar tool (e.g., `CustomDataTool.ts` for searchable data)
+2. Copy the file
+3. Rename (e.g., `ArticleTool.ts`)
+4. Update names, descriptions
+5. Modify logic for your domain
+
+**Time**: 15-30 minutes per tool
+
+### Approach 2: Learn Pattern, Build New
+
+1. Read an example tool
+2. Understand the pattern
+3. Close the file
+4. Build your own from memory
+5. Refer back if stuck
+
+**Time**: 30-60 minutes per tool
+**Learning**: Deeper understanding
+
+### Approach 3: Mix and Match
+
+1. Keep useful examples as-is
+2. Delete irrelevant ones
+3. Add your custom tools alongside
+4. Deploy mix of examples + custom
+
+**Time**: Variable
+**Best for**: Quick prototyping
+
+## Testing Examples
+
+```bash
+# Test individual tools
+lua test
+
+# Select a tool:
+# - get_weather: Enter "London"
+# - search_products: Enter "laptop"
+# - search_movies: Enter "thriller"
+
+# Test conversationally
+lua dev
+
+# Try in chat:
+# - "What's the weather in Tokyo?"
+# - "Show me your products"
+# - "Find movies about space"
+```
+
+## Common Patterns Demonstrated
+
+<AccordionGroup>
+  <Accordion title="External API Calls">
+    **Example**: `GetWeatherTool.ts`
+    
+    ```typescript
+    const response = await fetch(apiUrl);
+    const data = await response.json();
+    return transformedData;
+    ```
+  </Accordion>
+
+  <Accordion title="Platform API Usage">
+    **Example**: `ProductsTool.ts`
+    
+    ```typescript
+    import { Products } from 'lua-cli';
+    const products = await Products.search(query);
+    ```
+  </Accordion>
+
+  <Accordion title="Vector Search">
+    **Example**: `CustomDataTool.ts`
+    
+    ```typescript
+    // Create with search text
+    await Data.create('items', data, searchableText);
+    
+    // Search semantically
+    const results = await Data.search('items', query, 10, 0.7);
+    ```
+  </Accordion>
+
+  <Accordion title="Multi-Step Workflows">
+    **Example**: `BasketTool.ts`
+    
+    ```typescript
+    // Step 1: Create
+    const basket = await Baskets.create({...});
+    
+    // Step 2: Add items
+    await Baskets.addItem(basket.id, {...});
+    
+    // Step 3: Checkout
+    const order = await Baskets.placeOrder({...}, basket.id);
+    ```
+  </Accordion>
+
+  <Accordion title="Environment Variables">
+    **Example**: `PaymentTool.ts`
+    
+    ```typescript
+    import { env } from 'lua-cli';
+    const apiKey = env('STRIPE_API_KEY');
+    ```
+  </Accordion>
+</AccordionGroup>
+
+## Next Steps
+
+<CardGroup cols={2}>
+  <Card
+    title="Weather Tool"
+    icon="cloud"
+    href="/examples/weather"
+  >
+    Start with external API integration
+  </Card>
+  <Card
+    title="Custom Data Tools"
+    icon="database"
+    href="/examples/custom-data"
+  >
+    Learn powerful vector search
+  </Card>
+  <Card
+    title="Build Your First Skill"
+    icon="hammer"
+    href="/getting-started/first-skill"
+  >
+    Follow step-by-step tutorial
+  </Card>
+  <Card
+    title="Template Guide"
+    icon="layer-group"
+    href="/template/overview"
+  >
+    Understand the project structure
+  </Card>
+</CardGroup>
+

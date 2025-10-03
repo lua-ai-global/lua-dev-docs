@@ -1,0 +1,494 @@
+---
+title: "Template Overview"
+description: "Understanding the example project with 30+ working tools"
+---
+
+## What You Get
+
+When you run `lua init`, you get a complete example project with:
+
+<CardGroup cols={2}>
+  <Card title="7 Example Skills" icon="puzzle-piece">
+    Pre-configured skills for different use cases
+  </Card>
+  <Card title="30+ Working Tools" icon="wrench">
+    Complete tool implementations to learn from
+  </Card>
+  <Card title="All Platform APIs" icon="server">
+    Examples using User, Products, Baskets, Orders, Data
+  </Card>
+  <Card title="TypeScript Setup" icon="code">
+    Full type safety and configuration included
+  </Card>
+</CardGroup>
+
+## Project Structure
+
+```
+your-skill/
+├── src/
+│   ├── index.ts                    # ⭐ YOUR STARTING POINT
+│   └── tools/                      # Tool implementations
+│       ├── GetWeatherTool.ts       # External API example
+│       ├── UserDataTool.ts         # User API (2 tools)
+│       ├── ProductsTool.ts         # Products API (6 tools)
+│       ├── BasketTool.ts           # Baskets API (9 tools)
+│       ├── OrderTool.ts            # Orders API (4 tools)
+│       ├── CustomDataTool.ts       # Data API (6 tools)
+│       ├── PaymentTool.ts          # Payment integration
+│       └── CreatePostTool.ts       # Simple example
+├── lua.skill.yaml                  # Configuration (auto-managed)
+├── package.json                    # Dependencies
+├── tsconfig.json                   # TypeScript config
+├── .env.example                    # Environment template
+└── README.md                       # Documentation
+```
+
+## The 7 Example Skills
+
+### 1. General Skill
+
+Weather and utility tools:
+- `get_weather` - External API integration example
+
+```typescript
+const generalSkill = new LuaSkill({
+  name: "general-skill",
+  version: "0.0.2",
+  description: "Weather and utility tools",
+  tools: [
+    new GetWeatherTool(),
+    new CreatePostTool()
+  ]
+});
+```
+
+### 2. User Data Skill
+
+User profile management:
+- `get_user_data` - Retrieve user info
+- `update_user_data` - Update user profile
+
+### 3. Product Skill
+
+E-commerce product catalog:
+- `search_products` - Search by query
+- `get_all_products` - List with pagination
+- `create_product` - Add new product
+- `update_product` - Modify existing
+- `get_product_by_id` - Get specific product
+- `delete_product` - Remove product
+
+### 4. Basket Skill
+
+Shopping cart management:
+- `create_basket` - Start shopping
+- `get_baskets` - List carts
+- `add_to_basket` - Add items
+- `remove_from_basket` - Remove items
+- `clear_basket` - Empty cart
+- `update_basket_status` - Change status
+- `update_basket_metadata` - Add notes
+- `checkout_basket` - Convert to order
+- `get_basket_by_id` - View basket
+
+### 5. Order Skill
+
+Order processing:
+- `create_order` - From basket
+- `update_order_status` - Track fulfillment
+- `get_order_by_id` - Order details
+- `get_user_orders` - List orders
+
+### 6. Custom Data Skill
+
+Movie database with vector search:
+- `create_movie` - Add with search indexing
+- `get_movies` - List all
+- `get_movie_by_id` - Get specific
+- `update_movie` - Modify
+- `search_movies` - **Semantic search**
+- `delete_movie` - Remove
+
+### 7. Payment Skill
+
+Payment link creation:
+- `create_payment_link` - Stripe integration
+
+## Quick Start with Template
+
+<Steps>
+  <Step title="Test the Examples">
+    ```bash
+    lua test
+    ```
+    
+    Try these tools:
+    - `get_weather` - Enter "London"
+    - `search_products` - Enter "laptop"
+    - `search_movies` - Enter "thriller"
+  </Step>
+
+  <Step title="Chat with the AI">
+    ```bash
+    lua dev
+    ```
+    
+    Test conversationally at http://localhost:3000:
+    - "What's the weather in Tokyo?"
+    - "Show me your products"
+    - "Create a shopping basket"
+  </Step>
+
+  <Step title="Explore the Code">
+    Open `src/index.ts` to see skill definitions
+    
+    Open tool files in `src/tools/` to see implementations
+  </Step>
+
+  <Step title="Customize for Your Use Case">
+    See customization strategies below
+  </Step>
+</Steps>
+
+## Customization Strategies
+
+### Strategy 1: Keep Only What You Need
+
+**Remove unused tools:**
+
+```bash
+# Delete files you don't need
+rm src/tools/ProductsTool.ts
+rm src/tools/BasketTool.ts
+rm src/tools/OrderTool.ts
+
+# Update src/index.ts
+# Remove imports and tools
+```
+
+**Update `src/index.ts`:**
+
+```typescript
+import { LuaSkill } from "lua-cli";
+import GetWeatherTool from "./tools/GetWeatherTool";
+
+const weatherSkill = new LuaSkill({
+  name: "weather-skill",
+  version: "1.0.0",
+  description: "Provides weather information",
+  context: "Use get_weather when users ask about weather",
+  tools: [new GetWeatherTool()]
+});
+```
+
+### Strategy 2: Modify Examples
+
+**Adapt tools to your domain:**
+
+For example, change the movies database to articles:
+
+```typescript
+// Rename CustomDataTool.ts → ArticleTool.ts
+// Change collection name: 'movies' → 'articles'
+// Update fields: title, director → title, content, category
+
+export class CreateArticleTool implements LuaTool {
+  name = "create_article";
+  description = "Add article to knowledge base";
+  
+  inputSchema = z.object({
+    title: z.string(),
+    content: z.string(),
+    category: z.string()
+  });
+
+  async execute(input: any) {
+    const searchText = `${input.title} ${input.content}`;
+    return await Data.create('articles', input, searchText);
+  }
+}
+```
+
+### Strategy 3: Mix and Match
+
+**Keep useful examples, add your custom tools:**
+
+```typescript
+// Keep user data tools (always useful)
+import { GetUserDataTool } from "./tools/UserDataTool";
+
+// Keep custom data tools (for knowledge base)
+import { CreateArticleTool, SearchArticlesTool } from "./tools/ArticleTool";
+
+// Add your custom tools
+import MyCustomTool from "./tools/MyCustomTool";
+
+const mySkill = new LuaSkill({
+  tools: [
+    new GetUserDataTool(),
+    new CreateArticleTool(),
+    new SearchArticlesTool(),
+    new MyCustomTool()
+  ]
+});
+```
+
+## Learning Path
+
+<Tabs>
+  <Tab title="Week 1: Explore">
+    **Test all examples:**
+    - Run `lua test` daily
+    - Try every tool
+    - Read the tool code
+    - Understand inputs/outputs
+  </Tab>
+
+  <Tab title="Week 2: Modify">
+    **Make small changes:**
+    - Change tool descriptions
+    - Add new input fields
+    - Modify return values
+    - Test your changes
+  </Tab>
+
+  <Tab title="Week 3: Build">
+    **Create your own:**
+    - Create 1-2 custom tools
+    - Remove unused examples
+    - Update skill context
+    - Deploy to production
+  </Tab>
+</Tabs>
+
+## Tool Categories
+
+### External APIs (1 tool)
+
+<Card title="GetWeatherTool" icon="cloud">
+  Shows how to call external APIs without requiring a Lua API key
+  
+  **Learn**: API integration, error handling, data transformation
+</Card>
+
+### Platform APIs (27 tools)
+
+<Tabs>
+  <Tab title="User (2)">
+    - Get user data
+    - Update user profile
+    
+    **Learn**: User API, simple CRUD
+  </Tab>
+
+  <Tab title="Products (6)">
+    - Complete CRUD operations
+    - Search functionality
+    - Pagination
+    
+    **Learn**: Full catalog management
+  </Tab>
+
+  <Tab title="Baskets (9)">
+    - Shopping cart workflow
+    - Item management
+    - Status tracking
+    
+    **Learn**: Multi-step processes
+  </Tab>
+
+  <Tab title="Orders (4)">
+    - Order creation
+    - Status updates
+    - Order tracking
+    
+    **Learn**: Order fulfillment
+  </Tab>
+
+  <Tab title="Custom Data (6)">
+    - Create with search indexing
+    - Semantic search
+    - CRUD operations
+    
+    **Learn**: **Vector search** (most powerful feature!)
+  </Tab>
+</Tabs>
+
+### Integrations (2 tools)
+
+<CardGroup cols={2}>
+  <Card title="PaymentTool" icon="credit-card">
+    Stripe payment links
+    
+    **Learn**: Environment variables, external services
+  </Card>
+  <Card title="CreatePostTool" icon="pen">
+    Simple example
+    
+    **Learn**: Basic tool structure
+  </Card>
+</CardGroup>
+
+## Key Files Explained
+
+### src/index.ts
+
+**This is your starting point.** Defines all skills and their tools:
+
+```typescript
+import { LuaSkill } from "lua-cli";
+import GetWeatherTool from "./tools/GetWeatherTool";
+
+// Define your skills here
+const mySkill = new LuaSkill({
+  name: "my-skill",
+  description: "What it does",
+  context: "When to use it",
+  tools: [new GetWeatherTool()]
+});
+```
+
+### src/tools/*.ts
+
+Tool implementations. Each file contains one or more tools:
+
+```typescript
+import { LuaTool } from "lua-cli";
+import { z } from "zod";
+
+export default class MyTool implements LuaTool {
+  name = "my_tool";
+  description = "Clear description";
+  inputSchema = z.object({ /* ... */ });
+  async execute(input) { /* ... */ }
+}
+```
+
+### lua.skill.yaml
+
+Auto-managed configuration. The CLI updates this automatically:
+
+```yaml
+agent:
+  agentId: agent_abc123
+  orgId: org_xyz789
+
+skills:
+  - name: my-skill
+    version: 1.0.0
+    skillId: skill_xyz  # Auto-created
+```
+
+<Warning>
+Don't manually edit `skillId` - it's auto-managed by the CLI!
+</Warning>
+
+## Common Use Cases
+
+<AccordionGroup>
+  <Accordion title="Build E-commerce Assistant">
+    **Keep these tools:**
+    - ProductsTool.ts (all 6 tools)
+    - BasketTool.ts (all 9 tools)
+    - OrderTool.ts (all 4 tools)
+    
+    **Remove:**
+    - Everything else
+    
+    **Result:** Complete shopping experience!
+  </Accordion>
+
+  <Accordion title="Build Knowledge Base">
+    **Keep:**
+    - CustomDataTool.ts (rename to ArticlesTool.ts)
+    - Change collections to your data
+    
+    **Remove:**
+    - E-commerce tools
+    - Weather tool
+    
+    **Result:** Searchable documentation!
+  </Accordion>
+
+  <Accordion title="Build Customer Service Bot">
+    **Keep:**
+    - CustomDataTool.ts (for FAQ)
+    - UserDataTool.ts (for profiles)
+    - OrderTool.ts (for order lookup)
+    
+    **Add:**
+    - CreateTicketTool (custom)
+    
+    **Result:** Complete support assistant!
+  </Accordion>
+
+  <Accordion title="Build from Scratch">
+    **Remove all example tools:**
+    ```bash
+    rm src/tools/*.ts
+    ```
+    
+    **Create your own:**
+    ```bash
+    touch src/tools/MyFirstTool.ts
+    ```
+    
+    **Copy patterns** from examples as needed
+  </Accordion>
+</AccordionGroup>
+
+## Why 30+ Examples?
+
+<Check>
+**You learn faster by example!**
+</Check>
+
+Instead of starting from scratch, you can:
+1. ✅ See working code
+2. ✅ Copy and modify
+3. ✅ Understand patterns
+4. ✅ Ship faster
+
+Every common pattern is demonstrated:
+- External API calls
+- Platform API usage
+- CRUD operations
+- Vector search
+- Multi-step workflows
+- Error handling
+- Input validation
+
+## Next Steps
+
+<CardGroup cols={2}>
+  <Card
+    title="Explore Tool Examples"
+    icon="layer-group"
+    href="/examples/overview"
+  >
+    Detailed explanation of each tool
+  </Card>
+  <Card
+    title="Build Your First Skill"
+    icon="hammer"
+    href="/getting-started/first-skill"
+  >
+    Step-by-step tutorial
+  </Card>
+  <Card
+    title="Project Structure"
+    icon="folder-tree"
+    href="/template/project-structure"
+  >
+    Deep dive into file organization
+  </Card>
+  <Card
+    title="Best Practices"
+    icon="star"
+    href="/template/best-practices"
+  >
+    Tips for building great skills
+  </Card>
+</CardGroup>
+

@@ -1,0 +1,300 @@
+---
+title: "Custom Data Tools Example"
+description: "Vector search and custom data collections"
+---
+
+## Overview
+
+**File**: `src/tools/CustomDataTool.ts`
+
+Demonstrates the powerful Custom Data API with semantic vector search. The example uses a movie database, but the patterns work for any searchable content.
+
+## What Makes This Special
+
+**Vector Search** = Semantic Understanding
+
+Traditional search:
+- Query: "Inception" → Finds "Inception" ✅
+- Query: "dream movie" → Finds nothing ❌
+
+Vector search:
+- Query: "Inception" → Finds "Inception" ✅  
+- Query: "dream movie" → Finds "Inception"! ✅
+- Query: "mind-bending thriller" → Finds similar movies! ✅
+
+## Complete Tools
+
+### Create Movie Tool
+
+```typescript
+import { LuaTool, Data } from 'lua-cli';
+import { z } from 'zod';
+
+export class CreateMovieTool implements LuaTool {
+  name = "create_movie";
+  description = "Add a new movie to the database";
+  
+  inputSchema = z.object({
+    title: z.string(),
+    director: z.string(),
+    year: z.number(),
+    genre: z.string(),
+    description: z.string().optional()
+  });
+
+  async execute(input: z.infer<typeof this.inputSchema>) {
+    // ⭐ KEY: Create searchable text with all relevant info
+    const searchText = [
+      input.title,
+      input.director,
+      input.genre,
+      input.description
+    ].filter(Boolean).join(' ');
+    
+    const movie = await Data.create('movies', input, searchText);
+    
+    return {
+      id: movie.id,
+      message: `Added "${input.title}" to database`
+    };
+  }
+}
+```
+
+### Search Movies Tool
+
+```typescript
+export class SearchMoviesTool implements LuaTool {
+  name = "search_movies";
+  description = "Search movies by title, director, genre, or theme";
+  
+  inputSchema = z.object({
+    query: z.string().describe("Search query (can be descriptive)")
+  });
+
+  async execute(input: z.infer<typeof this.inputSchema>) {
+    // ⭐ Vector search with similarity threshold
+    const results = await Data.search(
+      'movies',
+      input.query,
+      10,           // Max 10 results
+      0.7           // Min similarity score
+    );
+    
+    return {
+      movies: results.data.map(entry => ({
+        id: entry.id,
+        title: entry.data.title,
+        year: entry.data.year,
+        director: entry.data.director,
+        relevance: Math.round(entry.score * 100) + '%'
+      })),
+      count: results.count
+    };
+  }
+}
+```
+
+### Get Movie Tool
+
+```typescript
+export class GetMovieByIdTool implements LuaTool {
+  name = "get_movie";
+  description = "Get detailed information about a specific movie";
+  
+  inputSchema = z.object({
+    id: z.string()
+  });
+
+  async execute(input: z.infer<typeof this.inputSchema>) {
+    const movie = await Data.getEntry('movies', input.id);
+    return movie.data;
+  }
+}
+```
+
+## Key Concepts
+
+### 1. Search Text is Critical
+
+The `searchText` parameter determines what the AI can find:
+
+```typescript
+// ✅ Good - Rich search text
+const searchText = `${input.title} ${input.director} ${input.genre} ${input.description} ${input.tags.join(' ')}`;
+
+// ❌ Bad - Only title
+const searchText = input.title;
+```
+
+### 2. Similarity Scores
+
+Understanding score thresholds:
+
+- `1.0` = Perfect match
+- `0.8-0.9` = Very similar
+- `0.7-0.8` = Somewhat similar
+- `0.6-0.7` = Loosely related
+- `<0.6` = May be irrelevant
+
+```typescript
+// Strict (high precision)
+await Data.search('movies', query, 10, 0.8);
+
+// Balanced (recommended)
+await Data.search('movies', query, 10, 0.7);
+
+// Loose (high recall)
+await Data.search('movies', query, 10, 0.6);
+```
+
+### 3. Natural Language Queries
+
+Users can search naturally:
+
+```typescript
+// All of these work:
+"sci-fi movies about space"
+"Christopher Nolan films"
+"thriller with plot twists"
+"movies like Inception"
+"romantic comedies from 2020"
+```
+
+## Testing
+
+```bash
+lua test
+```
+
+Try semantic searches:
+- "mind-bending thriller" → Should find Inception
+- "Christopher Nolan movies" → Should find his films
+- "space exploration" → Should find relevant sci-fi
+- "romantic comedy" → Should find rom-coms
+
+## Use Cases
+
+### Knowledge Base
+
+```typescript
+await Data.create('articles', {
+  title: 'How to Reset Password',
+  content: 'Step by step guide...',
+  category: 'Account'
+}, 'password reset account help guide');
+
+// Users can find with:
+// - "forgot password"
+// - "can't log in"
+// - "reset account"
+```
+
+### Product Recommendations
+
+```typescript
+await Data.create('products', {
+  name: 'Wireless Headphones',
+  description: 'Noise cancelling...'
+}, 'wireless headphones bluetooth noise cancelling audio');
+
+// Users can find with:
+// - "best headphones for travel"
+// - "noise canceling earphones"
+// - "bluetooth audio"
+```
+
+### Customer Notes
+
+```typescript
+await Data.create('customers', {
+  name: 'John Doe',
+  company: 'Acme Corp',
+  notes: 'Interested in enterprise plan'
+}, 'John Doe Acme Corp enterprise interested sales');
+
+// Find with:
+// - "enterprise customers"
+// - "Acme contacts"
+// - "sales leads"
+```
+
+## Customization Ideas
+
+### Add Ratings
+
+```typescript
+inputSchema = z.object({
+  ...existing,
+  rating: z.number().min(0).max(10)
+});
+
+// Sort by rating
+results.data.sort((a, b) => b.data.rating - a.data.rating);
+```
+
+### Add Filters
+
+```typescript
+// Search with filters
+const results = await Data.search('movies', query, 50, 0.7);
+
+// Filter by year
+const recentMovies = results.data.filter(m => 
+  m.data.year >= 2020
+);
+```
+
+### Update Movies
+
+```typescript
+export class UpdateMovieTool implements LuaTool {
+  async execute(input: { id: string, data: any }) {
+    const movie = await Data.getEntry('movies', input.id);
+    
+    await Data.update('movies', input.id, {
+      ...movie.data,
+      ...input.data
+    });
+    
+    return { success: true };
+  }
+}
+```
+
+## What You'll Learn
+
+<CardGroup cols={2}>
+  <Card title="Vector Search" icon="magnifying-glass">
+    Semantic similarity search with AI
+  </Card>
+  <Card title="Custom Collections" icon="database">
+    Store any data structure
+  </Card>
+  <Card title="Search Indexing" icon="book">
+    Optimize for findability
+  </Card>
+  <Card title="Score Thresholds" icon="sliders">
+    Tune precision vs recall
+  </Card>
+</CardGroup>
+
+## Next Steps
+
+<CardGroup cols={2}>
+  <Card
+    title="Data API Reference"
+    icon="book"
+    href="/api/data"
+  >
+    Complete Data API documentation
+  </Card>
+  <Card
+    title="Build Your First Skill"
+    icon="hammer"
+    href="/getting-started/first-skill"
+  >
+    Uses Data API with vector search
+  </Card>
+</CardGroup>
+

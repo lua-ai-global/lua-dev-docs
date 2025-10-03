@@ -1,0 +1,146 @@
+---
+title: "User Data Tools Example"
+description: "User profile management with platform APIs"
+---
+
+## Overview
+
+**File**: `src/tools/UserDataTool.ts`
+
+Simple tools demonstrating the User API for accessing and updating user profiles.
+
+## Tools Included
+
+### GetUserDataTool
+
+Retrieve current user's information.
+
+```typescript
+import { LuaTool, User } from 'lua-cli';
+import { z } from 'zod';
+
+export class GetUserDataTool implements LuaTool {
+  name = "get_user_data";
+  description = "Retrieve current user's profile information";
+  
+  inputSchema = z.object({});
+
+  async execute(input: any) {
+    const user = await User.get();
+    
+    return {
+      name: user.name,
+      email: user.email,
+      id: user.id
+    };
+  }
+}
+```
+
+### UpdateUserDataTool
+
+Update user profile information.
+
+```typescript
+export class UpdateUserDataTool implements LuaTool {
+  name = "update_user_data";
+  description = "Update user's profile information";
+  
+  inputSchema = z.object({
+    data: z.object({
+      name: z.string().optional(),
+      phone: z.string().optional(),
+      preferences: z.record(z.any()).optional()
+    })
+  });
+
+  async execute(input: z.infer<typeof this.inputSchema>) {
+    const user = await User.get();
+    const updated = await user.update(input.data);
+    
+    return {
+      success: true,
+      message: "Profile updated successfully",
+      user: updated
+    };
+  }
+}
+```
+
+## Use Cases
+
+### Personalized Greeting
+
+```typescript
+export class GreetUserTool {
+  async execute(input: any) {
+    const user = await User.get();
+    
+    const hour = new Date().getHours();
+    const greeting = hour < 12 ? 'Good morning'
+      : hour < 18 ? 'Good afternoon'
+      : 'Good evening';
+    
+    return {
+      message: `${greeting}, ${user.name}! How can I help you today?`
+    };
+  }
+}
+```
+
+### User Preferences
+
+```typescript
+export class SavePreferencesTool {
+  async execute(input: { theme: string, language: string }) {
+    const user = await User.get();
+    
+    await user.update({
+      preferences: {
+        theme: input.theme,
+        language: input.language,
+        updatedAt: new Date().toISOString()
+      }
+    });
+    
+    return { message: "Preferences saved!" };
+  }
+}
+```
+
+## What You'll Learn
+
+<CardGroup cols={2}>
+  <Card title="Platform APIs" icon="server">
+    Using Lua's built-in User API
+  </Card>
+  <Card title="Chaining Operations" icon="link">
+    Get instance, then call methods
+  </Card>
+  <Card title="Partial Updates" icon="pen">
+    Update only specified fields
+  </Card>
+  <Card title="Simple Tools" icon="check">
+    Minimal implementation pattern
+  </Card>
+</CardGroup>
+
+## Next Steps
+
+<CardGroup cols={2}>
+  <Card
+    title="User API Reference"
+    icon="book"
+    href="/api/user"
+  >
+    Complete API documentation
+  </Card>
+  <Card
+    title="Products Example"
+    icon="box"
+    href="/examples/products"
+  >
+    See CRUD operations
+  </Card>
+</CardGroup>
+

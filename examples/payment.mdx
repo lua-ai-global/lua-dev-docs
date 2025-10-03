@@ -1,0 +1,315 @@
+---
+title: "Payment Tool Example"
+description: "Stripe payment integration with environment variables"
+---
+
+## Overview
+
+**File**: `src/tools/PaymentTool.ts`
+
+Demonstrates payment integration using Stripe API with secure environment variable management.
+
+## Complete Code
+
+```typescript
+import { LuaTool, env } from 'lua-cli';
+import { z } from 'zod';
+
+export default class CreatePaymentLinkTool implements LuaTool {
+  name = "create_payment_link";
+  description = "Create a payment checkout link via Stripe";
+  
+  inputSchema = z.object({
+    amount: z.number().positive().describe("Amount in dollars"),
+    currency: z.string().default('USD'),
+    description: z.string()
+  });
+
+  async execute(input: z.infer<typeof this.inputSchema>) {
+    // ⭐ Get API key from environment
+    const stripeKey = env('STRIPE_API_KEY');
+    
+    // ⭐ Validate it exists
+    if (!stripeKey) {
+      throw new Error(
+        'STRIPE_API_KEY not configured. ' +
+        'Please add it to your .env file or lua.skill.yaml'
+      );
+    }
+    
+    // Create Stripe checkout session
+    const response = await fetch('https://api.stripe.com/v1/checkout/sessions', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${stripeKey}`,
+        'Content-Type': 'application/x-www-form-urlencoded'
+      },
+      body: new URLSearchParams({
+        'line_items[0][price_data][currency]': input.currency.toLowerCase(),
+        'line_items[0][price_data][unit_amount]': (input.amount * 100).toString(),
+        'line_items[0][price_data][product_data][name]': input.description,
+        'line_items[0][quantity]': '1',
+        'mode': 'payment',
+        'success_url': 'https://example.com/success',
+        'cancel_url': 'https://example.com/cancel'
+      })
+    });
+    
+    if (!response.ok) {
+      const error = await response.text();
+      throw new Error(`Stripe API error: ${error}`);
+    }
+    
+    const session = await response.json();
+    
+    return {
+      paymentUrl: session.url,
+      sessionId: session.id,
+      amount: `$${input.amount.toFixed(2)}`,
+      message: "Payment link created successfully"
+    };
+  }
+}
+```
+
+## Key Concepts
+
+### 1. Environment Variables
+
+**Never hardcode API keys!**
+
+```typescript
+// ❌ Bad
+const apiKey = 'sk_test_abc123';
+
+// ✅ Good
+import { env } from 'lua-cli';
+const apiKey = env('STRIPE_API_KEY');
+```
+
+### 2. Validation
+
+Always check environment variables exist:
+
+```typescript
+const apiKey = env('STRIPE_API_KEY');
+
+if (!apiKey) {
+  throw new Error(
+    'STRIPE_API_KEY not configured. ' +
+    'Add it to .env file or lua.skill.yaml'
+  );
+}
+```
+
+### 3. Error Handling
+
+Handle external API failures gracefully:
+
+```typescript
+if (!response.ok) {
+  const error = await response.text();
+  throw new Error(`Stripe API error: ${error}`);
+}
+```
+
+### 4. Amount Conversion
+
+Stripe uses cents, not dollars:
+
+```typescript
+// Convert dollars to cents
+const amountInCents = input.amount * 100;
+
+'unit_amount': amountInCents.toString()
+```
+
+## Setup Required
+
+### 1. Get Stripe API Key
+
+1. Create account at https://stripe.com
+2. Go to Dashboard → Developers → API Keys
+3. Copy "Secret key" (starts with `sk_test_`)
+
+### 2. Add to .env File
+
+Create `.env` in project root:
+
+```bash
+STRIPE_API_KEY=sk_test_your_key_here
+```
+
+### 3. Test
+
+```bash
+lua test
+```
+
+Select `create_payment_link`:
+- Amount: `29.99`
+- Currency: `USD`
+- Description: `Product Purchase`
+
+## Customization Ideas
+
+### Add Customer Info
+
+```typescript
+inputSchema = z.object({
+  amount: z.number(),
+  customerEmail: z.string().email()
+});
+
+// In Stripe API call
+body: {
+  customer_email: input.customerEmail,
+  // ... other fields
+}
+```
+
+### Add Success/Cancel URLs
+
+```typescript
+inputSchema = z.object({
+  amount: z.number(),
+  successUrl: z.string().url(),
+  cancelUrl: z.string().url()
+});
+
+// Use in API call
+'success_url': input.successUrl,
+'cancel_url': input.cancelUrl
+```
+
+### Add Metadata
+
+```typescript
+// Track custom data
+const orderId = generateOrderId();
+
+body: {
+  metadata: {
+    orderId,
+    source: 'ai_chat',
+    timestamp: Date.now()
+  }
+}
+```
+
+## Other Payment Providers
+
+Same pattern works for other providers:
+
+<Tabs>
+  <Tab title="PayPal">
+    ```typescript
+    const apiKey = env('PAYPAL_CLIENT_ID');
+    
+    // PayPal API integration
+    ```
+  </Tab>
+
+  <Tab title="Square">
+    ```typescript
+    const apiKey = env('SQUARE_ACCESS_TOKEN');
+    
+    // Square API integration
+    ```
+  </Tab>
+
+  <Tab title="Custom Gateway">
+    ```typescript
+    const apiKey = env('PAYMENT_API_KEY');
+    const apiUrl = env('PAYMENT_API_URL');
+    
+    // Custom payment integration
+    ```
+  </Tab>
+</Tabs>
+
+## Security Best Practices
+
+<AccordionGroup>
+  <Accordion title="Use Test Keys in Development">
+    ```bash
+    # .env (development)
+    STRIPE_API_KEY=sk_test_abc123
+    ```
+    
+    ```yaml
+    # lua.skill.yaml (production)
+    skill:
+      env:
+        STRIPE_API_KEY: sk_live_xyz789
+    ```
+  </Accordion>
+
+  <Accordion title="Never Log API Keys">
+    ```typescript
+    // ❌ Bad
+    console.log('API Key:', apiKey);
+    
+    // ✅ Good
+    console.log('API Key configured:', !!apiKey);
+    ```
+  </Accordion>
+
+  <Accordion title="Validate Amounts">
+    ```typescript
+    if (input.amount < 0.50) {
+      throw new Error('Minimum amount is $0.50');
+    }
+    
+    if (input.amount > 999999) {
+      throw new Error('Amount exceeds maximum limit');
+    }
+    ```
+  </Accordion>
+
+  <Accordion title="Add .env to .gitignore">
+    ```
+    # .gitignore
+    .env
+    .env.local
+    .env.*.local
+    ```
+  </Accordion>
+</AccordionGroup>
+
+## What You'll Learn
+
+<CardGroup cols={2}>
+  <Card title="Environment Variables" icon="key">
+    Secure secret management
+  </Card>
+  <Card title="External Integration" icon="plug">
+    Third-party API integration
+  </Card>
+  <Card title="Payment Processing" icon="credit-card">
+    Real payment workflows
+  </Card>
+  <Card title="Error Handling" icon="shield">
+    Graceful failure handling
+  </Card>
+</CardGroup>
+
+## Next Steps
+
+<CardGroup cols={2}>
+  <Card
+    title="Environment Variables"
+    icon="key"
+    href="/concepts/environment-variables"
+  >
+    Complete guide to configuration
+  </Card>
+  <Card
+    title="Environment API"
+    icon="book"
+    href="/api/environment"
+  >
+    API reference for env()
+  </Card>
+</CardGroup>
+

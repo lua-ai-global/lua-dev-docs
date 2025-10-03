@@ -1,0 +1,518 @@
+---
+title: "Data API"
+description: "Custom data storage with semantic vector search"
+---
+
+## Overview
+
+The Data API allows you to store custom data in collections with powerful semantic search capabilities using vector embeddings.
+
+```typescript
+import { Data } from 'lua-cli';
+
+// Create with search indexing
+await Data.create('movies', {
+  title: 'Inception',
+  director: 'Christopher Nolan'
+}, 'Inception Christopher Nolan sci-fi thriller dreams');
+
+// Semantic search
+const results = await Data.search('movies', 'mind-bending thriller', 10, 0.7);
+```
+
+## Key Features
+
+<CardGroup cols={2}>
+  <Card title="Custom Collections" icon="database">
+    Store any JSON data in named collections
+  </Card>
+  <Card title="Vector Search" icon="magnifying-glass">
+    Semantic similarity search using AI embeddings
+  </Card>
+  <Card title="Flexible Schema" icon="diagram-project">
+    No fixed schema - store any structure
+  </Card>
+  <Card title="Filtering" icon="filter">
+    Query by field values with operators
+  </Card>
+</CardGroup>
+
+## Methods
+
+### create()
+
+Create a new entry in a collection.
+
+```typescript
+Data.create(
+  collectionName: string,
+  data: object,
+  searchText?: string
+): Promise<Entry>
+```
+
+<ParamField path="collectionName" type="string" required>
+  Name of the collection (e.g., 'movies', 'customers', 'articles')
+</ParamField>
+
+<ParamField path="data" type="object" required>
+  Any JSON-serializable object to store
+</ParamField>
+
+<ParamField path="searchText" type="string">
+  Text to index for vector search. Include all searchable content.
+</ParamField>
+
+**Returns:**
+
+```typescript
+{
+  id: string;
+  data: object;
+  createdAt: number;
+  updatedAt: number;
+  searchText?: string;
+}
+```
+
+**Example:**
+
+```typescript
+const movie = await Data.create('movies', {
+  title: 'The Matrix',
+  year: 1999,
+  director: 'Wachowski Sisters',
+  genre: 'Sci-Fi',
+  rating: 8.7
+}, 'The Matrix 1999 Wachowski sci-fi action cyberpunk reality virtual');
+
+console.log(movie.id); // "entry_abc123"
+```
+
+### search()
+
+Semantic search using vector embeddings.
+
+```typescript
+Data.search(
+  collectionName: string,
+  query: string,
+  limit?: number,
+  scoreThreshold?: number
+): Promise<SearchResult>
+```
+
+<ParamField path="collectionName" type="string" required>
+  Name of the collection to search
+</ParamField>
+
+<ParamField path="query" type="string" required>
+  Search query (natural language)
+</ParamField>
+
+<ParamField path="limit" type="number" default={10}>
+  Maximum number of results to return
+</ParamField>
+
+<ParamField path="scoreThreshold" type="number" default={0.7}>
+  Minimum similarity score (0-1). Higher = more similar.
+</ParamField>
+
+**Returns:**
+
+```typescript
+{
+  data: Array<Entry & { score: number }>;
+  count: number;
+}
+```
+
+**Similarity Scores:**
+- `1.0` = Perfect match
+- `0.8-0.9` = Very similar
+- `0.6-0.7` = Somewhat similar
+- `<0.6` = Low similarity
+
+**Example:**
+
+```typescript
+// Finds movies even if query doesn't match exact words!
+const results = await Data.search('movies', 'mind-bending thriller', 5, 0.7);
+
+results.data.forEach(entry => {
+  console.log(`${entry.data.title} - Relevance: ${entry.score}`);
+});
+// Output:
+// Inception - Relevance: 0.92
+// The Matrix - Relevance: 0.85
+// Interstellar - Relevance: 0.78
+```
+
+### get()
+
+Retrieve entries with optional filtering and pagination.
+
+```typescript
+Data.get(
+  collectionName: string,
+  filter?: object,
+  page?: number,
+  limit?: number
+): Promise<GetResult>
+```
+
+<ParamField path="collectionName" type="string" required>
+  Name of the collection
+</ParamField>
+
+<ParamField path="filter" type="object" default={{}}>
+  Filter criteria (MongoDB-style queries)
+</ParamField>
+
+<ParamField path="page" type="number" default={1}>
+  Page number (1-indexed)
+</ParamField>
+
+<ParamField path="limit" type="number" default={10}>
+  Items per page
+</ParamField>
+
+**Returns:**
+
+```typescript
+{
+  data: Entry[];
+  pagination: {
+    currentPage: number;
+    totalPages: number;
+    totalCount: number;
+    hasNextPage: boolean;
+    hasPreviousPage: boolean;
+  };
+}
+```
+
+**Examples:**
+
+```typescript
+// Get all
+const all = await Data.get('movies');
+
+// With pagination
+const page2 = await Data.get('movies', {}, 2, 20);
+
+// With filter
+const recent = await Data.get('movies', {
+  year: { $gte: 2020 }
+});
+
+// Complex filter
+const sciFi = await Data.get('movies', {
+  genre: 'Sci-Fi',
+  rating: { $gte: 8.0 },
+  year: { $gte: 2000, $lte: 2020 }
+});
+```
+
+### getEntry()
+
+Retrieve a specific entry by ID.
+
+```typescript
+Data.getEntry(
+  collectionName: string,
+  entryId: string
+): Promise<Entry>
+```
+
+**Example:**
+
+```typescript
+const movie = await Data.getEntry('movies', 'entry_abc123');
+console.log(movie.data.title); // "Inception"
+```
+
+### update()
+
+Update an existing entry.
+
+```typescript
+Data.update(
+  collectionName: string,
+  entryId: string,
+  data: object
+): Promise<Entry>
+```
+
+<ParamField path="collectionName" type="string" required>
+  Name of the collection
+</ParamField>
+
+<ParamField path="entryId" type="string" required>
+  ID of the entry to update
+</ParamField>
+
+<ParamField path="data" type="object" required>
+  New data (completely replaces existing data)
+</ParamField>
+
+**Example:**
+
+```typescript
+const updated = await Data.update('movies', 'entry_abc123', {
+  title: 'Inception',
+  year: 2010,
+  director: 'Christopher Nolan',
+  rating: 8.8,  // Updated rating
+  awards: ['Oscar'] // New field
+});
+```
+
+<Note>
+Updates replace the entire data object. To preserve fields, read first then update.
+</Note>
+
+### delete()
+
+Delete an entry.
+
+```typescript
+Data.delete(
+  collectionName: string,
+  entryId: string
+): Promise<void>
+```
+
+**Example:**
+
+```typescript
+await Data.delete('movies', 'entry_abc123');
+```
+
+## Use Cases
+
+### Knowledge Base
+
+```typescript
+export class CreateArticleTool implements LuaTool {
+  async execute(input: any) {
+    // Create searchable article
+    const article = await Data.create('kb_articles', {
+      title: input.title,
+      content: input.content,
+      category: input.category,
+      tags: input.tags
+    }, `${input.title} ${input.content} ${input.tags.join(' ')}`);
+    
+    return { articleId: article.id };
+  }
+}
+
+export class SearchArticlesTool implements LuaTool {
+  async execute(input: any) {
+    // Semantic search
+    const results = await Data.search(
+      'kb_articles',
+      input.query,
+      10,
+      0.7
+    );
+    
+    return {
+      articles: results.data.map(entry => ({
+        id: entry.id,
+        title: entry.data.title,
+        content: entry.data.content.substring(0, 200),
+        relevance: Math.round(entry.score * 100) + '%'
+      }))
+    };
+  }
+}
+```
+
+### Customer CRM
+
+```typescript
+export class CreateCustomerTool implements LuaTool {
+  async execute(input: any) {
+    const customer = await Data.create('customers', {
+      name: input.name,
+      email: input.email,
+      company: input.company,
+      status: 'active',
+      createdAt: new Date().toISOString()
+    }, `${input.name} ${input.company} ${input.email}`);
+    
+    // Log interaction
+    await Data.create('interactions', {
+      customerId: customer.id,
+      type: 'created',
+      notes: 'Initial contact',
+      timestamp: new Date().toISOString()
+    });
+    
+    return { customerId: customer.id };
+  }
+}
+```
+
+### Task Management
+
+```typescript
+export class CreateTaskTool implements LuaTool {
+  async execute(input: any) {
+    const task = await Data.create('tasks', {
+      title: input.title,
+      description: input.description,
+      status: 'pending',
+      priority: input.priority,
+      createdAt: new Date().toISOString()
+    }, `${input.title} ${input.description}`);
+    
+    return { taskId: task.id };
+  }
+}
+
+export class SearchTasksTool implements LuaTool {
+  async execute(input: any) {
+    const results = await Data.search('tasks', input.query, 20, 0.6);
+    
+    return {
+      tasks: results.data.map(entry => ({
+        id: entry.id,
+        ...entry.data,
+        relevance: entry.score
+      }))
+    };
+  }
+}
+```
+
+## Filter Operators
+
+The Data API supports MongoDB-style filter operators:
+
+```typescript
+// Comparison
+{ age: { $eq: 25 } }       // Equal
+{ age: { $ne: 25 } }       // Not equal
+{ age: { $gt: 25 } }       // Greater than
+{ age: { $gte: 25 } }      // Greater than or equal
+{ age: { $lt: 25 } }       // Less than
+{ age: { $lte: 25 } }      // Less than or equal
+
+// Logical
+{ $and: [{ age: { $gte: 18 } }, { age: { $lte: 65 } }] }
+{ $or: [{ status: 'active' }, { status: 'pending' }] }
+
+// Array
+{ tags: { $in: ['urgent', 'important'] } }
+{ tags: { $nin: ['spam', 'archived'] } }
+
+// Existence
+{ email: { $exists: true } }
+```
+
+## Best Practices
+
+<AccordionGroup>
+  <Accordion title="Create Rich Search Text">
+    Include all searchable content in searchText:
+    ```typescript
+    const searchText = [
+      item.title,
+      item.description,
+      item.category,
+      item.tags.join(' '),
+      item.author
+    ].filter(Boolean).join(' ');
+    
+    await Data.create('items', item, searchText);
+    ```
+  </Accordion>
+
+  <Accordion title="Use Appropriate Score Thresholds">
+    - `0.8+`: High precision, few results
+    - `0.7`: Balanced (recommended default)
+    - `0.6`: More results, lower precision
+    - `<0.6`: May return irrelevant results
+  </Accordion>
+
+  <Accordion title="Structure Data Consistently">
+    Use consistent field names across entries:
+    ```typescript
+    // ✅ Good - Consistent
+    await Data.create('items', {
+      name: 'Item 1',
+      price: 10.99,
+      inStock: true
+    });
+    
+    // ❌ Bad - Inconsistent
+    await Data.create('items', {
+      title: 'Item 2',  // Different field name
+      cost: 15.99,      // Different field name
+      available: true   // Different field name
+    });
+    ```
+  </Accordion>
+
+  <Accordion title="Add Timestamps">
+    Track when entries are created/modified:
+    ```typescript
+    await Data.create('items', {
+      ...data,
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString()
+    });
+    ```
+  </Accordion>
+</AccordionGroup>
+
+## Vector Search Tips
+
+<Tabs>
+  <Tab title="What It Is">
+    Vector search uses AI to understand meaning, not just match keywords.
+    
+    **Example:**
+    - Query: "affordable laptop for students"
+    - Finds: "budget-friendly notebook for college"
+    - Even though no words match exactly!
+  </Tab>
+
+  <Tab title="Best For">
+    - Knowledge bases
+    - FAQs
+    - Product recommendations
+    - Content discovery
+    - Document search
+  </Tab>
+
+  <Tab title="Tips">
+    1. Include synonyms in searchText
+    2. Use natural language queries
+    3. Adjust threshold based on results
+    4. Test with real user queries
+  </Tab>
+</Tabs>
+
+## Next Steps
+
+<CardGroup cols={2}>
+  <Card
+    title="Custom Data Examples"
+    icon="layer-group"
+    href="/examples/custom-data"
+  >
+    See working examples
+  </Card>
+  <Card
+    title="Build Your First Skill"
+    icon="hammer"
+    href="/getting-started/first-skill"
+  >
+    Complete tutorial using Data API
+  </Card>
+</CardGroup>
+

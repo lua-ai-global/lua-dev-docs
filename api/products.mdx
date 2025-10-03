@@ -1,0 +1,440 @@
+---
+title: "Products API"
+description: "Manage e-commerce product catalog"
+---
+
+## Overview
+
+The Products API provides complete CRUD operations for managing an e-commerce product catalog.
+
+```typescript
+import { Products } from 'lua-cli';
+
+// Search products
+const results = await Products.search('laptop');
+
+// Create product
+await Products.create({
+  name: 'MacBook Pro',
+  price: 1999.99
+});
+```
+
+## Methods
+
+### search()
+
+Search products by name or description.
+
+```typescript
+Products.search(query: string): Promise<SearchResult>
+```
+
+<ParamField path="query" type="string" required>
+  Search query to match against product names and descriptions
+</ParamField>
+
+**Returns:**
+
+```typescript
+{
+  success: boolean;
+  data: Product[];
+}
+```
+
+**Example:**
+
+```typescript
+const results = await Products.search('laptop');
+
+results.data.forEach(product => {
+  console.log(`${product.name} - $${product.price}`);
+});
+```
+
+### get()
+
+Retrieve all products with pagination.
+
+```typescript
+Products.get(limit?: number, page?: number): Promise<GetResult>
+```
+
+<ParamField path="limit" type="number" default={10}>
+  Number of products per page
+</ParamField>
+
+<ParamField path="page" type="number" default={1}>
+  Page number (1-indexed)
+</ParamField>
+
+**Returns:**
+
+```typescript
+{
+  success: boolean;
+  data: Product[];
+  pagination: {
+    currentPage: number;
+    totalPages: number;
+    totalCount: number;
+    hasNextPage: boolean;
+    hasPreviousPage: boolean;
+  };
+}
+```
+
+**Example:**
+
+```typescript
+// Get first 20 products
+const products = await Products.get(20, 1);
+
+console.log(`Showing ${products.data.length} of ${products.pagination.totalCount}`);
+```
+
+### getById()
+
+Get a specific product by ID.
+
+```typescript
+Products.getById(id: string): Promise<Product>
+```
+
+**Example:**
+
+```typescript
+const product = await Products.getById('product_abc123');
+
+console.log(product.name);  // "MacBook Pro"
+console.log(product.price); // 1999.99
+```
+
+### create()
+
+Create a new product.
+
+```typescript
+Products.create(product: ProductInput): Promise<CreateResult>
+```
+
+<ParamField path="product.name" type="string" required>
+  Product name
+</ParamField>
+
+<ParamField path="product.price" type="number" required>
+  Product price
+</ParamField>
+
+<ParamField path="product.category" type="string">
+  Product category
+</ParamField>
+
+<ParamField path="product.sku" type="string">
+  Stock keeping unit
+</ParamField>
+
+<ParamField path="product.inStock" type="boolean" default={true}>
+  Whether product is in stock
+</ParamField>
+
+<ParamField path="product.description" type="string">
+  Product description
+</ParamField>
+
+**Returns:**
+
+```typescript
+{
+  updated: boolean;
+  isNew: boolean;
+  product: Product;
+}
+```
+
+**Example:**
+
+```typescript
+const result = await Products.create({
+  name: 'Wireless Mouse',
+  price: 29.99,
+  category: 'Electronics',
+  sku: 'MOUSE-001',
+  inStock: true,
+  description: 'Ergonomic wireless mouse'
+});
+
+console.log(result.product.id); // "product_xyz789"
+```
+
+### update()
+
+Update an existing product.
+
+```typescript
+Products.update(data: Partial<Product>, id: string): Promise<Product>
+```
+
+<ParamField path="data" type="object" required>
+  Partial product data to update
+</ParamField>
+
+<ParamField path="id" type="string" required>
+  Product ID to update
+</ParamField>
+
+**Example:**
+
+```typescript
+await Products.update({
+  price: 24.99,
+  inStock: false
+}, 'product_xyz789');
+```
+
+### delete()
+
+Delete a product.
+
+```typescript
+Products.delete(id: string): Promise<void>
+```
+
+**Example:**
+
+```typescript
+await Products.delete('product_xyz789');
+```
+
+## Product Type
+
+```typescript
+interface Product {
+  id: string;
+  name: string;
+  price: number;
+  category?: string;
+  sku?: string;
+  inStock: boolean;
+  description?: string;
+  [key: string]: any;
+}
+```
+
+## Complete Examples
+
+### Search Tool
+
+```typescript
+import { LuaTool, Products } from 'lua-cli';
+import { z } from 'zod';
+
+export class SearchProductsTool implements LuaTool {
+  name = "search_products";
+  description = "Search for products by name or description";
+  
+  inputSchema = z.object({
+    query: z.string().describe("Search query"),
+    maxPrice: z.number().optional()
+  });
+
+  async execute(input: z.infer<typeof this.inputSchema>) {
+    const results = await Products.search(input.query);
+    
+    // Filter by price if specified
+    let products = results.data;
+    if (input.maxPrice) {
+      products = products.filter(p => p.price <= input.maxPrice);
+    }
+    
+    return {
+      products: products.map(p => ({
+        id: p.id,
+        name: p.name,
+        price: `$${p.price.toFixed(2)}`,
+        inStock: p.inStock ? '✅ In Stock' : '❌ Out of Stock'
+      })),
+      total: products.length
+    };
+  }
+}
+```
+
+### Create Product Tool
+
+```typescript
+export class CreateProductTool implements LuaTool {
+  name = "create_product";
+  description = "Add a new product to the catalog";
+  
+  inputSchema = z.object({
+    name: z.string(),
+    price: z.number().positive(),
+    category: z.string().optional(),
+    sku: z.string().optional(),
+    description: z.string().optional()
+  });
+
+  async execute(input: z.infer<typeof this.inputSchema>) {
+    const result = await Products.create({
+      ...input,
+      inStock: true
+    });
+    
+    return {
+      success: true,
+      productId: result.product.id,
+      message: `Product "${input.name}" created successfully`
+    };
+  }
+}
+```
+
+### Update Stock Tool
+
+```typescript
+export class UpdateStockTool implements LuaTool {
+  name = "update_stock";
+  description = "Update product stock status";
+  
+  inputSchema = z.object({
+    productId: z.string(),
+    inStock: z.boolean()
+  });
+
+  async execute(input: z.infer<typeof this.inputSchema>) {
+    await Products.update(
+      { inStock: input.inStock },
+      input.productId
+    );
+    
+    return {
+      success: true,
+      message: `Stock status updated to ${input.inStock ? 'in stock' : 'out of stock'}`
+    };
+  }
+}
+```
+
+## Use Cases
+
+### E-commerce Catalog
+
+```typescript
+// Browse products
+const products = await Products.get(20);
+
+// Search specific items
+const laptops = await Products.search('laptop');
+
+// Get product details
+const product = await Products.getById(laptops.data[0].id);
+```
+
+### Inventory Management
+
+```typescript
+// Update product price
+await Products.update({ price: 899.99 }, productId);
+
+// Mark as out of stock
+await Products.update({ inStock: false }, productId);
+
+// Update multiple fields
+await Products.update({
+  price: 799.99,
+  inStock: true,
+  category: 'Electronics - Sale'
+}, productId);
+```
+
+### Product Recommendations
+
+```typescript
+// Search similar products
+const similar = await Products.search(product.category);
+
+// Filter by price range
+const affordable = similar.data.filter(p => 
+  p.price < product.price * 1.2 &&
+  p.price > product.price * 0.8
+);
+```
+
+## Best Practices
+
+<AccordionGroup>
+  <Accordion title="Validate Products Exist">
+    Always check if product exists:
+    
+    ```typescript
+    const product = await Products.getById(input.productId);
+    
+    if (!product) {
+      throw new Error(`Product not found: ${input.productId}`);
+    }
+    ```
+  </Accordion>
+
+  <Accordion title="Check Stock Before Adding to Cart">
+    ```typescript
+    const product = await Products.getById(productId);
+    
+    if (!product.inStock) {
+      return {
+        success: false,
+        message: `${product.name} is currently out of stock`
+      };
+    }
+    ```
+  </Accordion>
+
+  <Accordion title="Format Prices for Display">
+    ```typescript
+    return {
+      products: products.map(p => ({
+        ...p,
+        price: `$${p.price.toFixed(2)}`,
+        formattedPrice: new Intl.NumberFormat('en-US', {
+          style: 'currency',
+          currency: 'USD'
+        }).format(p.price)
+      }))
+    };
+    ```
+  </Accordion>
+
+  <Accordion title="Handle Search with No Results">
+    ```typescript
+    const results = await Products.search(query);
+    
+    if (results.data.length === 0) {
+      return {
+        products: [],
+        message: `No products found for "${query}". Try different search terms.`
+      };
+    }
+    ```
+  </Accordion>
+</AccordionGroup>
+
+## Next Steps
+
+<CardGroup cols={2}>
+  <Card
+    title="Baskets API"
+    icon="cart-shopping"
+    href="/api/baskets"
+  >
+    Add products to shopping carts
+  </Card>
+  <Card
+    title="Product Examples"
+    icon="layer-group"
+    href="/examples/products"
+  >
+    See complete tool examples
+  </Card>
+</CardGroup>
+

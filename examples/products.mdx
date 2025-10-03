@@ -1,0 +1,205 @@
+---
+title: "Products Tools Example"
+description: "Complete CRUD operations for product catalog"
+---
+
+## Overview
+
+**File**: `src/tools/ProductsTool.ts`
+
+Six tools demonstrating complete product management with the Products API.
+
+## Tools Included
+
+<CardGroup cols={3}>
+  <Card title="Search" icon="magnifying-glass">
+    Find products by query
+  </Card>
+  <Card title="Get All" icon="list">
+    List with pagination
+  </Card>
+  <Card title="Create" icon="plus">
+    Add new products
+  </Card>
+  <Card title="Update" icon="pen">
+    Modify existing
+  </Card>
+  <Card title="Get By ID" icon="fingerprint">
+    Get specific product
+  </Card>
+  <Card title="Delete" icon="trash">
+    Remove products
+  </Card>
+</CardGroup>
+
+## Example Tools
+
+### SearchProductsTool
+
+```typescript
+import { LuaTool, Products } from 'lua-cli';
+import { z } from 'zod';
+
+export class SearchProductsTool implements LuaTool {
+  name = "search_products";
+  description = "Search products by name or description";
+  
+  inputSchema = z.object({
+    query: z.string().describe("Search query")
+  });
+
+  async execute(input: z.infer<typeof this.inputSchema>) {
+    const results = await Products.search(input.query);
+    
+    return {
+      products: results.data.map(p => ({
+        id: p.id,
+        name: p.name,
+        price: `$${p.price.toFixed(2)}`,
+        inStock: p.inStock
+      })),
+      count: results.data.length
+    };
+  }
+}
+```
+
+### CreateProductTool
+
+```typescript
+export class CreateProductTool implements LuaTool {
+  name = "create_product";
+  description = "Add a new product to the catalog";
+  
+  inputSchema = z.object({
+    name: z.string(),
+    price: z.number().positive(),
+    category: z.string().optional(),
+    sku: z.string().optional(),
+    description: z.string().optional()
+  });
+
+  async execute(input: z.infer<typeof this.inputSchema>) {
+    const result = await Products.create({
+      ...input,
+      id: generateId(),  // Generate unique ID
+      inStock: true
+    });
+    
+    return {
+      success: true,
+      productId: result.product.id,
+      message: `Product "${input.name}" created`
+    };
+  }
+}
+```
+
+### UpdateProductTool
+
+```typescript
+export class UpdateProductTool implements LuaTool {
+  name = "update_product";
+  description = "Update product information";
+  
+  inputSchema = z.object({
+    id: z.string(),
+    name: z.string().optional(),
+    price: z.number().positive().optional(),
+    inStock: z.boolean().optional()
+  });
+
+  async execute(input: z.infer<typeof this.inputSchema>) {
+    const { id, ...updates } = input;
+    
+    await Products.update(updates, id);
+    
+    return {
+      success: true,
+      message: "Product updated successfully"
+    };
+  }
+}
+```
+
+## Use Cases
+
+### E-commerce Catalog
+
+```typescript
+// Browse products
+const products = await Products.get(20, 1);
+
+// Search for specific items
+const laptops = await Products.search('laptop');
+
+// Get product details
+const product = await Products.getById(laptops.data[0].id);
+```
+
+### Inventory Management
+
+```typescript
+// Update stock status
+await Products.update({ inStock: false }, productId);
+
+// Update price
+await Products.update({ price: 899.99 }, productId);
+
+// Bulk update
+const products = await Products.get(100);
+for (const product of products.data) {
+  if (product.category === 'Electronics') {
+    await Products.update({ onSale: true }, product.id);
+  }
+}
+```
+
+### Admin Dashboard
+
+```typescript
+// Get all products
+const all = await Products.get(1000);
+
+// Statistics
+const totalValue = all.data.reduce((sum, p) => sum + p.price, 0);
+const inStock = all.data.filter(p => p.inStock).length;
+const categories = [...new Set(all.data.map(p => p.category))];
+```
+
+## What You'll Learn
+
+<CardGroup cols={2}>
+  <Card title="CRUD Operations" icon="database">
+    Create, Read, Update, Delete
+  </Card>
+  <Card title="Pagination" icon="table">
+    Handle large datasets
+  </Card>
+  <Card title="Search" icon="magnifying-glass">
+    Query product catalog
+  </Card>
+  <Card title="Data Formatting" icon="paintbrush">
+    Transform API responses
+  </Card>
+</CardGroup>
+
+## Next Steps
+
+<CardGroup cols={2}>
+  <Card
+    title="Products API"
+    icon="book"
+    href="/api/products"
+  >
+    Complete API reference
+  </Card>
+  <Card
+    title="Baskets Example"
+    icon="cart-shopping"
+    href="/examples/baskets"
+  >
+    Add products to carts
+  </Card>
+</CardGroup>
+

@@ -1,0 +1,191 @@
+---
+title: "Weather Tool Example"
+description: "External API integration without requiring an API key"
+---
+
+## Overview
+
+**File**: `src/tools/GetWeatherTool.ts`
+
+The Weather Tool demonstrates external API integration using the free Open-Meteo API (no API key required).
+
+## What It Does
+
+- Fetches real-time weather for any city worldwide
+- Two-step process: geocoding + weather data
+- Error handling for invalid cities
+- No API key or authentication required
+
+## Complete Code
+
+```typescript
+import { LuaTool } from 'lua-cli';
+import { z } from 'zod';
+
+export default class GetWeatherTool implements LuaTool {
+  name = "get_weather";
+  description = "Get current weather conditions for any city";
+  
+  inputSchema = z.object({
+    city: z.string().describe("City name (e.g., 'London', 'Tokyo')")
+  });
+
+  async execute(input: z.infer<typeof this.inputSchema>) {
+    // Step 1: Convert city name to coordinates
+    const geoUrl = `https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(input.city)}&count=1`;
+    const geoRes = await fetch(geoUrl);
+    const geoData = await geoRes.json();
+    
+    if (!geoData.results?.[0]) {
+      throw new Error(`City not found: ${input.city}`);
+    }
+    
+    const { latitude, longitude, name } = geoData.results[0];
+    
+    // Step 2: Get weather for coordinates
+    const weatherUrl = `https://api.open-meteo.com/v1/forecast?latitude=${latitude}&longitude=${longitude}&current_weather=true`;
+    const weatherRes = await fetch(weatherUrl);
+    const weatherData = await weatherRes.json();
+    
+    return {
+      city: name,
+      temperature: weatherData.current_weather.temperature,
+      windSpeed: weatherData.current_weather.windspeed,
+      weatherCode: weatherData.current_weather.weathercode
+    };
+  }
+}
+```
+
+## Key Concepts
+
+### 1. Two-Step API Call
+
+**Why?** Weather APIs need coordinates, but users provide city names.
+
+```typescript
+// Step 1: City name → Coordinates
+const geoData = await fetch(geocodingUrl);
+const { latitude, longitude } = geoData.results[0];
+
+// Step 2: Coordinates → Weather
+const weatherData = await fetch(weatherUrl);
+```
+
+### 2. URL Encoding
+
+Always encode user input in URLs:
+
+```typescript
+const geoUrl = `https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(input.city)}&count=1`;
+```
+
+### 3. Error Handling
+
+Check if city exists before proceeding:
+
+```typescript
+if (!geoData.results?.[0]) {
+  throw new Error(`City not found: ${input.city}`);
+}
+```
+
+### 4. Structured Return
+
+Return organized data, not raw API response:
+
+```typescript
+return {
+  city: name,              // Clean city name
+  temperature: data.temp,  // Extract what's needed
+  windSpeed: data.wind     // No extra data
+};
+```
+
+## Testing
+
+```bash
+lua test
+```
+
+Try different cities:
+- `London` - Should work
+- `Tokyo` - Should work
+- `New York` - Should work  
+- `XYZ123` - Should fail gracefully
+
+## Customization Ideas
+
+### Add Temperature Units
+
+```typescript
+inputSchema = z.object({
+  city: z.string(),
+  units: z.enum(['metric', 'imperial']).default('metric')
+});
+
+// In URL
+const weatherUrl = `...&temperature_unit=${units === 'imperial' ? 'fahrenheit' : 'celsius'}`;
+```
+
+### Add Weather Recommendations
+
+```typescript
+return {
+  ...weatherData,
+  recommendation: temperature < 10 
+    ? "🧥 Bring a warm jacket"
+    : temperature < 20
+    ? "👕 Light jacket recommended"
+    : "☀️ T-shirt weather!"
+};
+```
+
+### Add Forecast
+
+```typescript
+const forecastUrl = `...&forecast_days=7`;
+const forecast = await fetch(forecastUrl);
+
+return {
+  current: {...},
+  forecast: forecast.daily
+};
+```
+
+## What You'll Learn
+
+<CardGroup cols={2}>
+  <Card title="External APIs" icon="plug">
+    How to call external REST APIs
+  </Card>
+  <Card title="Error Handling" icon="triangle-exclamation">
+    Graceful error messages
+  </Card>
+  <Card title="Data Transformation" icon="shuffle">
+    Converting API responses to clean output
+  </Card>
+  <Card title="URL Encoding" icon="link">
+    Safely encoding user input in URLs
+  </Card>
+</CardGroup>
+
+## Next Steps
+
+<CardGroup cols={2}>
+  <Card
+    title="User Data Example"
+    icon="user"
+    href="/examples/user-data"
+  >
+    Learn platform API usage
+  </Card>
+  <Card
+    title="Payment Example"
+    icon="credit-card"
+    href="/examples/payment"
+  >
+    See authenticated external API
+  </Card>
+</CardGroup>
+

@@ -1,0 +1,379 @@
+---
+title: "Skills & Tools"
+description: "Understanding the core building blocks of Lua CLI"
+---
+
+## What is Lua?
+
+Lua is a platform for building AI agents with custom capabilities. Think of it like:
+
+```
+AI Agent (ChatGPT-like)
+    └── Skills (Custom capabilities you build)
+        └── Tools (Specific functions the AI can call)
+```
+
+## Skills
+
+A **skill** is a collection of related tools that give your AI agent specific capabilities.
+
+### Example: Coffee Shop Skill
+
+```typescript
+import { LuaSkill } from "lua-cli";
+
+const coffeeSkill = new LuaSkill({
+  name: "coffee-shop-skill",
+  version: "1.0.0",
+  description: "Coffee shop assistant with menu, ordering, and loyalty features",
+  context: `
+    This skill helps customers of Java Junction Coffee Shop.
+    
+    - Use show_menu to display available drinks and food
+    - Use create_order to take customer orders
+    - Use check_loyalty_points to show rewards balance
+    - Use redeem_reward to apply loyalty discounts
+    
+    Always mention daily specials.
+    Ask about size preferences for drinks.
+  `,
+  tools: [
+    new ShowMenuTool(),
+    new CreateOrderTool(),
+    new CheckLoyaltyTool(),
+    new RedeemRewardTool()
+  ]
+});
+```
+
+### Skill Properties
+
+<ParamField path="name" type="string" required>
+  Unique identifier for the skill (e.g., "coffee-shop-skill")
+</ParamField>
+
+<ParamField path="version" type="string" default="1.0.0">
+  Semantic version number for tracking changes
+</ParamField>
+
+<ParamField path="description" type="string" required>
+  Brief description (1-2 sentences) of what the skill does
+</ParamField>
+
+<ParamField path="context" type="string" required>
+  Detailed instructions for the AI on when and how to use the tools. This is critical for proper tool selection!
+</ParamField>
+
+<ParamField path="tools" type="LuaTool[]">
+  Array of tool instances to include in the skill
+</ParamField>
+
+### Writing Good Context
+
+The `context` field guides the AI's decision-making. Write it like instructions to a smart assistant:
+
+<CodeGroup>
+
+```typescript Good Context
+context: `
+  This skill manages customer orders for a coffee shop.
+
+  Tool Usage:
+  - show_menu: Use when customers ask what's available. Returns drinks and food items.
+  - create_order: Use when taking an order. Confirm items and sizes first.
+  - modify_order: Use to add/remove items. Ask which item to modify.
+  - finalize_order: Use when order is confirmed. Returns total and wait time.
+
+  Guidelines:
+  - Always ask about size for drinks (small/medium/large)
+  - Mention daily special when showing menu
+  - Confirm total before finalizing
+  - Ask about dietary restrictions for food items
+`
+```
+
+```typescript Bad Context
+context: "A skill with tools for stuff"
+```
+
+</CodeGroup>
+
+## Tools
+
+A **tool** is a single function that the AI can call to accomplish a specific task.
+
+### Anatomy of a Tool
+
+```typescript
+import { LuaTool } from 'lua-cli';
+import { z } from 'zod';
+
+export default class GetWeatherTool implements LuaTool {
+  // Unique identifier (lowercase, alphanumeric, hyphens, underscores)
+  name = "get_weather";
+  
+  // Clear description of what the tool does
+  description = "Get current weather conditions for any city";
+  
+  // Zod schema defining valid inputs
+  inputSchema = z.object({
+    city: z.string().describe("City name (e.g., 'London', 'Tokyo')"),
+    units: z.enum(['metric', 'imperial']).optional().default('metric')
+  });
+
+  // Async function that implements the logic
+  async execute(input: z.infer<typeof this.inputSchema>) {
+    // input is automatically validated and typed
+    const { city, units } = input;
+    
+    // Call weather API
+    const weather = await fetchWeather(city, units);
+    
+    // Return structured data
+    return {
+      temperature: weather.temp,
+      condition: weather.condition,
+      city: weather.location
+    };
+  }
+}
+```
+
+### Tool Properties
+
+<ParamField path="name" type="string" required>
+  Unique identifier using only: `a-z`, `A-Z`, `0-9`, `-`, `_`
+  
+  Examples: `get_weather`, `create-product`, `sendEmail123`
+</ParamField>
+
+<ParamField path="description" type="string" required>
+  Clear, concise description (1 sentence) of what the tool does
+  
+  Helps the AI understand when to use this tool
+</ParamField>
+
+<ParamField path="inputSchema" type="ZodType" required>
+  Zod schema that validates inputs at runtime
+  
+  Provides automatic validation and TypeScript types
+</ParamField>
+
+<ParamField path="execute" type="function" required>
+  Async function that implements the tool's logic
+  
+  ```typescript
+  async execute(input: any): Promise<any>
+  ```
+</ParamField>
+
+## Skills vs Tools
+
+<Tabs>
+  <Tab title="Tool">
+    **Single Function**
+    ```typescript
+    // One specific thing
+    class GetWeatherTool {
+      // Gets weather for a city
+    }
+    ```
+  </Tab>
+
+  <Tab title="Skill">
+    **Collection of Tools**
+    ```typescript
+    // Multiple related things
+    new LuaSkill({
+      tools: [
+        new GetWeatherTool(),
+        new GetForecastTool(),
+        new GetAlertstool()
+      ]
+    });
+    ```
+  </Tab>
+</Tabs>
+
+## How It Works
+
+<Steps>
+  <Step title="User Request">
+    User asks the AI: "What's the weather in London?"
+  </Step>
+  
+  <Step title="Tool Selection">
+    AI reads the skill's `context` and determines `get_weather` tool is appropriate
+  </Step>
+  
+  <Step title="Input Validation">
+    AI provides input: `{ city: "London" }`
+    
+    Input is validated against `inputSchema`
+  </Step>
+  
+  <Step title="Tool Execution">
+    The `execute` function runs with validated input
+    
+    Calls weather API and returns structured data
+  </Step>
+  
+  <Step title="AI Response">
+    AI uses the tool's output to form a natural language response
+    
+    "The weather in London is 15°C and cloudy."
+  </Step>
+</Steps>
+
+## Tool Naming Best Practices
+
+<CardGroup cols={2}>
+  <Card title="Good Names" icon="check">
+    - `search_products`
+    - `create_order`
+    - `cancel_booking`
+    - `get_user_profile`
+  </Card>
+  <Card title="Bad Names" icon="xmark">
+    - `do_search` (too generic)
+    - `process` (unclear)
+    - `tool1` (not descriptive)
+    - `get data` (spaces not allowed)
+  </Card>
+</CardGroup>
+
+## Multiple Skills in One Project
+
+You can organize tools into multiple skills:
+
+```typescript
+// Product browsing skill
+const catalogSkill = new LuaSkill({
+  name: "product-catalog-skill",
+  description: "Product browsing and search",
+  tools: [
+    new SearchProductsTool(),
+    new GetProductTool()
+  ]
+});
+
+// Shopping skill
+const shoppingSkill = new LuaSkill({
+  name: "shopping-skill",
+  description: "Shopping cart management",
+  tools: [
+    new CreateBasketTool(),
+    new AddItemTool()
+  ]
+});
+
+// Order fulfillment skill
+const orderSkill = new LuaSkill({
+  name: "order-skill",
+  description: "Order creation and tracking",
+  tools: [
+    new CreateOrderTool(),
+    new TrackOrderTool()
+  ]
+});
+```
+
+### When to Use Multiple Skills
+
+<Tabs>
+  <Tab title="Use Multiple When">
+    - ✅ Tools serve different purposes (e.g., "HR Skill" vs "Sales Skill")
+    - ✅ Different teams own different skills
+    - ✅ Skills have different deployment schedules
+    - ✅ Skills need different permissions
+  </Tab>
+
+  <Tab title="Use Single When">
+    - ✅ Tools work together closely
+    - ✅ Small to medium number of tools (< 20)
+    - ✅ All tools deploy together
+  </Tab>
+</Tabs>
+
+## Example Patterns
+
+### Pattern: CRUD Skill
+
+```typescript
+const dataSkill = new LuaSkill({
+  name: "data-management-skill",
+  description: "Complete CRUD operations",
+  tools: [
+    new CreateTool(),
+    new ReadTool(),
+    new UpdateTool(),
+    new DeleteTool(),
+    new SearchTool()
+  ]
+});
+```
+
+### Pattern: Workflow Skill
+
+```typescript
+const checkoutSkill = new LuaSkill({
+  name: "checkout-skill",
+  description: "Complete purchase workflow",
+  tools: [
+    new CreateBasketTool(),    // Step 1: Create cart
+    new AddItemsTool(),        // Step 2: Add items
+    new ReviewCartTool(),      // Step 3: Review
+    new ApplyDiscountTool(),   // Step 4: Apply discounts
+    new ProcessPaymentTool()   // Step 5: Complete
+  ]
+});
+```
+
+### Pattern: Integration Skill
+
+```typescript
+const integrationSkill = new LuaSkill({
+  name: "external-integrations-skill",
+  description: "Third-party service integrations",
+  tools: [
+    new SendEmailTool(),      // SendGrid
+    new ProcessPaymentTool(), // Stripe
+    new GetWeatherTool(),     // Weather API
+    new TrackShipmentTool()   // Shipping API
+  ]
+});
+```
+
+## Next Steps
+
+<CardGroup cols={2}>
+  <Card
+    title="Platform APIs"
+    icon="plug"
+    href="/concepts/platform-apis"
+  >
+    Learn about built-in APIs for users, products, and data
+  </Card>
+  <Card
+    title="Build Your First Skill"
+    icon="hammer"
+    href="/getting-started/first-skill"
+  >
+    Follow a step-by-step tutorial
+  </Card>
+  <Card
+    title="Tool Examples"
+    icon="layer-group"
+    href="/examples/overview"
+  >
+    Explore 30+ working examples
+  </Card>
+  <Card
+    title="API Reference"
+    icon="book"
+    href="/api/luaskill"
+  >
+    Complete LuaSkill API documentation
+  </Card>
+</CardGroup>
+

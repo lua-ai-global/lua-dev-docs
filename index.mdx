@@ -1,97 +1,208 @@
 ---
-title: "Introduction"
-description: "Welcome to the new home for your documentation"
+title: "Lua CLI Documentation"
+description: "Build AI agents with custom capabilities using TypeScript"
 ---
 
-## Setting up
+## Welcome to Lua CLI
 
-Get your documentation site up and running in minutes.
+Lua CLI is a powerful command-line tool for building, testing, and deploying AI skills. A **skill** is a collection of **tools** (functions) that your AI agent can use to accomplish tasks.
 
 <Card
-  title="Start here"
+  title="Quick Start"
   icon="rocket"
-  href="/quickstart"
+  href="/getting-started/quick-start"
   horizontal
 >
-  Follow our three step quickstart guide.
+  Get your first AI skill running in 5 minutes
 </Card>
 
-## Make it yours
+## What You'll Build
 
-Design a docs site that looks great and empowers your users.
-
-<Columns cols={2}>
+<Columns cols={3}>
   <Card
-    title="Edit locally"
-    icon="pen-to-square"
-    href="/development"
+    title="Skills"
+    icon="puzzle-piece"
   >
-    Edit your docs locally and preview them in real time.
+    Collections of related tools that give your AI specific capabilities
   </Card>
   <Card
-    title="Customize your site"
-    icon="palette"
-    href="/essentials/settings"
+    title="Tools"
+    icon="wrench"
   >
-    Customize the design and colors of your site to match your brand.
-  </Card>
-    <Card
-    title="Set up navigation"
-    icon="map"
-    href="/essentials/navigation"
-  >
-    Organize your docs to help users find what they need and succeed with your product.
+    Individual functions that perform specific tasks like getting weather or creating orders
   </Card>
   <Card
-    title="API documentation"
-    icon="terminal"
-    href="/api-reference/introduction"
+    title="Agents"
+    icon="robot"
   >
-    Auto-generate API documentation from OpenAPI specifications.
+    AI assistants that use your skills to help users accomplish their goals
   </Card>
 </Columns>
 
-## Create beautiful pages
-
-Everything you need to create world-class documentation.
+## Core Features
 
 <Columns cols={2}>
   <Card
-    title="Write with MDX"
-    icon="pen-fancy"
-    href="/essentials/markdown"
-  >
-    Use MDX to style your docs pages.
-  </Card>
-  <Card
-    title="Code samples"
+    title="TypeScript-First"
     icon="code"
-    href="/essentials/code"
   >
-    Add sample code to demonstrate how to use your product.
+    Full type safety with autocomplete and validation using Zod schemas
   </Card>
   <Card
-    title="Images"
-    icon="image"
-    href="/essentials/images"
+    title="Live Reload"
+    icon="arrows-rotate"
   >
-    Display images and other media.
+    Development mode with instant recompilation and testing
   </Card>
   <Card
-    title="Reusable snippets"
-    icon="recycle"
-    href="/essentials/reusable-snippets"
+    title="Platform APIs"
+    icon="plug"
   >
-    Write once and reuse across your docs.
+    Built-in APIs for users, products, baskets, orders, and custom data
+  </Card>
+  <Card
+    title="Vector Search"
+    icon="magnifying-glass"
+  >
+    Semantic search capabilities for building knowledge bases
+  </Card>
+  <Card
+    title="30+ Examples"
+    icon="book"
+  >
+    Complete working examples covering all major use cases
+  </Card>
+  <Card
+    title="Production Ready"
+    icon="check"
+  >
+    Version management, sandbox testing, and one-command deployment
   </Card>
 </Columns>
 
-## Need inspiration?
+## Quick Example
 
-<Card
-  title="See complete examples"
-  icon="stars"
-  href="https://mintlify.com/customers"
->
-  Browse our showcase of exceptional documentation sites.
-</Card>
+```typescript
+import { LuaTool, LuaSkill } from 'lua-cli';
+import { z } from 'zod';
+
+// Define a tool
+class GetWeatherTool implements LuaTool {
+  name = "get_weather";
+  description = "Get current weather for a city";
+  
+  inputSchema = z.object({
+    city: z.string()
+  });
+
+  async execute(input: { city: string }) {
+    // Call weather API
+    return {
+      temperature: 72,
+      condition: "sunny",
+      city: input.city
+    };
+  }
+}
+
+// Create a skill
+const weatherSkill = new LuaSkill({
+  name: "weather-skill",
+  version: "1.0.0",
+  description: "Provides weather information",
+  context: "Use get_weather when users ask about weather",
+  tools: [new GetWeatherTool()]
+});
+```
+
+## Use Cases
+
+<Columns cols={2}>
+  <Card
+    title="Customer Service"
+    icon="headset"
+  >
+    Answer FAQs, look up orders, create tickets, search documentation
+  </Card>
+  <Card
+    title="E-commerce"
+    icon="cart-shopping"
+  >
+    Product search, shopping carts, order processing, inventory
+  </Card>
+  <Card
+    title="Booking Systems"
+    icon="calendar"
+  >
+    Check availability, create appointments, manage reservations
+  </Card>
+  <Card
+    title="Data Management"
+    icon="database"
+  >
+    CRUD operations, semantic search, reporting, integrations
+  </Card>
+</Columns>
+
+## Next Steps
+
+<Steps>
+  <Step title="Install Lua CLI">
+    Install the CLI globally with npm
+    ```bash
+    npm install -g lua-cli
+    ```
+  </Step>
+  <Step title="Authenticate">
+    Set up your API key
+    ```bash
+    lua auth configure
+    ```
+  </Step>
+  <Step title="Create Your First Skill">
+    Initialize a new project
+    ```bash
+    mkdir my-skill && cd my-skill
+    lua init
+    ```
+  </Step>
+  <Step title="Start Development">
+    Test your skill with live reload
+    ```bash
+    lua dev
+    ```
+  </Step>
+</Steps>
+
+## Popular Guides
+
+<CardGroup cols={2}>
+  <Card
+    title="Getting Started"
+    icon="play"
+    href="/getting-started/quick-start"
+  >
+    Complete tutorial from zero to deployed skill
+  </Card>
+  <Card
+    title="API Reference"
+    icon="book-open"
+    href="/api/overview"
+  >
+    Full API documentation with examples
+  </Card>
+  <Card
+    title="Template Guide"
+    icon="layer-group"
+    href="/template/overview"
+  >
+    Understanding the example project with 30+ tools
+  </Card>
+  <Card
+    title="CLI Commands"
+    icon="terminal"
+    href="/cli/overview"
+  >
+    Complete command reference and workflows
+  </Card>
+</CardGroup>

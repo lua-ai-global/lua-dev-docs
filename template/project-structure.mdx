@@ -1,0 +1,303 @@
+---
+title: "Project Structure"
+description: "Understanding the template project organization"
+---
+
+## Overview
+
+The template creates a well-organized project structure designed for building AI skills efficiently.
+
+```
+your-skill/
+├── src/
+│   ├── index.ts           # Skill definitions
+│   ├── tools/             # Tool implementations
+│   └── services/          # Helper services (optional)
+├── dist/                  # Compiled output
+├── .lua/                  # CLI cache
+├── node_modules/          # Dependencies
+├── lua.skill.yaml         # Configuration
+├── package.json           # Project metadata
+├── tsconfig.json          # TypeScript config
+├── .env                   # Environment variables (create this)
+├── .env.example           # Environment template
+├── .gitignore             # Git ignore rules
+└── README.md              # Documentation
+```
+
+## Core Directories
+
+### src/
+
+Contains all your TypeScript source code.
+
+<Tabs>
+  <Tab title="index.ts">
+    **Main entry point - Define your skills here**
+    
+    ```typescript
+    import { LuaSkill } from "lua-cli";
+    import GetWeatherTool from "./tools/GetWeatherTool";
+    
+    const skill = new LuaSkill({
+      name: "my-skill",
+      description: "...",
+      context: "...",
+      tools: [new GetWeatherTool()]
+    });
+    ```
+    
+    This is where you:
+    - Import tool classes
+    - Create LuaSkill instances
+    - Configure skill properties
+  </Tab>
+
+  <Tab title="tools/">
+    **Tool implementations**
+    
+    Each file contains one or more related tools:
+    
+    - `GetWeatherTool.ts` - Single standalone tool
+    - `ProductsTool.ts` - Multiple related tools (CRUD)
+    - `UserDataTool.ts` - Multiple related tools (Get + Update)
+    
+    Example structure:
+    ```typescript
+    export default class MyTool implements LuaTool {
+      name = "my_tool";
+      description = "...";
+      inputSchema = z.object({...});
+      async execute(input) {...}
+    }
+    ```
+  </Tab>
+
+  <Tab title="services/">
+    **Helper services (optional)**
+    
+    Shared utilities and API clients:
+    
+    ```typescript
+    // services/WeatherApi.ts
+    export class WeatherApi {
+      async getWeather(city: string) {
+        // API logic
+      }
+    }
+    ```
+    
+    Use in tools:
+    ```typescript
+    import { WeatherApi } from '../services/WeatherApi';
+    ```
+  </Tab>
+</Tabs>
+
+### dist/
+
+Compiled JavaScript output (auto-generated, don't edit).
+
+```
+dist/
+├── deployment.json       # Deployment metadata
+├── index.js             # Compiled main file
+└── tools/               # Compiled tool bundles
+    └── *.js
+```
+
+### .lua/
+
+CLI cache directory (auto-generated, can delete safely).
+
+## Configuration Files
+
+### lua.skill.yaml
+
+Auto-managed configuration file.
+
+```yaml
+# Agent configuration (set by lua init)
+agent:
+  agentId: agent_abc123
+  orgId: org_xyz789
+  persona: "..."
+  welcomeMessage: "..."
+
+# Skills (auto-populated by lua compile)
+skills:
+  - name: my-skill
+    version: 1.0.0
+    skillId: skill_xyz789  # Auto-created
+
+# Environment variables (manual)
+skill:
+  env:
+    API_KEY: your_key_here
+```
+
+<Warning>
+Don't manually edit `skillId` - it's auto-managed by the CLI!
+</Warning>
+
+### package.json
+
+Node.js package configuration.
+
+```json
+{
+  "name": "your-skill-name",
+  "version": "1.0.0",
+  "scripts": {
+    "test": "lua test",
+    "dev": "lua dev",
+    "compile": "lua compile",
+    "push": "lua push"
+  },
+  "dependencies": {
+    "lua-cli": "^2.0.0",
+    "zod": "^3.0.0"
+  }
+}
+```
+
+### tsconfig.json
+
+TypeScript compiler configuration (pre-configured, rarely needs changes).
+
+### .env
+
+Environment variables for local development.
+
+```bash
+# External API Keys
+STRIPE_API_KEY=sk_test_abc123
+SENDGRID_API_KEY=SG.xyz789
+
+# Configuration
+API_BASE_URL=https://api.example.com
+```
+
+<Warning>
+Add to `.gitignore` - never commit secrets!
+</Warning>
+
+### .env.example
+
+Template for environment variables (commit this).
+
+```bash
+STRIPE_API_KEY=your_stripe_key_here
+SENDGRID_API_KEY=your_sendgrid_key_here
+API_BASE_URL=https://api.example.com
+```
+
+## File Organization Patterns
+
+### Small Project (< 5 tools)
+
+```
+src/
+├── index.ts
+└── tools/
+    └── MyTools.ts    # All tools in one file
+```
+
+### Medium Project (5-15 tools)
+
+```
+src/
+├── index.ts
+└── tools/
+    ├── WeatherTools.ts
+    ├── UserTools.ts
+    └── ProductTools.ts
+```
+
+### Large Project (> 15 tools)
+
+```
+src/
+├── index.ts
+├── tools/
+│   ├── weather/
+│   │   ├── GetWeather.ts
+│   │   └── GetForecast.ts
+│   ├── products/
+│   │   ├── Search.ts
+│   │   ├── Create.ts
+│   │   └── Update.ts
+│   └── orders/
+│       ├── Create.ts
+│       └── Track.ts
+└── services/
+    ├── WeatherApi.ts
+    └── PaymentApi.ts
+```
+
+## What to Commit to Git
+
+### ✅ Commit These
+
+```
+.gitignore
+.env.example
+lua.skill.yaml
+package.json
+tsconfig.json
+README.md
+src/
+```
+
+### ❌ Don't Commit These
+
+```
+.env
+node_modules/
+dist/
+.lua/
+```
+
+### Sample .gitignore
+
+```
+# Dependencies
+node_modules/
+
+# Build output
+dist/
+.lua/
+
+# Environment
+.env
+.env.local
+.env.*.local
+
+# OS
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/
+*.swp
+```
+
+## Next Steps
+
+<CardGroup cols={2}>
+  <Card
+    title="Building Skills"
+    icon="hammer"
+    href="/template/building-skills"
+  >
+    Learn how to build custom skills
+  </Card>
+  <Card
+    title="Best Practices"
+    icon="star"
+    href="/template/best-practices"
+  >
+    Follow recommended patterns
+  </Card>
+</CardGroup>

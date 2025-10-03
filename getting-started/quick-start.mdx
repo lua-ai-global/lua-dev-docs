@@ -1,0 +1,184 @@
+---
+title: "Quick Start"
+description: "Get your first AI skill running in 5 minutes"
+---
+
+## 🚀 Quick Start (5 Minutes)
+
+Get from zero to your first deployed AI skill in minutes.
+
+<Steps>
+  <Step title="Install the CLI">
+    ```bash
+    npm install -g lua-cli
+    ```
+  </Step>
+
+  <Step title="Set up authentication">
+    ```bash
+    lua auth configure
+    ```
+    
+    Choose **Email** and follow the prompts:
+    1. Enter your email
+    2. Check email for 6-digit code
+    3. Enter the code
+    4. Done! API key automatically generated and saved
+  </Step>
+
+  <Step title="Create your first skill">
+    ```bash
+    mkdir my-first-skill && cd my-first-skill
+    lua init
+    ```
+    
+    Choose "Create new agent" and follow prompts to set up your agent
+  </Step>
+
+  <Step title="Test it locally">
+    ```bash
+    lua test
+    ```
+    
+    Select a tool and try it out!
+  </Step>
+
+  <Step title="Start development mode">
+    ```bash
+    lua dev
+    ```
+    
+    Chat with your AI at http://localhost:3000
+  </Step>
+</Steps>
+
+<Check>
+**Congratulations!** You now have a working AI skill! 🎉
+</Check>
+
+## What You Just Created
+
+When you ran `lua init`, you got:
+- ✅ Multiple skill examples
+- ✅ 30+ tool examples
+- ✅ Integration with all Lua platform APIs
+- ✅ TypeScript configuration
+- ✅ Ready to customize and deploy
+
+## Try These Commands
+
+### Test Individual Tools
+
+```bash
+lua test
+```
+
+Select tools to test:
+- `get_weather` - Enter city: "London"
+- `search_products` - Enter query: "laptop"
+- `create_basket` - Create a shopping cart
+
+### Start Dev Mode
+
+```bash
+lua dev
+```
+
+**Opens at http://localhost:3000**
+
+Try these in the chat:
+- "What's the weather in Tokyo?"
+- "Show me your products"
+- "Create a shopping basket"
+- "Add product XYZ to my basket"
+
+## Next Steps
+
+<CardGroup cols={2}>
+  <Card
+    title="Understand the Template"
+    icon="layer-group"
+    href="/template/overview"
+  >
+    Learn about the 30+ example tools included
+  </Card>
+  <Card
+    title="Learn Core Concepts"
+    icon="book"
+    href="/concepts/skills-and-tools"
+  >
+    Understand skills, tools, and how they work
+  </Card>
+  <Card
+    title="Explore CLI Commands"
+    icon="terminal"
+    href="/cli/overview"
+  >
+    Master all available CLI commands
+  </Card>
+  <Card
+    title="API Reference"
+    icon="code"
+    href="/api/overview"
+  >
+    Dive into the complete API documentation
+  </Card>
+</CardGroup>
+
+## Common First Tasks
+
+<AccordionGroup>
+  <Accordion title="Customize an Example Tool">
+    1. Open `src/tools/GetWeatherTool.ts`
+    2. Modify the `execute` function
+    3. Save the file (auto-reloads in dev mode)
+    4. Test in the chat interface
+  </Accordion>
+
+  <Accordion title="Create a New Tool">
+    1. Create `src/tools/MyTool.ts`
+    2. Implement the `LuaTool` interface
+    3. Add to skill in `src/index.ts`
+    4. Run `lua test` to try it
+  </Accordion>
+
+  <Accordion title="Deploy to Production">
+    ```bash
+    lua push      # Upload version
+    lua deploy    # Deploy to production
+    ```
+  </Accordion>
+
+  <Accordion title="Remove Unused Examples">
+    1. Delete tool files you don't need from `src/tools/`
+    2. Update `src/index.ts` to remove references
+    3. Test with `lua test`
+  </Accordion>
+</AccordionGroup>
+
+## Need Help?
+
+<CardGroup cols={3}>
+  <Card
+    title="Documentation"
+    icon="book"
+    href="https://docs.heylua.ai"
+  >
+    Complete guides and references
+  </Card>
+  <Card
+    title="GitHub Issues"
+    icon="github"
+    href="https://github.com/lua-ai/lua-cli/issues"
+  >
+    Report bugs or ask questions
+  </Card>
+  <Card
+    title="Email Support"
+    icon="envelope"
+    href="mailto:support@lua.ai"
+  >
+    Contact our support team
+  </Card>
+</CardGroup>
+

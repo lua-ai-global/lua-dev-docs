@@ -1,43 +1,102 @@
-# Mintlify Starter Kit
+# Lua CLI Documentation
 
-Use the starter kit to get your docs deployed and ready to customize.
+Official documentation for Lua CLI - Build AI agents with custom capabilities using TypeScript.
 
-Click the green **Use this template** button at the top of this repo to copy the Mintlify starter kit. The starter kit contains examples with
+## 🚀 Quick Start
 
-- Guide pages
-- Navigation
-- Customizations
-- API reference pages
-- Use of popular components
+```bash
+# Install dependencies
+npm install
 
-**[Follow the full quickstart guide](https://starter.mintlify.com/quickstart)**
-
-## Development
-
-Install the [Mintlify CLI](https://www.npmjs.com/package/mint) to preview your documentation changes locally. To install, use the following command:
-
-```
-npm i -g mint
-```
-
-Run the following command at the root of your documentation, where your `docs.json` is located:
-
-```
+# Start local development server
+npm run dev
+# or
 mint dev
 ```
 
-View your local preview at `http://localhost:3000`.
+The documentation will be available at `http://localhost:3000`
 
-## Publishing changes
+## 📁 Documentation Structure
 
-Install our GitHub app from your [dashboard](https://dashboard.mintlify.com/settings/organization/github-app) to propagate changes from your repo to your deployment. Changes are deployed to production automatically after pushing to the default branch.
+```
+mintlify-docs/
+├── getting-started/        # Getting started guides
+│   ├── quick-start.mdx
+│   ├── installation.mdx
+│   └── first-skill.mdx
+├── concepts/              # Core concepts
+│   ├── skills-and-tools.mdx
+│   ├── platform-apis.mdx
+│   ├── environment-variables.mdx
+│   └── workflows.mdx
+├── cli/                   # CLI command reference
+│   ├── overview.mdx
+│   ├── authentication.mdx
+│   ├── skill-management.mdx
+│   ├── development.mdx
+│   └── troubleshooting.mdx
+├── api/                   # API reference
+│   ├── overview.mdx
+│   ├── luaskill.mdx
+│   ├── luatool.mdx
+│   ├── user.mdx
+│   ├── data.mdx
+│   ├── products.mdx
+│   ├── baskets.mdx
+│   ├── orders.mdx
+│   └── environment.mdx
+├── template/              # Template guide
+│   ├── overview.mdx
+│   ├── project-structure.mdx
+│   ├── building-skills.mdx
+│   ├── multi-skill-projects.mdx
+│   └── best-practices.mdx
+├── examples/              # Tool examples
+│   ├── overview.mdx
+│   ├── weather.mdx
+│   ├── user-data.mdx
+│   ├── products.mdx
+│   ├── baskets.mdx
+│   ├── custom-data.mdx
+│   └── payment.mdx
+├── docs.json              # Mintlify configuration
+├── index.mdx              # Homepage
+└── README.md              # This file
+```
 
-## Need help?
+## 🎨 Mintlify Features Used
 
-### Troubleshooting
+- **Card & CardGroup**: Feature highlights and navigation
+- **Tabs**: Code examples and comparisons
+- **Steps**: Sequential tutorials
+- **Accordion**: FAQs and collapsible content
+- **Code blocks**: Syntax-highlighted examples
+- **ParamField**: API parameter documentation
 
-- If your dev environment isn't running: Run `mint update` to ensure you have the most recent version of the CLI.
-- If a page loads as a 404: Make sure you are running in a folder with a valid `docs.json`.
+## 📝 Contributing
 
-### Resources
-- [Mintlify documentation](https://mintlify.com/docs)
+### Adding New Pages
+
+1. Create `.mdx` file in appropriate directory
+2. Add frontmatter with `title` and `description`
+3. Add page reference to `docs.json` navigation
+4. Use Mintlify components for rich formatting
+
+### Style Guide
+
+- Use clear, concise language
+- Include code examples for all concepts
+- Add cross-references to related pages
+- Use appropriate Mintlify components
+- Maintain consistent formatting
+
+## 🔗 Links
+
+- **Platform**: https://heylua.ai
+- **GitHub**: https://github.com/lua-ai/lua-cli
+- **npm**: https://www.npmjs.com/package/lua-cli
+- **Support**: support@lua.ai
+
+## 📄 License
+
+This documentation is part of the Lua CLI project.

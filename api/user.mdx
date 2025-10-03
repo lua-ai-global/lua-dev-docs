@@ -1,0 +1,209 @@
+---
+title: "User API"
+description: "Access and manage user profile data"
+---
+
+## Overview
+
+The User API provides access to the current user's profile information.
+
+```typescript
+import { User } from 'lua-cli';
+
+const user = await User.get();
+```
+
+## Methods
+
+### get()
+
+Retrieve the current user's data.
+
+```typescript
+User.get(): Promise<UserData>
+```
+
+**Returns:**
+
+```typescript
+{
+  id: string;
+  email: string;
+  name: string;
+  phone?: string;
+  // Additional user fields
+}
+```
+
+**Example:**
+
+```typescript
+import { User } from 'lua-cli';
+
+const user = await User.get();
+
+console.log(user.name);   // "John Doe"
+console.log(user.email);  // "john@example.com"
+```
+
+## Complete Example
+
+```typescript
+import { LuaTool, User } from 'lua-cli';
+import { z } from 'zod';
+
+export class GetUserProfileTool implements LuaTool {
+  name = "get_user_profile";
+  description = "Retrieve current user's profile information";
+  
+  inputSchema = z.object({});
+
+  async execute(input: any) {
+    const user = await User.get();
+    
+    return {
+      name: user.name,
+      email: user.email,
+      phone: user.phone,
+      memberId: user.id
+    };
+  }
+}
+```
+
+## Use Cases
+
+### Personalized Greetings
+
+```typescript
+export class GreetUserTool implements LuaTool {
+  async execute(input: any) {
+    const user = await User.get();
+    
+    return {
+      message: `Hello ${user.name}! How can I help you today?`
+    };
+  }
+}
+```
+
+### User Verification
+
+```typescript
+export class VerifyUserTool implements LuaTool {
+  async execute(input: any) {
+    const user = await User.get();
+    
+    // Check user has required permissions
+    if (!user.email.endsWith('@company.com')) {
+      throw new Error('Access restricted to company members');
+    }
+    
+    return { verified: true };
+  }
+}
+```
+
+### Audit Logging
+
+```typescript
+export class CreateOrderTool implements LuaTool {
+  async execute(input: any) {
+    const user = await User.get();
+    
+    // Create order with user info
+    const order = await Orders.create({
+      ...input,
+      createdBy: user.email,
+      userId: user.id,
+      customerName: user.name
+    });
+    
+    return order;
+  }
+}
+```
+
+## Best Practices
+
+<AccordionGroup>
+  <Accordion title="Cache User Data">
+    If you need user data multiple times, cache it:
+    
+    ```typescript
+    export class MyTool implements LuaTool {
+      private userCache: any = null;
+      
+      async execute(input: any) {
+        // Get user once
+        if (!this.userCache) {
+          this.userCache = await User.get();
+        }
+        
+        // Use cached data
+        return {
+          user: this.userCache.name
+        };
+      }
+    }
+    ```
+  </Accordion>
+
+  <Accordion title="Handle Missing Fields">
+    Not all fields may be present:
+    
+    ```typescript
+    const user = await User.get();
+    
+    const phone = user.phone || 'Not provided';
+    const name = user.name || 'Guest';
+    ```
+  </Accordion>
+
+  <Accordion title="Don't Expose Sensitive Data">
+    Be careful what you return to the AI:
+    
+    ```typescript
+    // ✅ Good - Only necessary fields
+    return {
+      name: user.name,
+      firstName: user.name.split(' ')[0]
+    };
+    
+    // ❌ Bad - Exposing everything
+    return { user };  // May include sensitive fields
+    ```
+  </Accordion>
+</AccordionGroup>
+
+## Type Definition
+
+```typescript
+interface UserData {
+  id: string;
+  email: string;
+  name: string;
+  phone?: string;
+  [key: string]: any;
+}
+```
+
+## Next Steps
+
+<CardGroup cols={2}>
+  <Card
+    title="Data API"
+    icon="database"
+    href="/api/data"
+  >
+    Store custom user data
+  </Card>
+  <Card
+    title="User Data Examples"
+    icon="layer-group"
+    href="/examples/user-data"
+  >
+    See working examples
+  </Card>
+</CardGroup>
+

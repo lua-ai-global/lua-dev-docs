@@ -1,0 +1,439 @@
+---
+title: "CLI Overview"
+description: "Command-line interface for building and deploying AI skills"
+---
+
+## Quick Command Reference
+
+<CardGroup cols={3}>
+  <Card title="lua init" icon="plus">
+    Initialize new skill project
+  </Card>
+  <Card title="lua test" icon="flask">
+    Test tools interactively
+  </Card>
+  <Card title="lua dev" icon="code">
+    Development mode with live reload
+  </Card>
+  <Card title="lua push" icon="upload">
+    Upload version to server
+  </Card>
+  <Card title="lua deploy" icon="rocket">
+    Deploy to production
+  </Card>
+  <Card title="lua compile" icon="gears">
+    Compile TypeScript code
+  </Card>
+</CardGroup>
+
+## Command Categories
+
+### Authentication
+
+<Tabs>
+  <Tab title="configure">
+    Set up API key authentication
+    ```bash
+    lua auth configure
+    ```
+    
+    Choose between:
+    - **Email**: OTP verification
+    - **API Key**: Existing key
+    
+    <Card title="Learn More" href="/cli/authentication" />
+  </Tab>
+
+  <Tab title="key">
+    Display stored API key
+    ```bash
+    lua auth key
+    ```
+    
+    Shows key after confirmation prompt
+  </Tab>
+
+  <Tab title="logout">
+    Delete stored credentials
+    ```bash
+    lua auth logout
+    ```
+    
+    Removes key from system keychain
+  </Tab>
+</Tabs>
+
+### Skill Management
+
+<Tabs>
+  <Tab title="init">
+    Create new skill project
+    ```bash
+    mkdir my-skill && cd my-skill
+    lua init
+    ```
+    
+    Creates:
+    - Template project structure
+    - 30+ example tools
+    - TypeScript configuration
+    - `lua.skill.yaml` config
+    
+    <Card title="Learn More" href="/cli/skill-management#init" />
+  </Tab>
+
+  <Tab title="compile">
+    Compile TypeScript to JavaScript
+    ```bash
+    lua compile
+    ```
+    
+    Automatically:
+    - Detects all tools
+    - Bundles with esbuild
+    - Creates deployment artifacts
+    - Updates skill IDs
+    
+    <Card title="Learn More" href="/cli/skill-management#compile" />
+  </Tab>
+
+  <Tab title="test">
+    Test tools interactively
+    ```bash
+    lua test
+    ```
+    
+    Features:
+    - Select tool from list
+    - Dynamic input prompts
+    - Secure sandbox execution
+    - Detailed error reporting
+    
+    <Card title="Learn More" href="/cli/skill-management#test" />
+  </Tab>
+
+  <Tab title="push">
+    Upload version to server
+    ```bash
+    lua push
+    ```
+    
+    - Compiles code
+    - Validates configuration
+    - Uploads to server
+    - Creates new version
+    
+    <Card title="Learn More" href="/cli/skill-management#push" />
+  </Tab>
+
+  <Tab title="deploy">
+    Deploy to production
+    ```bash
+    lua deploy
+    ```
+    
+    - Lists available versions
+    - Shows current version
+    - Requires confirmation
+    - Immediate deployment
+    
+    <Card title="Learn More" href="/cli/skill-management#deploy" />
+  </Tab>
+
+  <Tab title="dev">
+    Development mode
+    ```bash
+    lua dev
+    ```
+    
+    Features:
+    - Chat interface at :3000
+    - Live file watching
+    - Auto-recompile
+    - WebSocket logs
+    - Environment editor
+    
+    <Card title="Learn More" href="/cli/development" />
+  </Tab>
+</Tabs>
+
+## Common Workflows
+
+### New Project Workflow
+
+<Steps>
+  <Step title="Authenticate">
+    ```bash
+    lua auth configure
+    ```
+  </Step>
+  
+  <Step title="Initialize">
+    ```bash
+    mkdir my-skill && cd my-skill
+    lua init
+    ```
+  </Step>
+  
+  <Step title="Test">
+    ```bash
+    lua test
+    ```
+  </Step>
+  
+  <Step title="Develop">
+    ```bash
+    lua dev
+    ```
+  </Step>
+  
+  <Step title="Deploy">
+    ```bash
+    lua push
+    lua deploy
+    ```
+  </Step>
+</Steps>
+
+### Development Workflow
+
+<Steps>
+  <Step title="Start Dev Mode">
+    ```bash
+    lua dev
+    ```
+    
+    Keep this running while developing
+  </Step>
+  
+  <Step title="Edit Files">
+    Make changes to `src/tools/*.ts`
+    
+    Files auto-reload on save
+  </Step>
+  
+  <Step title="Test in Browser">
+    Test at http://localhost:3000
+    
+    Try tools in chat interface
+  </Step>
+  
+  <Step title="Push When Ready">
+    ```bash
+    lua push
+    ```
+    
+    Upload new version
+  </Step>
+  
+  <Step title="Deploy to Production">
+    ```bash
+    lua deploy
+    ```
+    
+    Make available to all users
+  </Step>
+</Steps>
+
+### Quick Fix Workflow
+
+```bash
+# Edit the tool
+vim src/tools/MyTool.ts
+
+# Test it
+lua test
+
+# Push and deploy
+lua push && lua deploy
+```
+
+## Global Flags
+
+All commands support:
+
+```bash
+--help       Show command help
+--version    Show CLI version
+```
+
+## Environment Variables
+
+Commands automatically load environment variables from:
+
+<Steps>
+  <Step title="System Environment">
+    Variables from your shell
+  </Step>
+  <Step title=".env File">
+    Variables from project `.env`
+  </Step>
+  <Step title="lua.skill.yaml">
+    Variables from skill config
+  </Step>
+</Steps>
+
+<Card title="Learn More" href="/concepts/environment-variables" />
+
+## Error Handling
+
+All commands include:
+- ✅ Descriptive error messages
+- ✅ Exit codes (0 = success, 1 = error)
+- ✅ Troubleshooting hints
+
+### Common Errors
+
+<AccordionGroup>
+  <Accordion title="No API key found">
+    ```
+    ❌ No API key found. Run `lua auth configure` first.
+    ```
+    
+    **Solution**: Run `lua auth configure`
+  </Accordion>
+
+  <Accordion title="No lua.skill.yaml found">
+    ```
+    ❌ No lua.skill.yaml found. Please run this command from a skill directory.
+    ```
+    
+    **Solution**: Run command from skill directory or run `lua init` first
+  </Accordion>
+
+  <Accordion title="Version already exists">
+    ```
+    ❌ Version 1.0.0 already exists on the server
+    ```
+    
+    **Solution**: Increment version in `lua.skill.yaml`
+  </Accordion>
+
+  <Accordion title="Compilation failed">
+    ```
+    ❌ No index.ts found in current directory or src/ directory
+    ```
+    
+    **Solution**: Create `index.ts` or `src/index.ts` with skill definition
+  </Accordion>
+</AccordionGroup>
+
+<Card title="More Troubleshooting" href="/cli/troubleshooting" />
+
+## Configuration File
+
+### lua.skill.yaml
+
+Auto-managed configuration file:
+
+```yaml
+# Agent configuration
+agent:
+  agentId: agent_abc123
+  orgId: org_xyz789
+  persona: "..."
+  welcomeMessage: "..."
+
+# Multi-skill support
+skills:
+  - name: my-skill
+    version: 1.0.0
+    skillId: skill_abc123  # Auto-created
+
+# Environment variables
+skill:
+  env:
+    API_KEY: your_key_here
+```
+
+**Auto-managed fields:**
+- `skillId` - Created during compilation
+- `skills` array - Populated from code
+
+**Manual fields:**
+- `agentId` - Set during `lua init`
+- `orgId` - Set during `lua init`
+- `version` - Update when releasing
+- `env` - Set your variables
+
+## System Requirements
+
+<CardGroup cols={2}>
+  <Card title="Node.js" icon="node-js">
+    Version 16.0.0 or higher
+  </Card>
+  <Card title="npm" icon="npm">
+    Version 7.0.0 or higher
+  </Card>
+  <Card title="TypeScript" icon="code">
+    Included in template (knowledge helpful)
+  </Card>
+  <Card title="Git" icon="git">
+    Optional but recommended
+  </Card>
+</CardGroup>
+
+## Storage Locations
+
+<Tabs>
+  <Tab title="Credentials">
+    **System Keychain**
+    - macOS: Keychain
+    - Windows: Credential Vault
+    - Linux: libsecret
+  </Tab>
+
+  <Tab title="Project Files">
+    **Your Project Directory**
+    ```
+    your-skill/
+    ├── src/          # Your code
+    ├── dist/         # Compiled output
+    ├── .lua/         # CLI cache
+    ├── node_modules/ # Dependencies
+    └── lua.skill.yaml
+    ```
+  </Tab>
+
+  <Tab title="Temporary">
+    **Build Artifacts**
+    - `dist/` - Deployment bundles
+    - `.lua/` - Compilation cache
+    
+    Safe to delete, will be regenerated
+  </Tab>
+</Tabs>
+
+## Next Steps
+
+<CardGroup cols={2}>
+  <Card
+    title="Authentication"
+    icon="key"
+    href="/cli/authentication"
+  >
+    Set up API key authentication
+  </Card>
+  <Card
+    title="Skill Management"
+    icon="wrench"
+    href="/cli/skill-management"
+  >
+    Learn all skill management commands
+  </Card>
+  <Card
+    title="Development Mode"
+    icon="code"
+    href="/cli/development"
+  >
+    Master development workflow
+  </Card>
+  <Card
+    title="Troubleshooting"
+    icon="circle-question"
+    href="/cli/troubleshooting"
+  >
+    Solve common issues
+  </Card>
+</CardGroup>
+

@@ -1,0 +1,356 @@
+---
+title: "Building Skills"
+description: "Step-by-step guide to creating custom skills"
+---
+
+## Building Process
+
+<Steps>
+  <Step title="Plan Your Skill">
+    Define what your skill will do and what tools it needs
+  </Step>
+  
+  <Step title="Create Tools">
+    Implement tools as TypeScript classes
+  </Step>
+  
+  <Step title="Define Skill">
+    Add tools to a LuaSkill instance in `index.ts`
+  </Step>
+  
+  <Step title="Test Locally">
+    Test with `lua test` and `lua dev`
+  </Step>
+  
+  <Step title="Deploy">
+    Push and deploy to production
+  </Step>
+</Steps>
+
+## Complete Example: Task Management Skill
+
+### Step 1: Plan
+
+**Goal**: Build a skill to manage tasks
+
+**Tools needed**:
+- `create_task` - Add new tasks
+- `list_tasks` - View all tasks
+- `complete_task` - Mark tasks as done
+- `search_tasks` - Find tasks
+
+### Step 2: Create Tools
+
+Create `src/tools/TaskTools.ts`:
+
+```typescript
+import { LuaTool, Data } from "lua-cli";
+import { z } from "zod";
+
+export class CreateTaskTool implements LuaTool {
+  name = "create_task";
+  description = "Create a new task";
+  
+  inputSchema = z.object({
+    title: z.string(),
+    description: z.string().optional(),
+    priority: z.enum(['low', 'medium', 'high']).default('medium')
+  });
+
+  async execute(input: z.infer<typeof this.inputSchema>) {
+    const task = await Data.create('tasks', {
+      ...input,
+      status: 'pending',
+      createdAt: new Date().toISOString()
+    }, `${input.title} ${input.description || ''}`);
+    
+    return {
+      taskId: task.id,
+      message: `Task "${input.title}" created`
+    };
+  }
+}
+
+export class ListTasksTool implements LuaTool {
+  name = "list_tasks";
+  description = "List all tasks";
+  inputSchema = z.object({});
+
+  async execute(input: any) {
+    const result = await Data.get('tasks', {}, 1, 50);
+    
+    return {
+      tasks: result.data.map(entry => ({
+        id: entry.id,
+        ...entry.data
+      })),
+      count: result.pagination.totalCount
+    };
+  }
+}
+
+export class CompleteTaskTool implements LuaTool {
+  name = "complete_task";
+  description = "Mark a task as completed";
+  
+  inputSchema = z.object({
+    taskId: z.string()
+  });
+
+  async execute(input: z.infer<typeof this.inputSchema>) {
+    const task = await Data.getEntry('tasks', input.taskId);
+    
+    await Data.update('tasks', input.taskId, {
+      ...task.data,
+      status: 'completed',
+      completedAt: new Date().toISOString()
+    });
+    
+    return {
+      success: true,
+      message: `Task completed!`
+    };
+  }
+}
+```
+
+### Step 3: Define Skill
+
+Update `src/index.ts`:
+
+```typescript
+import { LuaSkill } from "lua-cli";
+import {
+  CreateTaskTool,
+  ListTasksTool,
+  CompleteTaskTool
+} from "./tools/TaskTools";
+
+const taskSkill = new LuaSkill({
+  name: "task-management-skill",
+  version: "1.0.0",
+  description: "Manage tasks and to-do lists",
+  context: `
+    This skill helps users manage their tasks.
+    
+    - Use create_task when users want to add a new task
+    - Use list_tasks to show all tasks
+    - Use complete_task when users finish a task
+    
+    Always confirm task details before creating.
+    When listing tasks, organize by priority.
+  `,
+  tools: [
+    new CreateTaskTool(),
+    new ListTasksTool(),
+    new CompleteTaskTool()
+  ]
+});
+```
+
+### Step 4: Test
+
+```bash
+# Test individual tools
+lua test
+
+# Test conversationally
+lua dev
+```
+
+### Step 5: Deploy
+
+```bash
+lua push
+lua deploy
+```
+
+## Best Practices
+
+<AccordionGroup>
+  <Accordion title="Start Simple">
+    Build one tool at a time:
+    
+    1. Create basic version
+    2. Test thoroughly
+    3. Add more features
+    4. Test again
+  </Accordion>
+
+  <Accordion title="Use Descriptive Names">
+    ```typescript
+    // ✅ Good
+    name = "create_task"
+    name = "search_products"
+    name = "send_email"
+    
+    // ❌ Bad
+    name = "task1"
+    name = "do_stuff"
+    name = "tool"
+    ```
+  </Accordion>
+
+  <Accordion title="Write Clear Descriptions">
+    ```typescript
+    // ✅ Good
+    description = "Create a new task with title, description, and priority"
+    
+    // ❌ Bad
+    description = "Creates tasks"
+    ```
+  </Accordion>
+
+  <Accordion title="Validate Inputs">
+    Use Zod for comprehensive validation:
+    ```typescript
+    inputSchema = z.object({
+      email: z.string().email(),
+      age: z.number().min(0).max(120),
+      priority: z.enum(['low', 'medium', 'high'])
+    });
+    ```
+  </Accordion>
+
+  <Accordion title="Handle Errors Gracefully">
+    ```typescript
+    async execute(input: any) {
+      try {
+        const result = await api.call(input);
+        return result;
+      } catch (error) {
+        throw new Error(
+          `Failed to process request: ${error.message}`
+        );
+      }
+    }
+    ```
+  </Accordion>
+
+  <Accordion title="Return Structured Data">
+    ```typescript
+    // ✅ Good - Structured
+    return {
+      success: true,
+      taskId: task.id,
+      message: "Task created"
+    };
+    
+    // ❌ Bad - Unstructured
+    return "Task created with ID 123";
+    ```
+  </Accordion>
+</AccordionGroup>
+
+## Common Patterns
+
+### CRUD Pattern
+
+```typescript
+// Create
+export class CreateItemTool {
+  async execute(input) {
+    return await Data.create('items', input);
+  }
+}
+
+// Read
+export class GetItemTool {
+  async execute(input) {
+    return await Data.getEntry('items', input.id);
+  }
+}
+
+// Update
+export class UpdateItemTool {
+  async execute(input) {
+    return await Data.update('items', input.id, input.data);
+  }
+}
+
+// Delete
+export class DeleteItemTool {
+  async execute(input) {
+    return await Data.delete('items', input.id);
+  }
+}
+```
+
+### Search Pattern
+
+```typescript
+export class SearchTool {
+  async execute(input: { query: string }) {
+    // Vector search
+    const results = await Data.search(
+      'items',
+      input.query,
+      10,
+      0.7
+    );
+    
+    return {
+      items: results.data,
+      count: results.count
+    };
+  }
+}
+```
+
+### External API Pattern
+
+```typescript
+export class ExternalApiTool {
+  async execute(input: any) {
+    // Get API key from environment
+    const apiKey = env('EXTERNAL_API_KEY');
+    
+    if (!apiKey) {
+      throw new Error('API key not configured');
+    }
+    
+    // Call external API
+    const response = await fetch(apiUrl, {
+      headers: {
+        'Authorization': `Bearer ${apiKey}`
+      }
+    });
+    
+    return await response.json();
+  }
+}
+```
+
+## Next Steps
+
+<CardGroup cols={2}>
+  <Card
+    title="Multi-Skill Projects"
+    icon="layer-group"
+    href="/template/multi-skill-projects"
+  >
+    Organize tools into multiple skills
+  </Card>
+  <Card
+    title="Best Practices"
+    icon="star"
+    href="/template/best-practices"
+  >
+    Advanced tips and patterns
+  </Card>
+  <Card
+    title="Tool Examples"
+    icon="wrench"
+    href="/examples/overview"
+  >
+    See 30+ working examples
+  </Card>
+  <Card
+    title="Build Your First Skill"
+    icon="hammer"
+    href="/getting-started/first-skill"
+  >
+    Follow complete tutorial
+  </Card>
+</CardGroup>
+

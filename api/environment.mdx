@@ -1,0 +1,381 @@
+---
+title: "Environment Utilities"
+description: "Secure environment variable management"
+---
+
+## env()
+
+Safely access environment variables in your tools.
+
+```typescript
+import { env } from 'lua-cli';
+
+const apiKey = env('API_KEY');
+const baseUrl = env('API_BASE_URL') || 'https://default.com';
+```
+
+## Function Signature
+
+```typescript
+env(key: string): string | undefined
+```
+
+<ParamField path="key" type="string" required>
+  Environment variable name to retrieve
+</ParamField>
+
+**Returns**: `string | undefined` - Value of the environment variable, or `undefined` if not set
+
+## Loading Priority
+
+Environment variables are loaded in this order (later overrides earlier):
+
+<Steps>
+  <Step title="System Environment">
+    Variables from your shell/system
+    ```bash
+    export API_KEY=value
+    ```
+  </Step>
+  
+  <Step title=".env File">
+    Variables from project `.env` file
+    ```bash
+    # .env
+    API_KEY=value
+    ```
+  </Step>
+  
+  <Step title="lua.skill.yaml">
+    Variables from skill configuration
+    ```yaml
+    skill:
+      env:
+        API_KEY: value
+    ```
+  </Step>
+</Steps>
+
+## Examples
+
+### Basic Usage
+
+```typescript
+import { env } from 'lua-cli';
+
+export class MyTool implements LuaTool {
+  async execute(input: any) {
+    const apiKey = env('STRIPE_API_KEY');
+    
+    if (!apiKey) {
+      throw new Error('STRIPE_API_KEY not configured');
+    }
+    
+    // Use the API key...
+    const response = await fetch('https://api.stripe.com/v1/...', {
+      headers: {
+        'Authorization': `Bearer ${apiKey}`
+      }
+    });
+    
+    return await response.json();
+  }
+}
+```
+
+### With Default Values
+
+```typescript
+const apiUrl = env('API_BASE_URL') || 'https://api.example.com';
+const maxRetries = parseInt(env('MAX_RETRIES') || '3');
+const debug = env('DEBUG') === 'true';
+const timeout = Number(env('TIMEOUT') || 5000);
+```
+
+### Multiple Environment Variables
+
+```typescript
+export class EmailTool implements LuaTool {
+  async execute(input: any) {
+    // Get all required variables
+    const apiKey = env('SENDGRID_API_KEY');
+    const fromEmail = env('FROM_EMAIL');
+    const fromName = env('FROM_NAME') || 'Support Team';
+    
+    // Validate required variables
+    if (!apiKey) {
+      throw new Error('SENDGRID_API_KEY is required');
+    }
+    if (!fromEmail) {
+      throw new Error('FROM_EMAIL is required');
+    }
+    
+    // Use variables...
+  }
+}
+```
+
+### Environment-Specific Configuration
+
+```typescript
+export class ApiTool implements LuaTool {
+  async execute(input: any) {
+    const environment = env('NODE_ENV') || 'development';
+    
+    // Use different config based on environment
+    const apiKey = environment === 'production'
+      ? env('PROD_API_KEY')
+      : env('DEV_API_KEY');
+    
+    const baseUrl = environment === 'production'
+      ? 'https://api.example.com'
+      : 'https://api-dev.example.com';
+    
+    // Use environment-specific values...
+  }
+}
+```
+
+## Setting Variables
+
+### Method 1: .env File (Local Development)
+
+Create `.env` in project root:
+
+```bash
+# .env
+STRIPE_API_KEY=sk_test_abc123
+SENDGRID_API_KEY=SG.xyz789
+API_BASE_URL=https://api.example.com
+MAX_RETRIES=3
+DEBUG=true
+```
+
+<Warning>
+Add `.env` to `.gitignore` - never commit secrets!
+</Warning>
+
+Create `.env.example` for documentation:
+
+```bash
+# .env.example
+STRIPE_API_KEY=your_stripe_key_here
+SENDGRID_API_KEY=your_sendgrid_key_here
+API_BASE_URL=https://api.example.com
+```
+
+### Method 2: lua.skill.yaml (Production)
+
+Add to skill configuration:
+
+```yaml
+skill:
+  env:
+    STRIPE_API_KEY: sk_live_production_key
+    SENDGRID_API_KEY: SG.production_key
+    API_BASE_URL: https://prod.api.example.com
+```
+
+### Method 3: System Environment
+
+Set in your shell:
+
+```bash
+# Temporary (current session)
+export API_KEY=value
+
+# Permanent (add to ~/.bashrc or ~/.zshrc)
+echo 'export API_KEY=value' >> ~/.bashrc
+```
+
+## Best Practices
+
+<AccordionGroup>
+  <Accordion title="Validate Required Variables">
+    ```typescript
+    const apiKey = env('REQUIRED_KEY');
+    
+    if (!apiKey) {
+      throw new Error(
+        'REQUIRED_KEY environment variable is not set. ' +
+        'Please add it to your .env file or lua.skill.yaml'
+      );
+    }
+    ```
+  </Accordion>
+
+  <Accordion title="Use Descriptive Names">
+    ```typescript
+    // ✅ Good
+    env('STRIPE_API_KEY')
+    env('SENDGRID_API_KEY')
+    env('WEATHER_API_KEY')
+    
+    // ❌ Bad
+    env('KEY1')
+    env('SECRET')
+    env('TOKEN')
+    ```
+  </Accordion>
+
+  <Accordion title="Provide Defaults for Non-Secrets">
+    ```typescript
+    // Configuration with sensible defaults
+    const apiUrl = env('API_URL') || 'https://api.example.com';
+    const timeout = parseInt(env('TIMEOUT') || '5000');
+    const retries = parseInt(env('MAX_RETRIES') || '3');
+    
+    // But NOT for secrets
+    const apiKey = env('API_KEY'); // No default!
+    if (!apiKey) throw new Error('API_KEY required');
+    ```
+  </Accordion>
+
+  <Accordion title="Don't Log Sensitive Values">
+    ```typescript
+    const apiKey = env('API_KEY');
+    
+    // ❌ Bad - Exposes secret
+    console.log('API Key:', apiKey);
+    
+    // ✅ Good - Masked
+    console.log('API Key:', apiKey ? '***' : 'not set');
+    console.log('API Key configured:', !!apiKey);
+    ```
+  </Accordion>
+
+  <Accordion title="Type Conversion">
+    Environment variables are always strings. Convert when needed:
+    
+    ```typescript
+    // Numbers
+    const port = parseInt(env('PORT') || '3000');
+    const timeout = Number(env('TIMEOUT') || 5000);
+    
+    // Booleans
+    const debug = env('DEBUG') === 'true';
+    const enabled = env('FEATURE_ENABLED') !== 'false';
+    
+    // Arrays
+    const hosts = (env('ALLOWED_HOSTS') || '').split(',');
+    ```
+  </Accordion>
+</AccordionGroup>
+
+## Common Patterns
+
+### Pattern: Required Variable
+
+```typescript
+function getRequiredEnv(key: string): string {
+  const value = env(key);
+  if (!value) {
+    throw new Error(`${key} environment variable is required`);
+  }
+  return value;
+}
+
+// Usage
+const apiKey = getRequiredEnv('STRIPE_API_KEY');
+```
+
+### Pattern: Validation
+
+```typescript
+const apiKey = env('API_KEY');
+
+if (apiKey && !apiKey.startsWith('sk_')) {
+  throw new Error('API_KEY must start with sk_');
+}
+
+if (apiKey && apiKey.length < 32) {
+  throw new Error('API_KEY is too short');
+}
+```
+
+### Pattern: Caching
+
+```typescript
+export class MyTool implements LuaTool {
+  private static cachedApiKey: string | null = null;
+  
+  private getApiKey(): string {
+    if (!MyTool.cachedApiKey) {
+      MyTool.cachedApiKey = env('API_KEY');
+      if (!MyTool.cachedApiKey) {
+        throw new Error('API_KEY not configured');
+      }
+    }
+    return MyTool.cachedApiKey;
+  }
+  
+  async execute(input: any) {
+    const apiKey = this.getApiKey();
+    // Use cached key...
+  }
+}
+```
+
+## Security
+
+<Warning>
+**Never commit secrets to version control!**
+
+- Add `.env` to `.gitignore`
+- Use `.env.example` for documentation
+- Store production secrets in `lua.skill.yaml` or secure vault
+- Rotate keys regularly
+</Warning>
+
+### .gitignore
+
+```
+# .gitignore
+.env
+.env.local
+.env.*.local
+```
+
+## Troubleshooting
+
+<AccordionGroup>
+  <Accordion title="Variable not found">
+    **Problem**: `env('MY_VAR')` returns `undefined`
+    
+    **Solutions**:
+    1. Check spelling in `.env` file
+    2. Ensure `.env` is in project root
+    3. Restart CLI command (variables loaded at startup)
+    4. Check `lua.skill.yaml` for typos
+  </Accordion>
+
+  <Accordion title="Changes not taking effect">
+    **Problem**: Updated `.env` but value unchanged
+    
+    **Solution**: Restart the command:
+    ```bash
+    # Stop (Ctrl+C)
+    lua dev  # Start again
+    ```
+  </Accordion>
+</AccordionGroup>
+
+## Next Steps
+
+<CardGroup cols={2}>
+  <Card
+    title="Environment Variables Guide"
+    icon="key"
+    href="/concepts/environment-variables"
+  >
+    Complete guide to configuration
+  </Card>
+  <Card
+    title="Payment Tool Example"
+    icon="credit-card"
+    href="/examples/payment"
+  >
+    See environment variables in action
+  </Card>
+</CardGroup>
+

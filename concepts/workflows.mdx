@@ -1,0 +1,502 @@
+---
+title: "Development Workflows"
+description: "Best practices for developing, testing, and deploying skills"
+---
+
+## Development Lifecycle
+
+<Steps>
+  <Step title="Local Development">
+    Build and test your skills locally with live reload
+    ```bash
+    lua dev
+    ```
+  </Step>
+  
+  <Step title="Testing">
+    Test individual tools and conversational flows
+    ```bash
+    lua test
+    ```
+  </Step>
+  
+  <Step title="Push to Server">
+    Upload your skill version to the server
+    ```bash
+    lua push
+    ```
+  </Step>
+  
+  <Step title="Sandbox Testing">
+    Test in sandbox environment before production
+    ```bash
+    lua dev
+    ```
+  </Step>
+  
+  <Step title="Deploy to Production">
+    Make your skill available to all users
+    ```bash
+    lua deploy
+    ```
+  </Step>
+</Steps>
+
+## Local Development Workflow
+
+### Starting Development
+
+```bash
+# Start dev mode
+lua dev
+```
+
+This:
+1. Compiles your TypeScript code
+2. Pushes to sandbox environment
+3. Opens chat interface at http://localhost:3000
+4. Watches for file changes
+5. Auto-recompiles and pushes on save
+
+### The Development Loop
+
+<Tabs>
+  <Tab title="Edit">
+    Edit files in `src/tools/`:
+    ```typescript
+    // src/tools/MyTool.ts
+    export default class MyTool implements LuaTool {
+      name = "my_tool";
+      description = "Updated description";
+      
+      async execute(input: any) {
+        // Your changes here
+      }
+    }
+    ```
+  </Tab>
+
+  <Tab title="Save">
+    Save the file (Cmd+S / Ctrl+S)
+    
+    CLI automatically:
+    - Detects the change
+    - Recompiles the code
+    - Pushes to sandbox
+    - Logs the status
+  </Tab>
+
+  <Tab title="Test">
+    Test in the browser at http://localhost:3000
+    
+    Try your tool:
+    - In chat interface
+    - In tools panel
+    - With different inputs
+  </Tab>
+
+  <Tab title="Iterate">
+    Repeat: Edit → Save → Test
+    
+    No need to restart the server!
+  </Tab>
+</Tabs>
+
+### Live Reload Features
+
+<CardGroup cols={2}>
+  <Card title="Auto-Compilation" icon="gears">
+    TypeScript automatically compiled to JavaScript
+  </Card>
+  <Card title="Auto-Push" icon="upload">
+    Changes automatically pushed to sandbox
+  </Card>
+  <Card title="Chat Interface" icon="comments">
+    Test conversational flows in real-time
+  </Card>
+  <Card title="Tool Testing" icon="wrench">
+    Test individual tools with custom inputs
+  </Card>
+  <Card title="WebSocket Logs" icon="terminal">
+    Real-time log streaming
+  </Card>
+  <Card title="Environment Editor" icon="key">
+    Edit environment variables in UI
+  </Card>
+</CardGroup>
+
+## Testing Workflow
+
+### Interactive Tool Testing
+
+Test individual tools before conversational testing:
+
+```bash
+lua test
+```
+
+<Steps>
+  <Step title="Select Tool">
+    Choose from list of available tools
+  </Step>
+  
+  <Step title="Enter Inputs">
+    Provide values based on tool's schema
+  </Step>
+  
+  <Step title="View Results">
+    See execution results or errors
+  </Step>
+  
+  <Step title="Iterate">
+    Fix issues and test again
+  </Step>
+</Steps>
+
+### Conversational Testing
+
+Test how the AI uses your tools:
+
+```bash
+lua dev
+```
+
+**Test Scenarios:**
+
+<AccordionGroup>
+  <Accordion title="Happy Path">
+    Test the ideal user journey
+    - "Show me products"
+    - "Add laptop to cart"
+    - "Checkout"
+  </Accordion>
+
+  <Accordion title="Edge Cases">
+    Test unusual but valid inputs
+    - Empty results
+    - Maximum values
+    - Optional parameters
+  </Accordion>
+
+  <Accordion title="Error Handling">
+    Test invalid inputs
+    - Missing required fields
+    - Invalid data types
+    - Out of range values
+  </Accordion>
+
+  <Accordion title="Multi-Step Flows">
+    Test complex workflows
+    - Create → Add → Update → Delete
+    - Search → Select → Checkout
+  </Accordion>
+</AccordionGroup>
+
+## Version Management
+
+### Semantic Versioning
+
+Use semantic versioning: `MAJOR.MINOR.PATCH`
+
+```yaml
+# lua.skill.yaml
+skills:
+  - name: my-skill
+    version: 1.2.3
+```
+
+**When to increment:**
+
+<Tabs>
+  <Tab title="PATCH (1.2.3 → 1.2.4)">
+    Bug fixes and minor improvements
+    - Fixed error handling
+    - Updated descriptions
+    - Performance improvements
+  </Tab>
+
+  <Tab title="MINOR (1.2.3 → 1.3.0)">
+    New features, backward compatible
+    - Added new tool
+    - New optional parameters
+    - Enhanced functionality
+  </Tab>
+
+  <Tab title="MAJOR (1.2.3 → 2.0.0)">
+    Breaking changes
+    - Removed tool
+    - Changed required parameters
+    - Renamed tools
+  </Tab>
+</Tabs>
+
+### Pushing Versions
+
+```bash
+# Update version in lua.skill.yaml
+# skills:
+#   - name: my-skill
+#     version: 1.1.0
+
+# Push to server
+lua push
+```
+
+Each push creates a new version that can be deployed independently.
+
+## Deployment Workflow
+
+### Sandbox Testing
+
+Before deploying to production, test in sandbox:
+
+```bash
+# Push latest version
+lua push
+
+# Test in sandbox
+lua dev
+
+# Verify everything works
+```
+
+### Deploying to Production
+
+When ready, deploy to all users:
+
+```bash
+lua deploy
+```
+
+<Steps>
+  <Step title="Select Version">
+    Choose which version to deploy from list
+  </Step>
+  
+  <Step title="Confirm">
+    Confirm the deployment (shows warning)
+  </Step>
+  
+  <Step title="Deploy">
+    Version is deployed to production
+  </Step>
+  
+  <Step title="Verify">
+    Test with real users or in production chat
+  </Step>
+</Steps>
+
+<Warning>
+**Deployment is immediate!** All users will get the new version right away.
+</Warning>
+
+## Best Practices
+
+### Development
+
+<Tabs>
+  <Tab title="Start Simple">
+    Build one tool at a time
+    - Create basic version
+    - Test thoroughly
+    - Add complexity gradually
+  </Tab>
+
+  <Tab title="Use Dev Mode">
+    Keep `lua dev` running while developing
+    - Instant feedback
+    - Live reload
+    - Real-time testing
+  </Tab>
+
+  <Tab title="Test Edge Cases">
+    Don't just test happy paths
+    - Invalid inputs
+    - Empty results
+    - Error conditions
+  </Tab>
+</Tabs>
+
+### Version Control
+
+<CodeGroup>
+
+```bash .gitignore
+# Always ignore
+.env
+.env.local
+node_modules/
+dist/
+.lua/
+
+# Keep these
+.env.example
+lua.skill.yaml
+src/
+```
+
+```bash Commit Messages
+# Good commit messages
+git commit -m "feat: add search functionality to products"
+git commit -m "fix: handle empty basket in checkout"
+git commit -m "docs: update tool descriptions"
+```
+
+</CodeGroup>
+
+### Testing
+
+<AccordionGroup>
+  <Accordion title="Test Before Pushing">
+    Always test locally before pushing:
+    ```bash
+    lua test  # Test tools
+    lua dev   # Test conversations
+    lua push  # Then push
+    ```
+  </Accordion>
+
+  <Accordion title="Test in Sandbox">
+    Test pushed versions in sandbox before deploying:
+    ```bash
+    lua push
+    lua dev   # Tests sandbox version
+    # If good, then deploy
+    lua deploy
+    ```
+  </Accordion>
+
+  <Accordion title="Document Test Cases">
+    Keep a list of test scenarios:
+    - Happy path flows
+    - Edge cases to verify
+    - Known issues to watch for
+  </Accordion>
+</AccordionGroup>
+
+### Deployment
+
+<Warning>
+**Pre-Deployment Checklist:**
+- ✅ Tested all tools with `lua test`
+- ✅ Tested conversational flows with `lua dev`
+- ✅ Updated version number
+- ✅ Updated tool descriptions
+- ✅ Checked error messages
+- ✅ Tested in sandbox
+- ✅ Verified environment variables
+</Warning>
+
+## Common Workflows
+
+### Quick Fix Workflow
+
+```bash
+# 1. Make the fix
+vim src/tools/MyTool.ts
+
+# 2. Test locally
+lua test
+
+# 3. Push and deploy
+lua push
+lua deploy
+```
+
+### Feature Development Workflow
+
+```bash
+# 1. Create feature branch
+git checkout -b feature/new-tool
+
+# 2. Develop with live reload
+lua dev
+# Edit, save, test, repeat...
+
+# 3. Test thoroughly
+lua test
+
+# 4. Commit changes
+git add .
+git commit -m "feat: add new tool"
+
+# 5. Push to server
+lua push
+
+# 6. Merge to main
+git checkout main
+git merge feature/new-tool
+
+# 7. Deploy to production
+lua deploy
+```
+
+### Multi-Developer Workflow
+
+```bash
+# Developer 1: Working on Skill A
+cd skill-a
+lua dev  # Runs on port 3000
+
+# Developer 2: Working on Skill B
+cd skill-b
+lua dev  # Runs on port 3000 (different project)
+
+# Each developer has independent sandbox
+# Deploy when ready
+```
+
+## Troubleshooting
+
+<AccordionGroup>
+  <Accordion title="Dev mode not reloading">
+    **Problem**: Changes not appearing after save
+    
+    **Solutions**:
+    1. Check terminal for compilation errors
+    2. Restart dev mode (Ctrl+C, then `lua dev`)
+    3. Check file is actually saved
+    4. Verify file is in `src/` directory
+  </Accordion>
+
+  <Accordion title="Deploy showing old version">
+    **Problem**: Deployed but still seeing old behavior
+    
+    **Solutions**:
+    1. Verify correct version was deployed
+    2. Check `lua.skill.yaml` version number
+    3. Clear browser cache
+    4. Check if deploy actually succeeded
+  </Accordion>
+
+  <Accordion title="Can't push - version exists">
+    **Problem**: Version already pushed to server
+    
+    **Solution**: Increment version number:
+    ```yaml
+    skills:
+      - name: my-skill
+        version: 1.0.1  # Increment this
+    ```
+  </Accordion>
+</AccordionGroup>
+
+## Next Steps
+
+<CardGroup cols={2}>
+  <Card
+    title="CLI Reference"
+    icon="terminal"
+    href="/cli/overview"
+  >
+    Complete command documentation
+  </Card>
+  <Card
+    title="Build Your First Skill"
+    icon="hammer"
+    href="/getting-started/first-skill"
+  >
+    Follow a complete tutorial
+  </Card>
+</CardGroup>
+

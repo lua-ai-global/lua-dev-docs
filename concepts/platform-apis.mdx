@@ -1,0 +1,369 @@
+---
+title: "Platform APIs"
+description: "Built-in APIs for common operations"
+---
+
+## Overview
+
+Lua CLI provides built-in APIs for common operations, so you don't have to build everything from scratch.
+
+```typescript
+import { User, Data, Products, Baskets, Orders } from 'lua-cli';
+```
+
+<CardGroup cols={3}>
+  <Card title="User" icon="user">
+    Access and manage user data
+  </Card>
+  <Card title="Data" icon="database">
+    Custom data with vector search
+  </Card>
+  <Card title="Products" icon="box">
+    E-commerce product catalog
+  </Card>
+  <Card title="Baskets" icon="cart-shopping">
+    Shopping cart management
+  </Card>
+  <Card title="Orders" icon="receipt">
+    Order processing
+  </Card>
+</CardGroup>
+
+## User API
+
+Access current user's information.
+
+```typescript
+import { User } from 'lua-cli';
+
+const user = await User.get();
+// Returns: { id, email, name, ... }
+```
+
+### Example Tool
+
+```typescript
+export class GetUserDataTool implements LuaTool {
+  name = "get_user_data";
+  description = "Retrieve current user's information";
+  inputSchema = z.object({});
+
+  async execute(input: any) {
+    const user = await User.get();
+    return {
+      name: user.name,
+      email: user.email
+    };
+  }
+}
+```
+
+<Card title="Full API Reference" icon="book" href="/api/user">
+  Complete User API documentation
+</Card>
+
+## Data API
+
+Store and retrieve custom data with semantic search capabilities.
+
+### Key Features
+
+- 🗄️ **Custom Collections**: Store any JSON data
+- 🔍 **Vector Search**: Semantic similarity search
+- 📊 **Filtering**: Query by field values
+- 📄 **Pagination**: Handle large datasets
+
+### Quick Example
+
+```typescript
+import { Data } from 'lua-cli';
+
+// Create with search indexing
+await Data.create('movies', {
+  title: 'Inception',
+  director: 'Christopher Nolan',
+  year: 2010
+}, 'Inception Christopher Nolan 2010 sci-fi thriller dreams');
+
+// Semantic search
+const results = await Data.search('movies', 'mind-bending thriller', 10, 0.7);
+// Finds "Inception" even though query doesn't contain exact words!
+```
+
+### Use Cases
+
+<Tabs>
+  <Tab title="Knowledge Base">
+    ```typescript
+    await Data.create('kb_articles', {
+      title: 'How to reset password',
+      content: 'Step by step guide...',
+      category: 'Account'
+    }, `password reset account help`);
+    
+    const results = await Data.search('kb_articles', 
+      'forgot my password', 10, 0.7);
+    ```
+  </Tab>
+
+  <Tab title="Customer Notes">
+    ```typescript
+    await Data.create('customers', {
+      name: 'John Doe',
+      company: 'Acme Corp',
+      notes: 'Interested in enterprise plan'
+    }, `John Doe Acme Corp enterprise`);
+    
+    const results = await Data.search('customers',
+      'enterprise customers', 20, 0.6);
+    ```
+  </Tab>
+
+  <Tab title="Product Recommendations">
+    ```typescript
+    await Data.create('products', {
+      name: 'Wireless Headphones',
+      description: 'Noise cancelling...',
+      category: 'Electronics'
+    }, `wireless headphones noise cancelling bluetooth`);
+    
+    const results = await Data.search('products',
+      'best headphones for travel', 5, 0.75);
+    ```
+  </Tab>
+</Tabs>
+
+<Card title="Full API Reference" icon="book" href="/api/data">
+  Complete Data API documentation
+</Card>
+
+## Products API
+
+Manage e-commerce product catalog.
+
+```typescript
+import { Products } from 'lua-cli';
+
+// Search products
+const products = await Products.search('laptop');
+
+// Create product
+await Products.create({
+  name: 'MacBook Pro',
+  price: 1999.99,
+  category: 'Computers',
+  sku: 'MBP-14-001',
+  inStock: true
+});
+
+// Get by ID
+const product = await Products.getById('product_abc123');
+```
+
+<Card title="Full API Reference" icon="book" href="/api/products">
+  Complete Products API documentation
+</Card>
+
+## Baskets API
+
+Shopping cart management for e-commerce.
+
+```typescript
+import { Baskets, BasketStatus } from 'lua-cli';
+
+// Create basket
+const basket = await Baskets.create({
+  currency: 'USD',
+  metadata: { source: 'web' }
+});
+
+// Add items
+await Baskets.addItem(basket.id, {
+  id: 'product_xyz',
+  price: 29.99,
+  quantity: 2,
+  SKU: 'PROD-001'
+});
+
+// Checkout
+const order = await Baskets.placeOrder({
+  shippingAddress: {...},
+  paymentMethod: 'stripe'
+}, basket.id);
+```
+
+### Basket Statuses
+
+<Tabs>
+  <Tab title="ACTIVE">
+    Currently being used for shopping
+  </Tab>
+  <Tab title="CHECKED_OUT">
+    Converted to an order
+  </Tab>
+  <Tab title="ABANDONED">
+    User left without checkout
+  </Tab>
+  <Tab title="EXPIRED">
+    TTL exceeded
+  </Tab>
+</Tabs>
+
+<Card title="Full API Reference" icon="book" href="/api/baskets">
+  Complete Baskets API documentation
+</Card>
+
+## Orders API
+
+Order creation and management.
+
+```typescript
+import { Orders, OrderStatus } from 'lua-cli';
+
+// Create order
+const order = await Orders.create({
+  basketId: 'basket_abc123',
+  data: {
+    shippingAddress: {...},
+    paymentMethod: 'stripe'
+  }
+});
+
+// Update status
+await Orders.updateStatus(OrderStatus.FULFILLED, order.id);
+
+// Get orders
+const userOrders = await Orders.get(OrderStatus.PENDING);
+```
+
+### Order Statuses
+
+<Steps>
+  <Step title="PENDING">
+    Created, not yet confirmed
+  </Step>
+  <Step title="CONFIRMED">
+    Confirmed, being processed
+  </Step>
+  <Step title="FULFILLED">
+    Completed and delivered
+  </Step>
+  <Step title="CANCELLED">
+    Cancelled by user or system
+  </Step>
+</Steps>
+
+<Card title="Full API Reference" icon="book" href="/api/orders">
+  Complete Orders API documentation
+</Card>
+
+## Combining APIs
+
+Most real-world applications combine multiple APIs:
+
+### E-commerce Flow Example
+
+```typescript
+export class QuickCheckoutTool implements LuaTool {
+  async execute(input: any) {
+    // 1. Search for product
+    const products = await Products.search(input.productName);
+    const product = products.data[0];
+    
+    // 2. Create basket
+    const basket = await Baskets.create({ currency: 'USD' });
+    
+    // 3. Add product
+    await Baskets.addItem(basket.id, {
+      id: product.id,
+      price: product.price,
+      quantity: input.quantity
+    });
+    
+    // 4. Create order
+    const order = await Baskets.placeOrder({
+      shippingAddress: input.address,
+      paymentMethod: 'stripe'
+    }, basket.id);
+    
+    return {
+      orderId: order.id,
+      total: basket.common.totalAmount
+    };
+  }
+}
+```
+
+### CRM with Custom Data Example
+
+```typescript
+export class CreateCustomerTool implements LuaTool {
+  async execute(input: any) {
+    // Get current user
+    const user = await User.get();
+    
+    // Create customer record
+    const customer = await Data.create('customers', {
+      name: input.name,
+      email: input.email,
+      company: input.company,
+      createdBy: user.email,
+      createdAt: new Date().toISOString()
+    }, `${input.name} ${input.company} ${input.email}`);
+    
+    // Log interaction
+    await Data.create('interactions', {
+      customerId: customer.id,
+      type: 'created',
+      notes: 'Initial contact',
+      timestamp: new Date().toISOString()
+    });
+    
+    return { customerId: customer.id };
+  }
+}
+```
+
+## API Comparison
+
+| API | Best For | Key Feature |
+|-----|----------|-------------|
+| **User** | Profile data | User authentication |
+| **Data** | Custom schemas | Vector search |
+| **Products** | E-commerce | Pre-built catalog |
+| **Baskets** | Shopping carts | TTL & status |
+| **Orders** | Order tracking | Status workflow |
+
+## Next Steps
+
+<CardGroup cols={2}>
+  <Card
+    title="API Reference"
+    icon="book"
+    href="/api/overview"
+  >
+    Complete API documentation with examples
+  </Card>
+  <Card
+    title="Tool Examples"
+    icon="layer-group"
+    href="/examples/overview"
+  >
+    See working examples using all APIs
+  </Card>
+  <Card
+    title="Build Your First Skill"
+    icon="hammer"
+    href="/getting-started/first-skill"
+  >
+    Step-by-step tutorial
+  </Card>
+  <Card
+    title="Environment Variables"
+    icon="key"
+    href="/concepts/environment-variables"
+  >
+    Learn about configuration management
+  </Card>
+</CardGroup>
+

@@ -1,0 +1,448 @@
+---
+title: "Best Practices"
+description: "Tips and patterns for building great skills"
+---
+
+## Tool Design
+
+### Single Responsibility
+
+Each tool should do one thing well.
+
+<CodeGroup>
+
+```typescript Good
+class CreateProductTool { ... }
+class UpdateProductTool { ... }
+class DeleteProductTool { ... }
+```
+
+```typescript Bad
+class ProductTool {
+  // Does create, update, delete, search...
+  // Too many responsibilities!
+}
+```
+
+</CodeGroup>
+
+### Clear Names
+
+Use descriptive, action-oriented names.
+
+<CodeGroup>
+
+```typescript Good
+name = "search_products"
+name = "create_order"
+name = "cancel_booking"
+```
+
+```typescript Bad
+name = "products"      // Not specific
+name = "do_stuff"      // Too vague
+name = "tool1"         // Not descriptive
+```
+
+</CodeGroup>
+
+### Input Validation
+
+Always use Zod schemas with descriptions.
+
+```typescript
+// ✅ Excellent - Comprehensive validation
+inputSchema = z.object({
+  email: z.string()
+    .email()
+    .describe("User's email address"),
+  age: z.number()
+    .min(0)
+    .max(120)
+    .describe("User's age in years"),
+  priority: z.enum(['low', 'medium', 'high'])
+    .default('medium')
+    .describe("Task priority level")
+});
+```
+
+### Error Handling
+
+Provide helpful error messages.
+
+```typescript
+async execute(input: any) {
+  // Validate business logic
+  if (input.amount <= 0) {
+    throw new Error("Amount must be positive");
+  }
+  
+  // Check prerequisites
+  const user = await User.get();
+  if (!user.verified) {
+    throw new Error("Please verify your email before proceeding");
+  }
+  
+  // Handle API errors
+  try {
+    return await externalApi.call(input);
+  } catch (error) {
+    throw new Error(
+      `External API failed: ${error.message}. Please try again later.`
+    );
+  }
+}
+```
+
+## Skill Configuration
+
+### Write Comprehensive Context
+
+The context field guides AI decision-making.
+
+```typescript
+// ✅ Good - Detailed and actionable
+context: `
+  This skill manages customer orders for a restaurant.
+
+  Tool Usage:
+  - show_menu: Use when customers ask what's available. Returns food and drinks.
+  - create_order: Use when taking an order. Always confirm items and sizes first.
+  - modify_order: Use to add/remove items. Ask which item to modify.
+  - check_status: Use to get order status. Returns estimated time.
+
+  Guidelines:
+  - Always ask about drink sizes (small/medium/large)
+  - Mention daily specials when showing menu
+  - Confirm total price before finalizing orders
+  - Ask about dietary restrictions for food items
+  - Be friendly and patient with customers
+`
+```
+
+### Version Appropriately
+
+Use semantic versioning.
+
+```typescript
+// 1.0.0 → 1.0.1 (Patch)
+// Bug fixes, minor improvements
+version: "1.0.1"
+
+// 1.0.1 → 1.1.0 (Minor)
+// New features, backward compatible
+version: "1.1.0"
+
+// 1.1.0 → 2.0.0 (Major)
+// Breaking changes
+version: "2.0.0"
+```
+
+## Code Organization
+
+### File Structure
+
+Organize by functionality.
+
+```
+src/
+├── index.ts                  # Skill definitions
+├── tools/
+│   ├── products/             # Product-related tools
+│   │   ├── SearchTool.ts
+│   │   ├── CreateTool.ts
+│   │   └── UpdateTool.ts
+│   ├── orders/               # Order-related tools
+│   │   ├── CreateTool.ts
+│   │   └── TrackTool.ts
+│   └── shared/               # Shared tools
+│       └── HelperTool.ts
+└── services/                 # Shared utilities
+    ├── ApiClient.ts
+    └── Validator.ts
+```
+
+### Reuse Code
+
+Extract common logic into services.
+
+```typescript
+// services/EmailService.ts
+export class EmailService {
+  async send(to: string, subject: string, body: string) {
+    const apiKey = env('SENDGRID_API_KEY');
+    // Email sending logic
+  }
+}
+
+// tools/OrderTool.ts
+import { EmailService } from '../services/EmailService';
+
+export class CreateOrderTool {
+  private emailService = new EmailService();
+  
+  async execute(input: any) {
+    const order = await createOrder(input);
+    
+    // Reuse email service
+    await this.emailService.send(
+      input.email,
+      'Order Confirmation',
+      `Your order ${order.id} is confirmed`
+    );
+    
+    return order;
+  }
+}
+```
+
+## Security
+
+### Never Hardcode Secrets
+
+Always use environment variables.
+
+<CodeGroup>
+
+```typescript Good
+import { env } from 'lua-cli';
+
+const apiKey = env('STRIPE_API_KEY');
+if (!apiKey) {
+  throw new Error('STRIPE_API_KEY not configured');
+}
+```
+
+```typescript Bad
+const apiKey = 'sk_test_abc123';  // DON'T DO THIS!
+```
+
+</CodeGroup>
+
+### Validate User Input
+
+Don't trust user input blindly.
+
+```typescript
+async execute(input: any) {
+  // Sanitize HTML
+  const cleanTitle = input.title.replace(/<[^>]*>/g, '');
+  
+  // Validate URLs
+  if (input.url && !isValidUrl(input.url)) {
+    throw new Error('Invalid URL format');
+  }
+  
+  // Check permissions
+  const user = await User.get();
+  if (!user.isAdmin && input.action === 'delete') {
+    throw new Error('Insufficient permissions');
+  }
+}
+```
+
+### Don't Expose Sensitive Data
+
+Be careful what you return.
+
+```typescript
+// ✅ Good
+return {
+  name: user.name,
+  email: user.email
+};
+
+// ❌ Bad
+return { user };  // May include password hash, tokens, etc.
+```
+
+## Performance
+
+### Cache When Appropriate
+
+Avoid repeated API calls.
+
+```typescript
+export class MyTool {
+  private static configCache: any = null;
+  
+  async execute(input: any) {
+    // Cache configuration
+    if (!MyTool.configCache) {
+      MyTool.configCache = await fetchConfig();
+    }
+    
+    // Use cached data
+    return processWithConfig(input, MyTool.configCache);
+  }
+}
+```
+
+### Pagination
+
+Handle large datasets efficiently.
+
+```typescript
+async execute(input: { page?: number, limit?: number }) {
+  const page = input.page || 1;
+  const limit = Math.min(input.limit || 20, 100); // Max 100
+  
+  const results = await Data.get('items', {}, page, limit);
+  
+  return {
+    items: results.data,
+    pagination: {
+      current: page,
+      total: results.pagination.totalPages,
+      hasMore: results.pagination.hasNextPage
+    }
+  };
+}
+```
+
+## Testing
+
+### Test Edge Cases
+
+Don't just test happy paths.
+
+```typescript
+// Test with lua test:
+// - Empty strings
+// - Very large numbers
+// - Special characters
+// - Missing optional fields
+// - Invalid formats
+// - Boundary values
+```
+
+### Use Dev Mode
+
+Test conversationally before deploying.
+
+```bash
+lua dev
+
+# Test in chat:
+# - "What's the weather in London?"  ✅
+# - "What's the weather?"            ❌ Missing city
+# - "Weather in XYZ123"              ❌ Invalid city
+# - "Show me weather"                ❌ Unclear intent
+```
+
+## Deployment
+
+### Pre-Deployment Checklist
+
+- ✅ All tools tested with `lua test`
+- ✅ Conversational flows tested with `lua dev`
+- ✅ Version number updated
+- ✅ Tool descriptions updated
+- ✅ Error messages are helpful
+- ✅ No hardcoded secrets
+- ✅ Environment variables documented in `.env.example`
+- ✅ README updated
+
+### Gradual Rollout
+
+Test in sandbox before production.
+
+```bash
+# 1. Push to server
+lua push
+
+# 2. Test in sandbox
+lua dev
+
+# 3. If good, deploy
+lua deploy
+```
+
+## Monitoring
+
+### Log Important Events
+
+```typescript
+async execute(input: any) {
+  console.log(`Processing order for ${input.productId}`);
+  
+  try {
+    const result = await processOrder(input);
+    console.log(`Order created: ${result.id}`);
+    return result;
+  } catch (error) {
+    console.error(`Order failed: ${error.message}`);
+    throw error;
+  }
+}
+```
+
+### Track Errors
+
+```typescript
+async execute(input: any) {
+  try {
+    return await riskyOperation(input);
+  } catch (error) {
+    // Log for monitoring
+    console.error('Operation failed:', {
+      tool: this.name,
+      input,
+      error: error.message,
+      timestamp: new Date().toISOString()
+    });
+    
+    // User-friendly error
+    throw new Error('Unable to complete request. Please try again.');
+  }
+}
+```
+
+## Documentation
+
+### Comment Complex Logic
+
+```typescript
+async execute(input: any) {
+  // Calculate discount based on loyalty tier
+  // Bronze: 5%, Silver: 10%, Gold: 15%
+  const discount = calculateDiscount(user.loyaltyTier);
+  
+  // Apply discount with maximum cap of $50
+  const finalPrice = Math.max(
+    price - discount,
+    price - 50
+  );
+  
+  return { finalPrice };
+}
+```
+
+### Update README
+
+Keep project README current with:
+- What the skill does
+- How to set it up
+- Required environment variables
+- How to test
+- How to deploy
+
+## Next Steps
+
+<CardGroup cols={2}>
+  <Card
+    title="Tool Examples"
+    icon="layer-group"
+    href="/examples/overview"
+  >
+    See 30+ examples following these practices
+  </Card>
+  <Card
+    title="API Reference"
+    icon="book"
+    href="/api/overview"
+  >
+    Complete API documentation
+  </Card>
+</CardGroup>
+

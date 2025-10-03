@@ -1,0 +1,594 @@
+---
+title: "Skill Management"
+description: "Commands for creating, compiling, testing, and deploying skills"
+---
+
+## Overview
+
+Skill management commands help you build, test, and deploy your AI skills.
+
+<CardGroup cols={2}>
+  <Card title="lua init" icon="plus">
+    Create new skill project
+  </Card>
+  <Card title="lua compile" icon="gears">
+    Compile TypeScript code
+  </Card>
+  <Card title="lua test" icon="flask">
+    Test tools interactively
+  </Card>
+  <Card title="lua push" icon="upload">
+    Upload version to server
+  </Card>
+  <Card title="lua deploy" icon="rocket">
+    Deploy to production
+  </Card>
+</CardGroup>
+
+## lua init
+
+Initialize a new Lua skill project in the current directory.
+
+```bash
+mkdir my-skill && cd my-skill
+lua init
+```
+
+### What It Does
+
+<Steps>
+  <Step title="Choose Agent">
+    Select existing agent or create new one
+  </Step>
+  
+  <Step title="Configure Agent (if new)">
+    - Enter business name
+    - Enter agent name
+    - Select business type
+    - Select brand personality
+    - Enter brand traits
+    - Configure features
+  </Step>
+  
+  <Step title="Create Project">
+    - Copies template files
+    - Creates `lua.skill.yaml`
+    - Installs dependencies
+    - Ready to customize!
+  </Step>
+</Steps>
+
+### Interactive Prompts
+
+<Tabs>
+  <Tab title="Create New Agent">
+    ```bash
+    $ lua init
+    ? What would you like to do? Create new agent
+    ? Enter business name: My Coffee Shop
+    ? Enter agent name: CoffeeBot
+    ? Select business type: Food & Beverage
+    ? Select brand personality: Friendly
+    ? Enter brand traits: Warm, welcoming, knowledgeable
+    🔄 Creating agent...
+    ✅ Agent created successfully!
+    ✅ Created lua.skill.yaml
+    ✅ Copied template files
+    📦 Installing dependencies...
+    ✅ Lua skill project initialized successfully!
+    ```
+  </Tab>
+
+  <Tab title="Use Existing Agent">
+    ```bash
+    $ lua init
+    ? What would you like to do? Select existing agent
+    ? Select organization: My Organization
+    ? Select agent: CoffeeBot
+    ✅ Created lua.skill.yaml
+    ✅ Copied template files
+    📦 Installing dependencies...
+    ✅ Lua skill project initialized successfully!
+    ```
+  </Tab>
+</Tabs>
+
+### What Gets Created
+
+```
+your-skill/
+├── src/
+│   ├── index.ts              # Skill definitions (START HERE)
+│   ├── tools/                # Tool implementations
+│   │   ├── GetWeatherTool.ts
+│   │   ├── UserDataTool.ts
+│   │   ├── ProductsTool.ts
+│   │   ├── BasketTool.ts
+│   │   ├── OrderTool.ts
+│   │   ├── CustomDataTool.ts
+│   │   ├── PaymentTool.ts
+│   │   └── CreatePostTool.ts
+│   └── services/             # Helper services (optional)
+├── lua.skill.yaml            # Configuration (auto-managed)
+├── package.json              # Dependencies
+├── tsconfig.json             # TypeScript config
+├── .env.example              # Environment variables template
+└── README.md                 # Project documentation
+```
+
+### Configuration File
+
+`lua.skill.yaml` is created with:
+
+```yaml
+agent:
+  agentId: agent_abc123
+  orgId: org_xyz789
+  persona: "..."
+  welcomeMessage: "..."
+
+skills: []  # Auto-populated during compilation
+```
+
+## lua compile
+
+Compile TypeScript skill into deployable JavaScript bundles.
+
+```bash
+lua compile
+```
+
+### What It Does
+
+<Steps>
+  <Step title="Analyze Code">
+    Detects all tools from your `src/index.ts` file
+  </Step>
+  
+  <Step title="Bundle Tools">
+    Uses esbuild to create optimized JavaScript bundles
+  </Step>
+  
+  <Step title="Extract Metadata">
+    Extracts tool names, descriptions, and schemas
+  </Step>
+  
+  <Step title="Create Deployment">
+    Generates deployment artifacts in `dist/` directory
+  </Step>
+  
+  <Step title="Update Config">
+    Creates/updates skills in `lua.skill.yaml`
+  </Step>
+</Steps>
+
+### Output
+
+```
+dist/
+├── deployment.json          # Deployment metadata
+├── index.js                 # Main skill bundle
+└── tools/                   # Individual tool bundles
+    ├── GetWeatherTool.js
+    ├── UserDataTool.js
+    └── ...
+
+.lua/
+├── deploy.json              # Legacy format
+├── get_weather.js           # Uncompressed (debugging)
+└── ...
+```
+
+### Example Output
+
+```bash
+$ lua compile
+🔨 Compiling Lua skill...
+📦 Found 15 tools to bundle...
+📦 Bundling GetWeatherTool...
+📦 Bundling UserDataTool...
+📦 Bundling ProductsTool...
+... (more tools)
+📦 Bundling main index...
+✅ Skill compiled successfully - 15 tools bundled
+```
+
+### Features
+
+- ✅ **Automatic Detection** - Finds all tools in your code
+- ✅ **Fast Bundling** - Uses esbuild for speed
+- ✅ **Type Safety** - Validates TypeScript
+- ✅ **Dependency Management** - Bundles all dependencies
+- ✅ **Skill Creation** - Auto-creates skills in config
+
+## lua test
+
+Test individual tools locally in a sandboxed environment.
+
+```bash
+lua test
+```
+
+### How It Works
+
+<Steps>
+  <Step title="Compile">
+    Compiles your skill first
+  </Step>
+  
+  <Step title="List Tools">
+    Shows all available tools
+  </Step>
+  
+  <Step title="Select Tool">
+    Choose which tool to test
+  </Step>
+  
+  <Step title="Enter Inputs">
+    Dynamic prompts based on tool's schema
+  </Step>
+  
+  <Step title="Execute">
+    Runs tool in secure VM sandbox
+  </Step>
+  
+  <Step title="View Results">
+    Shows output or error messages
+  </Step>
+</Steps>
+
+### Example Session
+
+```bash
+$ lua test
+🧪 Testing Lua skill...
+📦 Compiling code first...
+✅ Skill compiled successfully
+📄 Loaded environment variables from .env file
+
+? 🔧 Select a tool to test:
+❯ get_weather - Get the weather for a given city
+  create_product - Create a new product
+  search_products - Search products
+  get_user_data - Get user data
+  
+✅ Selected tool: get_weather
+
+📝 Enter input values:
+? city (required): London
+
+🚀 Executing tool...
+Input: {
+  "city": "London"
+}
+✅ Tool execution successful!
+Output: {
+  "weather": "3",
+  "city": "London",
+  "temperature": 15.2,
+  "description": "Windspeed 12.3 km/h"
+}
+```
+
+### Features
+
+- ✅ **Dynamic Prompts** - Based on Zod schema
+- ✅ **Type Validation** - Validates inputs automatically
+- ✅ **Environment Loading** - Loads `.env` and `lua.skill.yaml` variables
+- ✅ **Secure Sandbox** - Isolated VM execution
+- ✅ **Detailed Errors** - Clear error messages
+
+### Testing Complex Inputs
+
+```bash
+# Nested objects
+? shippingAddress.street (required): 123 Main St
+? shippingAddress.city (required): New York
+? shippingAddress.zip (required): 10001
+
+# Arrays
+? items[0].id (required): product_123
+? items[0].quantity (required): 2
+? Add another item? No
+
+# Optional fields
+? description (optional): [Press Enter to skip]
+```
+
+## lua push
+
+Push your compiled skill version to the Lua server.
+
+```bash
+lua push
+```
+
+### What It Does
+
+<Steps>
+  <Step title="Read Version">
+    Gets version from `lua.skill.yaml`
+  </Step>
+  
+  <Step title="Confirm">
+    Prompts for confirmation
+  </Step>
+  
+  <Step title="Authenticate">
+    Validates your API key
+  </Step>
+  
+  <Step title="Compile">
+    Compiles the skill if needed
+  </Step>
+  
+  <Step title="Upload">
+    Uploads bundles to server
+  </Step>
+  
+  <Step title="Version Created">
+    New version available for testing/deployment
+  </Step>
+</Steps>
+
+### Example
+
+```bash
+$ lua push
+? Are you sure you want to push version 1.0.0? Yes
+✅ Authenticated
+🔄 Compiling skill...
+✅ Skill compiled successfully - 10 tools bundled
+🔄 Pushing version to server...
+✅ Version 1.0.0 pushed successfully
+```
+
+### Important Notes
+
+<Warning>
+**Pushing does NOT deploy to production!**
+
+After pushing, the version is uploaded but not live. Use `lua deploy` to make it available to users.
+</Warning>
+
+### Version Management
+
+Update version in `lua.skill.yaml`:
+
+```yaml
+skills:
+  - name: my-skill
+    version: 1.0.1  # Increment this
+```
+
+Then push:
+
+```bash
+lua push
+```
+
+### Requirements
+
+- Must be in skill directory with `lua.skill.yaml`
+- Must have valid API key (`lua auth configure`)
+- Version must not already exist on server
+
+## lua deploy
+
+Deploy a specific version to production (all users).
+
+```bash
+lua deploy
+```
+
+### What It Does
+
+<Steps>
+  <Step title="Fetch Versions">
+    Lists all pushed versions from server
+  </Step>
+  
+  <Step title="Select Version">
+    Choose which version to deploy
+  </Step>
+  
+  <Step title="Confirm">
+    Shows warning about production deployment
+  </Step>
+  
+  <Step title="Deploy">
+    Publishes selected version
+  </Step>
+  
+  <Step title="Live!">
+    Version is immediately available to all users
+  </Step>
+</Steps>
+
+### Example
+
+```bash
+$ lua deploy
+✅ Authenticated
+🔄 Fetching available versions...
+
+? Select a version to deploy:
+  1.0.2 - Created: Oct 3, 2025 by you@example.com
+  1.0.1 - Created: Oct 2, 2025 by you@example.com
+❯ 1.0.0 (CURRENT) - Created: Oct 1, 2025 by you@example.com
+
+? ⚠️  Warning: This version will be deployed to all users. Do you want to proceed? Yes
+🔄 Publishing version...
+✅ Version 1.0.0 deployed successfully
+```
+
+### Features
+
+- Shows all available versions
+- Indicates currently deployed version
+- Requires explicit confirmation
+- Immediate deployment (no rollback delay)
+
+<Warning>
+**Deployment is immediate!**
+
+All users will get the new version right away. Test thoroughly with `lua dev` first!
+</Warning>
+
+## Complete Workflow
+
+### New Project Workflow
+
+```bash
+# 1. Authenticate
+lua auth configure
+
+# 2. Initialize
+mkdir my-skill && cd my-skill
+lua init
+
+# 3. Test
+lua test
+
+# 4. Push
+lua push
+
+# 5. Deploy
+lua deploy
+```
+
+### Development Workflow
+
+```bash
+# Start dev mode (keep running)
+lua dev
+
+# In another terminal:
+# Make changes to src/tools/*.ts
+
+# Test changes in browser (auto-reloads)
+
+# When satisfied, push
+lua push
+
+# Deploy to production
+lua deploy
+```
+
+### Quick Fix Workflow
+
+```bash
+# 1. Edit file
+vim src/tools/MyTool.ts
+
+# 2. Test
+lua test
+
+# 3. Push and deploy
+lua push
+lua deploy
+```
+
+## Troubleshooting
+
+<AccordionGroup>
+  <Accordion title="No lua.skill.yaml found">
+    **Error**: `❌ No lua.skill.yaml found`
+    
+    **Solution**: Run command from skill directory or run `lua init` first
+  </Accordion>
+
+  <Accordion title="Version already exists">
+    **Error**: `❌ Version 1.0.0 already exists on the server`
+    
+    **Solution**: Increment version in `lua.skill.yaml`:
+    ```yaml
+    skills:
+      - version: 1.0.1  # Increment this
+    ```
+  </Accordion>
+
+  <Accordion title="Compilation failed">
+    **Error**: `❌ No index.ts found`
+    
+    **Solution**: Create `src/index.ts` with skill definition:
+    ```typescript
+    import { LuaSkill } from "lua-cli";
+    const skill = new LuaSkill({...});
+    ```
+  </Accordion>
+
+  <Accordion title="Tool validation error">
+    **Error**: `❌ Tool name invalid`
+    
+    **Solution**: Tool names can only contain: `a-z`, `A-Z`, `0-9`, `-`, `_`
+    ```typescript
+    // ✅ Good
+    name = "get_weather"
+    
+    // ❌ Bad
+    name = "get weather"  // No spaces
+    ```
+  </Accordion>
+
+  <Accordion title="Missing dependencies">
+    **Error**: `❌ Cannot find module 'lua-cli'`
+    
+    **Solution**: Install dependencies:
+    ```bash
+    npm install
+    ```
+  </Accordion>
+</AccordionGroup>
+
+## Best Practices
+
+<AccordionGroup>
+  <Accordion title="Test Before Pushing">
+    Always test locally first:
+    ```bash
+    lua test     # Test individual tools
+    lua dev      # Test conversationally
+    lua push     # Then push
+    ```
+  </Accordion>
+
+  <Accordion title="Use Semantic Versioning">
+    - **PATCH** (1.0.1): Bug fixes
+    - **MINOR** (1.1.0): New features
+    - **MAJOR** (2.0.0): Breaking changes
+  </Accordion>
+
+  <Accordion title="Test in Sandbox Before Deploy">
+    ```bash
+    lua push     # Upload version
+    lua dev      # Test in sandbox
+    # If good, then:
+    lua deploy   # Deploy to production
+    ```
+  </Accordion>
+
+  <Accordion title="Keep Version History">
+    Don't delete old versions - they serve as rollback points
+  </Accordion>
+</AccordionGroup>
+
+## Next Steps
+
+<CardGroup cols={2}>
+  <Card
+    title="Development Mode"
+    icon="code"
+    href="/cli/development"
+  >
+    Learn about live development with auto-reload
+  </Card>
+  <Card
+    title="Build Your First Skill"
+    icon="hammer"
+    href="/getting-started/first-skill"
+  >
+    Follow a complete tutorial
+  </Card>
+</CardGroup>
+

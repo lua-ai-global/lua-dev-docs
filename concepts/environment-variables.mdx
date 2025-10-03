@@ -1,0 +1,407 @@
+---
+title: "Environment Variables"
+description: "Managing configuration and secrets securely"
+---
+
+## Overview
+
+Environment variables allow you to configure your skills without hardcoding sensitive information like API keys.
+
+<Warning>
+**Never hardcode secrets in your code!** Always use environment variables.
+</Warning>
+
+## Using Environment Variables
+
+### Import the env Function
+
+```typescript
+import { env } from 'lua-cli';
+
+export class SendEmailTool implements LuaTool {
+  async execute(input: any) {
+    const apiKey = env('SENDGRID_API_KEY');
+    const fromEmail = env('FROM_EMAIL') || 'noreply@example.com';
+    
+    if (!apiKey) {
+      throw new Error('SENDGRID_API_KEY not configured');
+    }
+    
+    // Use the API key...
+  }
+}
+```
+
+## Setting Environment Variables
+
+There are three ways to set environment variables, loaded in this priority order:
+
+<Steps>
+  <Step title="System Environment">
+    Variables from your system environment
+    ```bash
+    export API_KEY=value
+    ```
+  </Step>
+  
+  <Step title=".env File">
+    Variables from `.env` file in project root
+    ```bash
+    # .env
+    API_KEY=value
+    ```
+  </Step>
+  
+  <Step title="lua.skill.yaml">
+    Variables from skill configuration
+    ```yaml
+    skill:
+      env:
+        API_KEY: value
+    ```
+  </Step>
+</Steps>
+
+<Note>
+Later sources override earlier ones. So `lua.skill.yaml` overrides `.env`, which overrides system environment.
+</Note>
+
+## Method 1: .env File (Recommended for Development)
+
+Create a `.env` file in your project root:
+
+```bash
+# External API Keys
+STRIPE_API_KEY=sk_test_abc123
+SENDGRID_API_KEY=SG.xyz789
+OPENAI_API_KEY=sk-abc123
+
+# Configuration
+API_BASE_URL=https://api.example.com
+ENABLE_DEBUG=false
+MAX_RETRIES=3
+```
+
+### .gitignore
+
+<Warning>
+**Always add `.env` to `.gitignore`!**
+</Warning>
+
+```bash
+# .gitignore
+.env
+.env.local
+.env.*.local
+```
+
+### .env.example
+
+Create a `.env.example` file to document required variables:
+
+```bash
+# .env.example
+STRIPE_API_KEY=your_stripe_key_here
+SENDGRID_API_KEY=your_sendgrid_key_here
+API_BASE_URL=https://api.example.com
+```
+
+Commit `.env.example` to git, but never commit `.env`!
+
+## Method 2: lua.skill.yaml (Production)
+
+For deployed environments, add variables to your skill configuration:
+
+```yaml
+# lua.skill.yaml
+agent:
+  agentId: agent_abc123
+  orgId: org_xyz789
+
+skills:
+  - name: my-skill
+    version: 1.0.0
+    skillId: skill_abc123
+
+skill:
+  env:
+    STRIPE_API_KEY: sk_live_production_key
+    SENDGRID_API_KEY: SG.production_key
+    API_BASE_URL: https://prod.example.com
+```
+
+<Note>
+Use this for production secrets that shouldn't be in git.
+</Note>
+
+## Method 3: Dev Mode UI
+
+When running `lua dev`, you can edit environment variables in the browser:
+
+<Steps>
+  <Step title="Start Dev Mode">
+    ```bash
+    lua dev
+    ```
+  </Step>
+  
+  <Step title="Open Environment Tab">
+    Navigate to http://localhost:3000 and click the "Environment" tab
+  </Step>
+  
+  <Step title="Edit Variables">
+    Add, edit, or remove environment variables in the UI
+  </Step>
+  
+  <Step title="Save">
+    Changes are automatically saved to your `.env` file
+  </Step>
+</Steps>
+
+## Example: External API Integration
+
+### Stripe Payment Tool
+
+```typescript
+import { LuaTool, env } from 'lua-cli';
+import { z } from 'zod';
+
+export default class CreatePaymentTool implements LuaTool {
+  name = "create_payment";
+  description = "Create a payment link for checkout";
+  
+  inputSchema = z.object({
+    amount: z.number().positive(),
+    currency: z.string().default('USD'),
+    description: z.string()
+  });
+
+  async execute(input: z.infer<typeof this.inputSchema>) {
+    // Get API key from environment
+    const stripeKey = env('STRIPE_API_KEY');
+    
+    // Validate it exists
+    if (!stripeKey) {
+      throw new Error('STRIPE_API_KEY not configured. Please set it in .env or lua.skill.yaml');
+    }
+    
+    // Use the key
+    const response = await fetch('https://api.stripe.com/v1/checkout/sessions', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${stripeKey}`,
+        'Content-Type': 'application/x-www-form-urlencoded'
+      },
+      body: new URLSearchParams({
+        'line_items[0][price_data][currency]': input.currency,
+        'line_items[0][price_data][unit_amount]': (input.amount * 100).toString(),
+        'line_items[0][price_data][product_data][name]': input.description,
+        'line_items[0][quantity]': '1',
+        'mode': 'payment',
+        'success_url': 'https://example.com/success',
+        'cancel_url': 'https://example.com/cancel'
+      })
+    });
+    
+    const session = await response.json();
+    
+    return {
+      paymentUrl: session.url,
+      sessionId: session.id
+    };
+  }
+}
+```
+
+### .env File
+
+```bash
+STRIPE_API_KEY=sk_test_51Abc123...
+```
+
+## Best Practices
+
+<AccordionGroup>
+  <Accordion title="✅ Do: Use descriptive names">
+    ```bash
+    # Good
+    STRIPE_API_KEY=...
+    SENDGRID_API_KEY=...
+    WEATHER_API_KEY=...
+    
+    # Bad
+    KEY1=...
+    SECRET=...
+    TOKEN=...
+    ```
+  </Accordion>
+
+  <Accordion title="✅ Do: Provide defaults for non-secrets">
+    ```typescript
+    const maxRetries = parseInt(env('MAX_RETRIES') || '3');
+    const apiUrl = env('API_BASE_URL') || 'https://api.example.com';
+    ```
+  </Accordion>
+
+  <Accordion title="✅ Do: Validate critical variables">
+    ```typescript
+    const apiKey = env('STRIPE_API_KEY');
+    if (!apiKey) {
+      throw new Error('STRIPE_API_KEY is required');
+    }
+    ```
+  </Accordion>
+
+  <Accordion title="✅ Do: Document required variables">
+    Create `.env.example` with all required variables and example values
+  </Accordion>
+
+  <Accordion title="❌ Don't: Hardcode secrets">
+    ```typescript
+    // BAD!
+    const apiKey = 'sk_test_abc123';
+    
+    // GOOD!
+    const apiKey = env('API_KEY');
+    ```
+  </Accordion>
+
+  <Accordion title="❌ Don't: Commit .env to git">
+    Always add `.env` to `.gitignore`
+  </Accordion>
+
+  <Accordion title="❌ Don't: Log sensitive values">
+    ```typescript
+    // BAD!
+    console.log('API Key:', apiKey);
+    
+    // GOOD!
+    console.log('API Key:', apiKey ? '***' : 'not set');
+    ```
+  </Accordion>
+</AccordionGroup>
+
+## Common Patterns
+
+### Pattern: Required Variable
+
+```typescript
+const apiKey = env('REQUIRED_KEY');
+if (!apiKey) {
+  throw new Error('REQUIRED_KEY environment variable is not set');
+}
+```
+
+### Pattern: Optional with Default
+
+```typescript
+const apiUrl = env('API_URL') || 'https://api.example.com';
+const timeout = parseInt(env('TIMEOUT') || '5000');
+const debug = env('DEBUG') === 'true';
+```
+
+### Pattern: Validation
+
+```typescript
+const apiKey = env('API_KEY');
+if (apiKey && !apiKey.startsWith('sk_')) {
+  throw new Error('API_KEY must start with sk_');
+}
+```
+
+### Pattern: Environment-Specific Configuration
+
+```typescript
+const environment = env('NODE_ENV') || 'development';
+const apiKey = environment === 'production' 
+  ? env('PROD_API_KEY')
+  : env('DEV_API_KEY');
+```
+
+## Testing with Environment Variables
+
+### In lua test
+
+Environment variables are automatically loaded from `.env` when you run:
+
+```bash
+lua test
+```
+
+### In lua dev
+
+Environment variables are loaded and can be edited in the UI:
+
+```bash
+lua dev
+```
+
+## Troubleshooting
+
+<AccordionGroup>
+  <Accordion title="Variable not found">
+    **Problem**: `env('MY_VAR')` returns `undefined`
+    
+    **Solutions**:
+    1. Check spelling in `.env` file
+    2. Ensure `.env` is in project root
+    3. Restart `lua dev` if running
+    4. Check `lua.skill.yaml` for typos
+  </Accordion>
+
+  <Accordion title="Changes not taking effect">
+    **Problem**: Updated `.env` but changes not visible
+    
+    **Solution**: Restart the CLI command:
+    ```bash
+    # Stop current process (Ctrl+C)
+    lua dev  # Start again
+    ```
+  </Accordion>
+
+  <Accordion title="Different values in dev vs production">
+    **Problem**: Works locally but not when deployed
+    
+    **Solution**: Set production values in `lua.skill.yaml`:
+    ```yaml
+    skill:
+      env:
+        API_KEY: production_key_here
+    ```
+  </Accordion>
+</AccordionGroup>
+
+## Example Project Structure
+
+```
+my-skill/
+├── .env                    # Local secrets (not in git)
+├── .env.example           # Template (in git)
+├── .gitignore             # Contains .env
+├── lua.skill.yaml         # Production config
+├── src/
+│   ├── index.ts
+│   └── tools/
+│       └── MyTool.ts      # Uses env('VAR_NAME')
+└── package.json
+```
+
+## Next Steps
+
+<CardGroup cols={2}>
+  <Card
+    title="Build Your First Skill"
+    icon="hammer"
+    href="/getting-started/first-skill"
+  >
+    Use environment variables in a real project
+  </Card>
+  <Card
+    title="Tool Examples"
+    icon="layer-group"
+    href="/examples/payment"
+  >
+    See payment integration example
+  </Card>
+</CardGroup>
+

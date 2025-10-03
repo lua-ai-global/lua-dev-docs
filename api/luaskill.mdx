@@ -1,0 +1,436 @@
+---
+title: "LuaSkill"
+description: "Collection of related tools that give your AI specific capabilities"
+---
+
+## Overview
+
+`LuaSkill` is the main class for defining a skill - a collection of related tools that your AI agent can use.
+
+```typescript
+import { LuaSkill } from 'lua-cli';
+
+const skill = new LuaSkill({
+  name: "my-skill",
+  version: "1.0.0",
+  description: "Brief description of the skill",
+  context: "Detailed instructions for the AI",
+  tools: [new MyTool1(), new MyTool2()]
+});
+```
+
+## Constructor
+
+### new LuaSkill(config)
+
+Creates a new skill instance.
+
+<ParamField path="config" type="LuaSkillConfig" required>
+  Skill configuration object
+</ParamField>
+
+### Configuration Parameters
+
+<ParamField path="config.name" type="string" default="unnamed-skill">
+  Unique identifier for the skill
+  
+  **Format**: lowercase, alphanumeric, hyphens only
+  
+  **Examples**: `"weather-skill"`, `"product-catalog-skill"`
+</ParamField>
+
+<ParamField path="config.version" type="string" default="1.0.0">
+  Semantic version number for tracking changes
+  
+  **Format**: `MAJOR.MINOR.PATCH`
+  
+  **Example**: `"1.2.3"`
+</ParamField>
+
+<ParamField path="config.description" type="string" required>
+  Brief description (1-2 sentences) of what the skill does
+  
+  This appears in skill listings and helps users understand the skill's purpose.
+</ParamField>
+
+<ParamField path="config.context" type="string" required>
+  Detailed instructions for the AI on when and how to use the tools
+  
+  This is **critical** for proper tool selection! Write it like instructions to a smart assistant.
+</ParamField>
+
+<ParamField path="config.tools" type="LuaTool[]">
+  Array of tool instances to include in the skill
+  
+  Can be empty initially and tools added later with `addTool()` or `addTools()`.
+</ParamField>
+
+## Methods
+
+### addTool()
+
+Adds a single tool to the skill.
+
+```typescript
+skill.addTool(tool: LuaTool): void
+```
+
+<ParamField path="tool" type="LuaTool" required>
+  Tool instance to add
+</ParamField>
+
+**Example:**
+
+```typescript
+const skill = new LuaSkill({
+  name: "my-skill",
+  description: "My skill",
+  context: "..."
+});
+
+skill.addTool(new GetWeatherTool());
+skill.addTool(new CreateOrderTool());
+```
+
+**Validation:**
+- Tool name must be unique within the skill
+- Tool name must only contain: `a-z`, `A-Z`, `0-9`, `-`, `_`
+- Throws error if validation fails
+
+### addTools()
+
+Adds multiple tools to the skill at once.
+
+```typescript
+skill.addTools(tools: LuaTool[]): void
+```
+
+<ParamField path="tools" type="LuaTool[]" required>
+  Array of tool instances to add
+</ParamField>
+
+**Example:**
+
+```typescript
+skill.addTools([
+  new GetWeatherTool(),
+  new CreateOrderTool(),
+  new SearchProductsTool()
+]);
+```
+
+**Validation:**
+- All tools validated before adding
+- Atomic operation (all or nothing)
+- Throws error if any validation fails
+
+## Examples
+
+### Basic Skill
+
+```typescript
+import { LuaSkill, LuaTool } from 'lua-cli';
+import { z } from 'zod';
+
+class HelloTool implements LuaTool {
+  name = "say_hello";
+  description = "Say hello to a user";
+  inputSchema = z.object({
+    name: z.string()
+  });
+
+  async execute(input: any) {
+    return { message: `Hello, ${input.name}!` };
+  }
+}
+
+const helloSkill = new LuaSkill({
+  name: "hello-skill",
+  version: "1.0.0",
+  description: "A simple greeting skill",
+  context: "Use say_hello when users want to be greeted",
+  tools: [new HelloTool()]
+});
+```
+
+### Weather Skill
+
+```typescript
+import { LuaSkill } from 'lua-cli';
+import GetWeatherTool from './tools/GetWeatherTool';
+import GetForecastTool from './tools/GetForecastTool';
+
+const weatherSkill = new LuaSkill({
+  name: "weather-skill",
+  version: "1.0.0",
+  description: "Provides weather information for any city worldwide",
+  context: `
+    This skill provides weather information.
+    
+    - Use get_weather for current conditions
+    - Use get_forecast for 7-day predictions
+    
+    Always include the city name in responses.
+    Mention temperature in user's preferred units.
+  `,
+  tools: [
+    new GetWeatherTool(),
+    new GetForecastTool()
+  ]
+});
+```
+
+### E-commerce Skill
+
+```typescript
+import { LuaSkill } from 'lua-cli';
+import {
+  SearchProductsTool,
+  CreateProductTool,
+  UpdateProductTool
+} from './tools/ProductTools';
+
+const ecommerceSkill = new LuaSkill({
+  name: "ecommerce-skill",
+  version: "2.1.0",
+  description: "Complete e-commerce product management",
+  context: `
+    This skill manages an e-commerce product catalog.
+    
+    Tool Usage:
+    - search_products: When users describe what they're looking for
+    - create_product: When adding new items (admin only)
+    - update_product: When modifying prices, stock, or details
+    
+    Guidelines:
+    - Always show prices with currency
+    - Mention stock availability
+    - Suggest related products when relevant
+    - Confirm changes before updating
+  `,
+  tools: [
+    new SearchProductsTool(),
+    new CreateProductTool(),
+    new UpdateProductTool()
+  ]
+});
+```
+
+### Adding Tools Dynamically
+
+```typescript
+const skill = new LuaSkill({
+  name: "dynamic-skill",
+  description: "Skill with dynamically added tools",
+  context: "Tools will be added based on configuration"
+});
+
+// Add tools conditionally
+if (config.enableWeather) {
+  skill.addTool(new GetWeatherTool());
+}
+
+if (config.enableOrders) {
+  skill.addTools([
+    new CreateOrderTool(),
+    new TrackOrderTool()
+  ]);
+}
+```
+
+## Writing Good Context
+
+The `context` field is critical for AI tool selection. Follow these guidelines:
+
+### Structure
+
+```typescript
+context: `
+  [What this skill does - 1 sentence]
+  
+  Tool Usage:
+  - tool_1: [When to use] [What it returns]
+  - tool_2: [When to use] [What it returns]
+  
+  Guidelines:
+  - [Important rules]
+  - [Edge cases]
+  - [User experience tips]
+`
+```
+
+### Good Context Example
+
+```typescript
+context: `
+  This skill manages customer orders for a coffee shop.
+
+  Tool Usage:
+  - show_menu: Use when customers ask what's available. Returns drinks and food.
+  - create_order: Use when taking an order. Confirm items and sizes first.
+  - modify_order: Use to add/remove items. Ask which item to modify.
+  - finalize_order: Use when confirmed. Returns total and estimated time.
+
+  Guidelines:
+  - Always ask about drink sizes (small/medium/large)
+  - Mention daily special when showing menu
+  - Confirm total before finalizing order
+  - Ask about dietary restrictions for food
+`
+```
+
+### Poor Context Example
+
+```typescript
+context: "A skill with tools for stuff"  // ❌ Too vague
+```
+
+## Best Practices
+
+<AccordionGroup>
+  <Accordion title="Use Descriptive Names">
+    ```typescript
+    // ✅ Good
+    name: "weather-skill"
+    name: "product-catalog-skill"
+    name: "customer-support-skill"
+    
+    // ❌ Bad
+    name: "skill1"
+    name: "my_skill"
+    name: "test"
+    ```
+  </Accordion>
+
+  <Accordion title="Write Clear Descriptions">
+    ```typescript
+    // ✅ Good
+    description: "Provides real-time weather information and 7-day forecasts for cities worldwide"
+    
+    // ❌ Bad
+    description: "Weather stuff"
+    ```
+  </Accordion>
+
+  <Accordion title="Provide Detailed Context">
+    The context field should include:
+    - Overview of skill purpose
+    - When to use each tool
+    - Important guidelines
+    - Edge cases to handle
+    
+    Think of it as training documentation for the AI.
+  </Accordion>
+
+  <Accordion title="Version Appropriately">
+    Use semantic versioning:
+    - **PATCH** (1.0.1): Bug fixes
+    - **MINOR** (1.1.0): New features, backward compatible
+    - **MAJOR** (2.0.0): Breaking changes
+  </Accordion>
+
+  <Accordion title="Organize Related Tools">
+    Group tools that work together:
+    ```typescript
+    // ✅ Good - Related tools together
+    const orderSkill = new LuaSkill({
+      tools: [
+        new CreateOrderTool(),
+        new UpdateOrderTool(),
+        new CancelOrderTool(),
+        new TrackOrderTool()
+      ]
+    });
+    
+    // ❌ Bad - Unrelated tools mixed
+    const messySkill = new LuaSkill({
+      tools: [
+        new GetWeatherTool(),
+        new CreateOrderTool(),
+        new SendEmailTool()
+      ]
+    });
+    ```
+  </Accordion>
+</AccordionGroup>
+
+## Multi-Skill Projects
+
+You can define multiple skills in one project:
+
+```typescript
+// Product browsing
+const catalogSkill = new LuaSkill({
+  name: "catalog-skill",
+  description: "Product browsing and search",
+  tools: [new SearchProductsTool(), new GetProductTool()]
+});
+
+// Shopping cart
+const cartSkill = new LuaSkill({
+  name: "cart-skill",
+  description: "Shopping cart management",
+  tools: [new CreateBasketTool(), new AddItemTool()]
+});
+
+// Order processing
+const orderSkill = new LuaSkill({
+  name: "order-skill",
+  description: "Order creation and tracking",
+  tools: [new CreateOrderTool(), new TrackOrderTool()]
+});
+```
+
+Each skill gets its own `skillId` in `lua.skill.yaml` and can be deployed independently.
+
+## Type Definitions
+
+```typescript
+interface LuaSkillConfig {
+  name?: string;
+  version?: string;
+  description: string;
+  context: string;
+  tools?: LuaTool[];
+}
+
+class LuaSkill {
+  constructor(config: LuaSkillConfig);
+  addTool(tool: LuaTool): void;
+  addTools(tools: LuaTool[]): void;
+}
+```
+
+## Next Steps
+
+<CardGroup cols={2}>
+  <Card
+    title="LuaTool Interface"
+    icon="wrench"
+    href="/api/luatool"
+  >
+    Learn how to implement tools
+  </Card>
+  <Card
+    title="Build Your First Skill"
+    icon="hammer"
+    href="/getting-started/first-skill"
+  >
+    Follow a complete tutorial
+  </Card>
+  <Card
+    title="Template Guide"
+    icon="layer-group"
+    href="/template/overview"
+  >
+    Explore the example project
+  </Card>
+  <Card
+    title="Skills & Tools Concept"
+    icon="book"
+    href="/concepts/skills-and-tools"
+  >
+    Understand the architecture
+  </Card>
+</CardGroup>
+
