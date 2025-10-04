@@ -1,0 +1,30 @@
+{
+  "name": "lua-documentation",
+  "version": "2.0.0",
+  "description": "Official documentation for Lua CLI and LuaPop Chat Widget",
+  "scripts": {
+    "dev": "mintlify dev",
+    "build": "mintlify build",
+    "broken-links": "mintlify broken-links",
+    "install-cli": "npm install -g mintlify"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/lua-ai/lua-docs"
+  },
+  "keywords": [
+    "lua",
+    "ai",
+    "documentation",
+    "cli",
+    "chat-widget",
+    "mintlify"
+  ],
+  "author": "Lua AI",
+  "license": "MIT",
+  "homepage": "https://docs.heylua.ai",
+  "devDependencies": {
+    "mintlify": "latest"
+  }
+}
+

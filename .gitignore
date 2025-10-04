@@ -1,0 +1,50 @@
+# Mintlify
+.mintlify/
+_site/
+
+# OS
+.DS_Store
+Thumbs.db
+*.swp
+*.swo
+*~
+
+# IDEs
+.vscode/
+.idea/
+*.sublime-*
+
+# Logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Temp files
+*.tmp
+.temp/
+temp/
+
+# Node (if using local dependencies)
+node_modules/
+package-lock.json
+yarn.lock
+pnpm-lock.yaml
+
+# Build outputs (if any)
+dist/
+build/
+out/
+
+# Environment
+.env
+.env.local
+.env.*.local
+
+# Documentation status files (internal use only)
+MIGRATION_STATUS.md
+REWRITE_SUMMARY.md
+FINAL_STATUS.md
+DOCUMENTATION_COMPLETE.md
+COMPLETE_DOCUMENTATION_SUMMARY.md
+
