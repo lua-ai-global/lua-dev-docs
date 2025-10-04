@@ -1,208 +1,765 @@
 ---
-title: "Lua CLI Documentation"
-description: "Build AI agents with custom capabilities using TypeScript"
+title: "Lua - Build AI Agents That Do Anything"
+description: "Create AI agents with custom capabilities by connecting to any API using TypeScript"
 ---
 
-## Welcome to Lua CLI
+## Build AI Agents That Can Do Anything
 
-Lua CLI is a powerful command-line tool for building, testing, and deploying AI skills. A **skill** is a collection of **tools** (functions) that your AI agent can use to accomplish tasks.
+Lua is a **general-purpose platform** for building AI agents with custom capabilities. Write TypeScript functions (tools) that connect to **any API** - yours or third-party - and your AI agent can use them in conversations.
 
 <Card
-  title="Quick Start"
+  title="Get Started in 5 Minutes"
   icon="rocket"
   href="/getting-started/quick-start"
   horizontal
 >
-  Get your first AI skill running in 5 minutes
+  Build and deploy your first AI agent
 </Card>
 
-## What You'll Build
+## What Makes Lua Different
 
-<Columns cols={3}>
+<CardGroup cols={2}>
   <Card
-    title="Skills"
-    icon="puzzle-piece"
-  >
-    Collections of related tools that give your AI specific capabilities
-  </Card>
-  <Card
-    title="Tools"
-    icon="wrench"
-  >
-    Individual functions that perform specific tasks like getting weather or creating orders
-  </Card>
-  <Card
-    title="Agents"
-    icon="robot"
-  >
-    AI assistants that use your skills to help users accomplish their goals
-  </Card>
-</Columns>
-
-## Core Features
-
-<Columns cols={2}>
-  <Card
-    title="TypeScript-First"
-    icon="code"
-  >
-    Full type safety with autocomplete and validation using Zod schemas
-  </Card>
-  <Card
-    title="Live Reload"
-    icon="arrows-rotate"
-  >
-    Development mode with instant recompilation and testing
-  </Card>
-  <Card
-    title="Platform APIs"
+    title="Integrate With ANY API"
     icon="plug"
   >
-    Built-in APIs for users, products, baskets, orders, and custom data
+    **Your APIs** - Connect to your existing backend services
+    
+    **External APIs** - Stripe, SendGrid, weather, maps, any REST/GraphQL API
+    
+    **Platform APIs (Optional)** - Use our helpers for common tasks like e-commerce or data storage
   </Card>
   <Card
-    title="Vector Search"
-    icon="magnifying-glass"
+    title="Your Code, Your Logic"
+    icon="code"
   >
-    Semantic search capabilities for building knowledge bases
+    Write TypeScript functions that do **exactly what you need**
+    
+    Full control over authentication, business logic, data transformation, and error handling
+    
+    No constraints - build any capability you can imagine
   </Card>
-  <Card
-    title="30+ Examples"
-    icon="book"
-  >
-    Complete working examples covering all major use cases
-  </Card>
-  <Card
-    title="Production Ready"
-    icon="check"
-  >
-    Version management, sandbox testing, and one-command deployment
-  </Card>
-</Columns>
+</CardGroup>
 
-## Quick Example
+## How It Works
+
+<Steps>
+  <Step title="Write Tools (TypeScript Functions)">
+    Create functions that integrate with your APIs or external services
+    
+    ```typescript
+    class OrderLookupTool implements LuaTool {
+      async execute(input) {
+        // Call YOUR API
+        const response = await fetch('https://your-api.com/orders/' + input.orderId);
+        return await response.json();
+      }
+    }
+    ```
+  </Step>
+  
+  <Step title="Bundle Tools Into Skills">
+    Group related tools together
+    
+    ```typescript
+    const customerServiceSkill = new LuaSkill({
+      name: "customer-service",
+      tools: [new OrderLookupTool(), new CreateTicketTool()]
+    });
+    ```
+  </Step>
+  
+  <Step title="Deploy Your Agent">
+    One command to push your agent live
+    
+    ```bash
+    lua push && lua deploy
+    ```
+  </Step>
+  
+  <Step title="Users Chat, AI Takes Actions">
+    Users chat naturally, AI calls your tools to take real actions
+    
+    **User**: "What's the status of my order #12345?"
+    
+    **AI**: *Calls your OrderLookupTool* → Returns real order status
+  </Step>
+</Steps>
+
+## What You Can Build
+
+### Integrate With YOUR Backend
+
+Connect to your existing systems:
+
+```typescript
+// Call YOUR API endpoints
+class MyCustomTool implements LuaTool {
+  async execute(input) {
+    // YOUR authentication
+    const apiKey = env('YOUR_API_KEY');
+    
+    // YOUR endpoints
+    const response = await fetch('https://your-backend.com/api/endpoint', {
+      headers: { 'Authorization': `Bearer ${apiKey}` }
+    });
+    
+    // YOUR business logic
+    const data = await response.json();
+    return transformYourData(data);
+  }
+}
+```
+
+### Or Use External APIs
+
+Integrate with any third-party service:
+
+<Tabs>
+  <Tab title="Payment (Stripe)">
+    ```typescript
+    import { env } from 'lua-cli';
+    
+    class CreatePaymentTool implements LuaTool {
+      async execute(input: { amount: number }) {
+        const stripeKey = env('STRIPE_API_KEY');
+        
+        // Call Stripe API
+        const response = await fetch('https://api.stripe.com/v1/checkout/sessions', {
+          headers: { 'Authorization': `Bearer ${stripeKey}` }
+        });
+        
+        return await response.json();
+      }
+    }
+    ```
+  </Tab>
+
+  <Tab title="Email (SendGrid)">
+    ```typescript
+    class SendEmailTool implements LuaTool {
+      async execute(input: { to: string, subject: string }) {
+        const apiKey = env('SENDGRID_API_KEY');
+        
+        // Call SendGrid API
+        await fetch('https://api.sendgrid.com/v3/mail/send', {
+          method: 'POST',
+          headers: { 'Authorization': `Bearer ${apiKey}` },
+          body: JSON.stringify({...})
+        });
+      }
+    }
+    ```
+  </Tab>
+
+  <Tab title="Weather">
+    ```typescript
+    class GetWeatherTool implements LuaTool {
+      async execute(input: { city: string }) {
+        // Call weather API
+        const response = await fetch(
+          `https://api.weather.com/v1/weather?city=${input.city}`
+        );
+        return await response.json();
+      }
+    }
+    ```
+  </Tab>
+
+  <Tab title="Your Database">
+    ```typescript
+    class QueryDatabaseTool implements LuaTool {
+      async execute(input: { query: string }) {
+        // Connect to YOUR database
+        const result = await yourDatabase.query(input.query);
+        return result;
+      }
+    }
+    ```
+  </Tab>
+</Tabs>
+
+### Or Use Optional Platform APIs
+
+For common tasks, use our **optional** built-in APIs as shortcuts:
+
+<Tabs>
+  <Tab title="E-commerce">
+    ```typescript
+    import { Products, Baskets, Orders } from 'lua-cli';
+    
+    // Optional: Use our e-commerce APIs
+    const products = await Products.search('laptop');
+    const basket = await Baskets.create({ currency: 'USD' });
+    const order = await Orders.create({...});
+    ```
+    
+    **Or** integrate with Shopify, WooCommerce, your custom store, etc.
+  </Tab>
+
+  <Tab title="Data Storage">
+    ```typescript
+    import { Data } from 'lua-cli';
+    
+    // Optional: Use our vector search
+    await Data.create('items', {...}, searchText);
+    const results = await Data.search('items', 'query');
+    ```
+    
+    **Or** use MongoDB, PostgreSQL, Redis, your database, etc.
+  </Tab>
+
+  <Tab title="User Management">
+    ```typescript
+    import { User } from 'lua-cli';
+    
+    // Optional: Use our user API
+    const user = await User.get();
+    ```
+    
+    **Or** integrate with Auth0, Firebase, your auth system, etc.
+  </Tab>
+</Tabs>
+
+<Note>
+**Platform APIs are completely optional!** They're convenience helpers for common e-commerce and data tasks. You can build agents that integrate with ANY system using standard HTTP/REST/GraphQL calls.
+</Note>
+
+## Build Agents for Any Use Case
+
+<CardGroup cols={2}>
+  <Card title="Custom Business Apps" icon="building">
+    **Your CRM** - Search customers, log interactions, create leads
+    
+    **Your ERP** - Check inventory, create orders, track shipments
+    
+    **Your Internal Tools** - Access any internal API or database
+  </Card>
+  
+  <Card title="Third-Party Services" icon="globe">
+    **Payments** - Stripe, PayPal, Square
+    
+    **Email** - SendGrid, Mailgun, AWS SES
+    
+    **Maps** - Google Maps, Mapbox
+    
+    **Any REST/GraphQL API**
+  </Card>
+  
+  <Card title="Hybrid Solutions" icon="layer-group">
+    Mix and match:
+    - Your backend + our Data API (vector search)
+    - Your auth + our Products API
+    - Your logic + external APIs
+    
+    **Total flexibility**
+  </Card>
+  
+  <Card title="Pure Custom" icon="screwdriver-wrench">
+    Don't use Platform APIs at all:
+    - 100% your own integrations
+    - Your database
+    - Your authentication
+    - Your business logic
+    
+    **Complete control**
+  </Card>
+</CardGroup>
+
+## Example: Three Different Approaches
+
+### Approach 1: Your Own APIs Only
 
 ```typescript
 import { LuaTool, LuaSkill } from 'lua-cli';
 import { z } from 'zod';
 
-// Define a tool
-class GetWeatherTool implements LuaTool {
-  name = "get_weather";
-  description = "Get current weather for a city";
-  
-  inputSchema = z.object({
-    city: z.string()
-  });
+// Connect to YOUR existing backend
+class GetCustomerTool implements LuaTool {
+  name = "get_customer";
+  description = "Look up customer in your CRM";
+  inputSchema = z.object({ email: z.string().email() });
 
-  async execute(input: { city: string }) {
-    // Call weather API
-    return {
-      temperature: 72,
-      condition: "sunny",
-      city: input.city
-    };
+  async execute(input: { email: string }) {
+    // Call YOUR API
+    const response = await fetch(`https://your-crm.com/api/customers/${input.email}`, {
+      headers: { 'X-API-Key': env('YOUR_CRM_API_KEY') }
+    });
+    
+    return await response.json();
   }
 }
 
-// Create a skill
-const weatherSkill = new LuaSkill({
-  name: "weather-skill",
-  version: "1.0.0",
-  description: "Provides weather information",
-  context: "Use get_weather when users ask about weather",
-  tools: [new GetWeatherTool()]
+const skill = new LuaSkill({
+  name: "crm-integration",
+  description: "Access our CRM system",
+  tools: [new GetCustomerTool()]
 });
 ```
 
-## Use Cases
+### Approach 2: Platform APIs Only
 
-<Columns cols={2}>
-  <Card
-    title="Customer Service"
-    icon="headset"
-  >
-    Answer FAQs, look up orders, create tickets, search documentation
-  </Card>
-  <Card
-    title="E-commerce"
-    icon="cart-shopping"
-  >
-    Product search, shopping carts, order processing, inventory
-  </Card>
-  <Card
-    title="Booking Systems"
-    icon="calendar"
-  >
-    Check availability, create appointments, manage reservations
-  </Card>
-  <Card
-    title="Data Management"
-    icon="database"
-  >
-    CRUD operations, semantic search, reporting, integrations
-  </Card>
-</Columns>
+```typescript
+import { LuaTool, Products, Baskets } from 'lua-cli';
 
-## Next Steps
+// Use Lua's built-in e-commerce APIs
+class ShopAssistantTool implements LuaTool {
+  name = "add_to_cart";
+  description = "Add product to cart";
+  
+  async execute(input: { productId: string }) {
+    // Use Platform APIs (optional convenience)
+    const product = await Products.getById(input.productId);
+    const basket = await Baskets.create({ currency: 'USD' });
+    await Baskets.addItem(basket.id, {
+      id: input.productId,
+      price: product.price,
+      quantity: 1
+    });
+    
+    return { basketId: basket.id };
+  }
+}
+```
+
+### Approach 3: Mix Both (Most Common)
+
+```typescript
+import { LuaTool, Data } from 'lua-cli';
+
+// Combine YOUR APIs + Platform APIs
+class SmartSearchTool implements LuaTool {
+  name = "smart_search";
+  description = "Search across all your systems";
+  
+  async execute(input: { query: string }) {
+    // 1. Search YOUR product API
+    const yourProducts = await fetch('https://your-api.com/search', {
+      method: 'POST',
+      body: JSON.stringify({ query: input.query })
+    }).then(r => r.json());
+    
+    // 2. Also search Lua's vector search (for FAQs, docs, etc.)
+    const faqResults = await Data.search('faqs', input.query, 5, 0.7);
+    
+    // 3. Combine results
+    return {
+      products: yourProducts,
+      faqs: faqResults.data,
+      message: `Found ${yourProducts.length} products and ${faqResults.count} FAQs`
+    };
+  }
+}
+```
+
+## Platform APIs: Optional Helpers
+
+Our Platform APIs are **optional convenience features** for common tasks:
+
+<AccordionGroup>
+  <Accordion title="When to Use Platform APIs">
+    ✅ **Building an e-commerce agent** → Use Products/Baskets/Orders APIs
+    
+    ✅ **Need vector search** → Use Data API for semantic search
+    
+    ✅ **Want quick prototyping** → Start with Platform APIs
+    
+    ✅ **Don't have backend yet** → Use Platform APIs as your backend
+  </Accordion>
+
+  <Accordion title="When to Use Your Own APIs">
+    ✅ **Have existing backend** → Integrate with your APIs
+    
+    ✅ **Custom business logic** → Full control over implementation
+    
+    ✅ **Specific requirements** → Build exactly what you need
+    
+    ✅ **Any use case** → CRM, ERP, analytics, monitoring, anything
+  </Accordion>
+
+  <Accordion title="When to Mix Both">
+    ✅ **Hybrid approach** → Your core business logic + our helpers
+    
+    ✅ **Best of both worlds** → Your auth + our vector search
+    
+    ✅ **Extend existing systems** → Add AI capabilities to current stack
+    
+    ✅ **Flexible architecture** → Use what makes sense for each feature
+  </Accordion>
+</AccordionGroup>
+
+## Core Features
+
+<CardGroup cols={2}>
+  <Card title="Any API Integration" icon="link">
+    REST, GraphQL, WebSockets - if you can call it from TypeScript, you can use it
+  </Card>
+  <Card title="TypeScript-First" icon="code">
+    Full type safety with autocomplete and validation using Zod schemas
+  </Card>
+  <Card title="Live Development" icon="arrows-rotate">
+    Development mode with instant recompilation and testing
+  </Card>
+  <Card title="Platform APIs (Optional)" icon="database">
+    Built-in helpers for e-commerce, data storage, and vector search
+  </Card>
+  <Card title="30+ Examples" icon="book">
+    Examples showing external APIs, Platform APIs, and hybrid approaches
+  </Card>
+  <Card title="Production Ready" icon="rocket">
+    Version management, sandbox testing, and one-command deployment
+  </Card>
+</CardGroup>
+
+## Real-World Examples
+
+### CRM Integration (Your API)
+
+```typescript
+// Connect to Salesforce, HubSpot, or your custom CRM
+class CRMTool implements LuaTool {
+  async execute(input: { email: string }) {
+    const response = await fetch('https://your-crm.com/api/contacts', {
+      headers: { 'Authorization': `Bearer ${env('CRM_API_KEY')}` }
+    });
+    return await response.json();
+  }
+}
+```
+
+### Knowledge Base (Platform API)
+
+```typescript
+import { Data } from 'lua-cli';
+
+// Use our vector search for semantic document search
+class SearchDocsTool implements LuaTool {
+  async execute(input: { query: string }) {
+    // Platform API for vector search
+    return await Data.search('docs', input.query, 10, 0.7);
+  }
+}
+```
+
+### Complete Solution (Hybrid)
+
+```typescript
+import { Data, env } from 'lua-cli';
+
+class CompleteSearchTool implements LuaTool {
+  async execute(input: { query: string }) {
+    // 1. Search YOUR product database
+    const myProducts = await fetch(`https://your-db.com/search?q=${input.query}`)
+      .then(r => r.json());
+    
+    // 2. Search help docs with Platform API (vector search)
+    const helpDocs = await Data.search('help_articles', input.query, 5);
+    
+    // 3. Search external knowledge base
+    const external = await fetch('https://external-kb.com/search')
+      .then(r => r.json());
+    
+    // Combine all sources
+    return { myProducts, helpDocs, external };
+  }
+}
+```
+
+## Use Cases: Unlimited Possibilities
+
+<Tabs>
+  <Tab title="Custom Business">
+    **Your Industry, Your Systems**
+    
+    - Connect to your ERP, CRM, databases
+    - Implement your business rules
+    - Access your internal APIs
+    - Use your authentication
+    
+    **Examples:**
+    - Manufacturing: Inventory, orders, shipping
+    - Healthcare: Patient records, appointments, prescriptions
+    - Finance: Account lookup, transactions, reporting
+    - Logistics: Tracking, routing, scheduling
+  </Tab>
+
+  <Tab title="E-commerce">
+    **Flexible E-commerce Solutions**
+    
+    **Option A**: Use Platform APIs (quick start)
+    - Products, Baskets, Orders built-in
+    
+    **Option B**: Integrate with your store
+    - Shopify, WooCommerce, Magento
+    - Your custom e-commerce backend
+    
+    **Option C**: Mix both
+    - Your products + our checkout flow
+    - Your auth + our vector search
+  </Tab>
+
+  <Tab title="SaaS Products">
+    **Extend Your SaaS**
+    
+    - Onboarding assistant using your APIs
+    - Help desk connecting to your support system
+    - Analytics dashboard with your metrics
+    - Feature guides accessing your product data
+    
+    **All using YOUR existing backend**
+  </Tab>
+
+  <Tab title="Integrations">
+    **Third-Party Services**
+    
+    - Payments: Stripe, PayPal, Square
+    - Email: SendGrid, Mailgun, Postmark
+    - SMS: Twilio, MessageBird
+    - Calendar: Google Calendar, Outlook
+    - Maps: Google Maps, Mapbox
+    - Analytics: Mixpanel, Amplitude
+    - **Any API with REST/GraphQL**
+  </Tab>
+</Tabs>
+
+## Platform APIs: Optional Helpers
+
+We provide **optional** Platform APIs for common tasks. **Use them or don't - your choice.**
+
+<CardGroup cols={2}>
+  <Card title="Products API" icon="box">
+    **Optional** e-commerce catalog management
+    
+    Use it: Quick e-commerce prototype
+    
+    Skip it: Integrate with Shopify, your custom store, etc.
+  </Card>
+  <Card title="Data API" icon="database">
+    **Optional** vector search & data storage
+    
+    Use it: Semantic search, knowledge bases
+    
+    Skip it: Use PostgreSQL, MongoDB, Elasticsearch, etc.
+  </Card>
+  <Card title="Baskets API" icon="cart-shopping">
+    **Optional** shopping cart management
+    
+    Use it: Ready-made cart functionality
+    
+    Skip it: Use your existing cart system
+  </Card>
+  <Card title="Orders API" icon="receipt">
+    **Optional** order processing
+    
+    Use it: Simple order management
+    
+    Skip it: Integrate with your order system
+  </Card>
+</CardGroup>
+
+<Note>
+**Think of Platform APIs as optional shortcuts**, not requirements. They're there if you need quick e-commerce functionality or vector search. Otherwise, integrate with whatever systems you want!
+</Note>
+
+## Quick Start Examples
+
+### Option 1: Pure Custom Integration
+
+No Platform APIs - just your own integrations:
+
+```typescript
+import { LuaTool, LuaSkill, env } from 'lua-cli';
+import { z } from 'zod';
+
+class YourCustomTool implements LuaTool {
+  name = "your_tool";
+  description = "Does something specific to your business";
+  inputSchema = z.object({ param: z.string() });
+
+  async execute(input) {
+    // Call YOUR API, YOUR database, YOUR services
+    const apiKey = env('YOUR_API_KEY');
+    const response = await fetch('https://your-api.com/endpoint', {
+      headers: { 'Authorization': `Bearer ${apiKey}` }
+    });
+    
+    return await response.json();
+  }
+}
+
+const skill = new LuaSkill({
+  name: "your-business-skill",
+  description: "Custom integration with your systems",
+  tools: [new YourCustomTool()]
+});
+```
+
+### Option 2: Use Platform APIs
+
+Quick start with built-in e-commerce:
+
+```typescript
+import { LuaTool, Products, Baskets } from 'lua-cli';
+
+class QuickShopTool implements LuaTool {
+  name = "shop";
+  description = "Browse and buy products";
+  
+  async execute(input: { query: string }) {
+    // Use Platform APIs for quick e-commerce
+    const products = await Products.search(input.query);
+    const basket = await Baskets.create({ currency: 'USD' });
+    
+    return { products, basketId: basket.id };
+  }
+}
+```
+
+### Option 3: Best of Both Worlds
+
+Mix your integrations with Platform helpers:
+
+```typescript
+import { LuaTool, Data, env } from 'lua-cli';
+
+class HybridSearchTool implements LuaTool {
+  async execute(input: { query: string }) {
+    // 1. Search YOUR Shopify store
+    const shopifyProducts = await fetch(
+      `https://your-store.myshopify.com/admin/api/2024-01/products.json?query=${input.query}`,
+      { headers: { 'X-Shopify-Access-Token': env('SHOPIFY_TOKEN') }}
+    ).then(r => r.json());
+    
+    // 2. Use Platform API for knowledge base (vector search)
+    const helpArticles = await Data.search('help', input.query, 5);
+    
+    return {
+      shopifyProducts: shopifyProducts.products,
+      helpArticles: helpArticles.data
+    };
+  }
+}
+```
+
+## Key Benefits
+
+<CardGroup cols={2}>
+  <Card title="🔓 No Lock-In" icon="unlock">
+    Use any APIs you want. Not tied to our Platform APIs. Build on your existing infrastructure.
+  </Card>
+  <Card title="⚡ Fast Development" icon="bolt">
+    TypeScript with live reload. Test instantly. Deploy in one command.
+  </Card>
+  <Card title="🎯 Full Control" icon="bullseye">
+    Your code, your logic, your APIs. Complete control over every aspect.
+  </Card>
+  <Card title="🚀 Optional Shortcuts" icon="rocket">
+    Platform APIs available for common tasks like e-commerce and vector search - use if helpful.
+  </Card>
+</CardGroup>
+
+## Getting Started
 
 <Steps>
-  <Step title="Install Lua CLI">
-    Install the CLI globally with npm
+  <Step title="Install CLI">
     ```bash
     npm install -g lua-cli
     ```
   </Step>
   <Step title="Authenticate">
-    Set up your API key
     ```bash
     lua auth configure
     ```
   </Step>
-  <Step title="Create Your First Skill">
-    Initialize a new project
+  <Step title="Create Project">
     ```bash
-    mkdir my-skill && cd my-skill
+    mkdir my-agent && cd my-agent
     lua init
     ```
+    
+    Gets you a template with examples of:
+    - External API integration (weather)
+    - Platform API usage (e-commerce)
+    - Custom data with vector search
+    - Payment integration (Stripe)
   </Step>
-  <Step title="Start Development">
-    Test your skill with live reload
+  <Step title="Build Your Tools">
+    Integrate with YOUR systems or ANY external API
+    
+    ```typescript
+    // YOUR integration
+    class MyTool implements LuaTool {
+      async execute(input) {
+        return await fetch('https://your-api.com/...');
+      }
+    }
+    ```
+  </Step>
+  <Step title="Deploy">
     ```bash
-    lua dev
+    lua push && lua deploy
     ```
   </Step>
 </Steps>
+
+## What You Get
+
+<Columns cols={3}>
+  <Card title="Flexibility" icon="arrows-split-up-and-left">
+    Integrate with anything
+    
+    Your choice of APIs
+  </Card>
+  <Card title="Speed" icon="gauge-high">
+    Live reload development
+    
+    One-command deploy
+  </Card>
+  <Card title="Power" icon="bolt">
+    TypeScript, Zod validation
+    
+    Full type safety
+  </Card>
+</Columns>
 
 ## Popular Guides
 
 <CardGroup cols={2}>
   <Card
-    title="Getting Started"
-    icon="play"
+    title="Quick Start"
+    icon="rocket"
     href="/getting-started/quick-start"
   >
-    Complete tutorial from zero to deployed skill
+    Build your first agent in 5 minutes
   </Card>
   <Card
-    title="API Reference"
-    icon="book-open"
-    href="/api/overview"
+    title="API Integration"
+    icon="plug"
+    href="/concepts/platform-apis"
   >
-    Full API documentation with examples
+    Learn about APIs (Platform and external)
   </Card>
   <Card
-    title="Template Guide"
+    title="Tool Examples"
     icon="layer-group"
-    href="/template/overview"
+    href="/examples/overview"
   >
-    Understanding the example project with 30+ tools
+    See 30+ examples (external APIs, Platform APIs, hybrid)
   </Card>
   <Card
     title="CLI Commands"
     icon="terminal"
     href="/cli/overview"
   >
-    Complete command reference and workflows
+    Complete command reference
   </Card>
 </CardGroup>
+
+<Card
+  title="💬 Add Chat Widget to Your Website"
+  icon="comments"
+  href="/chat-widget/introduction"
+  horizontal
+>
+  Embed your AI agent on any website with our LuaPop chat widget
+</Card>
