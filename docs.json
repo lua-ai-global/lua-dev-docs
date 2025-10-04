@@ -7,11 +7,11 @@
     "light": "#fe1052",
     "dark": "#fe1052"
   },
-  "favicon": "/favicon.svg",
+  "favicon": "/favicon.png",
   "navigation": {
     "tabs": [
       {
-        "tab": "Documentation",
+        "tab": "CLI",
         "groups": [
           {
             "group": "Getting Started",
@@ -32,7 +32,7 @@
             ]
           },
           {
-            "group": "CLI Reference",
+            "group": "CLI Commands",
             "pages": [
               "cli/overview",
               "cli/authentication",
@@ -40,54 +40,29 @@
               "cli/development",
               "cli/troubleshooting"
             ]
-          }
-        ]
-      },
-      {
-        "tab": "API Reference",
-        "groups": [
+          },
           {
-            "group": "Core Classes",
+            "group": "API Reference",
             "pages": [
               "api/overview",
               "api/luaskill",
-              "api/luatool"
-            ]
-          },
-          {
-            "group": "Platform APIs",
-            "pages": [
+              "api/luatool",
               "api/user",
               "api/data",
               "api/products",
               "api/baskets",
-              "api/orders"
+              "api/orders",
+              "api/environment"
             ]
           },
           {
-            "group": "Utilities",
-            "pages": [
-              "api/environment"
-            ]
-          }
-        ]
-      },
-      {
-        "tab": "Template Guide",
-        "groups": [
-          {
-            "group": "Template",
+            "group": "Template & Examples",
             "pages": [
               "template/overview",
               "template/project-structure",
               "template/building-skills",
               "template/multi-skill-projects",
-              "template/best-practices"
-            ]
-          },
-          {
-            "group": "Tool Examples",
-            "pages": [
+              "template/best-practices",
               "examples/overview",
               "examples/weather",
               "examples/user-data",
@@ -95,6 +70,43 @@
               "examples/baskets",
               "examples/custom-data",
               "examples/payment"
+            ]
+          }
+        ]
+      },
+      {
+        "tab": "Chat Widget",
+        "groups": [
+          {
+            "group": "Getting Started",
+            "pages": [
+              "chat-widget/introduction",
+              "chat-widget/quick-start",
+              "chat-widget/installation"
+            ]
+          },
+          {
+            "group": "Configuration",
+            "pages": [
+              "chat-widget/configuration",
+              "chat-widget/styling",
+              "chat-widget/events"
+            ]
+          },
+          {
+            "group": "Integration",
+            "pages": [
+              "chat-widget/frameworks",
+              "chat-widget/examples",
+              "chat-widget/migration"
+            ]
+          },
+          {
+            "group": "Advanced",
+            "pages": [
+              "chat-widget/voice-chat",
+              "chat-widget/analytics",
+              "chat-widget/troubleshooting"
             ]
           }
         ]
@@ -121,8 +133,8 @@
     }
   },
   "logo": {
-    "light": "/logo/light.svg",
-    "dark": "/logo/dark.svg"
+    "light": "/logo/light.png",
+    "dark": "/logo/dark.png"
   },
   "navbar": {
     "links": [

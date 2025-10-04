@@ -1,0 +1,212 @@
+---
+title: "Styling & Customization"
+description: "Customize LuaPop to match your brand perfectly"
+---
+
+## Custom Colors
+
+### Button Color
+
+```javascript
+window.LuaPop.init({
+  agentId: "your-agent-id",
+  buttonColor: "#ff6b6b"  // Any hex color
+});
+```
+
+### Theme Selection
+
+<Tabs>
+  <Tab title="Light Theme">
+    ```javascript
+    theme: "light"
+    ```
+    
+    Professional and clean for business sites
+  </Tab>
+  
+  <Tab title="Dark Theme">
+    ```javascript
+    theme: "dark"
+    ```
+    
+    Modern look for tech-savvy audiences
+  </Tab>
+</Tabs>
+
+## Custom Button Styling
+
+```javascript
+window.LuaPop.init({
+  agentId: "your-agent-id",
+  
+  // Button text and icon
+  buttonText: "💬 Chat Now",
+  buttonIcon: "🤖",
+  
+  // Button styles
+  popupButtonStyles: {
+    borderRadius: "25px",
+    width: "auto",
+    height: "50px",
+    padding: "0 20px",
+    fontSize: "16px",
+    fontWeight: "600",
+    boxShadow: "0 4px 12px rgba(0,0,0,0.15)",
+    transition: "all 0.3s ease"
+  }
+});
+```
+
+## Custom Positioning
+
+```javascript
+popupButtonPositionalContainerStyles: {
+  bottom: "30px",
+  right: "30px",
+  zIndex: "9999"
+}
+```
+
+### Position Presets
+
+<CodeGroup>
+
+```javascript Bottom Right
+position: "bottom-right"
+```
+
+```javascript Bottom Left
+position: "bottom-left"
+```
+
+```javascript Top Right
+position: "top-right"
+```
+
+```javascript Top Left
+position: "top-left"
+```
+
+</CodeGroup>
+
+## Chat Header Styling
+
+```javascript
+chatTitleHeaderStyles: {
+  background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
+  color: "white",
+  padding: "15px 20px",
+  borderRadius: "15px 15px 0 0",
+  fontWeight: "bold"
+}
+```
+
+## Brand Integration
+
+```javascript
+chatHeaderSubtitle: {
+  visible: true,
+  brandName: "Your Company",
+  iconUrl: "https://yoursite.com/logo.png",
+  linkUrl: "https://yoursite.com"
+}
+```
+
+## CSS Class Overrides
+
+```css
+/* Override button styles */
+.lua-pop-button {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+  border: none !important;
+  box-shadow: 0 8px 25px rgba(102, 126, 234, 0.3) !important;
+}
+
+/* Override chat header */
+.lua-pop-chat-header {
+  background: #2c3e50 !important;
+  color: white !important;
+}
+
+/* Custom animations */
+.lua-pop-widget {
+  animation: slideInUp 0.3s ease-out;
+}
+
+@keyframes slideInUp {
+  from {
+    transform: translateY(100px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+```
+
+## Complete Styling Example
+
+```javascript
+window.LuaPop.init({
+  agentId: "your-agent-id",
+  
+  // Theme
+  theme: "light",
+  position: "bottom-right",
+  
+  // Button
+  buttonText: "💬 Chat Now",
+  buttonColor: "#8B5CF6",
+  
+  // Button custom styles
+  popupButtonStyles: {
+    borderRadius: "30px",
+    padding: "12px 24px",
+    fontSize: "15px",
+    fontWeight: "600",
+    boxShadow: "0 8px 20px rgba(139, 92, 246, 0.3)",
+    border: "2px solid rgba(255, 255, 255, 0.3)"
+  },
+  
+  // Positioning
+  popupButtonPositionalContainerStyles: {
+    bottom: "25px",
+    right: "25px",
+    zIndex: "9999"
+  },
+  
+  // Chat header
+  chatTitle: "AI Assistant",
+  chatTitleHeaderStyles: {
+    background: "linear-gradient(135deg, #8B5CF6 0%, #7C3AED 100%)",
+    color: "white",
+    padding: "16px 20px",
+    borderRadius: "12px 12px 0 0",
+    fontWeight: "700"
+  },
+  
+  // Branding
+  chatHeaderSubtitle: {
+    visible: true,
+    brandName: "Your Company",
+    iconUrl: "/logo.png",
+    linkUrl: "/"
+  },
+  
+  // Input
+  chatInputPlaceholder: "Ask anything..."
+});
+```
+
+## Next Steps
+
+<CardGroup cols={2}>
+  <Card title="Events API" icon="bolt" href="/chat-widget/events">
+    Listen to chat interactions
+  </Card>
+  <Card title="Examples" icon="layer-group" href="/chat-widget/examples">
+    See styling examples
+  </Card>
+</CardGroup>

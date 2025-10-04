@@ -1,0 +1,530 @@
+---
+title: "Installation"
+description: "Install LuaPop on your website or application"
+---
+
+## Installation Methods
+
+<CardGroup cols={2}>
+  <Card title="CDN Script" icon="link">
+    Quickest setup - no build process
+  </Card>
+  <Card title="NPM Package" icon="box">
+    For modern frameworks and build tools
+  </Card>
+</CardGroup>
+
+## CDN Installation (Recommended)
+
+Perfect for static websites, WordPress, Shopify, or any HTML page.
+
+###Step 1: Add Script Tag
+
+Add this code right before the closing `</body>` tag:
+
+```html
+<script src="https://lua-ai-global.github.io/lua-pop/lua-pop.umd.js"></script>
+```
+
+### Step 2: Initialize
+
+```html
+<script>
+  window.LuaPop.init({
+    agentId: "your-agent-id",
+    position: "bottom-right",
+    theme: "light"
+  });
+</script>
+```
+
+### Complete Example
+
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>My Website</title>
+</head>
+<body>
+  <h1>Welcome to My Website</h1>
+  <p>Your content here...</p>
+  
+  <!-- LuaPop Chat Widget -->
+  <script src="https://lua-ai-global.github.io/lua-pop/lua-pop.umd.js"></script>
+  <script>
+    window.LuaPop.init({
+      agentId: "your-agent-id",
+      position: "bottom-right",
+      theme: "light",
+      buttonText: "Chat with AI"
+    });
+  </script>
+</body>
+</html>
+```
+
+## NPM Installation
+
+For React, Vue, Angular, or other modern frameworks.
+
+### Step 1: Install Package
+
+<CodeGroup>
+
+```bash npm
+npm install @lua/pop
+```
+
+```bash yarn
+yarn add @lua/pop
+```
+
+```bash pnpm
+pnpm add @lua/pop
+```
+
+</CodeGroup>
+
+### Step 2: Import and Use
+
+<Tabs>
+  <Tab title="React">
+    ```tsx
+    import { LuaPopWidget } from '@lua/pop';
+    import '@lua/pop/dist/style.css';
+
+    function App() {
+      return (
+        <div>
+          {/* Your app content */}
+          
+          <LuaPopWidget 
+            config={{
+              agentId: "your-agent-id",
+              position: "bottom-right",
+              theme: "light",
+              buttonText: "Chat with AI"
+            }}
+            apiUrl="https://api.heylua.ai"
+            cdnUrl="https://cdn.heylua.ai"
+            authUrl="https://auth.heylua.ai"
+          />
+        </div>
+      );
+    }
+    ```
+  </Tab>
+
+  <Tab title="Vue 3">
+    ```vue
+    <template>
+      <div>
+        <!-- Your app content -->
+        <LuaPopWidget :config="chatConfig" />
+      </div>
+    </template>
+
+    <script setup>
+    import { LuaPopWidget } from '@lua/pop';
+    import '@lua/pop/dist/style.css';
+
+    const chatConfig = {
+      agentId: "your-agent-id",
+      position: "bottom-right",
+      theme: "light"
+    };
+    </script>
+    ```
+  </Tab>
+
+  <Tab title="TypeScript">
+    ```typescript
+    import { LuaPopWidget, LuaPopConfig } from '@lua/pop';
+    import '@lua/pop/dist/style.css';
+
+    const config: LuaPopConfig = {
+      agentId: "your-agent-id",
+      position: "bottom-right",
+      theme: "light",
+      buttonText: "Chat with AI"
+    };
+
+    // Use in your framework
+    ```
+  </Tab>
+</Tabs>
+
+## Platform-Specific Installation
+
+### WordPress
+
+<Steps>
+  <Step title="Access Theme Editor">
+    Go to **Appearance** → **Theme File Editor**
+  </Step>
+  
+  <Step title="Edit footer.php">
+    Find your theme's `footer.php` file
+  </Step>
+  
+  <Step title="Add Script">
+    Add before `</body>`:
+    ```html
+    <script src="https://lua-ai-global.github.io/lua-pop/lua-pop.umd.js"></script>
+    <script>
+      window.LuaPop.init({
+        agentId: "<?php echo get_option('luapop_agent_id'); ?>",
+        position: "bottom-right",
+        theme: "light"
+      });
+    </script>
+    ```
+  </Step>
+</Steps>
+
+**Alternative:** Use plugin like "Insert Headers and Footers" to add the script without editing theme files.
+
+### Shopify
+
+<Steps>
+  <Step title="Access Theme Editor">
+    Go to **Online Store** → **Themes** → **Edit code**
+  </Step>
+  
+  <Step title="Edit theme.liquid">
+    Find `theme.liquid` in **Layout** folder
+  </Step>
+  
+  <Step title="Add Script">
+    Add before `</body>`:
+    ```html
+    <script src="https://lua-ai-global.github.io/lua-pop/lua-pop.umd.js"></script>
+    <script>
+      window.LuaPop.init({
+        agentId: "your-agent-id",
+        chatTitle: "Shop Assistant",
+        buttonText: "🛍️ Shop Help",
+        position: "bottom-right",
+        theme: "light"
+      });
+    </script>
+    ```
+  </Step>
+  
+  <Step title="Save and Test">
+    Click **Save** and view your store
+  </Step>
+</Steps>
+
+### Wix
+
+<Steps>
+  <Step title="Add Custom Code">
+    Go to **Settings** → **Custom Code**
+  </Step>
+  
+  <Step title="Add to Body End">
+    Click **+ Add Custom Code** → **Body - end**
+  </Step>
+  
+  <Step title="Paste Code">
+    ```html
+    <script src="https://lua-ai-global.github.io/lua-pop/lua-pop.umd.js"></script>
+    <script>
+      window.LuaPop.init({
+        agentId: "your-agent-id",
+        position: "bottom-right",
+        theme: "light"
+      });
+    </script>
+    ```
+  </Step>
+  
+  <Step title="Apply to All Pages">
+    Select "All pages" and click **Apply**
+  </Step>
+</Steps>
+
+### Squarespace
+
+<Steps>
+  <Step title="Access Code Injection">
+    Go to **Settings** → **Advanced** → **Code Injection**
+  </Step>
+  
+  <Step title="Add to Footer">
+    In the **Footer** section, add:
+    ```html
+    <script src="https://lua-ai-global.github.io/lua-pop/lua-pop.umd.js"></script>
+    <script>
+      window.LuaPop.init({
+        agentId: "your-agent-id",
+        position: "bottom-right",
+        theme: "light"
+      });
+    </script>
+    ```
+  </Step>
+  
+  <Step title="Save">
+    Click **Save** and your chat widget will appear on all pages
+  </Step>
+</Steps>
+
+### Webflow
+
+<Steps>
+  <Step title="Open Project Settings">
+    Go to **Project Settings** → **Custom Code**
+  </Step>
+  
+  <Step title="Add to Footer Code">
+    Paste in **Footer Code** section:
+    ```html
+    <script src="https://lua-ai-global.github.io/lua-pop/lua-pop.umd.js"></script>
+    <script>
+      window.LuaPop.init({
+        agentId: "your-agent-id",
+        position: "bottom-right",
+        theme: "light"
+      });
+    </script>
+    ```
+  </Step>
+  
+  <Step title="Publish">
+    Publish your site to see the widget
+  </Step>
+</Steps>
+
+## Single Page Applications
+
+### React
+
+```tsx
+// components/ChatWidget.tsx
+import { useEffect } from 'react';
+
+export default function ChatWidget() {
+  useEffect(() => {
+    // Load LuaPop script
+    const script = document.createElement('script');
+    script.src = 'https://lua-ai-global.github.io/lua-pop/lua-pop.umd.js';
+    script.onload = () => {
+      window.LuaPop?.init({
+        agentId: process.env.NEXT_PUBLIC_AGENT_ID,
+        position: "bottom-right",
+        theme: "light",
+        sessionId: `user-${Date.now()}`
+      });
+    };
+    document.body.appendChild(script);
+
+    // Cleanup
+    return () => {
+      document.body.removeChild(script);
+    };
+  }, []);
+
+  return null;
+}
+
+// In your main App component
+import ChatWidget from './components/ChatWidget';
+
+function App() {
+  return (
+    <div>
+      {/* Your app */}
+      <ChatWidget />
+    </div>
+  );
+}
+```
+
+### Next.js
+
+```tsx
+// app/layout.tsx or pages/_app.tsx
+import Script from 'next/script';
+
+export default function RootLayout({ children }) {
+  return (
+    <html>
+      <body>
+        {children}
+        
+        {/* LuaPop Widget */}
+        <Script 
+          src="https://lua-ai-global.github.io/lua-pop/lua-pop.umd.js"
+          strategy="lazyOnload"
+          onLoad={() => {
+            window.LuaPop?.init({
+              agentId: process.env.NEXT_PUBLIC_AGENT_ID,
+              position: "bottom-right",
+              theme: "light"
+            });
+          }}
+        />
+      </body>
+    </html>
+  );
+}
+```
+
+<Card title="More Framework Examples" icon="code" href="/chat-widget/frameworks">
+  Vue, Angular, Svelte, and more
+</Card>
+
+## Verification
+
+### Check Installation
+
+Open your website and verify:
+
+<Steps>
+  <Step title="Chat Button Appears">
+    Look for the chat button in your chosen position
+  </Step>
+  
+  <Step title="Button Opens Chat">
+    Click the button - chat window should open
+  </Step>
+  
+  <Step title="Chat Responds">
+    Send a test message - AI should respond
+  </Step>
+  
+  <Step title="No Console Errors">
+    Check browser console (F12) - no errors should appear
+  </Step>
+</Steps>
+
+### Browser Console Check
+
+```javascript
+// Type this in browser console to verify LuaPop loaded
+console.log(window.LuaPop);
+// Should show the LuaPop object
+
+// Check current configuration
+console.log(window.LuaPop.config);
+// Should show your configuration
+```
+
+## Environment Variables
+
+For different environments, use environment variables:
+
+<Tabs>
+  <Tab title="React/Next.js">
+    ```env
+    # .env.local
+    NEXT_PUBLIC_AGENT_ID=your-agent-id
+    NEXT_PUBLIC_LUAPOP_ENV=production
+    ```
+    
+    ```tsx
+    window.LuaPop.init({
+      agentId: process.env.NEXT_PUBLIC_AGENT_ID,
+      environment: process.env.NEXT_PUBLIC_LUAPOP_ENV
+    });
+    ```
+  </Tab>
+
+  <Tab title="Vue">
+    ```env
+    # .env
+    VUE_APP_AGENT_ID=your-agent-id
+    VUE_APP_LUAPOP_ENV=production
+    ```
+    
+    ```javascript
+    window.LuaPop.init({
+      agentId: process.env.VUE_APP_AGENT_ID,
+      environment: process.env.VUE_APP_LUAPOP_ENV
+    });
+    ```
+  </Tab>
+
+  <Tab title="Angular">
+    ```typescript
+    // environment.ts
+    export const environment = {
+      agentId: 'your-agent-id',
+      luaPopEnv: 'production'
+    };
+    ```
+    
+    ```typescript
+    import { environment } from './environments/environment';
+    
+    window.LuaPop.init({
+      agentId: environment.agentId,
+      environment: environment.luaPopEnv
+    });
+    ```
+  </Tab>
+</Tabs>
+
+## Security Considerations
+
+<Warning>
+**Never expose sensitive agent credentials in client-side code!**
+</Warning>
+
+### Best Practices
+
+- ✅ Use environment-specific agent IDs
+- ✅ Use `staging` environment for development
+- ✅ Generate unique session IDs per user
+- ✅ Don't store user PII in `runtimeContext`
+- ✅ Use HTTPS on your website
+
+### Example Secure Setup
+
+```javascript
+window.LuaPop.init({
+  agentId: process.env.LUAPOP_AGENT_ID, // From environment
+  environment: process.env.NODE_ENV === 'production' ? 'production' : 'staging',
+  sessionId: generateSecureSessionId(), // Your session logic
+  authToken: await getAuthToken() // If using authenticated users
+});
+```
+
+## Next Steps
+
+<CardGroup cols={2}>
+  <Card
+    title="Configuration"
+    icon="cog"
+    href="/chat-widget/configuration"
+  >
+    Complete configuration reference
+  </Card>
+  <Card
+    title="Customization"
+    icon="palette"
+    href="/chat-widget/styling"
+  >
+    Style the widget to match your brand
+  </Card>
+  <Card
+    title="Examples"
+    icon="layer-group"
+    href="/chat-widget/examples"
+  >
+    See real-world implementations
+  </Card>
+  <Card
+    title="Troubleshooting"
+    icon="circle-question"
+    href="/chat-widget/troubleshooting"
+  >
+    Common issues and solutions
+  </Card>
+</CardGroup>
+

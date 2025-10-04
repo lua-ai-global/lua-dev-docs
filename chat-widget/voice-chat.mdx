@@ -1,0 +1,195 @@
+---
+title: "Voice Chat"
+description: "Enable voice interactions in your chat widget"
+---
+
+## Overview
+
+LuaPop supports optional voice chat functionality, allowing users to speak with your AI agent instead of typing.
+
+## Enable Voice Chat
+
+```javascript
+window.LuaPop.init({
+  agentId: "your-agent-id",
+  position: "bottom-right",
+  theme: "light",
+  voiceModeEnabled: true  // ✅ Enable voice chat
+});
+```
+
+## Features
+
+<CardGroup cols={2}>
+  <Card title="Speech-to-Text" icon="microphone">
+    Users can speak their messages
+  </Card>
+  <Card title="Text-to-Speech" icon="volume-high">
+    AI responses can be spoken aloud
+  </Card>
+  <Card title="Multi-Language" icon="globe">
+    Supports multiple languages
+  </Card>
+  <Card title="Hands-Free" icon="hand">
+    Great for accessibility and mobile
+  </Card>
+</CardGroup>
+
+## How It Works
+
+<Steps>
+  <Step title="User Activates Voice">
+    User clicks microphone icon in chat input
+  </Step>
+  
+  <Step title="Browser Requests Permission">
+    Browser asks for microphone access
+  </Step>
+  
+  <Step title="User Speaks">
+    User speaks their message
+  </Step>
+  
+  <Step title="Speech-to-Text">
+    Audio converted to text automatically
+  </Step>
+  
+  <Step title="AI Responds">
+    AI processes and responds as normal
+  </Step>
+  
+  <Step title="Text-to-Speech (Optional)">
+    Response can be played as audio
+  </Step>
+</Steps>
+
+## Use Cases
+
+### Accessibility
+
+Voice chat improves accessibility for:
+- Users with motor impairments
+- Users who prefer speaking
+- Hands-free scenarios
+- Visually impaired users
+
+### Mobile Users
+
+Perfect for mobile where typing is harder:
+
+```javascript
+const isMobile = window.innerWidth <= 768;
+
+window.LuaPop.init({
+  agentId: "mobile-agent",
+  voiceModeEnabled: isMobile, // Enable on mobile only
+  buttonText: isMobile ? "🎤 Voice Chat" : "💬 Chat"
+});
+```
+
+### Driving/Hands-Free
+
+Ideal for automotive or hands-free scenarios:
+
+```javascript
+window.LuaPop.init({
+  agentId: "hands-free-agent",
+  voiceModeEnabled: true,
+  chatTitle: "Voice Assistant",
+  buttonText: "🎤 Voice Chat",
+  chatInputPlaceholder: "Click mic to speak..."
+});
+```
+
+## Browser Support
+
+Voice chat requires:
+- Modern browser with Web Speech API
+- HTTPS connection (required for microphone access)
+- User permission for microphone
+
+### Supported Browsers
+
+| Browser | Speech-to-Text | Text-to-Speech |
+|---------|---------------|----------------|
+| Chrome | ✅ Full | ✅ Full |
+| Safari | ✅ Full | ✅ Full |
+| Firefox | ✅ Full | ✅ Full |
+| Edge | ✅ Full | ✅ Full |
+| Mobile Safari | ✅ Full | ✅ Full |
+| Chrome Mobile | ✅ Full | ✅ Full |
+
+## Privacy & Permissions
+
+<Warning>
+Voice chat requires user permission to access the microphone. Users must explicitly grant permission.
+</Warning>
+
+### Permission Handling
+
+The widget automatically:
+1. Requests microphone permission when needed
+2. Shows appropriate UI if permission denied
+3. Gracefully falls back to text-only chat
+
+### Privacy
+
+- Audio is processed in real-time
+- No audio recordings are stored locally
+- Audio converted to text server-side
+- GDPR compliant
+
+## Best Practices
+
+<AccordionGroup>
+  <Accordion title="Require HTTPS">
+    Voice chat only works on HTTPS:
+    ```javascript
+    const isSecure = window.location.protocol === 'https:';
+    
+    window.LuaPop.init({
+      agentId: "your-agent-id",
+      voiceModeEnabled: isSecure // Only enable on HTTPS
+    });
+    ```
+  </Accordion>
+
+  <Accordion title="Show Voice Indicator">
+    Let users know voice is available:
+    ```javascript
+    window.LuaPop.init({
+      agentId: "your-agent-id",
+      voiceModeEnabled: true,
+      buttonText: "🎤 Voice Chat Available"
+    });
+    ```
+  </Accordion>
+
+  <Accordion title="Mobile-First for Voice">
+    Voice chat is especially useful on mobile:
+    ```javascript
+    const isMobile = window.innerWidth <= 768;
+    
+    window.LuaPop.init({
+      agentId: "your-agent-id",
+      voiceModeEnabled: true,
+      buttonText: isMobile ? "🎤" : "💬 Chat",
+      chatInputPlaceholder: isMobile 
+        ? "Tap mic to speak" 
+        : "Type or click mic to speak"
+    });
+    ```
+  </Accordion>
+</AccordionGroup>
+
+## Next Steps
+
+<CardGroup cols={2}>
+  <Card title="Configuration" icon="cog" href="/chat-widget/configuration">
+    All configuration options
+  </Card>
+  <Card title="Examples" icon="layer-group" href="/chat-widget/examples">
+    See voice chat implementations
+  </Card>
+</CardGroup>
+

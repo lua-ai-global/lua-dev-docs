@@ -1,0 +1,259 @@
+---
+title: "Analytics & Tracking"
+description: "Track chat interactions and measure engagement"
+---
+
+## Overview
+
+Track chat widget performance and user interactions by listening to widget events.
+
+## Google Analytics 4
+
+```javascript
+window.addEventListener('message', function(event) {
+  if (event.data && event.data.type === 'LUA_POP_EVENT') {
+    gtag('event', 'chat_interaction', {
+      event_category: 'engagement',
+      event_label: event.data.eventType,
+      chat_agent_id: 'your-agent-id'
+    });
+  }
+});
+
+window.LuaPop.init({
+  agentId: "your-agent-id",
+  position: "bottom-right"
+});
+```
+
+## Custom Analytics
+
+```javascript
+class ChatAnalytics {
+  constructor() {
+    this.sessionStart = Date.now();
+    this.interactions = [];
+    this.setupTracking();
+  }
+
+  setupTracking() {
+    window.addEventListener('message', (event) => {
+      if (event.data?.type === 'LUA_POP_EVENT') {
+        this.track(event.data.eventType, event.data.data);
+      }
+    });
+  }
+
+  track(eventType, data = {}) {
+    const event = {
+      type: eventType,
+      timestamp: Date.now(),
+      sessionDuration: Date.now() - this.sessionStart,
+      page: window.location.pathname,
+      ...data
+    };
+    
+    this.interactions.push(event);
+    
+    // Send to your analytics service
+    fetch('/api/analytics/chat', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(event)
+    }).catch(console.error);
+  }
+}
+
+const analytics = new ChatAnalytics();
+```
+
+## Mixpanel Integration
+
+```javascript
+window.addEventListener('message', function(event) {
+  if (event.data && event.data.type === 'LUA_POP_EVENT') {
+    mixpanel.track('Chat Interaction', {
+      event_type: event.data.eventType,
+      agent_id: 'your-agent-id',
+      page: window.location.pathname
+    });
+  }
+});
+```
+
+## Segment Integration
+
+```javascript
+window.addEventListener('message', function(event) {
+  if (event.data && event.data.type === 'LUA_POP_EVENT') {
+    analytics.track('Chat Event', {
+      eventType: event.data.eventType,
+      data: event.data.data
+    });
+  }
+});
+```
+
+## Key Metrics to Track
+
+<AccordionGroup>
+  <Accordion title="Engagement Rate">
+    ```javascript
+    let pageViews = 0;
+    let chatOpens = 0;
+    
+    // Track page views
+    pageViews++;
+    
+    // Track chat opens
+    window.addEventListener('message', function(event) {
+      if (event.data?.type === 'LUA_POP_EVENT') {
+        if (event.data.eventType === 'widget_opened') {
+          chatOpens++;
+          console.log('Engagement rate:', (chatOpens / pageViews * 100).toFixed(2) + '%');
+        }
+      }
+    });
+    ```
+  </Accordion>
+
+  <Accordion title="Session Duration">
+    ```javascript
+    let sessionStart = null;
+    
+    window.addEventListener('message', function(event) {
+      if (event.data?.type === 'LUA_POP_EVENT') {
+        if (event.data.eventType === 'widget_opened') {
+          sessionStart = Date.now();
+        }
+        
+        if (event.data.eventType === 'widget_closed' && sessionStart) {
+          const duration = Date.now() - sessionStart;
+          console.log('Session duration:', duration / 1000, 'seconds');
+          
+          gtag('event', 'chat_session_duration', {
+            value: duration,
+            metric_id: 'chat_duration'
+          });
+        }
+      }
+    });
+    ```
+  </Accordion>
+
+  <Accordion title="Messages Per Session">
+    ```javascript
+    let messagesInSession = 0;
+    
+    window.addEventListener('message', function(event) {
+      if (event.data?.type === 'LUA_POP_EVENT') {
+        if (event.data.eventType === 'widget_opened') {
+          messagesInSession = 0;
+        }
+        
+        if (event.data.eventType === 'message_sent') {
+          messagesInSession++;
+        }
+        
+        if (event.data.eventType === 'widget_closed') {
+          console.log('Messages in session:', messagesInSession);
+        }
+      }
+    });
+    ```
+  </Accordion>
+</AccordionGroup>
+
+## Dashboard Example
+
+```javascript
+class ChatDashboard {
+  constructor() {
+    this.metrics = {
+      totalSessions: 0,
+      totalMessages: 0,
+      avgSessionDuration: 0,
+      engagementRate: 0
+    };
+    
+    this.sessions = [];
+    this.setupTracking();
+  }
+
+  setupTracking() {
+    window.addEventListener('message', (event) => {
+      if (event.data?.type === 'LUA_POP_EVENT') {
+        this.handleEvent(event.data);
+      }
+    });
+  }
+
+  handleEvent({ eventType, data }) {
+    switch (eventType) {
+      case 'widget_opened':
+        this.startSession();
+        break;
+      case 'widget_closed':
+        this.endSession();
+        break;
+      case 'message_sent':
+      case 'message_received':
+        this.trackMessage();
+        break;
+    }
+    
+    this.updateDashboard();
+  }
+
+  startSession() {
+    this.metrics.totalSessions++;
+    this.currentSession = {
+      start: Date.now(),
+      messages: 0
+    };
+  }
+
+  endSession() {
+    if (this.currentSession) {
+      const duration = Date.now() - this.currentSession.start;
+      this.sessions.push({
+        duration,
+        messages: this.currentSession.messages
+      });
+      
+      this.calculateAverages();
+    }
+  }
+
+  trackMessage() {
+    this.metrics.totalMessages++;
+    if (this.currentSession) {
+      this.currentSession.messages++;
+    }
+  }
+
+  calculateAverages() {
+    const totalDuration = this.sessions.reduce((sum, s) => sum + s.duration, 0);
+    this.metrics.avgSessionDuration = totalDuration / this.sessions.length;
+  }
+
+  updateDashboard() {
+    // Send to your dashboard
+    console.log('📊 Chat Metrics:', this.metrics);
+  }
+}
+
+const dashboard = new ChatDashboard();
+```
+
+## Next Steps
+
+<CardGroup cols={2}>
+  <Card title="Events API" icon="bolt" href="/chat-widget/events">
+    Complete events reference
+  </Card>
+  <Card title="Examples" icon="layer-group" href="/chat-widget/examples">
+    See analytics implementations
+  </Card>
+</CardGroup>
+

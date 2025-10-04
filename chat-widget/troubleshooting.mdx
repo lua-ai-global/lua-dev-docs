@@ -1,0 +1,340 @@
+---
+title: "Troubleshooting"
+description: "Common issues and solutions for LuaPop"
+---
+
+## Common Issues
+
+### Widget Not Appearing
+
+<AccordionGroup>
+  <Accordion title="Script not loading">
+    **Check:**
+    1. Open browser console (F12)
+    2. Look for JavaScript errors
+    3. Verify script URL is correct
+    
+    **Solution:**
+    ```html
+    <!-- Ensure correct script URL -->
+    <script src="https://lua-ai-global.github.io/lua-pop/lua-pop.umd.js"></script>
+    ```
+  </Accordion>
+
+  <Accordion title="Agent ID incorrect">
+    **Check:**
+    1. Verify agent ID from Lua AI dashboard
+    2. Check for typos
+    3. Ensure agent is active
+    
+    **Solution:**
+    ```javascript
+    // Double-check agent ID
+    console.log('Agent ID:', 'your-agent-id');
+    ```
+  </Accordion>
+
+  <Accordion title="Script loads before DOM">
+    **Check:**
+    - Is script in `<head>` instead of before `</body>`?
+    
+    **Solution:**
+    ```html
+    <!-- Move script to end of body -->
+    <body>
+      <!-- Your content -->
+      
+      <!-- LuaPop script should be here -->
+      <script src="..."></script>
+    </body>
+    ```
+  </Accordion>
+
+  <Accordion title="CSS conflicts">
+    **Check:**
+    - Other chat widgets interfering
+    - CSS hiding the button
+    
+    **Solution:**
+    ```javascript
+    popupButtonStyles: {
+      zIndex: "99999",  // Higher z-index
+      display: "block !important"
+    }
+    ```
+  </Accordion>
+</AccordionGroup>
+
+### Button Shows But Chat Won't Open
+
+<AccordionGroup>
+  <Accordion title="Network issues">
+    **Check:**
+    1. Open Network tab in dev tools
+    2. Look for failed API requests
+    3. Check internet connection
+    
+    **Solution:** Try staging environment:
+    ```javascript
+    environment: "staging"
+    ```
+  </Accordion>
+
+  <Accordion title="Agent not found">
+    **Error:** Agent ID doesn't exist on server
+    
+    **Solution:**
+    1. Verify agent exists in Lua AI dashboard
+    2. Check environment matches (staging vs production)
+    3. Try different agent ID
+  </Accordion>
+
+  <Accordion title="Authentication errors">
+    **Check:**
+    - Invalid auth token
+    - Expired session
+    
+    **Solution:**
+    ```javascript
+    // Remove auth token to test
+    window.LuaPop.init({
+      agentId: "your-agent-id",
+      // authToken: "...",  // Comment out temporarily
+    });
+    ```
+  </Accordion>
+</AccordionGroup>
+
+### Embedded Mode Issues
+
+<AccordionGroup>
+  <Accordion title="Container not found">
+    **Error:** Target container doesn't exist
+    
+    **Solution:**
+    ```html
+    <!-- Ensure container exists -->
+    <div id="chat-container"></div>
+    
+    <script>
+      // Wait for DOM to load
+      window.addEventListener('load', () => {
+        window.LuaPop.init({
+          displayMode: "embedded",
+          embeddedDisplayConfig: {
+            targetContainerId: "chat-container" // Must match
+          }
+        });
+      });
+    </script>
+    ```
+  </Accordion>
+
+  <Accordion title="Chat not visible">
+    **Check:**
+    - Container has dimensions (width/height)
+    - Container is not hidden by CSS
+    
+    **Solution:**
+    ```css
+    #chat-container {
+      width: 400px;
+      height: 600px;
+      display: block;
+      visibility: visible;
+    }
+    ```
+  </Accordion>
+</AccordionGroup>
+
+### Styling Issues
+
+<AccordionGroup>
+  <Accordion title="Button in wrong position">
+    **Solution:**
+    ```javascript
+    popupButtonPositionalContainerStyles: {
+      bottom: "20px !important",
+      right: "20px !important",
+      position: "fixed !important"
+    }
+    ```
+  </Accordion>
+
+  <Accordion title="Colors not applying">
+    **Check:**
+    - CSS specificity conflicts
+    - Theme overrides
+    
+    **Solution:**
+    ```javascript
+    // Use more specific styles
+    popupButtonStyles: {
+      backgroundColor: "#ff6b6b !important"
+    }
+    ```
+  </Accordion>
+
+  <Accordion title="Custom CSS not working">
+    **Solution:** Add `!important` or increase specificity:
+    ```css
+    .lua-pop-button {
+      background: #ff6b6b !important;
+    }
+    
+    /* Or use higher specificity */
+    body .lua-pop-widget .lua-pop-button {
+      background: #ff6b6b;
+    }
+    ```
+  </Accordion>
+</AccordionGroup>
+
+### Voice Chat Issues
+
+<AccordionGroup>
+  <Accordion title="Microphone not working">
+    **Check:**
+    1. HTTPS enabled (required for microphone)
+    2. Browser permissions granted
+    3. Microphone physically working
+    
+    **Solution:**
+    - Use HTTPS (voice requires secure connection)
+    - Check browser permissions
+    - Test microphone in other apps
+  </Accordion>
+
+  <Accordion title="Permission denied">
+    **Issue:** User denied microphone permission
+    
+    **Solution:** Widget shows fallback to text input automatically
+  </Accordion>
+</AccordionGroup>
+
+## Debug Mode
+
+Enable detailed logging:
+
+```javascript
+// Use staging for verbose logging
+window.LuaPop.init({
+  agentId: "your-agent-id",
+  environment: "staging"  // More detailed logs
+});
+
+// Check console for detailed information
+console.log('LuaPop config:', window.LuaPop.config);
+```
+
+## Browser Console Checks
+
+### Verify LuaPop Loaded
+
+```javascript
+// In browser console
+console.log(window.LuaPop);
+// Should show the LuaPop object
+
+console.log(window.LuaPop.config);
+// Should show your configuration
+```
+
+### Check for Errors
+
+```javascript
+// Look for errors in console
+// Common errors:
+// - Script loading failed
+// - Agent not found
+// - Network errors
+// - Permission denied
+```
+
+## Getting Help
+
+### Diagnostic Information
+
+When reporting issues, include:
+
+```javascript
+// Browser info
+console.log('Browser:', navigator.userAgent);
+
+// LuaPop version
+console.log('LuaPop:', window.LuaPop);
+
+// Configuration
+console.log('Config:', window.LuaPop.config);
+
+// Current errors
+console.error('Errors:', /* copy error messages */);
+```
+
+### Support Channels
+
+<CardGroup cols={3}>
+  <Card title="Documentation" icon="book">
+    Search these docs
+  </Card>
+  <Card title="GitHub Issues" icon="github" href="https://github.com/lua-ai-global/lua-web/issues">
+    Report bugs
+  </Card>
+  <Card title="Email Support" icon="envelope" href="mailto:support@heylua.ai">
+    Get help from our team
+  </Card>
+</CardGroup>
+
+## Prevention Tips
+
+<AccordionGroup>
+  <Accordion title="Test in Staging First">
+    ```javascript
+    // Always test new changes in staging
+    const env = process.env.NODE_ENV === 'production' 
+      ? 'production' 
+      : 'staging';
+    
+    window.LuaPop.init({
+      agentId: "your-agent-id",
+      environment: env
+    });
+    ```
+  </Accordion>
+
+  <Accordion title="Use Feature Detection">
+    ```javascript
+    // Check if LuaPop loaded
+    if (window.LuaPop) {
+      window.LuaPop.init({ /* config */ });
+    } else {
+      console.error('LuaPop failed to load');
+      // Show fallback support option
+    }
+    ```
+  </Accordion>
+
+  <Accordion title="Handle Errors Gracefully">
+    ```javascript
+    window.addEventListener('message', function(event) {
+      if (event.data?.type === 'LUA_POP_ERROR') {
+        console.error('LuaPop Error:', event.data.error);
+        // Show fallback UI
+        showFallbackSupport();
+      }
+    });
+    ```
+  </Accordion>
+</AccordionGroup>
+
+## Next Steps
+
+<CardGroup cols={2}>
+  <Card title="Configuration" icon="cog" href="/chat-widget/configuration">
+    Review configuration options
+  </Card>
+  <Card title="Events" icon="bolt" href="/chat-widget/events">
+    Learn about event system
+  </Card>
+</CardGroup>
+

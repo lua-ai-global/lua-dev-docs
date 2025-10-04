@@ -1,0 +1,323 @@
+---
+title: "LuaPop Chat Widget"
+description: "Embeddable AI chat widget for your website"
+---
+
+## Overview
+
+**LuaPop** is a powerful, embeddable chat widget that brings AI-powered conversations directly to your website. Similar to Intercom or Zendesk, but powered by Lua AI technology for intelligent, context-aware customer interactions.
+
+<Card
+  title="Get Started in 2 Minutes"
+  icon="rocket"
+  href="/chat-widget/quick-start"
+  horizontal
+>
+  Add AI chat to your website with a single script tag
+</Card>
+
+## Key Features
+
+<CardGroup cols={2}>
+  <Card title="One-Line Integration" icon="code">
+    Add to any website with a single script tag
+  </Card>
+  <Card title="AI-Powered" icon="robot">
+    Intelligent responses using Lua AI technology
+  </Card>
+  <Card title="Highly Customizable" icon="palette">
+    Colors, positions, themes, and branding
+  </Card>
+  <Card title="Mobile Responsive" icon="mobile">
+    Perfect experience across all devices
+  </Card>
+  <Card title="Secure Authentication" icon="lock">
+    Token-based security with session management
+  </Card>
+  <Card title="Rich Media Support" icon="image">
+    Images, files, location sharing, and more
+  </Card>
+  <Card title="Voice Chat" icon="microphone">
+    Optional voice interaction capabilities
+  </Card>
+  <Card title="Real-time Updates" icon="bolt">
+    Live message synchronization via WebSockets
+  </Card>
+</CardGroup>
+
+## Quick Preview
+
+```html
+<!-- Add this to your website -->
+<script src="https://lua-ai-global.github.io/lua-pop/lua-pop.umd.js"></script>
+<script>
+  window.LuaPop.init({
+    agentId: "your-agent-id",
+    position: "bottom-right",
+    theme: "light",
+    buttonText: "Chat with AI",
+    environment: "production"
+  });
+</script>
+```
+
+## Display Modes
+
+<Tabs>
+  <Tab title="Floating Widget">
+    **Perfect for most websites**
+    
+    Appears as a floating button that opens a chat window
+    
+    ```javascript
+    window.LuaPop.init({
+      agentId: "your-agent-id",
+      displayMode: "floating", // Default
+      position: "bottom-right"
+    });
+    ```
+    
+    Great for:
+    - General website support
+    - E-commerce assistance
+    - Always-available help
+  </Tab>
+
+  <Tab title="Embedded Widget">
+    **Integrate into your page layout**
+    
+    Chat appears in a specific container on your page
+    
+    ```javascript
+    window.LuaPop.init({
+      agentId: "your-agent-id",
+      displayMode: "embedded",
+      embeddedDisplayConfig: {
+        targetContainerId: "chat-container"
+      }
+    });
+    ```
+    
+    Great for:
+    - Dedicated support pages
+    - Help center integration
+    - Custom page layouts
+  </Tab>
+</Tabs>
+
+## Use Cases
+
+<CardGroup cols={2}>
+  <Card title="Customer Support" icon="headset">
+    24/7 AI-powered customer service
+    
+    Answer FAQs, help with orders, troubleshoot issues
+  </Card>
+  <Card title="Sales Assistant" icon="cart-shopping">
+    Boost conversions with shopping help
+    
+    Product recommendations, cart assistance, checkout help
+  </Card>
+  <Card title="Product Guide" icon="compass">
+    Help users navigate your product
+    
+    Feature explanations, tutorials, onboarding
+  </Card>
+  <Card title="Documentation Assistant" icon="book">
+    Make docs searchable and interactive
+    
+    Answer questions, find articles, guide users
+  </Card>
+</CardGroup>
+
+## How It Works
+
+<Steps>
+  <Step title="Add Script">
+    Include LuaPop script on your website
+  </Step>
+  
+  <Step title="Configure">
+    Set your agent ID and customization options
+  </Step>
+  
+  <Step title="Chat Opens">
+    Users click the chat button to start conversation
+  </Step>
+  
+  <Step title="AI Responds">
+    Your Lua AI agent provides intelligent responses
+  </Step>
+  
+  <Step title="Tools Execute">
+    AI uses your skills to take actions (search, create orders, etc.)
+  </Step>
+</Steps>
+
+## Installation Options
+
+<Tabs>
+  <Tab title="CDN (Recommended)">
+    **Quickest setup - no build process needed**
+    
+    ```html
+    <script src="https://lua-ai-global.github.io/lua-pop/lua-pop.umd.js"></script>
+    <script>
+      window.LuaPop.init({
+        agentId: "your-agent-id"
+      });
+    </script>
+    ```
+  </Tab>
+
+  <Tab title="NPM Package">
+    **For React, Vue, Angular, etc.**
+    
+    ```bash
+    npm install @lua/pop
+    ```
+    
+    ```tsx
+    import { LuaPopWidget } from '@lua/pop';
+    import '@lua/pop/dist/style.css';
+    
+    <LuaPopWidget config={{
+      agentId: "your-agent-id"
+    }} />
+    ```
+  </Tab>
+</Tabs>
+
+## Key Benefits
+
+<AccordionGroup>
+  <Accordion title="🚀 Fast Integration">
+    Add AI chat to your website in under 2 minutes. No complex setup or configuration required.
+  </Accordion>
+
+  <Accordion title="🤖 AI-Powered from Day One">
+    Unlike traditional chat widgets that require human agents, LuaPop uses AI to provide instant, intelligent responses 24/7.
+  </Accordion>
+
+  <Accordion title="🎨 Fully Customizable">
+    Match your brand with custom colors, fonts, positions, and styling. Complete control over appearance.
+  </Accordion>
+
+  <Accordion title="📱 Mobile-First Design">
+    Automatically optimized for mobile devices with responsive layouts and touch-friendly interfaces.
+  </Accordion>
+
+  <Accordion title="🔒 Enterprise Security">
+    Token-based authentication, HTTPS encryption, session isolation, and GDPR compliance built-in.
+  </Accordion>
+
+  <Accordion title="📊 Analytics Ready">
+    Built-in event system integrates seamlessly with Google Analytics, Mixpanel, or custom analytics.
+  </Accordion>
+</AccordionGroup>
+
+## Quick Comparison
+
+| Feature | LuaPop | Traditional Chat Widgets |
+|---------|--------|-------------------------|
+| **AI Responses** | ✅ Built-in | ❌ Requires integration |
+| **24/7 Availability** | ✅ Always on | ❌ Human availability |
+| **Setup Time** | ⚡ 2 minutes | ⏰ Hours/days |
+| **Voice Chat** | ✅ Optional | ❌ Usually not available |
+| **Customization** | ✅ Extensive | 🟡 Limited |
+| **Mobile Optimized** | ✅ Automatic | 🟡 Varies |
+| **Cost** | 💰 Pay per usage | 💰💰 Monthly fees |
+
+## Next Steps
+
+<Steps>
+  <Step title="Quick Start">
+    Get LuaPop running on your website in 2 minutes
+    
+    <Card title="Quick Start Guide" icon="rocket" href="/chat-widget/quick-start" />
+  </Step>
+  
+  <Step title="Customize">
+    Match your brand with custom styling
+    
+    <Card title="Styling Guide" icon="palette" href="/chat-widget/styling" />
+  </Step>
+  
+  <Step title="Integrate">
+    Add to React, Vue, or any framework
+    
+    <Card title="Framework Integration" icon="code" href="/chat-widget/frameworks" />
+  </Step>
+  
+  <Step title="Track Events">
+    Monitor chat interactions and analytics
+    
+    <Card title="Analytics Guide" icon="chart-line" href="/chat-widget/analytics" />
+  </Step>
+</Steps>
+
+## Resources
+
+<CardGroup cols={3}>
+  <Card title="Quick Start" icon="rocket" href="/chat-widget/quick-start">
+    2-minute setup guide
+  </Card>
+  <Card title="Configuration" icon="cog" href="/chat-widget/configuration">
+    Complete configuration reference
+  </Card>
+  <Card title="Examples" icon="layer-group" href="/chat-widget/examples">
+    Real-world implementations
+  </Card>
+  <Card title="Migration" icon="arrows-turn-right" href="/chat-widget/migration">
+    Migrate from Intercom, Zendesk, etc.
+  </Card>
+  <Card title="Analytics" icon="chart-line" href="/chat-widget/analytics">
+    Track chat interactions
+  </Card>
+  <Card title="Troubleshooting" icon="circle-question" href="/chat-widget/troubleshooting">
+    Common issues & solutions
+  </Card>
+</CardGroup>
+
+## Popular Implementations
+
+<AccordionGroup>
+  <Accordion title="E-commerce Store">
+    Shopping assistant that helps with product discovery and checkout
+    
+    Features: Product search, cart management, order tracking
+  </Accordion>
+
+  <Accordion title="SaaS Platform">
+    Onboarding assistant for new users
+    
+    Features: Feature guidance, setup help, troubleshooting
+  </Accordion>
+
+  <Accordion title="Hotel Website">
+    Booking concierge for reservations
+    
+    Features: Room availability, booking creation, local recommendations
+  </Accordion>
+
+  <Accordion title="Healthcare Portal">
+    Patient assistance for appointments and information
+    
+    Features: Appointment scheduling, prescription refills, general info
+  </Accordion>
+</AccordionGroup>
+
+## Need Help?
+
+<CardGroup cols={3}>
+  <Card title="Documentation" icon="book" href="https://docs.heylua.ai">
+    Complete guides and references
+  </Card>
+  <Card title="GitHub" icon="github" href="https://github.com/lua-ai-global/lua-web">
+    Source code and issues
+  </Card>
+  <Card title="Support" icon="envelope" href="mailto:support@heylua.ai">
+    Email our support team
+  </Card>
+</CardGroup>
+

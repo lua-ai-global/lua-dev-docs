@@ -1,0 +1,429 @@
+---
+title: "Configuration Reference"
+description: "Complete configuration options for LuaPop"
+---
+
+## window.LuaPop.init(config)
+
+Initialize the LuaPop widget with the provided configuration.
+
+```javascript
+const widget = window.LuaPop.init({
+  agentId: "your-agent-id",
+  // ... other options
+});
+```
+
+**Returns:** Widget instance with `destroy()` method
+
+## Required Configuration
+
+<ParamField path="agentId" type="string" required>
+  **Required.** The ID of the AI agent to use for conversations.
+  
+  Get this from your Lua AI dashboard.
+  
+  ```javascript
+  agentId: "agent_abc123xyz"
+  ```
+</ParamField>
+
+## Basic Configuration
+
+<ParamField path="position" type="string" default="bottom-right">
+  Widget position on the page.
+  
+  **Options**: `"bottom-right"`, `"bottom-left"`, `"top-right"`, `"top-left"`
+  
+  ```javascript
+  position: "bottom-right"
+  ```
+</ParamField>
+
+<ParamField path="theme" type="string" default="light">
+  Visual theme of the widget.
+  
+  **Options**: `"light"`, `"dark"`
+  
+  ```javascript
+  theme: "light"
+  ```
+</ParamField>
+
+<ParamField path="buttonText" type="string" default="Chat with us">
+  Text displayed on the chat button.
+  
+  ```javascript
+  buttonText: "💬 Need Help?"
+  ```
+</ParamField>
+
+<ParamField path="environment" type="string" default="production">
+  API environment to use.
+  
+  **Options**: `"staging"`, `"production"`, `"custom"`
+  
+  ```javascript
+  environment: "production"
+  ```
+</ParamField>
+
+## Authentication & Session
+
+<ParamField path="sessionId" type="string">
+  Unique session identifier for the user.
+  
+  If not provided, auto-generated. Use for persistent conversations across page loads.
+  
+  ```javascript
+  sessionId: "user-12345"
+  ```
+</ParamField>
+
+<ParamField path="authToken" type="string">
+  Optional authentication token for authenticated users.
+  
+  ```javascript
+  authToken: "bearer-token-here"
+  ```
+</ParamField>
+
+<ParamField path="customBaseApiUri" type="string">
+  Custom API base URL (only when `environment` is `"custom"`).
+  
+  ```javascript
+  environment: "custom",
+  customBaseApiUri: "https://your-api.com"
+  ```
+</ParamField>
+
+## Display Configuration
+
+<ParamField path="displayMode" type="string" default="floating">
+  How the widget is displayed.
+  
+  **Options**: `"floating"`, `"embedded"`
+  
+  ```javascript
+  displayMode: "floating" // or "embedded"
+  ```
+</ParamField>
+
+<ParamField path="embeddedDisplayConfig" type="object">
+  Configuration for embedded mode.
+  
+  ```typescript
+  embeddedDisplayConfig: {
+    targetContainerId: string; // ID of container element
+  }
+  ```
+  
+  **Example:**
+  ```javascript
+  displayMode: "embedded",
+  embeddedDisplayConfig: {
+    targetContainerId: "my-chat-container"
+  }
+  ```
+</ParamField>
+
+<ParamField path="chatWindowHeight" type="string | number" default="500px">
+  Height of the chat window.
+  
+  ```javascript
+  chatWindowHeight: "600px"  // or 600
+  ```
+</ParamField>
+
+<ParamField path="chatWindowWidth" type="string | number" default="350px">
+  Width of the chat window.
+  
+  ```javascript
+  chatWindowWidth: "400px"  // or 400
+  ```
+</ParamField>
+
+## Visual Customization
+
+<ParamField path="buttonColor" type="string" default="#007bff">
+  Background color of the chat button.
+  
+  ```javascript
+  buttonColor: "#28a745"
+  ```
+</ParamField>
+
+<ParamField path="buttonIcon" type="string" default="💬">
+  Icon or emoji displayed on the button.
+  
+  ```javascript
+  buttonIcon: "🤖"
+  ```
+</ParamField>
+
+<ParamField path="chatTitle" type="string" default="Chat">
+  Title displayed in the chat header.
+  
+  ```javascript
+  chatTitle: "Customer Support"
+  ```
+</ParamField>
+
+<ParamField path="chatInputPlaceholder" type="string" default="Ask anything, about anything">
+  Placeholder text for the input field.
+  
+  ```javascript
+  chatInputPlaceholder: "How can we help you today?"
+  ```
+</ParamField>
+
+## Advanced Styling
+
+<ParamField path="popupButtonStyles" type="React.CSSProperties">
+  Custom CSS styles for the chat button.
+  
+  ```javascript
+  popupButtonStyles: {
+    borderRadius: "50%",
+    width: "60px",
+    height: "60px",
+    fontSize: "24px",
+    boxShadow: "0 4px 12px rgba(0,0,0,0.15)"
+  }
+  ```
+</ParamField>
+
+<ParamField path="popupButtonPositionalContainerStyles" type="React.CSSProperties">
+  Custom CSS styles for button positioning.
+  
+  ```javascript
+  popupButtonPositionalContainerStyles: {
+    bottom: "20px",
+    right: "20px",
+    zIndex: "9999"
+  }
+  ```
+</ParamField>
+
+<ParamField path="chatTitleHeaderStyles" type="React.CSSProperties">
+  Custom CSS styles for the chat header.
+  
+  ```javascript
+  chatTitleHeaderStyles: {
+    background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
+    color: "white",
+    borderRadius: "10px 10px 0 0"
+  }
+  ```
+</ParamField>
+
+## Branding
+
+<ParamField path="chatHeaderSubtitle" type="object">
+  Subtitle configuration for branding.
+  
+  ```typescript
+  chatHeaderSubtitle: {
+    visible: boolean;
+    brandName?: string;
+    iconUrl?: string;
+    linkUrl?: string;
+  }
+  ```
+  
+  **Example:**
+  ```javascript
+  chatHeaderSubtitle: {
+    visible: true,
+    brandName: "Your Company",
+    iconUrl: "https://yoursite.com/logo.png",
+    linkUrl: "https://yoursite.com"
+  }
+  ```
+</ParamField>
+
+## Advanced Features
+
+<ParamField path="voiceModeEnabled" type="boolean" default={false}>
+  Enable voice chat functionality.
+  
+  ```javascript
+  voiceModeEnabled: true
+  ```
+</ParamField>
+
+<ParamField path="disablePreviewOnLinks" type="boolean" default={false}>
+  Disable automatic link previews.
+  
+  ```javascript
+  disablePreviewOnLinks: true
+  ```
+</ParamField>
+
+<ParamField path="runtimeContext" type="string">
+  Additional context passed to the AI agent.
+  
+  Useful for providing page context, user roles, etc.
+  
+  ```javascript
+  runtimeContext: "page:pricing,user:premium,lang:en"
+  ```
+</ParamField>
+
+## Event Handlers
+
+<ParamField path="onNavigate" type="function">
+  Handler for navigation events from the chat.
+  
+  ```typescript
+  onNavigate: (pathname: string, options: { query: Record<string, string> }) => void
+  ```
+  
+  **Example:**
+  ```javascript
+  onNavigate: (pathname, options) => {
+    console.log('Navigate to:', pathname);
+    console.log('Query params:', options.query);
+    
+    // Handle navigation in your app
+    window.location.href = pathname + '?' + new URLSearchParams(options.query);
+  }
+  ```
+</ParamField>
+
+## Complete Example
+
+```javascript
+window.LuaPop.init({
+  // Required
+  agentId: "customer-support-agent",
+  
+  // Basic
+  position: "bottom-right",
+  theme: "light",
+  buttonText: "💬 Need Help?",
+  environment: "production",
+  
+  // Session
+  sessionId: "user-12345",
+  authToken: "your-auth-token",
+  
+  // Display
+  displayMode: "floating",
+  chatWindowHeight: "600px",
+  chatWindowWidth: "400px",
+  
+  // Visual
+  buttonColor: "#28a745",
+  buttonIcon: "🤖",
+  chatTitle: "Customer Support",
+  
+  // Styling
+  popupButtonStyles: {
+    borderRadius: "25px",
+    padding: "15px 20px",
+    fontSize: "16px"
+  },
+  
+  popupButtonPositionalContainerStyles: {
+    bottom: "30px",
+    right: "30px"
+  },
+  
+  chatTitleHeaderStyles: {
+    background: "#28a745",
+    color: "white"
+  },
+  
+  // Branding
+  chatInputPlaceholder: "How can we help?",
+  chatHeaderSubtitle: {
+    visible: true,
+    brandName: "Your Company",
+    iconUrl: "/logo.png",
+    linkUrl: "/"
+  },
+  
+  // Advanced
+  voiceModeEnabled: true,
+  disablePreviewOnLinks: false,
+  runtimeContext: "page:home",
+  
+  // Events
+  onNavigate: (pathname, options) => {
+    console.log('Navigate:', pathname);
+  }
+});
+```
+
+## Configuration Tips
+
+<AccordionGroup>
+  <Accordion title="Use Staging for Testing">
+    Always test new configurations with staging first:
+    ```javascript
+    environment: process.env.NODE_ENV === 'production' ? 'production' : 'staging'
+    ```
+  </Accordion>
+
+  <Accordion title="Generate Unique Session IDs">
+    Create unique sessions for better tracking:
+    ```javascript
+    sessionId: `user-${userId}-${Date.now()}`
+    ```
+  </Accordion>
+
+  <Accordion title="Use Runtime Context">
+    Pass page context to help the AI provide better responses:
+    ```javascript
+    runtimeContext: `page:${window.location.pathname},lang:${document.documentElement.lang}`
+    ```
+  </Accordion>
+
+  <Accordion title="Responsive Configuration">
+    Adjust for different screen sizes:
+    ```javascript
+    const isMobile = window.innerWidth <= 768;
+    
+    window.LuaPop.init({
+      agentId: "your-agent-id",
+      chatWindowWidth: isMobile ? "100vw" : "400px",
+      chatWindowHeight: isMobile ? "100vh" : "600px"
+    });
+    ```
+  </Accordion>
+</AccordionGroup>
+
+## Next Steps
+
+<CardGroup cols={2}>
+  <Card
+    title="Styling Guide"
+    icon="palette"
+    href="/chat-widget/styling"
+  >
+    Customize colors, fonts, and appearance
+  </Card>
+  <Card
+    title="Events API"
+    icon="bolt"
+    href="/chat-widget/events"
+  >
+    Listen to chat events and interactions
+  </Card>
+  <Card
+    title="Examples"
+    icon="layer-group"
+    href="/chat-widget/examples"
+  >
+    See real-world configurations
+  </Card>
+  <Card
+    title="Framework Integration"
+    icon="code"
+    href="/chat-widget/frameworks"
+  >
+    React, Vue, Angular guides
+  </Card>
+</CardGroup>
+

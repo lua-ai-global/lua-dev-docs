@@ -1,0 +1,294 @@
+---
+title: "Quick Start"
+description: "Get LuaPop running on your website in 2 minutes"
+---
+
+## 30-Second Setup
+
+Add AI chat to your website in 3 simple steps:
+
+<Steps>
+  <Step title="Add the Script">
+    Copy and paste this code right before the closing `</body>` tag:
+    
+    ```html
+    <script src="https://lua-ai-global.github.io/lua-pop/lua-pop.umd.js"></script>
+    <script>
+      window.LuaPop.init({
+        agentId: "your-agent-id",
+        position: "bottom-right",
+        theme: "light",
+        buttonText: "Chat with AI"
+      });
+    </script>
+    ```
+  </Step>
+
+  <Step title="Replace Agent ID">
+    Get your agent ID from the [Lua AI dashboard](https://heylua.ai) and replace `"your-agent-id"`
+  </Step>
+
+  <Step title="Test">
+    Refresh your page - you should see a chat button in the bottom-right corner!
+  </Step>
+</Steps>
+
+<Check>
+**That's it!** Your AI chat widget is now live. ✨
+</Check>
+
+## Common Setups
+
+### Customer Support
+
+```html
+<script src="https://lua-ai-global.github.io/lua-pop/lua-pop.umd.js"></script>
+<script>
+  window.LuaPop.init({
+    agentId: "support-agent-id",
+    chatTitle: "Customer Support",
+    buttonText: "💬 Need Help?",
+    position: "bottom-right",
+    theme: "light",
+    chatInputPlaceholder: "How can we help you today?"
+  });
+</script>
+```
+
+### Sales Assistant
+
+```html
+<script src="https://lua-ai-global.github.io/lua-pop/lua-pop.umd.js"></script>
+<script>
+  window.LuaPop.init({
+    agentId: "sales-agent-id",
+    chatTitle: "Sales Assistant",
+    buttonText: "💰 Get Quote",
+    buttonColor: "#28a745",
+    position: "bottom-right",
+    theme: "light"
+  });
+</script>
+```
+
+### Embedded Chat (No Floating Button)
+
+```html
+<!-- Create a container -->
+<div id="chat-container" style="width: 400px; height: 600px;"></div>
+
+<!-- Initialize embedded mode -->
+<script src="https://lua-ai-global.github.io/lua-pop/lua-pop.umd.js"></script>
+<script>
+  window.LuaPop.init({
+    agentId: "your-agent-id",
+    displayMode: "embedded",
+    embeddedDisplayConfig: {
+      targetContainerId: "chat-container"
+    },
+    theme: "light"
+  });
+</script>
+```
+
+## Quick Customizations
+
+### Change Position
+
+<Tabs>
+  <Tab title="Bottom Right">
+    ```javascript
+    position: "bottom-right"
+    ```
+  </Tab>
+  <Tab title="Bottom Left">
+    ```javascript
+    position: "bottom-left"
+    ```
+  </Tab>
+  <Tab title="Top Right">
+    ```javascript
+    position: "top-right"
+    ```
+  </Tab>
+  <Tab title="Top Left">
+    ```javascript
+    position: "top-left"
+    ```
+  </Tab>
+</Tabs>
+
+### Change Theme
+
+<CodeGroup>
+
+```javascript Light Theme
+window.LuaPop.init({
+  agentId: "your-agent-id",
+  theme: "light"  // Clean, professional
+});
+```
+
+```javascript Dark Theme
+window.LuaPop.init({
+  agentId: "your-agent-id",
+  theme: "dark"  // Modern dark mode
+});
+```
+
+</CodeGroup>
+
+### Custom Colors & Button
+
+```javascript
+window.LuaPop.init({
+  agentId: "your-agent-id",
+  buttonColor: "#ff6b6b",      // Custom button color
+  buttonText: "💬 Chat Now",   // Custom text
+  buttonIcon: "🤖",            // Custom icon/emoji
+  chatTitle: "AI Assistant"    // Custom title
+});
+```
+
+## Testing Environments
+
+### Staging (For Testing)
+
+```javascript
+window.LuaPop.init({
+  agentId: "your-agent-id",
+  environment: "staging", // Uses api.lua.dev
+  position: "bottom-right",
+  theme: "light"
+});
+```
+
+### Production (Live)
+
+```javascript
+window.LuaPop.init({
+  agentId: "your-agent-id",
+  environment: "production", // Uses api.heylua.ai
+  position: "bottom-right",
+  theme: "light"
+});
+```
+
+<Warning>
+Always test with `environment: "staging"` before switching to production!
+</Warning>
+
+## Framework Integration Quick Start
+
+### React
+
+```tsx
+import { useEffect } from 'react';
+
+export default function ChatWidget() {
+  useEffect(() => {
+    const script = document.createElement('script');
+    script.src = 'https://lua-ai-global.github.io/lua-pop/lua-pop.umd.js';
+    script.onload = () => {
+      window.LuaPop?.init({
+        agentId: "your-agent-id",
+        position: "bottom-right",
+        theme: "light"
+      });
+    };
+    document.body.appendChild(script);
+  }, []);
+
+  return null;
+}
+```
+
+### Vue
+
+```vue
+<script>
+export default {
+  mounted() {
+    const script = document.createElement('script');
+    script.src = 'https://lua-ai-global.github.io/lua-pop/lua-pop.umd.js';
+    script.onload = () => {
+      window.LuaPop?.init({
+        agentId: "your-agent-id",
+        position: "bottom-right"
+      });
+    };
+    document.body.appendChild(script);
+  }
+};
+</script>
+```
+
+<Card title="More Framework Examples" icon="code" href="/chat-widget/frameworks">
+  See integration guides for Angular, Next.js, and more
+</Card>
+
+## Troubleshooting
+
+<AccordionGroup>
+  <Accordion title="Widget not appearing?">
+    **Check these:**
+    1. Open browser console for JavaScript errors
+    2. Verify your agent ID is correct
+    3. Ensure script is loaded after DOM is ready
+    4. Check if another chat widget is conflicting
+  </Accordion>
+
+  <Accordion title="Button shows but chat won't open?">
+    **Solutions:**
+    1. Check your internet connection
+    2. Verify agent ID exists in Lua AI dashboard
+    3. Try `environment: "staging"` for testing
+    4. Check browser console for API errors
+  </Accordion>
+
+  <Accordion title="Styling issues?">
+    **Solutions:**
+    1. Check for CSS conflicts using browser dev tools
+    2. Try a different position
+    3. Add higher z-index:
+       ```javascript
+       popupButtonStyles: {
+         zIndex: "9999"
+       }
+       ```
+  </Accordion>
+</AccordionGroup>
+
+## Next Steps
+
+<CardGroup cols={2}>
+  <Card
+    title="Full Configuration"
+    icon="cog"
+    href="/chat-widget/configuration"
+  >
+    Explore all configuration options
+  </Card>
+  <Card
+    title="Custom Styling"
+    icon="palette"
+    href="/chat-widget/styling"
+  >
+    Match your brand perfectly
+  </Card>
+  <Card
+    title="Real Examples"
+    icon="layer-group"
+    href="/chat-widget/examples"
+  >
+    See production implementations
+  </Card>
+  <Card
+    title="Track Events"
+    icon="chart-line"
+    href="/chat-widget/analytics"
+  >
+    Monitor chat interactions
+  </Card>
+</CardGroup>
+

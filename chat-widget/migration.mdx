@@ -1,0 +1,272 @@
+---
+title: "Migration Guide"
+description: "Migrate from Intercom, Zendesk, Drift, and other chat widgets"
+---
+
+## Overview
+
+This guide helps you migrate from popular chat widgets to LuaPop with minimal disruption.
+
+## From Intercom
+
+### Before (Intercom)
+
+```html
+<script>
+  window.intercomSettings = {
+    app_id: "your_app_id",
+    name: "John Doe",
+    email: "john@example.com"
+  };
+</script>
+<script>
+  (function(){var w=window;var ic=w.Intercom;...})();
+</script>
+```
+
+### After (LuaPop)
+
+```html
+<script src="https://lua-ai-global.github.io/lua-pop/lua-pop.umd.js"></script>
+<script>
+  window.LuaPop.init({
+    agentId: "your-agent-id",
+    sessionId: "john-doe-123",
+    position: "bottom-right",
+    theme: "light",
+    runtimeContext: "user:john@example.com"
+  });
+</script>
+```
+
+### Migration Benefits
+
+- ✅ **Simpler Setup** - Single script tag vs complex initialization
+- ✅ **AI-Powered** - Intelligent responses vs human-only support
+- ✅ **24/7 Availability** - AI never sleeps
+- ✅ **Lower Cost** - Pay per usage vs monthly fees
+
+## From Zendesk Chat
+
+### Before (Zendesk)
+
+```html
+<script id="ze-snippet" src="https://static.zdassets.com/ekr/snippet.js?key=your-key"></script>
+<script>
+  zE('webWidget', 'updateSettings', {
+    webWidget: {
+      color: { theme: '#78a300' }
+    }
+  });
+</script>
+```
+
+### After (LuaPop)
+
+```html
+<script src="https://lua-ai-global.github.io/lua-pop/lua-pop.umd.js"></script>
+<script>
+  window.LuaPop.init({
+    agentId: "your-agent-id",
+    position: "bottom-right",
+    theme: "light",
+    buttonColor: "#78a300"
+  });
+</script>
+```
+
+## From Drift
+
+### Before (Drift)
+
+```javascript
+drift.load('your-drift-id');
+```
+
+### After (LuaPop)
+
+```html
+<script src="https://lua-ai-global.github.io/lua-pop/lua-pop.umd.js"></script>
+<script>
+  window.LuaPop.init({
+    agentId: "your-agent-id",
+    position: "bottom-right",
+    theme: "light",
+    buttonText: "👋 Let's chat",
+    buttonColor: "#2d88ff",
+    voiceModeEnabled: true
+  });
+</script>
+```
+
+## From Tawk.to
+
+### Before (Tawk.to)
+
+```javascript
+var Tawk_API = Tawk_API || {};
+(function(){
+  var s1=document.createElement("script");
+  s1.src='https://embed.tawk.to/your-tawk-id/default';
+  document.head.appendChild(s1);
+})();
+```
+
+### After (LuaPop)
+
+```html
+<script src="https://lua-ai-global.github.io/lua-pop/lua-pop.umd.js"></script>
+<script>
+  window.LuaPop.init({
+    agentId: "your-agent-id",
+    position: "bottom-right",
+    theme: "light",
+    buttonColor: "#00b894"
+  });
+</script>
+```
+
+## Configuration Mapping
+
+| Feature | Intercom | Zendesk | Drift | LuaPop |
+|---------|----------|---------|-------|---------|
+| **ID** | `app_id` | `key` | `drift-id` | `agentId` |
+| **Position** | Not configurable | `position` | Not configurable | `position` |
+| **Color** | `color_override` | `color.theme` | `theme.primaryColor` | `buttonColor` |
+| **Button Text** | Not available | Custom CSS | `teaser.text` | `buttonText` |
+| **User ID** | `user_id` | Custom | `userId` | `sessionId` |
+
+## Event Migration
+
+### From Intercom Events
+
+<CodeGroup>
+
+```javascript Intercom
+Intercom('onShow', function() {
+  console.log('Widget opened');
+});
+```
+
+```javascript LuaPop
+window.addEventListener('message', function(event) {
+  if (event.data?.type === 'LUA_POP_EVENT') {
+    if (event.data.eventType === 'widget_opened') {
+      console.log('Widget opened');
+    }
+  }
+});
+```
+
+</CodeGroup>
+
+### From Zendesk Events
+
+<CodeGroup>
+
+```javascript Zendesk
+zE('webWidget:on', 'open', function() {
+  console.log('Opened');
+});
+```
+
+```javascript LuaPop
+window.addEventListener('message', function(event) {
+  if (event.data?.type === 'LUA_POP_EVENT') {
+    if (event.data.eventType === 'widget_opened') {
+      console.log('Opened');
+    }
+  }
+});
+```
+
+</CodeGroup>
+
+## Gradual Migration
+
+Roll out LuaPop to a percentage of users:
+
+```javascript
+class GradualMigration {
+  constructor() {
+    this.migrationPercentage = 25; // Start with 25%
+    this.shouldUseLuaPop = this.inMigrationGroup();
+    
+    if (this.shouldUseLuaPop) {
+      this.initLuaPop();
+    } else {
+      this.initLegacyChat();
+    }
+  }
+
+  inMigrationGroup() {
+    const userId = this.getUserId();
+    const hash = this.simpleHash(userId);
+    return (hash % 100) < this.migrationPercentage;
+  }
+
+  simpleHash(str) {
+    let hash = 0;
+    for (let i = 0; i < str.length; i++) {
+      hash = ((hash << 5) - hash) + str.charCodeAt(i);
+    }
+    return Math.abs(hash);
+  }
+
+  getUserId() {
+    return localStorage.getItem('user_id') || 'anonymous';
+  }
+
+  initLuaPop() {
+    window.LuaPop.init({
+      agentId: "migration-agent",
+      position: "bottom-right",
+      theme: "light"
+    });
+  }
+
+  initLegacyChat() {
+    // Your existing chat solution
+  }
+}
+
+new GradualMigration();
+```
+
+## Migration Checklist
+
+<Steps>
+  <Step title="Pre-Migration">
+    - [ ] Audit current chat setup
+    - [ ] Document custom features
+    - [ ] Plan agent configuration
+    - [ ] Test LuaPop in staging
+  </Step>
+  
+  <Step title="During Migration">
+    - [ ] Start with 10-25% of users
+    - [ ] Monitor performance metrics
+    - [ ] Collect user feedback
+    - [ ] Compare analytics data
+  </Step>
+  
+  <Step title="Post-Migration">
+    - [ ] Remove legacy chat code
+    - [ ] Update documentation
+    - [ ] Train support team
+    - [ ] Optimize configuration
+  </Step>
+</Steps>
+
+## Next Steps
+
+<CardGroup cols={2}>
+  <Card title="Configuration" icon="cog" href="/chat-widget/configuration">
+    Complete configuration options
+  </Card>
+  <Card title="Quick Start" icon="rocket" href="/chat-widget/quick-start">
+    Get started with LuaPop
+  </Card>
+</CardGroup>
+EOFEX
+

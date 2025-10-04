@@ -1,0 +1,314 @@
+---
+title: "Events & Callbacks"
+description: "Listen to chat widget events and interactions"
+---
+
+## Event System
+
+LuaPop communicates with your website through the browser's `postMessage` API. Listen for events to track interactions, trigger actions, or integrate with analytics.
+
+## Widget Events
+
+### Listening to Events
+
+```javascript
+window.addEventListener('message', function(event) {
+  if (event.data && event.data.type === 'LUA_POP_EVENT') {
+    const { eventType, data } = event.data;
+    
+    console.log('Event:', eventType);
+    console.log('Data:', data);
+  }
+});
+```
+
+### Available Events
+
+<ParamField path="widget_opened" type="event">
+  Fired when the chat widget is opened by the user.
+  
+  **Data:** `{}`
+  
+  ```javascript
+  case 'widget_opened':
+    console.log('Chat widget opened');
+    // Track in analytics, show help hints, etc.
+    break;
+  ```
+</ParamField>
+
+<ParamField path="widget_closed" type="event">
+  Fired when the chat widget is closed.
+  
+  **Data:** `{}`
+  
+  ```javascript
+  case 'widget_closed':
+    console.log('Chat widget closed');
+    // Track session duration, save state, etc.
+    break;
+  ```
+</ParamField>
+
+<ParamField path="message_sent" type="event">
+  Fired when the user sends a message.
+  
+  **Data:** `{ content: string, timestamp: string }`
+  
+  ```javascript
+  case 'message_sent':
+    console.log('User sent:', data.content);
+    // Track user messages, sentiment analysis, etc.
+    break;
+  ```
+</ParamField>
+
+<ParamField path="message_received" type="event">
+  Fired when the AI sends a response.
+  
+  **Data:** `{ content: string, timestamp: string }`
+  
+  ```javascript
+  case 'message_received':
+    console.log('AI responded:', data.content);
+    // Track AI responses, measure quality, etc.
+    break;
+  ```
+</ParamField>
+
+## Resize Events
+
+For embedded mode, listen to resize events:
+
+```javascript
+window.addEventListener('message', function(event) {
+  if (event.data && event.data.type === 'LUA_POP_RESIZE') {
+    const { width, height } = event.data;
+    console.log('Widget resized:', width, height);
+    
+    // Adjust surrounding layout if needed
+    adjustLayout(width, height);
+  }
+});
+```
+
+## Navigation Handler
+
+Handle navigation events from the chat:
+
+```javascript
+window.LuaPop.init({
+  agentId: "your-agent-id",
+  
+  onNavigate: (pathname, options) => {
+    console.log('Navigate to:', pathname);
+    console.log('Query params:', options.query);
+    
+    // Example 1: Standard navigation
+    window.location.href = pathname;
+    
+    // Example 2: With query params
+    const url = pathname + '?' + new URLSearchParams(options.query);
+    window.location.href = url;
+    
+    // Example 3: React Router
+    navigate(pathname, { state: options.query });
+    
+    // Example 4: Vue Router
+    router.push({ path: pathname, query: options.query });
+  }
+});
+```
+
+## Complete Event Handler
+
+```javascript
+class LuaPopEventHandler {
+  constructor() {
+    this.setupEventListeners();
+  }
+
+  setupEventListeners() {
+    window.addEventListener('message', (event) => {
+      if (!event.data) return;
+      
+      switch (event.data.type) {
+        case 'LUA_POP_EVENT':
+          this.handleWidgetEvent(event.data);
+          break;
+        case 'LUA_POP_RESIZE':
+          this.handleResize(event.data);
+          break;
+        case 'LUA_POP_ERROR':
+          this.handleError(event.data);
+          break;
+      }
+    });
+  }
+
+  handleWidgetEvent({ eventType, data }) {
+    switch (eventType) {
+      case 'widget_opened':
+        this.onWidgetOpened();
+        break;
+      case 'widget_closed':
+        this.onWidgetClosed();
+        break;
+      case 'message_sent':
+        this.onMessageSent(data);
+        break;
+      case 'message_received':
+        this.onMessageReceived(data);
+        break;
+    }
+  }
+
+  onWidgetOpened() {
+    console.log('✅ Widget opened');
+    
+    // Track in analytics
+    gtag('event', 'chat_opened', {
+      event_category: 'engagement'
+    });
+    
+    // Update UI
+    document.body.classList.add('chat-active');
+  }
+
+  onWidgetClosed() {
+    console.log('❌ Widget closed');
+    
+    // Track session duration
+    gtag('event', 'chat_closed', {
+      event_category: 'engagement'
+    });
+    
+    // Update UI
+    document.body.classList.remove('chat-active');
+  }
+
+  onMessageSent(data) {
+    console.log('📤 User sent:', data.content);
+    
+    // Track user engagement
+    this.trackMessage('user', data.content);
+  }
+
+  onMessageReceived(data) {
+    console.log('📥 AI responded:', data.content);
+    
+    // Track AI responses
+    this.trackMessage('ai', data.content);
+  }
+
+  handleResize({ width, height }) {
+    console.log(`📐 Widget resized: ${width}x${height}`);
+  }
+
+  handleError({ error }) {
+    console.error('❌ LuaPop Error:', error);
+    
+    // Show fallback UI or error message
+    this.showErrorFallback(error);
+  }
+
+  trackMessage(sender, content) {
+    // Send to analytics service
+    fetch('/api/analytics/chat', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        sender,
+        content,
+        timestamp: new Date().toISOString()
+      })
+    });
+  }
+
+  showErrorFallback(error) {
+    // Show user-friendly error message
+    alert('Chat is temporarily unavailable. Please try again later.');
+  }
+}
+
+// Initialize event handler
+new LuaPopEventHandler();
+```
+
+## Use Cases
+
+### Track Chat Engagement
+
+```javascript
+let chatSessions = 0;
+let messagesExchanged = 0;
+
+window.addEventListener('message', function(event) {
+  if (event.data && event.data.type === 'LUA_POP_EVENT') {
+    switch (event.data.eventType) {
+      case 'widget_opened':
+        chatSessions++;
+        console.log('Total chat sessions:', chatSessions);
+        break;
+        
+      case 'message_sent':
+      case 'message_received':
+        messagesExchanged++;
+        console.log('Total messages:', messagesExchanged);
+        break;
+    }
+  }
+});
+```
+
+### Show Help Hints
+
+```javascript
+window.addEventListener('message', function(event) {
+  if (event.data && event.data.type === 'LUA_POP_EVENT') {
+    if (event.data.eventType === 'widget_opened') {
+      // Show contextual help based on current page
+      const page = window.location.pathname;
+      
+      if (page.includes('/pricing')) {
+        // Could trigger AI to suggest pricing questions
+        console.log('User opened chat on pricing page');
+      }
+    }
+  }
+});
+```
+
+### Auto-Open for New Users
+
+```javascript
+// Check if user is new
+const isNewUser = !localStorage.getItem('has_used_chat');
+
+window.LuaPop.init({
+  agentId: "onboarding-agent",
+  buttonText: isNewUser ? "🚀 Get Started" : "💬 Chat"
+});
+
+// Auto-open for new users after 5 seconds
+if (isNewUser) {
+  setTimeout(() => {
+    // Trigger chat open
+    document.querySelector('.lua-pop-button')?.click();
+    localStorage.setItem('has_used_chat', 'true');
+  }, 5000);
+}
+```
+
+## Next Steps
+
+<CardGroup cols={2}>
+  <Card title="Analytics" icon="chart-line" href="/chat-widget/analytics">
+    Track chat interactions
+  </Card>
+  <Card title="Examples" icon="layer-group" href="/chat-widget/examples">
+    See event handling examples
+  </Card>
+</CardGroup>
+EOFSTYLE
+

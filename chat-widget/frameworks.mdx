@@ -1,0 +1,345 @@
+---
+title: "Framework Integration"
+description: "Integrate LuaPop with React, Vue, Angular, and more"
+---
+
+## React
+
+### Basic Integration
+
+```tsx
+import { useEffect } from 'react';
+
+export default function ChatWidget() {
+  useEffect(() => {
+    const script = document.createElement('script');
+    script.src = 'https://lua-ai-global.github.io/lua-pop/lua-pop.umd.js';
+    script.onload = () => {
+      window.LuaPop?.init({
+        agentId: "your-agent-id",
+        position: "bottom-right",
+        theme: "light"
+      });
+    };
+    document.body.appendChild(script);
+
+    return () => {
+      document.body.removeChild(script);
+    };
+  }, []);
+
+  return null;
+}
+```
+
+### With Environment Variables
+
+```tsx
+// components/ChatWidget.tsx
+import { useEffect } from 'react';
+
+export default function ChatWidget() {
+  useEffect(() => {
+    const script = document.createElement('script');
+    script.src = 'https://lua-ai-global.github.io/lua-pop/lua-pop.umd.js';
+    script.onload = () => {
+      window.LuaPop?.init({
+        agentId: process.env.REACT_APP_AGENT_ID,
+        environment: process.env.NODE_ENV === 'production' ? 'production' : 'staging',
+        position: "bottom-right",
+        theme: "light",
+        sessionId: `user-${Date.now()}`
+      });
+    };
+    document.body.appendChild(script);
+  }, []);
+
+  return null;
+}
+```
+
+## Next.js
+
+### App Router
+
+```tsx
+// app/layout.tsx
+import Script from 'next/script';
+
+export default function RootLayout({ children }) {
+  return (
+    <html>
+      <body>
+        {children}
+        
+        <Script 
+          src="https://lua-ai-global.github.io/lua-pop/lua-pop.umd.js"
+          strategy="lazyOnload"
+          onLoad={() => {
+            window.LuaPop?.init({
+              agentId: process.env.NEXT_PUBLIC_AGENT_ID,
+              environment: process.env.NODE_ENV === 'production' ? 'production' : 'staging',
+              position: "bottom-right",
+              theme: "light"
+            });
+          }}
+        />
+      </body>
+    </html>
+  );
+}
+```
+
+### Pages Router
+
+```tsx
+// pages/_app.tsx
+import Script from 'next/script';
+import type { AppProps } from 'next/app';
+
+export default function App({ Component, pageProps }: AppProps) {
+  return (
+    <>
+      <Component {...pageProps} />
+      
+      <Script 
+        src="https://lua-ai-global.github.io/lua-pop/lua-pop.umd.js"
+        strategy="lazyOnload"
+        onLoad={() => {
+          window.LuaPop?.init({
+            agentId: process.env.NEXT_PUBLIC_AGENT_ID,
+            position: "bottom-right"
+          });
+        }}
+      />
+    </>
+  );
+}
+```
+
+## Vue.js
+
+### Vue 3
+
+```vue
+<template>
+  <div>
+    <!-- Your app content -->
+  </div>
+</template>
+
+<script setup>
+import { onMounted } from 'vue';
+
+onMounted(() => {
+  const script = document.createElement('script');
+  script.src = 'https://lua-ai-global.github.io/lua-pop/lua-pop.umd.js';
+  script.onload = () => {
+    window.LuaPop?.init({
+      agentId: import.meta.env.VITE_AGENT_ID,
+      position: "bottom-right",
+      theme: "light"
+    });
+  };
+  document.body.appendChild(script);
+});
+</script>
+```
+
+### Nuxt.js
+
+```vue
+<!-- plugins/luapop.client.ts -->
+export default defineNuxtPlugin(() => {
+  if (process.client) {
+    const script = document.createElement('script');
+    script.src = 'https://lua-ai-global.github.io/lua-pop/lua-pop.umd.js';
+    script.onload = () => {
+      window.LuaPop?.init({
+        agentId: useRuntimeConfig().public.agentId,
+        position: "bottom-right",
+        theme: "light"
+      });
+    };
+    document.body.appendChild(script);
+  }
+});
+```
+
+## Angular
+
+```typescript
+// app.component.ts
+import { Component, OnInit } from '@angular/core';
+
+@Component({
+  selector: 'app-root',
+  template: `
+    <router-outlet></router-outlet>
+  `
+})
+export class AppComponent implements OnInit {
+  ngOnInit() {
+    const script = document.createElement('script');
+    script.src = 'https://lua-ai-global.github.io/lua-pop/lua-pop.umd.js';
+    script.onload = () => {
+      (window as any).LuaPop?.init({
+        agentId: environment.agentId,
+        position: "bottom-right",
+        theme: "light"
+      });
+    };
+    document.body.appendChild(script);
+  }
+}
+```
+
+## Svelte
+
+```svelte
+<!-- ChatWidget.svelte -->
+<script>
+  import { onMount } from 'svelte';
+
+  onMount(() => {
+    const script = document.createElement('script');
+    script.src = 'https://lua-ai-global.github.io/lua-pop/lua-pop.umd.js';
+    script.onload = () => {
+      window.LuaPop?.init({
+        agentId: import.meta.env.VITE_AGENT_ID,
+        position: "bottom-right",
+        theme: "light"
+      });
+    };
+    document.body.appendChild(script);
+  });
+</script>
+```
+
+## WordPress
+
+### Using Theme Editor
+
+```php
+<!-- Add to footer.php before </body> -->
+<script src="https://lua-ai-global.github.io/lua-pop/lua-pop.umd.js"></script>
+<script>
+  window.LuaPop.init({
+    agentId: "<?php echo get_option('luapop_agent_id', 'your-agent-id'); ?>",
+    position: "bottom-right",
+    theme: "light",
+    chatTitle: "<?php bloginfo('name'); ?> Support"
+  });
+</script>
+```
+
+### Using Plugin (Recommended)
+
+Install plugin like "Insert Headers and Footers" or "Code Snippets" and add the LuaPop initialization code to the footer.
+
+## Shopify
+
+```liquid
+<!-- Add to theme.liquid before </body> -->
+<script src="https://lua-ai-global.github.io/lua-pop/lua-pop.umd.js"></script>
+<script>
+  window.LuaPop.init({
+    agentId: "{{ settings.luapop_agent_id }}",
+    chatTitle: "{{ shop.name }} Assistant",
+    buttonText: "🛍️ Shop Help",
+    position: "bottom-right",
+    theme: "light",
+    {% if customer %}
+    sessionId: "customer-{{ customer.id }}",
+    runtimeContext: "customer:{{ customer.email }}"
+    {% endif %}
+  });
+</script>
+```
+
+## TypeScript Support
+
+```typescript
+declare global {
+  interface Window {
+    LuaPop: {
+      init: (config: LuaPopConfig) => { destroy: () => void };
+      config?: LuaPopConfig;
+    };
+  }
+}
+
+interface LuaPopConfig {
+  agentId: string;
+  position?: "bottom-right" | "bottom-left" | "top-right" | "top-left";
+  theme?: "light" | "dark";
+  buttonText?: string;
+  buttonColor?: string;
+  environment?: "staging" | "production" | "custom";
+  sessionId?: string;
+  authToken?: string;
+  displayMode?: "floating" | "embedded";
+  voiceModeEnabled?: boolean;
+  onNavigate?: (pathname: string, options: { query: Record<string, string> }) => void;
+  // ... other options
+}
+
+// Usage with type safety
+window.LuaPop.init({
+  agentId: "your-agent-id",
+  position: "bottom-right", // TypeScript autocomplete works!
+  theme: "light"
+});
+```
+
+## Best Practices
+
+<AccordionGroup>
+  <Accordion title="Use Environment Variables">
+    ```tsx
+    // ✅ Good
+    agentId: process.env.REACT_APP_AGENT_ID
+    
+    // ❌ Bad
+    agentId: "hardcoded-id"
+    ```
+  </Accordion>
+
+  <Accordion title="Cleanup in useEffect">
+    ```tsx
+    useEffect(() => {
+      // Load script
+      const script = document.createElement('script');
+      document.body.appendChild(script);
+      
+      // Cleanup
+      return () => {
+        document.body.removeChild(script);
+      };
+    }, []);
+    ```
+  </Accordion>
+
+  <Accordion title="Handle SSR">
+    ```tsx
+    // Next.js - only run on client
+    useEffect(() => {
+      if (typeof window !== 'undefined') {
+        // Load LuaPop
+      }
+    }, []);
+    ```
+  </Accordion>
+</AccordionGroup>
+
+## Next Steps
+
+<CardGroup cols={2}>
+  <Card title="Configuration" icon="cog" href="/chat-widget/configuration">
+    Complete configuration options
+  </Card>
+  <Card title="Examples" icon="layer-group" href="/chat-widget/examples">
+    See framework-specific examples
+  </Card>
+</CardGroup>
+

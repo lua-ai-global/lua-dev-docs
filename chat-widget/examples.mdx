@@ -1,0 +1,233 @@
+---
+title: "Examples & Use Cases"
+description: "Real-world implementation examples for different industries"
+---
+
+## Customer Support Widget
+
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Customer Support Example</title>
+</head>
+<body>
+  <header>
+    <h1>Welcome to Our Business</h1>
+  </header>
+
+  <main>
+    <p>We're here to help 24/7!</p>
+  </main>
+
+  <script src="https://lua-ai-global.github.io/lua-pop/lua-pop.umd.js"></script>
+  <script>
+    window.LuaPop.init({
+      agentId: "customer-support",
+      chatTitle: "Customer Support",
+      buttonText: "💬 Get Help",
+      position: "bottom-right",
+      theme: "light",
+      chatInputPlaceholder: "How can we help you today?"
+    });
+  </script>
+</body>
+</html>
+```
+
+## E-commerce Shopping Assistant
+
+```html
+<script src="https://lua-ai-global.github.io/lua-pop/lua-pop.umd.js"></script>
+<script>
+  window.LuaPop.init({
+    agentId: "shopping-assistant",
+    chatTitle: "Shopping Assistant",
+    buttonText: "🛒 Shop Help",
+    buttonColor: "#e74c3c",
+    position: "bottom-right",
+    theme: "light",
+    
+    onNavigate: (pathname, options) => {
+      // Navigate to product pages
+      if (pathname.startsWith('/product/')) {
+        window.location.href = pathname;
+      }
+    }
+  });
+
+  // Track shopping events
+  window.addEventListener('message', function(event) {
+    if (event.data && event.data.type === 'LUA_POP_EVENT') {
+      console.log('Shopping event:', event.data.eventType);
+    }
+  });
+</script>
+```
+
+## Hotel Booking Assistant
+
+```html
+<script src="https://lua-ai-global.github.io/lua-pop/lua-pop.umd.js"></script>
+<script>
+  window.LuaPop.init({
+    agentId: "hotel-concierge",
+    chatTitle: "Hotel Concierge",
+    buttonText: "🛎️ Concierge",
+    buttonColor: "#d4af37",
+    position: "bottom-right",
+    theme: "light",
+    
+    popupButtonStyles: {
+      borderRadius: "50%",
+      width: "70px",
+      height: "70px",
+      boxShadow: "0 4px 20px rgba(212, 175, 55, 0.3)"
+    },
+    
+    chatTitleHeaderStyles: {
+      background: "linear-gradient(135deg, #d4af37, #ffd700)",
+      color: "#2c3e50"
+    },
+    
+    chatHeaderSubtitle: {
+      visible: true,
+      brandName: "Luxury Resort & Spa",
+      iconUrl: "/hotel-logo.png"
+    }
+  });
+</script>
+```
+
+## SaaS Onboarding Assistant
+
+```javascript
+// Check if user is new
+const isNewUser = !localStorage.getItem('user_onboarded');
+
+window.LuaPop.init({
+  agentId: "onboarding-assistant",
+  chatTitle: "Onboarding Assistant",
+  buttonText: isNewUser ? "🚀 Get Started" : "💡 Need Help?",
+  buttonColor: "#9b59b6",
+  position: "bottom-right",
+  theme: "light",
+  voiceModeEnabled: true,
+  sessionId: `user-${Date.now()}`,
+  
+  onNavigate: (pathname, options) => {
+    const section = pathname.replace('/', '');
+    document.getElementById(section)?.scrollIntoView({ behavior: 'smooth' });
+  }
+});
+
+// Auto-open for new users
+if (isNewUser) {
+  setTimeout(() => {
+    document.querySelector('.lua-pop-button')?.click();
+    localStorage.setItem('user_onboarded', 'true');
+  }, 2000);
+}
+```
+
+## Embedded Documentation Chat
+
+```html
+<div style="display: flex; gap: 20px;">
+  <!-- Documentation content -->
+  <div style="flex: 1;">
+    <h1>Documentation</h1>
+    <p>API reference and guides...</p>
+  </div>
+  
+  <!-- Embedded chat assistant -->
+  <div id="docs-chat" style="width: 400px; height: 800px; border: 1px solid #ddd; border-radius: 8px;"></div>
+</div>
+
+<script src="https://lua-ai-global.github.io/lua-pop/lua-pop.umd.js"></script>
+<script>
+  window.LuaPop.init({
+    agentId: "docs-assistant",
+    displayMode: "embedded",
+    embeddedDisplayConfig: {
+      targetContainerId: "docs-chat"
+    },
+    chatTitle: "Documentation Assistant",
+    chatInputPlaceholder: "Search documentation...",
+    theme: "light"
+  });
+</script>
+```
+
+## Conditional Loading
+
+```javascript
+class ConditionalChatLoader {
+  constructor() {
+    this.shouldLoad = this.checkConditions();
+    if (this.shouldLoad) {
+      this.loadChat();
+    }
+  }
+
+  checkConditions() {
+    // Only load on support pages
+    if (window.location.pathname.includes('/support')) return true;
+    
+    // Only load for logged-in users
+    if (document.cookie.includes('user_logged_in=true')) return true;
+    
+    // Only load during business hours
+    const hour = new Date().getHours();
+    if (hour >= 9 && hour <= 17) return true;
+    
+    return false;
+  }
+
+  loadChat() {
+    window.LuaPop.init({
+      agentId: "conditional-agent",
+      position: "bottom-right",
+      theme: "light"
+    });
+  }
+}
+
+new ConditionalChatLoader();
+```
+
+## Multi-Agent Setup
+
+```javascript
+// Different agents for different pages
+const agentMap = {
+  '/': 'general-support',
+  '/pricing': 'sales-agent',
+  '/docs': 'technical-support',
+  '/support': 'customer-service'
+};
+
+function getAgentForPage() {
+  const path = window.location.pathname;
+  return agentMap[path] || agentMap['/'];
+}
+
+window.LuaPop.init({
+  agentId: getAgentForPage(),
+  position: "bottom-right",
+  theme: "light",
+  runtimeContext: `page:${window.location.pathname}`
+});
+```
+
+## Next Steps
+
+<CardGroup cols={2}>
+  <Card title="Configuration" icon="cog" href="/chat-widget/configuration">
+    All configuration options
+  </Card>
+  <Card title="Migration" icon="arrows-turn-right" href="/chat-widget/migration">
+    Migrate from other chat widgets
+  </Card>
+</CardGroup>
