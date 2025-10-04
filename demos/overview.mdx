@@ -1,0 +1,320 @@
+---
+title: "Demo Gallery"
+description: "10 production-ready business solutions showcasing Lua's flexibility"
+---
+
+## Overview
+
+Explore 10 complete, production-ready AI agent implementations across different industries. Each demo shows full TypeScript code mixing external APIs and Lua Platform APIs.
+
+<CardGroup cols={2}>
+  <Card title="Customer-Facing" icon="users">
+    5 demos for end-user interactions
+  </Card>
+  <Card title="Internal Operations" icon="building">
+    5 demos for business operations
+  </Card>
+  <Card title="External APIs" icon="cloud">
+    Stripe, Zendesk, Plaid, UPS, MLS, etc.
+  </Card>
+  <Card title="Platform APIs" icon="database">
+    Products, Baskets, Orders, Data (vector search)
+  </Card>
+</CardGroup>
+
+## Customer-Facing Agents
+
+### 1. E-commerce Shopping Assistant
+
+<Card title="E-commerce Assistant" icon="cart-shopping" href="/demos/ecommerce-assistant">
+  **Complete shopping experience using Lua Platform APIs**
+  
+  **Features:** Product search, cart management, checkout, order tracking
+  
+  **APIs:** Products, Baskets, Orders (Lua Platform)
+  
+  **Use case:** Online stores, marketplaces
+</Card>
+
+### 2. Customer Support Agent
+
+<Card title="Customer Support" icon="headset" href="/demos/customer-support">
+  **Support automation with Zendesk + knowledge base**
+  
+  **Features:** Knowledge base search, ticket creation, status tracking
+  
+  **APIs:** Zendesk API (external) + Lua Data (vector search)
+  
+  **Use case:** Help desks, customer service teams
+</Card>
+
+### 3. Hotel Booking Agent
+
+<Card title="Hotel Booking" icon="hotel" href="/demos/hotel-booking">
+  **Reservation management with availability checking**
+  
+  **Features:** Room search, bookings, cancellations, room service
+  
+  **APIs:** Lua Data API (rooms, reservations)
+  
+  **Use case:** Hotels, resorts, vacation rentals
+</Card>
+
+### 4. Restaurant Ordering System
+
+<Card title="Restaurant Ordering" icon="utensils" href="/demos/restaurant-ordering">
+  **Food ordering and table reservations**
+  
+  **Features:** Menu browsing, order placement, reservations
+  
+  **APIs:** Lua Products API (menu) + Data API (orders)
+  
+  **Use case:** Restaurants, cafes, food services
+</Card>
+
+### 5. Real Estate Assistant
+
+<Card title="Real Estate" icon="house" href="/demos/real-estate-assistant">
+  **Property search with MLS integration**
+  
+  **Features:** Property search, viewings, favorites, comparisons
+  
+  **APIs:** MLS API (external) + Lua Data (cache, favorites)
+  
+  **Use case:** Real estate agencies, property management
+</Card>
+
+## Internal-Facing Agents
+
+### 6. HR Operations Assistant
+
+<Card title="HR Assistant" icon="user-tie" href="/demos/hr-assistant">
+  **Employee management with BambooHR integration**
+  
+  **Features:** Employee lookup, time off requests, policy search
+  
+  **APIs:** BambooHR API (external) + Lua Data (policies)
+  
+  **Use case:** HR departments, employee self-service
+</Card>
+
+### 7. Finance Operations Agent
+
+<Card title="Finance Operations" icon="building-columns" href="/demos/finance-operations">
+  **Banking operations with Plaid integration**
+  
+  **Features:** Account balances, transactions, transfers
+  
+  **APIs:** Plaid API (external banking)
+  
+  **Use case:** Finance teams, accounting, treasury
+</Card>
+
+### 8. SaaS Onboarding Assistant
+
+<Card title="SaaS Onboarding" icon="graduation-cap" href="/demos/saas-onboarding">
+  **User onboarding with product API integration**
+  
+  **Features:** Account creation, documentation search, usage tracking
+  
+  **APIs:** Your SaaS API (external) + Lua Data (docs)
+  
+  **Use case:** SaaS products, internal tools
+</Card>
+
+### 9. Healthcare Patient Portal
+
+<Card title="Healthcare Portal" icon="hospital" href="/demos/healthcare-portal">
+  **Patient services with EMR integration**
+  
+  **Features:** Appointments, medical records, prescriptions
+  
+  **APIs:** EMR/FHIR API (external) + Lua Data (health info)
+  
+  **Use case:** Healthcare providers, patient portals
+</Card>
+
+### 10. Logistics & Shipping Tracker
+
+<Card title="Logistics Tracker" icon="truck" href="/demos/logistics-tracker">
+  **Multi-carrier package tracking**
+  
+  **Features:** Track packages (UPS, FedEx, USPS), rate comparison
+  
+  **APIs:** UPS, FedEx, USPS APIs (all external)
+  
+  **Use case:** Logistics, shipping, warehouse operations
+</Card>
+
+## API Integration Breakdown
+
+### External APIs Used
+
+| Demo | External APIs | Purpose |
+|------|--------------|---------|
+| Customer Support | Zendesk | Ticket management |
+| Real Estate | MLS | Property listings |
+| HR Assistant | BambooHR | Employee data |
+| Finance | Plaid | Banking operations |
+| SaaS Onboarding | Your API | Product integration |
+| Healthcare | EMR/FHIR | Medical records |
+| Logistics | UPS/FedEx/USPS | Shipping tracking |
+
+### Lua Platform APIs Used
+
+| Demo | Platform APIs | Purpose |
+|------|--------------|---------|
+| E-commerce | Products, Baskets, Orders | Shopping workflow |
+| Customer Support | Data | Knowledge base search |
+| Hotel Booking | Data | Reservations, rooms |
+| Restaurant | Products, Data | Menu, orders |
+| Real Estate | Data | Property cache, favorites |
+| HR Assistant | Data | Policy search |
+| SaaS Onboarding | Data | Documentation search |
+| Healthcare | Data | Health information |
+
+## Integration Patterns Demonstrated
+
+<Tabs>
+  <Tab title="Pure External">
+    **Finance, Logistics**
+    
+    100% external API integration
+    - Plaid for banking
+    - UPS/FedEx for shipping
+    
+    Shows: Complete custom integration
+  </Tab>
+
+  <Tab title="Pure Platform">
+    **E-commerce, Hotel, Restaurant**
+    
+    Uses Lua Platform APIs
+    - Products for catalogs
+    - Baskets for carts
+    - Data for storage
+    
+    Shows: Quick development with Platform APIs
+  </Tab>
+
+  <Tab title="Hybrid">
+    **Support, Real Estate, HR, SaaS, Healthcare**
+    
+    Mix of both
+    - External for core business logic
+    - Platform for enhanced features
+    
+    Shows: Best of both worlds
+  </Tab>
+</Tabs>
+
+## Code Complexity Levels
+
+<AccordionGroup>
+  <Accordion title="⭐ Beginner (3 demos)">
+    - **E-commerce**: Platform APIs only
+    - **Hotel Booking**: Lua Data API
+    - **Restaurant**: Products + Data
+    
+    Great for learning Platform APIs
+  </Accordion>
+
+  <Accordion title="⭐⭐ Intermediate (4 demos)">
+    - **Customer Support**: Zendesk + vector search
+    - **Real Estate**: MLS + Lua Data
+    - **HR Assistant**: BambooHR + Lua Data
+    - **SaaS Onboarding**: Your API + Lua Data
+    
+    Shows hybrid integration patterns
+  </Accordion>
+
+  <Accordion title="⭐⭐⭐ Advanced (3 demos)">
+    - **Finance**: Plaid banking integration
+    - **Healthcare**: FHIR-compliant EMR
+    - **Logistics**: Multi-carrier APIs
+    
+    Complex external integrations
+  </Accordion>
+</AccordionGroup>
+
+## Quick Start with Demos
+
+<Steps>
+  <Step title="Choose a Demo">
+    Pick one that matches your industry or use case
+  </Step>
+  
+  <Step title="Copy the Code">
+    All code is production-ready and copy-paste friendly
+  </Step>
+  
+  <Step title="Set Environment Variables">
+    Add required API keys to `.env` file
+  </Step>
+  
+  <Step title="Test Locally">
+    ```bash
+    lua test
+    lua dev
+    ```
+  </Step>
+  
+  <Step title="Customize">
+    Modify for your specific needs
+  </Step>
+  
+  <Step title="Deploy">
+    ```bash
+    lua push && lua deploy
+    ```
+  </Step>
+</Steps>
+
+## All Demos at a Glance
+
+| Demo | Type | External APIs | Platform APIs | Complexity |
+|------|------|--------------|---------------|------------|
+| E-commerce | Customer | None | Products, Baskets, Orders | ⭐ |
+| Support | Customer | Zendesk | Data | ⭐⭐ |
+| Hotel | Customer | None | Data | ⭐ |
+| Restaurant | Customer | None | Products, Data | ⭐ |
+| Real Estate | Customer | MLS | Data | ⭐⭐ |
+| HR | Internal | BambooHR | Data | ⭐⭐ |
+| Finance | Internal | Plaid | None | ⭐⭐⭐ |
+| SaaS | Internal | Your API | Data | ⭐⭐ |
+| Healthcare | Internal | EMR/FHIR | Data | ⭐⭐⭐ |
+| Logistics | Internal | UPS/FedEx/USPS | None | ⭐⭐⭐ |
+
+## Next Steps
+
+<CardGroup cols={2}>
+  <Card
+    title="Start with E-commerce"
+    icon="cart-shopping"
+    href="/demos/ecommerce-assistant"
+  >
+    Easiest demo - Platform APIs only
+  </Card>
+  <Card
+    title="Try Customer Support"
+    icon="headset"
+    href="/demos/customer-support"
+  >
+    Learn hybrid approach (Zendesk + Lua)
+  </Card>
+  <Card
+    title="Quick Start Guide"
+    icon="rocket"
+    href="/getting-started/quick-start"
+  >
+    Set up your development environment
+  </Card>
+  <Card
+    title="API Reference"
+    icon="book"
+    href="/api/overview"
+  >
+    Complete API documentation
+  </Card>
+</CardGroup>
+

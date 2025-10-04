@@ -1,0 +1,344 @@
+---
+title: "Restaurant Ordering System"
+description: "Food ordering and reservations with Lua Platform APIs"
+---
+
+## Overview
+
+Restaurant AI assistant for menu browsing, food ordering, and table reservations using **Lua Platform APIs**.
+
+**What it does:**
+- Browse menu with search
+- Create food orders
+- Make table reservations
+- Track order status
+- Handle special dietary requests
+
+**APIs used:** Lua Products API (menu), Data API (orders, reservations)
+
+## Complete Implementation
+
+### src/index.ts
+
+```typescript
+import { LuaSkill } from "lua-cli";
+import {
+  BrowseMenuTool,
+  SearchMenuTool,
+  CreateOrderTool,
+  TrackOrderTool,
+  MakeReservationTool,
+  CheckReservationTool
+} from "./tools/RestaurantTools";
+
+const restaurantSkill = new LuaSkill({
+  name: "restaurant-assistant",
+  version: "1.0.0",
+  description: "Restaurant ordering and reservation assistant",
+  context: `
+    This skill helps customers order food and make reservations.
+    
+    Menu & Ordering:
+    - browse_menu: Show all menu items or filter by category
+    - search_menu: Find specific dishes
+    - create_order: Place food order (confirm items first!)
+    - track_order: Check order preparation status
+    
+    Reservations:
+    - make_reservation: Book a table
+    - check_reservation: Look up reservation details
+    
+    Always mention daily specials.
+    Ask about dietary restrictions and allergies.
+    Confirm order details and total before submitting.
+  `,
+  tools: [
+    new BrowseMenuTool(),
+    new SearchMenuTool(),
+    new CreateOrderTool(),
+    new TrackOrderTool(),
+    new MakeReservationTool(),
+    new CheckReservationTool()
+  ]
+});
+```
+
+### src/tools/RestaurantTools.ts
+
+```typescript
+import { LuaTool, Products, Data } from "lua-cli";
+import { z } from "zod";
+
+// 1. Browse Menu
+export class BrowseMenuTool implements LuaTool {
+  name = "browse_menu";
+  description = "Browse restaurant menu items";
+  
+  inputSchema = z.object({
+    category: z.enum(['appetizers', 'entrees', 'desserts', 'drinks', 'all']).default('all')
+  });
+
+  async execute(input: z.infer<typeof this.inputSchema>) {
+    // Use Products API for menu items
+    const allItems = await Products.get(100);
+    
+    let items = allItems.data;
+    if (input.category !== 'all') {
+      items = items.filter(item => item.category === input.category);
+    }
+    
+    return {
+      category: input.category,
+      items: items.map(item => ({
+        id: item.id,
+        name: item.name,
+        description: item.description,
+        price: `$${item.price.toFixed(2)}`,
+        category: item.category,
+        dietary: item.metadata?.dietary || []
+      })),
+      dailySpecial: "Chef's seafood pasta - $24.99",
+      message: `Showing ${items.length} ${input.category} items`
+    };
+  }
+}
+
+// 2. Search Menu
+export class SearchMenuTool implements LuaTool {
+  name = "search_menu";
+  description = "Search menu by dish name or ingredient";
+  
+  inputSchema = z.object({
+    query: z.string().describe("Search query (dish name, ingredient, dietary requirement)")
+  });
+
+  async execute(input: z.infer<typeof this.inputSchema>) {
+    const results = await Products.search(input.query);
+    
+    return {
+      results: results.data.map(item => ({
+        id: item.id,
+        name: item.name,
+        price: `$${item.price.toFixed(2)}`,
+        description: item.description,
+        dietary: item.metadata?.dietary
+      })),
+      count: results.data.length
+    };
+  }
+}
+
+// 3. Create Order
+export class CreateOrderTool implements LuaTool {
+  name = "create_order";
+  description = "Place a food order";
+  
+  inputSchema = z.object({
+    items: z.array(z.object({
+      productId: z.string(),
+      quantity: z.number().min(1),
+      specialInstructions: z.string().optional()
+    })),
+    customerName: z.string(),
+    customerPhone: z.string(),
+    orderType: z.enum(['dine-in', 'takeout', 'delivery']).default('dine-in'),
+    deliveryAddress: z.string().optional()
+  });
+
+  async execute(input: z.infer<typeof this.inputSchema>) {
+    // Get all product details and calculate total
+    let total = 0;
+    const orderItems = [];
+    
+    for (const item of input.items) {
+      const product = await Products.getById(item.productId);
+      
+      if (!product) {
+        throw new Error(`Menu item not found: ${item.productId}`);
+      }
+      
+      const itemTotal = product.price * item.quantity;
+      total += itemTotal;
+      
+      orderItems.push({
+        name: product.name,
+        quantity: item.quantity,
+        price: product.price,
+        subtotal: itemTotal,
+        specialInstructions: item.specialInstructions
+      });
+    }
+    
+    // Add delivery fee if applicable
+    if (input.orderType === 'delivery') {
+      total += 5.99; // Delivery fee
+    }
+    
+    // Create order
+    const order = await Data.create('restaurant_orders', {
+      items: orderItems,
+      total,
+      customerName: input.customerName,
+      customerPhone: input.customerPhone,
+      orderType: input.orderType,
+      deliveryAddress: input.deliveryAddress,
+      status: 'preparing',
+      orderNumber: this.generateOrderNumber(),
+      createdAt: new Date().toISOString()
+    });
+    
+    return {
+      success: true,
+      orderId: order.id,
+      orderNumber: order.data.orderNumber,
+      items: orderItems,
+      total: `$${total.toFixed(2)}`,
+      estimatedTime: input.orderType === 'dine-in' ? '20-25 minutes' : '30-40 minutes',
+      message: `Order #${order.data.orderNumber} placed! Estimated time: ${input.orderType === 'dine-in' ? '20-25' : '30-40'} minutes`
+    };
+  }
+  
+  private generateOrderNumber(): string {
+    return 'ORD-' + Date.now().toString().slice(-6);
+  }
+  
+  private calculateNights(checkIn: string, checkOut: string): number {
+    const start = new Date(checkIn);
+    const end = new Date(checkOut);
+    return Math.ceil((end.getTime() - start.getTime()) / (1000 * 60 * 60 * 24));
+  }
+}
+
+// 4. Track Order
+export class TrackOrderTool implements LuaTool {
+  name = "track_order";
+  description = "Check order preparation status";
+  
+  inputSchema = z.object({
+    orderNumber: z.string().describe("Order number")
+  });
+
+  async execute(input: z.infer<typeof this.inputSchema>) {
+    const results = await Data.get('restaurant_orders', {
+      orderNumber: input.orderNumber
+    });
+    
+    if (results.data.length === 0) {
+      throw new Error(`Order not found: ${input.orderNumber}`);
+    }
+    
+    const order = results.data[0];
+    
+    const statusMessages = {
+      preparing: "🍳 Your order is being prepared",
+      ready: "✅ Your order is ready for pickup!",
+      delivered: "🎉 Order delivered!",
+      cancelled: "❌ Order was cancelled"
+    };
+    
+    return {
+      orderNumber: order.data.orderNumber,
+      status: order.data.status,
+      statusMessage: statusMessages[order.data.status],
+      items: order.data.items,
+      total: `$${order.data.total.toFixed(2)}`,
+      orderType: order.data.orderType
+    };
+  }
+}
+
+// 5. Make Reservation
+export class MakeReservationTool implements LuaTool {
+  name = "make_reservation";
+  description = "Reserve a table at the restaurant";
+  
+  inputSchema = z.object({
+    date: z.string().describe("Reservation date (YYYY-MM-DD)"),
+    time: z.string().describe("Reservation time (HH:MM)"),
+    partySize: z.number().min(1).max(20),
+    customerName: z.string(),
+    customerPhone: z.string(),
+    specialRequests: z.string().optional()
+  });
+
+  async execute(input: z.infer<typeof this.inputSchema>) {
+    // Create reservation
+    const reservation = await Data.create('table_reservations', {
+      date: input.date,
+      time: input.time,
+      partySize: input.partySize,
+      customerName: input.customerName,
+      customerPhone: input.customerPhone,
+      specialRequests: input.specialRequests,
+      status: 'confirmed',
+      confirmationCode: this.generateConfirmationCode(),
+      createdAt: new Date().toISOString()
+    }, `${input.customerName} ${input.date} ${input.time}`);
+    
+    return {
+      success: true,
+      confirmationCode: reservation.data.confirmationCode,
+      date: input.date,
+      time: input.time,
+      partySize: input.partySize,
+      message: `Table reserved for ${input.partySize} on ${input.date} at ${input.time}. Confirmation: ${reservation.data.confirmationCode}`
+    };
+  }
+  
+  private generateConfirmationCode(): string {
+    return 'RES-' + Math.random().toString(36).substring(2, 10).toUpperCase();
+  }
+}
+
+// 6. Check Reservation
+export class CheckReservationTool implements LuaTool {
+  name = "check_reservation";
+  description = "Look up table reservation";
+  
+  inputSchema = z.object({
+    confirmationCode: z.string(),
+    phone: z.string()
+  });
+
+  async execute(input: z.infer<typeof this.inputSchema>) {
+    const results = await Data.get('table_reservations', {
+      confirmationCode: input.confirmationCode,
+      customerPhone: input.phone
+    });
+    
+    if (results.data.length === 0) {
+      throw new Error('Reservation not found');
+    }
+    
+    const reservation = results.data[0];
+    
+    return {
+      confirmationCode: reservation.data.confirmationCode,
+      customerName: reservation.data.customerName,
+      date: reservation.data.date,
+      time: reservation.data.time,
+      partySize: reservation.data.partySize,
+      status: reservation.data.status,
+      specialRequests: reservation.data.specialRequests
+    };
+  }
+}
+```
+
+## Key Features
+
+<CardGroup cols={2}>
+  <Card title="Platform APIs" icon="utensils">
+    Uses Products API for menu
+  </Card>
+  <Card title="Data API" icon="database">
+    Orders and reservations
+  </Card>
+  <Card title="Full Featured" icon="star">
+    Complete restaurant solution
+  </Card>
+  <Card title="Dietary Info" icon="leaf">
+    Handles dietary restrictions
+  </Card>
+</CardGroup>
+

@@ -1,0 +1,133 @@
+---
+title: "SaaS Onboarding Assistant"
+description: "User onboarding with custom API + Lua vector search"
+---
+
+## Overview
+
+SaaS onboarding assistant using **your product API** + **Lua Data API** for documentation search.
+
+**What it does:**
+- Guide new users through setup
+- Answer product questions
+- Create user accounts
+- Configure settings
+- Search documentation
+
+**APIs used:** Your SaaS API (external) + Lua Data API (docs)
+
+## Complete Implementation
+
+```typescript
+import { LuaTool, Data, env } from "lua-cli";
+import { z } from "zod";
+
+// 1. Search Documentation (Lua Vector Search)
+export class SearchDocsTool implements LuaTool {
+  name = "search_docs";
+  description = "Search product documentation";
+  
+  inputSchema = z.object({
+    query: z.string()
+  });
+
+  async execute(input: z.infer<typeof this.inputSchema>) {
+    const results = await Data.search('product_docs', input.query, 5, 0.7);
+    
+    return {
+      articles: results.data.map(entry => ({
+        title: entry.data.title,
+        content: entry.data.content.substring(0, 300),
+        url: entry.data.url,
+        relevance: entry.score
+      }))
+    };
+  }
+}
+
+// 2. Create User Account (Your SaaS API)
+export class CreateUserTool implements LuaTool {
+  name = "create_user";
+  description = "Create new user account";
+  
+  inputSchema = z.object({
+    email: z.string().email(),
+    name: z.string(),
+    company: z.string(),
+    plan: z.enum(['starter', 'professional', 'enterprise'])
+  });
+
+  async execute(input: z.infer<typeof this.inputSchema>) {
+    const apiKey = env('SAAS_API_KEY');
+    
+    // Call YOUR SaaS API
+    const response = await fetch('https://your-saas-api.com/api/users', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${apiKey}`,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(input)
+    });
+    
+    const user = await response.json();
+    
+    return {
+      userId: user.id,
+      email: user.email,
+      setupUrl: `https://your-app.com/setup?token=${user.setupToken}`,
+      message: `Account created! Check ${user.email} for setup instructions.`
+    };
+  }
+}
+
+// 3. Get User Usage (Your SaaS API)
+export class GetUsageTool implements LuaTool {
+  name = "get_usage";
+  description = "Check account usage and limits";
+  
+  inputSchema = z.object({
+    userId: z.string()
+  });
+
+  async execute(input: z.infer<typeof this.inputSchema>) {
+    const apiKey = env('SAAS_API_KEY');
+    
+    const response = await fetch(
+      `https://your-saas-api.com/api/users/${input.userId}/usage`,
+      {
+        headers: { 'Authorization': `Bearer ${apiKey}` }
+      }
+    );
+    
+    const usage = await response.json();
+    
+    return {
+      plan: usage.plan,
+      apiCalls: `${usage.apiCalls.toLocaleString()} / ${usage.limits.apiCalls.toLocaleString()}`,
+      storage: `${usage.storage}GB / ${usage.limits.storage}GB`,
+      users: `${usage.users} / ${usage.limits.users}`,
+      daysUntilRenewal: usage.daysUntilRenewal
+    };
+  }
+}
+```
+
+## Environment Setup
+
+```bash
+# .env
+SAAS_API_KEY=your_saas_api_key
+SAAS_API_URL=https://your-saas-api.com
+```
+
+## Key Features
+
+<CardGroup cols={2}>
+  <Card title="Custom API" icon="cube">
+    YOUR SaaS backend
+  </Card>
+  <Card title="Vector Search" icon="magnifying-glass">
+    Semantic doc search
+  </Card>
+</CardGroup>

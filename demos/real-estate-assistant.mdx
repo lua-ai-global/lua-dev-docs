@@ -1,0 +1,179 @@
+---
+title: "Real Estate Assistant"
+description: "Property search with MLS API + Lua vector search"
+---
+
+## Overview
+
+Real estate agent assistant integrating with **MLS (Multiple Listing Service) API** and **Lua Data API** for enhanced property search.
+
+**What it does:**
+- Search properties via MLS API
+- Save favorite properties
+- Schedule viewings
+- Compare properties
+- Get neighborhood info
+
+**APIs used:** External MLS API + Lua Data API
+
+## Complete Implementation
+
+```typescript
+import { LuaSkill } from "lua-cli";
+import {
+  SearchPropertiesTool,
+  GetPropertyDetailsTool,
+  ScheduleViewingTool,
+  SaveFavoriteTool,
+  ComparePropertiesTool
+} from "./tools/RealEstateTools";
+
+const realEstateSkill = new LuaSkill({
+  name: "real-estate-assistant",
+  version: "1.0.0",
+  description: "Real estate search and showing scheduler",
+  tools: [
+    new SearchPropertiesTool(),
+    new GetPropertyDetailsTool(),
+    new ScheduleViewingTool(),
+    new SaveFavoriteTool(),
+    new ComparePropertiesTool()
+  ]
+});
+```
+
+### Tools Implementation
+
+```typescript
+import { LuaTool, Data, env } from "lua-cli";
+import { z } from "zod";
+
+// 1. Search Properties (External MLS API)
+export class SearchPropertiesTool implements LuaTool {
+  name = "search_properties";
+  description = "Search real estate listings";
+  
+  inputSchema = z.object({
+    location: z.string(),
+    minPrice: z.number().optional(),
+    maxPrice: z.number().optional(),
+    bedrooms: z.number().optional(),
+    propertyType: z.enum(['house', 'condo', 'apartment', 'townhouse']).optional()
+  });
+
+  async execute(input: z.infer<typeof this.inputSchema>) {
+    const mlsApiKey = env('MLS_API_KEY');
+    
+    // Call MLS API
+    const response = await fetch('https://api.mlslistings.com/api/v1/search', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${mlsApiKey}`,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        location: input.location,
+        price_min: input.minPrice,
+        price_max: input.maxPrice,
+        bedrooms: input.bedrooms,
+        property_type: input.propertyType
+      })
+    });
+    
+    const data = await response.json();
+    
+    // Save to Lua Data for vector search capabilities
+    for (const property of data.listings) {
+      const searchText = `${property.address} ${property.city} ${property.description} ${property.features.join(' ')}`;
+      await Data.create('property_cache', property, searchText);
+    }
+    
+    return {
+      properties: data.listings.map(p => ({
+        id: p.mls_id,
+        address: p.address,
+        city: p.city,
+        price: `$${p.price.toLocaleString()}`,
+        bedrooms: p.bedrooms,
+        bathrooms: p.bathrooms,
+        sqft: p.square_feet,
+        type: p.property_type,
+        description: p.description.substring(0, 150) + '...'
+      })),
+      count: data.listings.length
+    };
+  }
+}
+
+// 2. Save Favorite (Lua Data)
+export class SaveFavoriteTool implements LuaTool {
+  name = "save_favorite";
+  description = "Save a property to favorites";
+  
+  inputSchema = z.object({
+    mlsId: z.string(),
+    notes: z.string().optional()
+  });
+
+  async execute(input: z.infer<typeof this.inputSchema>) {
+    await Data.create('favorites', {
+      mlsId: input.mlsId,
+      notes: input.notes,
+      savedAt: new Date().toISOString()
+    });
+    
+    return {
+      success: true,
+      message: "Property saved to favorites"
+    };
+  }
+}
+
+// 3. Schedule Viewing
+export class ScheduleViewingTool implements LuaTool {
+  name = "schedule_viewing";
+  description = "Schedule a property viewing";
+  
+  inputSchema = z.object({
+    mlsId: z.string(),
+    date: z.string(),
+    time: z.string(),
+    clientName: z.string(),
+    clientEmail: z.string().email(),
+    clientPhone: z.string()
+  });
+
+  async execute(input: z.infer<typeof this.inputSchema>) {
+    const viewing = await Data.create('viewings', {
+      ...input,
+      status: 'scheduled',
+      createdAt: new Date().toISOString()
+    });
+    
+    return {
+      success: true,
+      viewingId: viewing.id,
+      message: `Viewing scheduled for ${input.date} at ${input.time}`
+    };
+  }
+}
+```
+
+## Environment Setup
+
+```bash
+# .env
+MLS_API_KEY=your_mls_api_key
+MLS_API_URL=https://api.mlslistings.com
+```
+
+## Key Features
+
+<CardGroup cols={2}>
+  <Card title="External MLS" icon="building">
+    Real MLS property data
+  </Card>
+  <Card title="Vector Search" icon="magnifying-glass">
+    Semantic property search
+  </Card>
+</CardGroup>

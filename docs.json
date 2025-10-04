@@ -11,12 +11,22 @@
   "navigation": {
     "tabs": [
       {
+        "tab": "Overview",
+        "groups": [
+          {
+            "group": "Welcome",
+            "pages": [
+              "overview"
+            ]
+          }
+        ]
+      },
+      {
         "tab": "CLI",
         "groups": [
           {
             "group": "Getting Started",
             "pages": [
-              "index",
               "getting-started/quick-start",
               "getting-started/installation",
               "getting-started/first-skill"
@@ -110,15 +120,41 @@
             ]
           }
         ]
+      },
+      {
+        "tab": "Demos",
+        "groups": [
+          {
+            "group": "Demo Gallery",
+            "pages": [
+              "demos/overview"
+            ]
+          },
+          {
+            "group": "Customer-Facing Agents",
+            "pages": [
+              "demos/ecommerce-assistant",
+              "demos/customer-support",
+              "demos/hotel-booking",
+              "demos/restaurant-ordering",
+              "demos/real-estate-assistant"
+            ]
+          },
+          {
+            "group": "Internal-Facing Agents",
+            "pages": [
+              "demos/hr-assistant",
+              "demos/finance-operations",
+              "demos/saas-onboarding",
+              "demos/healthcare-portal",
+              "demos/logistics-tracker"
+            ]
+          }
+        ]
       }
     ],
     "global": {
       "anchors": [
-        {
-          "anchor": "GitHub",
-          "href": "https://github.com/lua-ai/lua-cli",
-          "icon": "github"
-        },
         {
           "anchor": "Platform",
           "href": "https://heylua.ai",

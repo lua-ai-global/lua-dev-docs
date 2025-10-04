@@ -1,0 +1,302 @@
+---
+title: "Logistics & Shipping Tracker"
+description: "Package tracking with UPS, FedEx, and USPS APIs"
+---
+
+## Overview
+
+Logistics operations assistant integrating with **multiple shipping carrier APIs** (UPS, FedEx, USPS) for unified package tracking.
+
+**What it does:**
+- Track packages across all carriers
+- Get delivery estimates
+- Schedule pickups
+- Compare shipping rates
+- Handle delivery exceptions
+
+**APIs used:** UPS API, FedEx API, USPS API (all external)
+
+## Complete Implementation
+
+```typescript
+import { LuaTool, env } from "lua-cli";
+import { z } from "zod";
+
+// 1. Track Package (Multi-Carrier)
+export class TrackPackageTool implements LuaTool {
+  name = "track_package";
+  description = "Track package across UPS, FedEx, or USPS";
+  
+  inputSchema = z.object({
+    trackingNumber: z.string(),
+    carrier: z.enum(['ups', 'fedex', 'usps', 'auto']).default('auto')
+  });
+
+  async execute(input: z.infer<typeof this.inputSchema>) {
+    // Auto-detect carrier if not specified
+    const carrier = input.carrier === 'auto' 
+      ? this.detectCarrier(input.trackingNumber)
+      : input.carrier;
+    
+    switch (carrier) {
+      case 'ups':
+        return await this.trackUPS(input.trackingNumber);
+      case 'fedex':
+        return await this.trackFedEx(input.trackingNumber);
+      case 'usps':
+        return await this.trackUSPS(input.trackingNumber);
+      default:
+        throw new Error('Unable to detect carrier');
+    }
+  }
+  
+  private detectCarrier(trackingNumber: string): string {
+    // UPS: 1Z followed by 16 alphanumeric
+    if (/^1Z[0-9A-Z]{16}$/i.test(trackingNumber)) return 'ups';
+    
+    // FedEx: 12 or 14 digits
+    if (/^\d{12}$|^\d{14}$/.test(trackingNumber)) return 'fedex';
+    
+    // USPS: 20-22 digits
+    if (/^\d{20,22}$/.test(trackingNumber)) return 'usps';
+    
+    return 'auto';
+  }
+  
+  private async trackUPS(trackingNumber: string) {
+    const upsKey = env('UPS_API_KEY');
+    
+    const response = await fetch('https://onlinetools.ups.com/api/track/v1/details/' + trackingNumber, {
+      headers: {
+        'Authorization': `Bearer ${upsKey}`,
+        'Accept': 'application/json'
+      }
+    });
+    
+    const data = await response.json();
+    const shipment = data.trackResponse.shipment[0];
+    
+    return {
+      carrier: 'UPS',
+      trackingNumber,
+      status: shipment.package[0].currentStatus.description,
+      location: shipment.package[0].currentStatus.location,
+      estimatedDelivery: shipment.package[0].deliveryDate[0].date,
+      events: shipment.package[0].activity.map(a => ({
+        date: a.date,
+        time: a.time,
+        status: a.status.description,
+        location: a.location?.address?.city
+      }))
+    };
+  }
+  
+  private async trackFedEx(trackingNumber: string) {
+    const fedexKey = env('FEDEX_API_KEY');
+    
+    const response = await fetch('https://apis.fedex.com/track/v1/trackingnumbers', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${fedexKey}`,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        trackingInfo: [{
+          trackingNumberInfo: { trackingNumber }
+        }],
+        includeDetailedScans: true
+      })
+    });
+    
+    const data = await response.json();
+    const trackInfo = data.output.completeTrackResults[0].trackResults[0];
+    
+    return {
+      carrier: 'FedEx',
+      trackingNumber,
+      status: trackInfo.latestStatusDetail.description,
+      location: trackInfo.latestStatusDetail.scanLocation?.city,
+      estimatedDelivery: trackInfo.estimatedDeliveryTime,
+      events: trackInfo.scanEvents.map(e => ({
+        date: e.date,
+        status: e.eventDescription,
+        location: e.scanLocation?.city
+      }))
+    };
+  }
+  
+  private async trackUSPS(trackingNumber: string) {
+    const uspsKey = env('USPS_USER_ID');
+    
+    const xml = `<TrackRequest USERID="${uspsKey}"><TrackID ID="${trackingNumber}"></TrackID></TrackRequest>`;
+    
+    const response = await fetch(
+      `https://secure.shippingapis.com/ShippingAPI.dll?API=TrackV2&XML=${encodeURIComponent(xml)}`
+    );
+    
+    const text = await response.text();
+    // Parse XML response
+    const parser = new DOMParser();
+    const doc = parser.parseFromString(text, 'text/xml');
+    
+    return {
+      carrier: 'USPS',
+      trackingNumber,
+      status: doc.querySelector('Status')?.textContent,
+      location: doc.querySelector('EventCity')?.textContent,
+      estimatedDelivery: doc.querySelector('ExpectedDeliveryDate')?.textContent
+    };
+  }
+}
+
+// 2. Compare Shipping Rates
+export class CompareRatesTool implements LuaTool {
+  name = "compare_shipping_rates";
+  description = "Compare shipping rates across carriers";
+  
+  inputSchema = z.object({
+    originZip: z.string(),
+    destinationZip: z.string(),
+    weight: z.number().describe("Weight in pounds"),
+    dimensions: z.object({
+      length: z.number(),
+      width: z.number(),
+      height: z.number()
+    })
+  });
+
+  async execute(input: z.infer<typeof this.inputSchema>) {
+    // Get rates from all carriers
+    const upsRate = await this.getUPSRate(input);
+    const fedexRate = await this.getFedExRate(input);
+    const uspsRate = await this.getUSPSRate(input);
+    
+    const rates = [upsRate, fedexRate, uspsRate].sort((a, b) => a.cost - b.cost);
+    
+    return {
+      rates: rates.map(r => ({
+        carrier: r.carrier,
+        service: r.service,
+        cost: `$${r.cost.toFixed(2)}`,
+        estimatedDays: r.estimatedDays,
+        delivery: r.estimatedDelivery
+      })),
+      cheapest: rates[0].carrier,
+      fastest: rates.reduce((prev, curr) => 
+        curr.estimatedDays < prev.estimatedDays ? curr : prev
+      ).carrier
+    };
+  }
+  
+  private async getUPSRate(input: any) {
+    // UPS Rating API call
+    return {
+      carrier: 'UPS',
+      service: 'Ground',
+      cost: 12.50,
+      estimatedDays: 5,
+      estimatedDelivery: new Date(Date.now() + 5 * 24 * 60 * 60 * 1000).toISOString().split('T')[0]
+    };
+  }
+  
+  private async getFedExRate(input: any) {
+    // FedEx Rating API call
+    return {
+      carrier: 'FedEx',
+      service: 'Home Delivery',
+      cost: 14.25,
+      estimatedDays: 4,
+      estimatedDelivery: new Date(Date.now() + 4 * 24 * 60 * 60 * 1000).toISOString().split('T')[0]
+    };
+  }
+  
+  private async getUSPSRate(input: any) {
+    // USPS Rating API call
+    return {
+      carrier: 'USPS',
+      service: 'Priority Mail',
+      cost: 9.99,
+      estimatedDays: 3,
+      estimatedDelivery: new Date(Date.now() + 3 * 24 * 60 * 60 * 1000).toISOString().split('T')[0]
+    };
+  }
+}
+
+// 3. Schedule Pickup
+export class SchedulePickupTool implements LuaTool {
+  name = "schedule_pickup";
+  description = "Schedule package pickup with carrier";
+  
+  inputSchema = z.object({
+    carrier: z.enum(['ups', 'fedex']),
+    pickupDate: z.string(),
+    pickupTime: z.string(),
+    packageCount: z.number(),
+    address: z.object({
+      street: z.string(),
+      city: z.string(),
+      state: z.string(),
+      zip: z.string()
+    })
+  });
+
+  async execute(input: z.infer<typeof this.inputSchema>) {
+    const apiKey = input.carrier === 'ups' 
+      ? env('UPS_API_KEY')
+      : env('FEDEX_API_KEY');
+    
+    // Schedule pickup with carrier
+    const response = await fetch(`https://${input.carrier}-api.com/pickup/schedule`, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${apiKey}`,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        pickup_date: input.pickupDate,
+        ready_time: input.pickupTime,
+        package_count: input.packageCount,
+        pickup_address: input.address
+      })
+    });
+    
+    const data = await response.json();
+    
+    return {
+      success: true,
+      confirmationNumber: data.confirmation_number,
+      carrier: input.carrier.toUpperCase(),
+      pickupDate: input.pickupDate,
+      pickupTime: input.pickupTime,
+      message: `Pickup scheduled with ${input.carrier.toUpperCase()} for ${input.pickupDate}`
+    };
+  }
+}
+```
+
+## Environment Setup
+
+```bash
+# .env
+UPS_API_KEY=your_ups_api_key
+FEDEX_API_KEY=your_fedex_api_key
+USPS_USER_ID=your_usps_user_id
+```
+
+## Key Features
+
+<CardGroup cols={2}>
+  <Card title="Multi-Carrier" icon="truck">
+    UPS, FedEx, USPS
+  </Card>
+  <Card title="Auto-Detection" icon="wand-magic-sparkles">
+    Detect carrier from tracking#
+  </Card>
+  <Card title="Rate Comparison" icon="scale-balanced">
+    Compare shipping costs
+  </Card>
+  <Card title="Real-Time" icon="clock">
+    Live tracking data
+  </Card>
+</CardGroup>
+

@@ -1,0 +1,244 @@
+---
+title: "Healthcare Patient Portal"
+description: "Patient services with EMR API integration"
+---
+
+## Overview
+
+Healthcare patient portal integrating with **Electronic Medical Records (EMR) API** for appointments, prescriptions, and medical records.
+
+**What it does:**
+- Schedule appointments
+- View medical records
+- Request prescription refills
+- Access test results
+- Message healthcare providers
+
+**APIs used:** EMR/FHIR API (external) + Lua Data API
+
+## Complete Implementation
+
+```typescript
+import { LuaTool, Data, env } from "lua-cli";
+import { z } from "zod";
+
+// 1. Schedule Appointment (External EMR API)
+export class ScheduleAppointmentTool implements LuaTool {
+  name = "schedule_appointment";
+  description = "Schedule a medical appointment";
+  
+  inputSchema = z.object({
+    patientId: z.string(),
+    providerId: z.string(),
+    appointmentType: z.enum(['checkup', 'specialist', 'follow-up', 'urgent']),
+    preferredDate: z.string(),
+    preferredTime: z.string(),
+    reason: z.string()
+  });
+
+  async execute(input: z.infer<typeof this.inputSchema>) {
+    const emrApiKey = env('EMR_API_KEY');
+    const emrBaseUrl = env('EMR_API_URL');
+    
+    // Call FHIR-compliant EMR API
+    const response = await fetch(`${emrBaseUrl}/fhir/Appointment`, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${emrApiKey}`,
+        'Content-Type': 'application/fhir+json'
+      },
+      body: JSON.stringify({
+        resourceType: 'Appointment',
+        status: 'proposed',
+        serviceType: [{ text: input.appointmentType }],
+        participant: [
+          { actor: { reference: `Patient/${input.patientId}` } },
+          { actor: { reference: `Practitioner/${input.providerId}` } }
+        ],
+        requestedPeriod: [{
+          start: `${input.preferredDate}T${input.preferredTime}:00`,
+          end: `${input.preferredDate}T${this.addHour(input.preferredTime)}:00`
+        }],
+        reason: [{ text: input.reason }]
+      })
+    });
+    
+    const appointment = await response.json();
+    
+    return {
+      success: true,
+      appointmentId: appointment.id,
+      date: input.preferredDate,
+      time: input.preferredTime,
+      provider: input.providerId,
+      type: input.appointmentType,
+      message: `Appointment scheduled for ${input.preferredDate} at ${input.preferredTime}`
+    };
+  }
+  
+  private addHour(time: string): string {
+    const [hours, minutes] = time.split(':');
+    const newHour = (parseInt(hours) + 1).toString().padStart(2, '0');
+    return `${newHour}:${minutes}`;
+  }
+}
+
+// 2. View Medical Records (External EMR API)
+export class ViewMedicalRecordsTool implements LuaTool {
+  name = "view_medical_records";
+  description = "Access patient medical records";
+  
+  inputSchema = z.object({
+    patientId: z.string(),
+    recordType: z.enum(['allergies', 'medications', 'conditions', 'procedures']).optional()
+  });
+
+  async execute(input: z.infer<typeof this.inputSchema>) {
+    const emrApiKey = env('EMR_API_KEY');
+    const emrBaseUrl = env('EMR_API_URL');
+    
+    const endpoint = input.recordType || 'Patient';
+    const response = await fetch(
+      `${emrBaseUrl}/fhir/${endpoint}/${input.patientId}`,
+      {
+        headers: {
+          'Authorization': `Bearer ${emrApiKey}`,
+          'Accept': 'application/fhir+json'
+        }
+      }
+    );
+    
+    const data = await response.json();
+    
+    return {
+      patientId: input.patientId,
+      recordType: input.recordType || 'summary',
+      lastUpdated: data.meta?.lastUpdated,
+      summary: this.formatMedicalData(data),
+      message: "Medical records retrieved. Always consult with your healthcare provider."
+    };
+  }
+  
+  private formatMedicalData(data: any) {
+    // Format EMR data for patient-friendly display
+    return {
+      allergies: data.allergy || [],
+      medications: data.medicationStatement || [],
+      conditions: data.condition || []
+    };
+  }
+}
+
+// 3. Request Prescription Refill (External EMR + Pharmacy API)
+export class RefillPrescriptionTool implements LuaTool {
+  name = "refill_prescription";
+  description = "Request prescription refill";
+  
+  inputSchema = z.object({
+    patientId: z.string(),
+    prescriptionId: z.string(),
+    pharmacyId: z.string(),
+    deliveryMethod: z.enum(['pickup', 'delivery']).default('pickup')
+  });
+
+  async execute(input: z.infer<typeof this.inputSchema>) {
+    const emrApiKey = env('EMR_API_KEY');
+    const pharmacyApiKey = env('PHARMACY_API_KEY');
+    
+    // Request refill through pharmacy API
+    const response = await fetch('https://pharmacy-api.com/api/v1/refills', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${pharmacyApiKey}`,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        patient_id: input.patientId,
+        prescription_id: input.prescriptionId,
+        pharmacy_id: input.pharmacyId,
+        delivery_method: input.deliveryMethod
+      })
+    });
+    
+    const refill = await response.json();
+    
+    return {
+      success: true,
+      refillId: refill.id,
+      status: refill.status,
+      estimatedReady: refill.estimated_ready_time,
+      deliveryMethod: input.deliveryMethod,
+      message: input.deliveryMethod === 'pickup'
+        ? `Prescription will be ready for pickup in ${refill.estimated_ready_time}`
+        : `Prescription will be delivered to your address`
+    };
+  }
+}
+
+// 4. Search Health Info (Lua Data - Vector Search)
+export class SearchHealthInfoTool implements LuaTool {
+  name = "search_health_info";
+  description = "Search health information and educational content";
+  
+  inputSchema = z.object({
+    query: z.string().describe("Health question or topic")
+  });
+
+  async execute(input: z.infer<typeof this.inputSchema>) {
+    // Use vector search for health information
+    const results = await Data.search('health_articles', input.query, 5, 0.75);
+    
+    return {
+      articles: results.data.map(entry => ({
+        title: entry.data.title,
+        summary: entry.data.summary,
+        category: entry.data.category,
+        source: entry.data.source,
+        url: entry.data.url,
+        relevance: entry.score
+      })),
+      disclaimer: "This information is educational. Always consult your healthcare provider for medical advice."
+    };
+  }
+}
+```
+
+## Environment Setup
+
+```bash
+# .env
+EMR_API_KEY=your_emr_api_key
+EMR_API_URL=https://your-emr-system.com
+PHARMACY_API_KEY=your_pharmacy_api_key
+```
+
+## Security & Compliance
+
+<Warning>
+**HIPAA Compliance Required**
+
+This example shows the technical integration. For production:
+- Implement proper authentication (OAuth 2.0)
+- Encrypt all PHI (Protected Health Information)
+- Maintain audit logs
+- Use secure connections only
+- Follow HIPAA guidelines
+</Warning>
+
+## Key Features
+
+<CardGroup cols={2}>
+  <Card title="EMR Integration" icon="hospital">
+    FHIR-compliant API
+  </Card>
+  <Card title="Privacy First" icon="lock">
+    HIPAA considerations
+  </Card>
+  <Card title="Vector Search" icon="magnifying-glass">
+    Health info search
+  </Card>
+  <Card title="Multi-System" icon="network-wired">
+    EMR + Pharmacy APIs
+  </Card>
+</CardGroup>
+
