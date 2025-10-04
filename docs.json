@@ -18,6 +18,16 @@
             "pages": [
               "overview"
             ]
+          },
+          {
+            "group": "Featured Demos",
+            "pages": [
+              "demos/ecommerce-assistant",
+              "demos/customer-support",
+              "demos/financial-onboarding",
+              "demos/hr-assistant",
+              "demos/logistics-tracker"
+            ]
           }
         ]
       },
@@ -135,6 +145,7 @@
             "pages": [
               "demos/ecommerce-assistant",
               "demos/customer-support",
+              "demos/financial-onboarding",
               "demos/hotel-booking",
               "demos/restaurant-ordering",
               "demos/real-estate-assistant"

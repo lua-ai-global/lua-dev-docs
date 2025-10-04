@@ -1,0 +1,974 @@
+---
+title: "Financial Services Onboarding"
+description: "KYC onboarding with document verification and compliance checks"
+---
+
+## Overview
+
+Complete financial services onboarding agent with **KYC (Know Your Customer)** verification using **Stripe Identity API** for document verification and **Lua Data API** for application management.
+
+**What it does:**
+- Guide users through onboarding journey
+- Collect personal and financial information
+- Upload and verify identity documents (ID, passport)
+- Answer qualifying questions
+- Perform compliance checks
+- Create verified account
+
+**APIs used:** Stripe Identity API (document verification) + Lua Data API (application tracking)
+
+## Complete Implementation
+
+### src/index.ts
+
+```typescript
+import { LuaSkill } from "lua-cli";
+import {
+  StartOnboardingTool,
+  CollectPersonalInfoTool,
+  UploadDocumentTool,
+  VerifyIdentityTool,
+  AnswerQualifyingQuestionsTool,
+  CreateAccountTool,
+  CheckOnboardingStatusTool
+} from "./tools/FinancialOnboardingTools";
+
+const financialOnboardingSkill = new LuaSkill({
+  name: "financial-onboarding",
+  version: "1.0.0",
+  description: "Financial services customer onboarding with KYC verification",
+  context: `
+    This skill guides customers through financial account onboarding.
+    
+    Onboarding Flow (in order):
+    1. start_onboarding: Begin new application
+    2. collect_personal_info: Gather basic information
+    3. upload_document: Upload ID, passport, or proof of address
+    4. verify_identity: Verify uploaded documents
+    5. answer_qualifying_questions: Financial suitability assessment
+    6. create_account: Complete account creation
+    7. check_onboarding_status: Check application status
+    
+    Guidelines:
+    - Be professional and reassuring about data security
+    - Explain why each document is needed (regulatory compliance)
+    - Never rush through identity verification steps
+    - Clearly communicate what happens to uploaded documents
+    - Follow KYC and AML regulations
+    - Ensure GDPR/CCPA compliance
+  `,
+  tools: [
+    new StartOnboardingTool(),
+    new CollectPersonalInfoTool(),
+    new UploadDocumentTool(),
+    new VerifyIdentityTool(),
+    new AnswerQualifyingQuestionsTool(),
+    new CreateAccountTool(),
+    new CheckOnboardingStatusTool()
+  ]
+});
+```
+
+### src/tools/FinancialOnboardingTools.ts
+
+```typescript
+import { LuaTool, Data, env } from "lua-cli";
+import { z } from "zod";
+
+// 1. Start Onboarding
+export class StartOnboardingTool implements LuaTool {
+  name = "start_onboarding";
+  description = "Begin a new account onboarding application";
+  
+  inputSchema = z.object({
+    email: z.string().email().describe("Applicant's email address"),
+    accountType: z.enum(['individual', 'business']).describe("Type of account")
+  });
+
+  async execute(input: z.infer<typeof this.inputSchema>) {
+    // Create onboarding application
+    const application = await Data.create('onboarding_applications', {
+      email: input.email,
+      accountType: input.accountType,
+      status: 'started',
+      currentStep: 'personal_info',
+      createdAt: new Date().toISOString(),
+      completedSteps: []
+    }, input.email);
+    
+    return {
+      applicationId: application.id,
+      accountType: input.accountType,
+      nextStep: 'personal_info',
+      message: "Application started! Let's begin by collecting your personal information.",
+      estimatedTime: "5-10 minutes to complete"
+    };
+  }
+}
+
+// 2. Collect Personal Information
+export class CollectPersonalInfoTool implements LuaTool {
+  name = "collect_personal_info";
+  description = "Collect applicant's personal information";
+  
+  inputSchema = z.object({
+    applicationId: z.string(),
+    personalInfo: z.object({
+      firstName: z.string(),
+      lastName: z.string(),
+      dateOfBirth: z.string().describe("YYYY-MM-DD"),
+      ssn: z.string().describe("Social Security Number (will be encrypted)"),
+      phone: z.string(),
+      address: z.object({
+        street: z.string(),
+        city: z.string(),
+        state: z.string(),
+        zipCode: z.string(),
+        country: z.string().default('USA')
+      })
+    })
+  });
+
+  async execute(input: z.infer<typeof this.inputSchema>) {
+    // Get application
+    const app = await Data.getEntry('onboarding_applications', input.applicationId);
+    
+    if (!app) {
+      throw new Error('Application not found');
+    }
+    
+    // Encrypt SSN before storing (in production, use proper encryption)
+    const encryptedSSN = this.encryptSSN(input.personalInfo.ssn);
+    
+    // Update application with personal info
+    await Data.update('onboarding_applications', input.applicationId, {
+      ...app.data,
+      personalInfo: {
+        ...input.personalInfo,
+        ssn: encryptedSSN // Store encrypted
+      },
+      currentStep: 'document_upload',
+      completedSteps: [...app.data.completedSteps, 'personal_info'],
+      updatedAt: new Date().toISOString()
+    });
+    
+    return {
+      success: true,
+      nextStep: 'document_upload',
+      message: "Personal information saved securely. Next, please upload a government-issued ID.",
+      documentsNeeded: [
+        "Government-issued photo ID (driver's license or passport)",
+        "Proof of address (utility bill or bank statement)"
+      ]
+    };
+  }
+  
+  private encryptSSN(ssn: string): string {
+    // In production, use proper encryption (AES-256, KMS, etc.)
+    // This is a placeholder
+    return Buffer.from(ssn).toString('base64');
+  }
+}
+
+// 3. Upload Document (Stripe Identity API)
+export class UploadDocumentTool implements LuaTool {
+  name = "upload_document";
+  description = "Upload identity verification document";
+  
+  inputSchema = z.object({
+    applicationId: z.string(),
+    documentType: z.enum(['drivers_license', 'passport', 'id_card', 'proof_of_address']),
+    documentImageUrl: z.string().url().describe("URL of uploaded document image"),
+    documentSide: z.enum(['front', 'back']).optional().describe("For driver's license")
+  });
+
+  async execute(input: z.infer<typeof this.inputSchema>) {
+    const stripeKey = env('STRIPE_SECRET_KEY');
+    
+    if (!stripeKey) {
+      throw new Error('Stripe API key not configured');
+    }
+    
+    // Create Stripe Identity Verification Session
+    const verificationResponse = await fetch('https://api.stripe.com/v1/identity/verification_sessions', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${stripeKey}`,
+        'Content-Type': 'application/x-www-form-urlencoded'
+      },
+      body: new URLSearchParams({
+        'type': 'document',
+        'metadata[application_id]': input.applicationId,
+        'metadata[document_type]': input.documentType
+      })
+    });
+    
+    if (!verificationResponse.ok) {
+      throw new Error('Failed to create verification session');
+    }
+    
+    const verification = await verificationResponse.json();
+    
+    // Upload document to Stripe
+    const uploadResponse = await fetch('https://files.stripe.com/v1/files', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${stripeKey}`
+      },
+      body: this.createFormData(input.documentImageUrl, input.documentType)
+    });
+    
+    const uploadedFile = await uploadResponse.json();
+    
+    // Save document reference in application
+    const app = await Data.getEntry('onboarding_applications', input.applicationId);
+    
+    const documents = app.data.documents || [];
+    documents.push({
+      type: input.documentType,
+      side: input.documentSide,
+      stripeFileId: uploadedFile.id,
+      stripeVerificationId: verification.id,
+      uploadedAt: new Date().toISOString(),
+      status: 'pending_verification'
+    });
+    
+    await Data.update('onboarding_applications', input.applicationId, {
+      ...app.data,
+      documents,
+      currentStep: 'identity_verification',
+      updatedAt: new Date().toISOString()
+    });
+    
+    return {
+      success: true,
+      documentId: uploadedFile.id,
+      verificationId: verification.id,
+      status: 'uploaded',
+      message: "Document uploaded successfully. Verification in progress...",
+      nextStep: "We'll verify your identity. This usually takes 1-2 minutes.",
+      verificationUrl: verification.url // User can complete verification here
+    };
+  }
+  
+  private createFormData(imageUrl: string, documentType: string): FormData {
+    const formData = new FormData();
+    formData.append('purpose', 'identity_document');
+    formData.append('file', imageUrl);
+    return formData;
+  }
+}
+
+// 4. Verify Identity (Check Stripe Identity Results)
+export class VerifyIdentityTool implements LuaTool {
+  name = "verify_identity";
+  description = "Check identity verification status";
+  
+  inputSchema = z.object({
+    applicationId: z.string()
+  });
+
+  async execute(input: z.infer<typeof this.inputSchema>) {
+    const stripeKey = env('STRIPE_SECRET_KEY');
+    const app = await Data.getEntry('onboarding_applications', input.applicationId);
+    
+    if (!app.data.documents || app.data.documents.length === 0) {
+      return {
+        verified: false,
+        message: "No documents uploaded yet. Please upload your ID first."
+      };
+    }
+    
+    // Check verification status with Stripe
+    const latestDoc = app.data.documents[app.data.documents.length - 1];
+    
+    const response = await fetch(
+      `https://api.stripe.com/v1/identity/verification_sessions/${latestDoc.stripeVerificationId}`,
+      {
+        headers: { 'Authorization': `Bearer ${stripeKey}` }
+      }
+    );
+    
+    const verification = await response.json();
+    
+    const isVerified = verification.status === 'verified';
+    
+    // Update application
+    if (isVerified) {
+      await Data.update('onboarding_applications', input.applicationId, {
+        ...app.data,
+        identityVerified: true,
+        verificationResult: {
+          verified: true,
+          verifiedAt: new Date().toISOString(),
+          documentType: verification.last_verification_report?.document?.type,
+          nameMatch: verification.last_verification_report?.id_number?.status === 'verified'
+        },
+        currentStep: 'qualifying_questions',
+        completedSteps: [...app.data.completedSteps, 'identity_verification']
+      });
+    }
+    
+    return {
+      verified: isVerified,
+      status: verification.status,
+      message: isVerified 
+        ? "✅ Identity verified successfully! Let's continue with some qualifying questions."
+        : verification.status === 'processing'
+        ? "⏳ Verification in progress. Please wait..."
+        : "❌ Verification failed. Please upload a clearer image of your ID.",
+      nextStep: isVerified ? 'qualifying_questions' : 'document_upload',
+      verificationDetails: isVerified ? {
+        documentType: verification.last_verification_report?.document?.type,
+        issueDate: verification.last_verification_report?.document?.issued_date,
+        expirationDate: verification.last_verification_report?.document?.expiration_date
+      } : null
+    };
+  }
+}
+
+// 5. Answer Qualifying Questions
+export class AnswerQualifyingQuestionsTool implements LuaTool {
+  name = "answer_qualifying_questions";
+  description = "Complete financial suitability questionnaire";
+  
+  inputSchema = z.object({
+    applicationId: z.string(),
+    answers: z.object({
+      annualIncome: z.enum(['under_25k', '25k_50k', '50k_100k', '100k_250k', 'over_250k']),
+      employmentStatus: z.enum(['employed', 'self_employed', 'unemployed', 'retired', 'student']),
+      investmentExperience: z.enum(['none', 'limited', 'moderate', 'extensive']),
+      riskTolerance: z.enum(['conservative', 'moderate', 'aggressive']),
+      investmentGoals: z.array(z.enum(['retirement', 'wealth_building', 'income', 'preservation'])),
+      investmentHorizon: z.enum(['short_term', 'medium_term', 'long_term']),
+      liquidNetWorth: z.enum(['under_10k', '10k_50k', '50k_100k', '100k_500k', 'over_500k']),
+      sourceOfFunds: z.enum(['employment', 'business', 'investments', 'inheritance', 'other'])
+    })
+  });
+
+  async execute(input: z.infer<typeof this.inputSchema>) {
+    const app = await Data.getEntry('onboarding_applications', input.applicationId);
+    
+    // Calculate suitability score
+    const suitabilityScore = this.calculateSuitability(input.answers);
+    
+    // Determine if applicant qualifies
+    const qualifies = suitabilityScore.score >= 60;
+    
+    // Update application
+    await Data.update('onboarding_applications', input.applicationId, {
+      ...app.data,
+      qualifyingAnswers: input.answers,
+      suitabilityScore: suitabilityScore,
+      qualifies,
+      currentStep: qualifies ? 'account_creation' : 'under_review',
+      completedSteps: [...app.data.completedSteps, 'qualifying_questions'],
+      updatedAt: new Date().toISOString()
+    });
+    
+    if (!qualifies) {
+      return {
+        success: false,
+        qualifies: false,
+        score: suitabilityScore.score,
+        message: "Thank you for your application. Based on your responses, we need to review your application manually. Our team will contact you within 2 business days.",
+        nextSteps: "Our compliance team will review your application"
+      };
+    }
+    
+    return {
+      success: true,
+      qualifies: true,
+      score: suitabilityScore.score,
+      riskProfile: suitabilityScore.riskProfile,
+      recommendedProducts: this.getRecommendedProducts(input.answers),
+      message: "Great! You qualify for an account. Let's create your account now.",
+      nextStep: 'account_creation'
+    };
+  }
+  
+  private calculateSuitability(answers: any) {
+    let score = 0;
+    
+    // Income scoring
+    const incomeScores = {
+      'under_25k': 10,
+      '25k_50k': 20,
+      '50k_100k': 30,
+      '100k_250k': 40,
+      'over_250k': 50
+    };
+    score += incomeScores[answers.annualIncome] || 0;
+    
+    // Experience scoring
+    const experienceScores = {
+      'none': 5,
+      'limited': 15,
+      'moderate': 25,
+      'extensive': 35
+    };
+    score += experienceScores[answers.investmentExperience] || 0;
+    
+    // Net worth scoring
+    const netWorthScores = {
+      'under_10k': 5,
+      '10k_50k': 10,
+      '50k_100k': 15,
+      '100k_500k': 20,
+      'over_500k': 25
+    };
+    score += netWorthScores[answers.liquidNetWorth] || 0;
+    
+    // Determine risk profile
+    let riskProfile = 'conservative';
+    if (answers.riskTolerance === 'aggressive' && answers.investmentHorizon === 'long_term') {
+      riskProfile = 'aggressive';
+    } else if (answers.riskTolerance === 'moderate') {
+      riskProfile = 'moderate';
+    }
+    
+    return {
+      score,
+      riskProfile,
+      passedCompliance: score >= 60
+    };
+  }
+  
+  private getRecommendedProducts(answers: any) {
+    const products = [];
+    
+    if (answers.investmentGoals.includes('retirement')) {
+      products.push('IRA Account', '401(k) Rollover');
+    }
+    
+    if (answers.riskTolerance === 'conservative') {
+      products.push('Money Market Account', 'CD Account');
+    } else if (answers.riskTolerance === 'aggressive') {
+      products.push('Investment Account', 'Options Trading');
+    } else {
+      products.push('Savings Account', 'Investment Account');
+    }
+    
+    return products;
+  }
+}
+
+// 6. Create Account
+export class CreateAccountTool implements LuaTool {
+  name = "create_account";
+  description = "Create verified financial services account";
+  
+  inputSchema = z.object({
+    applicationId: z.string(),
+    accountProducts: z.array(z.string()).describe("Selected account products"),
+    agreeToTerms: z.boolean().describe("Must accept terms and conditions"),
+    agreeToPrivacyPolicy: z.boolean()
+  });
+
+  async execute(input: z.infer<typeof this.inputSchema>) {
+    if (!input.agreeToTerms || !input.agreeToPrivacyPolicy) {
+      throw new Error('You must agree to the terms and conditions to create an account');
+    }
+    
+    const app = await Data.getEntry('onboarding_applications', input.applicationId);
+    
+    // Verify all steps completed
+    if (!app.data.identityVerified) {
+      throw new Error('Identity verification must be completed first');
+    }
+    
+    if (!app.data.qualifies) {
+      throw new Error('Application is pending review');
+    }
+    
+    // Create account in your banking system (external API)
+    const bankingApiKey = env('BANKING_API_KEY');
+    
+    const accountResponse = await fetch('https://your-banking-api.com/api/accounts', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${bankingApiKey}`,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        customer: {
+          first_name: app.data.personalInfo.firstName,
+          last_name: app.data.personalInfo.lastName,
+          email: app.data.email,
+          date_of_birth: app.data.personalInfo.dateOfBirth,
+          ssn: app.data.personalInfo.ssn, // Encrypted
+          address: app.data.personalInfo.address,
+          phone: app.data.personalInfo.phone
+        },
+        products: input.accountProducts,
+        verification: {
+          identity_verified: true,
+          verification_id: app.data.verificationResult.verificationId,
+          kyc_status: 'approved'
+        },
+        suitability: app.data.suitabilityScore,
+        metadata: {
+          application_id: input.applicationId,
+          onboarding_source: 'ai_agent'
+        }
+      })
+    });
+    
+    if (!accountResponse.ok) {
+      throw new Error('Failed to create account. Please contact support.');
+    }
+    
+    const account = await accountResponse.json();
+    
+    // Update application as completed
+    await Data.update('onboarding_applications', input.applicationId, {
+      ...app.data,
+      status: 'completed',
+      accountId: account.account_id,
+      accountNumber: account.account_number,
+      products: input.accountProducts,
+      completedSteps: [...app.data.completedSteps, 'account_creation'],
+      completedAt: new Date().toISOString()
+    });
+    
+    return {
+      success: true,
+      accountId: account.account_id,
+      accountNumber: account.account_number.replace(/\d(?=\d{4})/g, '*'), // Mask all but last 4
+      products: input.accountProducts,
+      loginUrl: account.login_url,
+      temporaryPassword: account.temporary_password,
+      message: `🎉 Account created successfully! Your account number is ${account.account_number.slice(-4)}. Check your email for login credentials.`,
+      nextSteps: [
+        "Check your email for account details",
+        "Set up online banking at " + account.login_url,
+        "Fund your account to start using services",
+        "Download our mobile app for easy access"
+      ]
+    };
+  }
+}
+
+// 7. Check Onboarding Status
+export class CheckOnboardingStatusTool implements LuaTool {
+  name = "check_onboarding_status";
+  description = "Check the status of an onboarding application";
+  
+  inputSchema = z.object({
+    applicationId: z.string(),
+    email: z.string().email().describe("Email for verification")
+  });
+
+  async execute(input: z.infer<typeof this.inputSchema>) {
+    const app = await Data.getEntry('onboarding_applications', input.applicationId);
+    
+    if (!app || app.data.email !== input.email) {
+      throw new Error('Application not found or email mismatch');
+    }
+    
+    const stepStatus = {
+      started: '🟢 Started',
+      personal_info: app.data.completedSteps.includes('personal_info') ? '✅ Complete' : '⏳ Pending',
+      document_upload: app.data.documents?.length > 0 ? '✅ Complete' : '⏳ Pending',
+      identity_verification: app.data.identityVerified ? '✅ Verified' : '⏳ Pending',
+      qualifying_questions: app.data.qualifyingAnswers ? '✅ Complete' : '⏳ Pending',
+      account_creation: app.data.accountId ? '✅ Complete' : '⏳ Pending'
+    };
+    
+    return {
+      applicationId: input.applicationId,
+      status: app.data.status,
+      currentStep: app.data.currentStep,
+      progress: stepStatus,
+      completedSteps: app.data.completedSteps,
+      nextStep: this.getNextStepMessage(app.data.currentStep),
+      estimatedCompletion: app.data.status === 'completed' 
+        ? 'Completed'
+        : this.calculateEstimatedCompletion(app.data.completedSteps.length)
+    };
+  }
+  
+  private getNextStepMessage(currentStep: string): string {
+    const messages = {
+      personal_info: "Please provide your personal information",
+      document_upload: "Please upload your government-issued ID",
+      identity_verification: "Verifying your identity...",
+      qualifying_questions: "Please answer the qualifying questions",
+      account_creation: "Ready to create your account!",
+      under_review: "Application under manual review",
+      completed: "Application complete!"
+    };
+    return messages[currentStep] || "Continue with onboarding";
+  }
+  
+  private calculateEstimatedCompletion(completedSteps: number): string {
+    const totalSteps = 5;
+    const remaining = totalSteps - completedSteps;
+    return `${remaining * 2} minutes`;
+  }
+}
+```
+
+## Environment Setup
+
+```bash
+# .env
+STRIPE_SECRET_KEY=sk_test_your_stripe_key
+BANKING_API_KEY=your_banking_api_key
+BANKING_API_URL=https://your-banking-api.com
+```
+
+## Document Upload Flow
+
+### Frontend Integration
+
+```html
+<!-- File upload form -->
+<form id="document-upload">
+  <input type="file" id="id-front" accept="image/*,application/pdf" />
+  <input type="file" id="id-back" accept="image/*,application/pdf" />
+  <button type="submit">Upload Documents</button>
+</form>
+
+<script>
+document.getElementById('document-upload').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  
+  // Upload to your server/CDN first
+  const formData = new FormData();
+  formData.append('front', document.getElementById('id-front').files[0]);
+  formData.append('back', document.getElementById('id-back').files[0]);
+  
+  const upload = await fetch('/api/upload-documents', {
+    method: 'POST',
+    body: formData
+  });
+  
+  const { frontUrl, backUrl } = await upload.json();
+  
+  // Then pass URLs to AI agent
+  // The agent will call upload_document tool with these URLs
+});
+</script>
+```
+
+## Testing Conversation Flow
+
+```bash
+lua dev
+```
+
+**Example conversation:**
+
+```
+User: "I want to open an investment account"
+AI: [Calls start_onboarding]
+    "Great! Let's get you started. What's your email address?"
+
+User: "john@example.com"
+AI: [Calls collect_personal_info]
+    "Perfect! I'll need some personal information. What's your full name?"
+
+User: "John Doe, DOB 1990-01-15, SSN 123-45-6789, address: 123 Main St..."
+AI: [Saves info]
+    "Information saved securely. Now I need to verify your identity. 
+     Please upload a photo of your driver's license or passport."
+
+User: [Uploads document images]
+AI: [Calls upload_document, then verify_identity]
+    "Document uploaded! Verifying your identity... ✅ Identity verified! 
+     Now, let's answer some questions about your financial goals..."
+
+User: "I make $75k/year, moderate experience, looking for long-term retirement..."
+AI: [Calls answer_qualifying_questions]
+    "Based on your profile, you qualify! I recommend an IRA Account 
+     and Investment Account. Shall we create your account?"
+
+User: "Yes, create it"
+AI: [Calls create_account]
+    "🎉 Account created! Your account number is ****5678. 
+     Check your email for login details."
+```
+
+## Key Features
+
+<CardGroup cols={2}>
+  <Card title="Stripe Identity" icon="id-card">
+    Document verification API
+  </Card>
+  <Card title="Lua Data" icon="database">
+    Application state management
+  </Card>
+  <Card title="KYC Compliant" icon="shield-check">
+    Regulatory compliance built-in
+  </Card>
+  <Card title="Multi-Step Journey" icon="route">
+    Guided onboarding flow
+  </Card>
+  <Card title="Risk Assessment" icon="chart-line">
+    Suitability scoring
+  </Card>
+  <Card title="Secure" icon="lock">
+    Encrypted PII storage
+  </Card>
+</CardGroup>
+
+## Compliance & Security
+
+<Warning>
+**Regulatory Compliance Required**
+
+This demo shows technical implementation. For production:
+
+- ✅ Implement proper encryption for PII (use KMS, not base64)
+- ✅ Follow KYC/AML regulations (Bank Secrecy Act, Patriot Act)
+- ✅ Maintain audit logs of all data access
+- ✅ Use HTTPS only
+- ✅ Implement data retention policies
+- ✅ Follow GDPR/CCPA for data privacy
+- ✅ Store documents in compliant storage (encrypted at rest)
+- ✅ Conduct regular security audits
+- ✅ Implement fraud detection
+- ✅ Follow FinCEN guidelines
+</Warning>
+
+### Security Best Practices
+
+```typescript
+// Encrypt sensitive data before storage
+import crypto from 'crypto';
+
+function encryptPII(data: string): string {
+  const algorithm = 'aes-256-gcm';
+  const key = Buffer.from(env('ENCRYPTION_KEY'), 'hex');
+  const iv = crypto.randomBytes(16);
+  
+  const cipher = crypto.createCipheriv(algorithm, key, iv);
+  let encrypted = cipher.update(data, 'utf8', 'hex');
+  encrypted += cipher.final('hex');
+  
+  const authTag = cipher.getAuthTag();
+  
+  return JSON.stringify({
+    encrypted,
+    iv: iv.toString('hex'),
+    authTag: authTag.toString('hex')
+  });
+}
+
+// Use in your tools
+const encryptedSSN = encryptPII(input.personalInfo.ssn);
+```
+
+## Alternative Document Verification Services
+
+This demo uses Stripe Identity, but you can swap with:
+
+<Tabs>
+  <Tab title="Onfido">
+    ```typescript
+    const onfidoApiKey = env('ONFIDO_API_KEY');
+    
+    const response = await fetch('https://api.onfido.com/v3/applicants', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Token token=${onfidoApiKey}`,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        first_name: input.firstName,
+        last_name: input.lastName,
+        email: input.email
+      })
+    });
+    ```
+  </Tab>
+
+  <Tab title="Jumio">
+    ```typescript
+    const jumioApiKey = env('JUMIO_API_TOKEN');
+    
+    const response = await fetch('https://netverify.com/api/v4/initiate', {
+      headers: {
+        'Authorization': `Bearer ${jumioApiKey}`,
+        'User-Agent': 'YourCompany/1.0.0'
+      }
+    });
+    ```
+  </Tab>
+
+  <Tab title="Plaid Identity">
+    ```typescript
+    const plaidKey = env('PLAID_CLIENT_ID');
+    
+    const response = await fetch('https://production.plaid.com/identity/get', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        client_id: plaidKey,
+        secret: env('PLAID_SECRET'),
+        access_token: userAccessToken
+      })
+    });
+    ```
+  </Tab>
+</Tabs>
+
+## Document Types Supported
+
+<AccordionGroup>
+  <Accordion title="Government-Issued ID">
+    - Driver's License (front and back)
+    - State ID
+    - Passport
+    - National ID card
+    
+    **Verification checks:**
+    - Document authenticity
+    - Face match with selfie
+    - Data extraction (name, DOB, address)
+    - Expiration date validation
+  </Accordion>
+
+  <Accordion title="Proof of Address">
+    - Utility bill (within 3 months)
+    - Bank statement
+    - Lease agreement
+    - Government correspondence
+    
+    **Verification checks:**
+    - Address matches ID
+    - Document date within acceptable range
+    - Name matches applicant
+  </Accordion>
+
+  <Accordion title="Financial Documents">
+    - Bank statements
+    - Tax returns (for high-value accounts)
+    - Pay stubs (employment verification)
+    - Investment account statements
+    
+    **Used for:**
+    - Income verification
+    - Source of funds
+    - Net worth assessment
+  </Accordion>
+</AccordionGroup>
+
+## Onboarding Journey Diagram
+
+```
+1. Start Application
+   ↓
+2. Collect Personal Info
+   ↓
+3. Upload Documents (ID + Proof of Address)
+   ↓
+4. Identity Verification (Stripe Identity API)
+   ↓
+5. Qualifying Questions (Risk Assessment)
+   ↓
+6. Suitability Check
+   ↓
+7. Create Account (if qualified)
+   ✅ Account Active
+```
+
+## Customization
+
+### Add Additional Verification
+
+```typescript
+// Add selfie verification
+export class CaptureSelfie Tool extends LuaTool {
+  async execute(input: { applicationId: string, selfieUrl: string }) {
+    // Upload selfie to Stripe
+    const response = await fetch('https://api.stripe.com/v1/identity/verification_sessions', {
+      method: 'POST',
+      body: new URLSearchParams({
+        type: 'selfie',
+        metadata: { application_id: input.applicationId }
+      })
+    });
+    
+    // Stripe compares selfie with ID photo
+    return { verified: true };
+  }
+}
+```
+
+### Add Fraud Checks
+
+```typescript
+// Integrate with fraud detection service
+const fraudCheck = await fetch('https://fraud-api.com/check', {
+  method: 'POST',
+  body: JSON.stringify({
+    email: app.data.email,
+    ip_address: userIp,
+    device_fingerprint: deviceId
+  })
+});
+
+if (fraudCheck.risk_score > 0.7) {
+  // Flag for manual review
+  await Data.update(applicationId, {
+    ...app.data,
+    status: 'fraud_review',
+    flaggedForReview: true
+  });
+}
+```
+
+## Key Takeaways
+
+<CardGroup cols={2}>
+  <Card title="Multi-Step Flow" icon="list-check">
+    Guided journey with state management
+  </Card>
+  <Card title="External + Platform" icon="shuffle">
+    Stripe Identity + Lua Data
+  </Card>
+  <Card title="Compliance Ready" icon="scale-balanced">
+    KYC/AML patterns shown
+  </Card>
+  <Card title="Secure by Design" icon="shield">
+    Encryption and security practices
+  </Card>
+</CardGroup>
+
+## Production Considerations
+
+<AccordionGroup>
+  <Accordion title="Data Retention">
+    - Keep applications for 7 years (regulatory requirement)
+    - Implement automated data deletion for rejected applications
+    - Archive completed applications to cold storage
+  </Accordion>
+
+  <Accordion title="Audit Logging">
+    ```typescript
+    await Data.create('audit_logs', {
+      action: 'document_uploaded',
+      applicationId: input.applicationId,
+      timestamp: new Date().toISOString(),
+      ipAddress: userIp,
+      userAgent: userAgent
+    });
+    ```
+  </Accordion>
+
+  <Accordion title="Compliance Monitoring">
+    - Regular review of declined applications
+    - Monthly compliance reports
+    - Suspicious activity reporting (SAR)
+    - Customer due diligence (CDD)
+  </Accordion>
+</AccordionGroup>
+
+## Next Demo
+
+<Card title="HR Assistant" icon="user-tie" href="/demos/hr-assistant">
+  See internal employee management with BambooHR
+</Card>
+
