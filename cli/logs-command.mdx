@@ -1,0 +1,421 @@
+---
+title: "Logs Command"
+description: "View and debug agent execution logs"
+---
+
+## Overview
+
+The `lua logs` command provides an interactive interface for viewing and navigating agent and skill logs with real-time pagination.
+
+```bash
+lua logs
+```
+
+<CardGroup cols={2}>
+  <Card title="View All Logs" icon="list">
+    See logs across all skills
+  </Card>
+  <Card title="Filter by Skill" icon="filter">
+    Focus on specific skill
+  </Card>
+  <Card title="Color-Coded" icon="palette">
+    Error, warn, debug, info, metrics
+  </Card>
+  <Card title="Interactive" icon="arrows-rotate">
+    Navigate, refresh, jump to page
+  </Card>
+</CardGroup>
+
+## Log Types
+
+<Tabs>
+  <Tab title="❌ Error">
+    **Execution errors and failures**
+    
+    - Tool execution failures
+    - API errors
+    - Invalid configurations
+    - Stack traces for debugging
+    
+    Color: Red
+  </Tab>
+
+  <Tab title="⚠️ Warn">
+    **Warnings and potential issues**
+    
+    - Performance warnings
+    - Deprecated features
+    - Configuration warnings
+    
+    Color: Yellow
+  </Tab>
+
+  <Tab title="🔍 Debug">
+    **Debug information**
+    
+    - Tool inputs/outputs
+    - Function execution status
+    - Detailed operation info
+    
+    Color: Blue
+  </Tab>
+
+  <Tab title="ℹ️ Info">
+    **General information**
+    
+    - Operation status
+    - Configuration changes
+    - General messages
+    
+    Color: Cyan
+  </Tab>
+
+  <Tab title="▶️ Start/✅ Complete">
+    **Operation metrics**
+    
+    - Operation started
+    - Operation completed
+    - Duration measurements
+    
+    Color: Green
+  </Tab>
+</Tabs>
+
+## Interactive Flow
+
+<Steps>
+  <Step title="Select Log Source">
+    ```
+    📊 Viewing logs for agent: myAgent
+    
+    ? What logs do you want to view?
+    ❯ 📋 All agent logs
+      🎯 Specific skill logs
+    ```
+  </Step>
+  
+  <Step title="View Logs">
+    ```
+    All Agent Logs
+    ────────────────────────────────────────────────────
+    Page 1 of 88 (872 total logs)
+    
+    ❌ [2/3/2025, 4:40:55 PM] ERROR
+       Skill: payment-skill
+       Tool: create_payment_link
+       Error executing function: Invalid API Key
+    ──────────────────────────────────────────────────
+    ✅ [2/3/2025, 4:40:55 PM] COMPLETE
+       Skill: customer-service
+       Tool: search_products
+       Duration: 125ms
+       Execute function completed
+    ──────────────────────────────────────────────────
+    ```
+  </Step>
+  
+  <Step title="Navigate">
+    ```
+    ? Navigation:
+    ❯ Next Page →
+      ← Previous Page
+      🔢 Go to specific page
+      🔄 Refresh
+      ❌ Exit
+    ```
+  </Step>
+</Steps>
+
+## Use Cases
+
+### Debug Tool Errors
+
+```bash
+$ lua logs
+→ All agent logs
+→ Look for ❌ ERROR entries
+→ Review error messages and stack traces
+→ Fix issues in your code
+```
+
+### Monitor Performance
+
+```bash
+$ lua logs
+→ All agent logs  
+→ Find ✅ COMPLETE entries
+→ Check duration metrics
+→ Identify slow operations
+```
+
+### Verify Tool Execution
+
+```bash
+$ lua logs
+→ Specific skill logs
+→ Select your skill
+→ Look for 🔍 DEBUG entries
+→ Verify tool inputs/outputs
+```
+
+### Track API Calls
+
+```bash
+$ lua logs
+→ All agent logs
+→ Review API interaction logs
+→ Check response times
+→ Debug external integrations
+```
+
+## Example Session
+
+```bash
+$ lua logs
+✅ Authenticated
+📊 Viewing logs for agent: myAgent
+
+? What logs do you want to view? 📋 All agent logs
+
+All Agent Logs
+────────────────────────────────────────────────────────────────────────────────
+Page 1 of 45 (450 total logs)
+
+❌ [2/3/2025, 4:40:55 PM] ERROR
+   Skill: payment-skill
+   Tool: create_payment_link
+   Error: Stripe API key invalid
+   Duration: 245ms
+──────────────────────────────────────────────────────────────────────────────
+
+✅ [2/3/2025, 4:39:22 PM] COMPLETE
+   Skill: product-skill
+   Tool: search_products
+   Duration: 89ms
+   Found 15 products matching "laptop"
+──────────────────────────────────────────────────────────────────────────────
+
+🔍 [2/3/2025, 4:38:10 PM] DEBUG
+   Skill: user-data-skill
+   Tool: update_user_preferences
+   Input: { theme: "dark", notifications: true }
+──────────────────────────────────────────────────────────────────────────────
+
+? Navigation: Next Page →
+
+[Shows page 2...]
+```
+
+## Log Entry Details
+
+Each log shows:
+- **Timestamp** - When the log was created
+- **Type** - Error, debug, info, warn, metric
+- **Skill** - Which skill generated the log
+- **Tool** - Which tool was executing
+- **Message** - Log content
+- **Duration** - Time taken (for metrics)
+- **Metadata** - User ID, agent ID, etc.
+
+## Navigation Options
+
+<Tabs>
+  <Tab title="Next Page →">
+    View the next page of logs
+    
+    Disabled if on last page
+  </Tab>
+
+  <Tab title="← Previous Page">
+    Go back to previous page
+    
+    Disabled if on first page
+  </Tab>
+
+  <Tab title="🔢 Go to specific page">
+    ```
+    ? Enter page number (1-88): 45
+    ```
+    
+    Jump directly to any page
+  </Tab>
+
+  <Tab title="🔄 Refresh">
+    Reload current page with latest logs
+    
+    Useful for monitoring in real-time
+  </Tab>
+
+  <Tab title="❌ Exit">
+    Close the logs viewer
+  </Tab>
+</Tabs>
+
+## Best Practices
+
+<AccordionGroup>
+  <Accordion title="Start with All Logs">
+    ```bash
+    # Get overview first
+    lua logs → All agent logs
+    
+    # Then filter if needed
+    lua logs → Specific skill logs
+    ```
+  </Accordion>
+
+  <Accordion title="Monitor After Deployment">
+    ```bash
+    # After deploying
+    lua push && lua deploy
+    
+    # Monitor logs
+    lua logs → All agent logs → Refresh periodically
+    ```
+  </Accordion>
+
+  <Accordion title="Debug Specific Issues">
+    ```bash
+    # Issue with specific skill
+    lua logs → Specific skill logs → Select problem skill
+    
+    # Focus on errors
+    # Look for ❌ ERROR entries
+    ```
+  </Accordion>
+
+  <Accordion title="Track Performance">
+    ```bash
+    # Check operation speed
+    lua logs → All agent logs
+    
+    # Note duration on ✅ COMPLETE entries
+    # Identify slow operations (>1000ms)
+    ```
+  </Accordion>
+</AccordionGroup>
+
+## Troubleshooting
+
+<AccordionGroup>
+  <Accordion title="No logs available">
+    **Causes:**
+    - Skills not deployed yet
+    - Agent hasn't been used
+    - Viewing wrong agent
+    
+    **Solution:**
+    ```bash
+    lua push  # Deploy skills
+    lua chat  # Use agent to generate logs
+    lua logs  # View logs
+    ```
+  </Accordion>
+
+  <Accordion title="Can't find specific error">
+    **Try:**
+    - Navigate through pages
+    - Filter by specific skill
+    - Look at recent pages (page 1)
+    - Check timestamp for when error occurred
+  </Accordion>
+
+  <Accordion title="Logs not updating">
+    **Use refresh:**
+    ```
+    ? Navigation: 🔄 Refresh
+    ```
+    
+    Reloads current page with latest data
+  </Accordion>
+</AccordionGroup>
+
+## Integration with Workflow
+
+### During Development
+
+```bash
+# Make changes
+vim src/tools/MyTool.ts
+
+# Test
+lua chat
+
+# Check logs immediately
+lua logs
+# Look for errors or warnings
+```
+
+### After Deployment
+
+```bash
+# Deploy
+lua push && lua deploy
+
+# Monitor logs
+lua logs
+# Watch for errors in production
+# Check performance metrics
+```
+
+### Debugging Issues
+
+```bash
+# User reports issue
+lua logs
+# Find relevant error
+# Note: timestamp, skill, tool
+# Fix in code
+# Deploy fix
+# Monitor logs again
+```
+
+## Related Commands
+
+<CardGroup cols={2}>
+  <Card title="lua chat" icon="comments">
+    Test agent (generates logs)
+  </Card>
+  <Card title="lua test" icon="flask">
+    Test tools locally (no remote logs)
+  </Card>
+  <Card title="lua push" icon="upload">
+    Deploy skills (required for logs)
+  </Card>
+  <Card title="lua production" icon="server">
+    View production environment
+  </Card>
+</CardGroup>
+
+## Next Steps
+
+<CardGroup cols={2}>
+  <Card
+    title="Test Your Agent"
+    icon="comments"
+    href="/cli/chat-command"
+  >
+    Generate logs to view
+  </Card>
+  <Card
+    title="Deploy Skills"
+    icon="rocket"
+    href="/cli/skill-management"
+  >
+    Push skills to generate logs
+  </Card>
+  <Card
+    title="Troubleshooting"
+    icon="circle-question"
+    href="/cli/troubleshooting"
+  >
+    Common issues and solutions
+  </Card>
+  <Card
+    title="Production Monitoring"
+    icon="chart-line"
+    href="/cli/production-command"
+  >
+    Monitor production environment
+  </Card>
+</CardGroup>
