@@ -5,24 +5,51 @@ description: "Shopping cart management for e-commerce"
 
 ## Overview
 
-The Baskets API provides complete shopping cart functionality with item management, status tracking, and checkout capabilities.
+The Baskets API provides complete shopping cart functionality with item management, status tracking, and checkout capabilities. Returns **BasketInstance** objects with direct property access.
 
 ```typescript
 import { Baskets, BasketStatus } from 'lua-cli';
 
-// Create basket
+// Create basket - returns BasketInstance
 const basket = await Baskets.create({ currency: 'USD' });
 
-// Add item
-await Baskets.addItem(basket.id, {
+// Direct property access
+console.log(basket.itemCount);    // 0
+console.log(basket.totalAmount);  // 0
+console.log(basket.status);       // "active"
+
+// Add item using instance method
+await basket.addItem({
   id: productId,
   price: 29.99,
   quantity: 2
 });
 
-// Checkout
-const order = await Baskets.placeOrder(orderData, basket.id);
+// Access updated properties directly
+console.log(basket.itemCount);    // 2
+console.log(basket.totalAmount);  // 59.98
+
+// Checkout using instance method
+const order = await basket.placeOrder({
+  shippingAddress: {...},
+  paymentMethod: 'stripe'
+});
 ```
+
+<CardGroup cols={2}>
+  <Card title="Direct Access" icon="bolt">
+    Access `basket.itemCount` not `basket.common.itemCount`
+  </Card>
+  <Card title="Instance Methods" icon="wrench">
+    Built-in methods like `addItem()`, `placeOrder()`
+  </Card>
+  <Card title="Auto-Sync" icon="sync">
+    Properties update after method calls
+  </Card>
+  <Card title="Type-Safe" icon="shield">
+    Full TypeScript support
+  </Card>
+</CardGroup>
 
 ## Basket Statuses
 
@@ -60,7 +87,7 @@ import { BasketStatus } from 'lua-cli';
 Create a new shopping basket.
 
 ```typescript
-Baskets.create(data: BasketInput): Promise<Basket>
+Baskets.create(data: BasketInput): Promise<BasketInstance>
 ```
 
 <ParamField path="data.currency" type="string" default="USD">
@@ -71,6 +98,8 @@ Baskets.create(data: BasketInput): Promise<Basket>
   Custom metadata to store with basket
 </ParamField>
 
+**Returns:** `BasketInstance` with direct property access and methods
+
 **Example:**
 
 ```typescript
@@ -78,12 +107,20 @@ const basket = await Baskets.create({
   currency: 'USD',
   metadata: {
     source: 'web',
-    campaign: 'summer_sale',
-    userAgent: 'mobile'
+    campaign: 'summer_sale'
   }
 });
 
-console.log(basket.id); // "basket_abc123"
+// Direct property access
+console.log(basket.id);          // "basket_abc123"
+console.log(basket.itemCount);   // 0
+console.log(basket.totalAmount); // 0
+console.log(basket.status);      // "active"
+console.log(basket.metadata.campaign); // "summer_sale"
+
+// Instance methods available
+await basket.addItem({...});
+await basket.updateMetadata({...});
 ```
 
 ### get()
@@ -112,16 +149,25 @@ const abandoned = await Baskets.get(BasketStatus.ABANDONED);
 Get a specific basket by ID.
 
 ```typescript
-Baskets.getById(basketId: string): Promise<Basket>
+Baskets.getById(basketId: string): Promise<BasketInstance>
 ```
+
+**Returns:** `BasketInstance` with direct property access
 
 **Example:**
 
 ```typescript
 const basket = await Baskets.getById('basket_abc123');
 
-console.log(basket.common.totalAmount);  // 59.98
-console.log(basket.common.itemCount);    // 2
+// Direct property access (no .common needed!)
+console.log(basket.totalAmount);  // 59.98
+console.log(basket.itemCount);    // 2
+console.log(basket.status);       // "active"
+console.log(basket.items);        // Array of items
+
+// Instance methods
+await basket.addItem({...});
+await basket.clear();
 ```
 
 ### addItem()
@@ -129,7 +175,12 @@ console.log(basket.common.itemCount);    // 2
 Add an item to a basket.
 
 ```typescript
-Baskets.addItem(basketId: string, item: BasketItem): Promise<Basket>
+Baskets.addItem(basketId: string, item: BasketItem): Promise<BasketInstance>
+```
+
+Or use instance method:
+```typescript
+basket.addItem(item: BasketItem): Promise<BasketInstance>
 ```
 
 <ParamField path="basketId" type="string" required>
@@ -152,17 +203,30 @@ Baskets.addItem(basketId: string, item: BasketItem): Promise<Basket>
   Stock keeping unit
 </ParamField>
 
+**Returns:** `BasketInstance` with updated item count and total
+
 **Example:**
 
 ```typescript
-const updated = await Baskets.addItem('basket_abc123', {
+// Using static method
+const basket = await Baskets.addItem('basket_abc123', {
   id: 'product_xyz',
   price: 29.99,
   quantity: 2,
   SKU: 'SHIRT-M-BLUE'
 });
 
-console.log(updated.common.totalAmount); // 59.98
+// Or using instance method (recommended)
+await basket.addItem({
+  id: 'product_xyz',
+  price: 29.99,
+  quantity: 2
+});
+
+// Direct property access
+console.log(basket.totalAmount);  // 59.98
+console.log(basket.itemCount);    // 2
+console.log(basket.items);        // Array of items
 ```
 
 ### removeItem()
@@ -265,22 +329,37 @@ console.log(order.id);     // "order_def456"
 console.log(order.common.status); // "pending"
 ```
 
-## Basket Type
+## BasketInstance
 
+All basket methods return `BasketInstance` objects with:
+
+**Direct Property Access:**
 ```typescript
-interface Basket {
-  id: string;
-  common: {
-    status: BasketStatus;
-    totalAmount: number;
-    itemCount: number;
-    currency: string;
-    items: BasketItem[];
-  };
-  metadata?: object;
-  createdAt: number;
-  updatedAt: number;
-}
+basket.id
+basket.totalAmount    // No .common needed!
+basket.itemCount      // Direct access
+basket.status         // Direct access
+basket.items          // Array of items
+basket.currency
+basket.metadata
+basket.createdAt      // Via proxy
+basket.updatedAt      // Via proxy
+```
+
+**Instance Methods:**
+```typescript
+await basket.addItem({...});
+await basket.removeItem(itemId);
+await basket.updateMetadata({...});
+await basket.updateStatus(status);
+await basket.clear();
+await basket.placeOrder({...});
+```
+
+**Backward Compatible:**
+```typescript
+basket.totalAmount;         // ✅ New way
+basket.common.totalAmount;  // ✅ Old way still works
 ```
 
 ## Complete Shopping Flow Example

@@ -5,20 +5,47 @@ description: "Manage e-commerce product catalog"
 
 ## Overview
 
-The Products API provides complete CRUD operations for managing an e-commerce product catalog.
+The Products API provides complete CRUD operations for managing an e-commerce product catalog. Returns **ProductInstance** objects with direct property access.
 
 ```typescript
 import { Products } from 'lua-cli';
 
-// Search products
+// Search products - returns ProductSearchInstance
 const results = await Products.search('laptop');
 
-// Create product
-await Products.create({
+// Direct property access on results
+const names = results.map(p => p.name);
+const prices = results.map(p => p.price);
+
+// Create product - returns ProductInstance
+const product = await Products.create({
   name: 'MacBook Pro',
   price: 1999.99
 });
+
+// Direct property access
+console.log(product.name);   // "MacBook Pro"
+console.log(product.price);  // 1999.99
+
+// Instance methods
+await product.update({ price: 1799.99 });
+await product.delete();
 ```
+
+<CardGroup cols={2}>
+  <Card title="Direct Access" icon="bolt">
+    Access properties with `product.name` not `product.data.name`
+  </Card>
+  <Card title="Array Methods" icon="list">
+    Use `.map()`, `.filter()` on search results
+  </Card>
+  <Card title="Instance Methods" icon="wrench">
+    Built-in `update()` and `delete()`
+  </Card>
+  <Card title="Iteration" icon="arrows-rotate">
+    Use `for...of` loops
+  </Card>
+</CardGroup>
 
 ## Methods
 
@@ -27,30 +54,42 @@ await Products.create({
 Search products by name or description.
 
 ```typescript
-Products.search(query: string): Promise<SearchResult>
+Products.search(query: string): Promise<ProductSearchInstance>
 ```
 
 <ParamField path="query" type="string" required>
   Search query to match against product names and descriptions
 </ParamField>
 
-**Returns:**
-
-```typescript
-{
-  success: boolean;
-  data: Product[];
-}
-```
+**Returns:** `ProductSearchInstance` - Array-like collection with direct access to products
 
 **Example:**
 
 ```typescript
 const results = await Products.search('laptop');
 
-results.data.forEach(product => {
+// Direct array methods
+results.forEach(product => {
   console.log(`${product.name} - $${product.price}`);
 });
+
+// Or use .map()
+const names = results.map(p => p.name);
+const prices = results.map(p => p.price);
+
+// Filter
+const affordable = results.filter(p => p.price < 1000);
+
+// Find
+const specific = results.find(p => p.sku === 'LAP-001');
+
+// Check length
+console.log(`Found ${results.length} products`);
+
+// For...of iteration
+for (const product of results) {
+  console.log(product.name);
+}
 ```
 
 ### get()
@@ -58,7 +97,7 @@ results.data.forEach(product => {
 Retrieve all products with pagination.
 
 ```typescript
-Products.get(limit?: number, page?: number): Promise<GetResult>
+Products.get(limit?: number, page?: number): Promise<ProductPaginationInstance>
 ```
 
 <ParamField path="limit" type="number" default={10}>
@@ -69,29 +108,35 @@ Products.get(limit?: number, page?: number): Promise<GetResult>
   Page number (1-indexed)
 </ParamField>
 
-**Returns:**
-
-```typescript
-{
-  success: boolean;
-  data: Product[];
-  pagination: {
-    currentPage: number;
-    totalPages: number;
-    totalCount: number;
-    hasNextPage: boolean;
-    hasPreviousPage: boolean;
-  };
-}
-```
+**Returns:** `ProductPaginationInstance` - Array-like collection with pagination support
 
 **Example:**
 
 ```typescript
 // Get first 20 products
-const products = await Products.get(20, 1);
+const page = await Products.get(20, 1);
 
-console.log(`Showing ${products.data.length} of ${products.pagination.totalCount}`);
+// Direct array methods
+page.forEach(product => {
+  console.log(`${product.name} - $${product.price}`);
+});
+
+// Access pagination info
+console.log(`Page ${page.pagination.currentPage} of ${page.pagination.totalPages}`);
+console.log(`Showing ${page.length} of ${page.pagination.totalCount} products`);
+
+// Navigate pages
+if (page.pagination.hasNextPage) {
+  const nextPage = await page.nextPage();
+}
+
+if (page.pagination.hasPrevPage) {
+  const prevPage = await page.prevPage();
+}
+
+// Use array methods
+const names = page.map(p => p.name);
+const inStock = page.filter(p => p.inStock);
 ```
 
 ### getById()
@@ -99,16 +144,24 @@ console.log(`Showing ${products.data.length} of ${products.pagination.totalCount
 Get a specific product by ID.
 
 ```typescript
-Products.getById(id: string): Promise<Product>
+Products.getById(id: string): Promise<ProductInstance>
 ```
+
+**Returns:** `ProductInstance` with direct property access and methods
 
 **Example:**
 
 ```typescript
 const product = await Products.getById('product_abc123');
 
-console.log(product.name);  // "MacBook Pro"
-console.log(product.price); // 1999.99
+// Direct property access
+console.log(product.name);   // "MacBook Pro"
+console.log(product.price);  // 1999.99
+console.log(product.sku);    // "MBP-14"
+
+// Instance methods
+await product.update({ price: 1799.99 });
+await product.delete();
 ```
 
 ### create()
@@ -116,7 +169,7 @@ console.log(product.price); // 1999.99
 Create a new product.
 
 ```typescript
-Products.create(product: ProductInput): Promise<CreateResult>
+Products.create(product: ProductInput): Promise<ProductInstance>
 ```
 
 <ParamField path="product.name" type="string" required>
@@ -143,20 +196,12 @@ Products.create(product: ProductInput): Promise<CreateResult>
   Product description
 </ParamField>
 
-**Returns:**
-
-```typescript
-{
-  updated: boolean;
-  isNew: boolean;
-  product: Product;
-}
-```
+**Returns:** `ProductInstance` with direct property access and methods
 
 **Example:**
 
 ```typescript
-const result = await Products.create({
+const product = await Products.create({
   name: 'Wireless Mouse',
   price: 29.99,
   category: 'Electronics',
@@ -165,15 +210,21 @@ const result = await Products.create({
   description: 'Ergonomic wireless mouse'
 });
 
-console.log(result.product.id); // "product_xyz789"
+// Direct property access
+console.log(product.id);      // "product_xyz789"
+console.log(product.name);    // "Wireless Mouse"
+console.log(product.price);   // 29.99
+
+// Instance methods available
+await product.update({ price: 24.99 });
 ```
 
 ### update()
 
-Update an existing product.
+Update an existing product. Returns updated ProductInstance.
 
 ```typescript
-Products.update(data: Partial<Product>, id: string): Promise<Product>
+Products.update(data: Partial<Product>, id: string): Promise<ProductInstance>
 ```
 
 <ParamField path="data" type="object" required>
@@ -184,13 +235,19 @@ Products.update(data: Partial<Product>, id: string): Promise<Product>
   Product ID to update
 </ParamField>
 
+**Returns:** `ProductInstance` with updated data
+
 **Example:**
 
 ```typescript
-await Products.update({
+const product = await Products.update({
   price: 24.99,
   inStock: false
 }, 'product_xyz789');
+
+// Access updated properties
+console.log(product.price);   // 24.99
+console.log(product.inStock); // false
 ```
 
 ### delete()
@@ -207,19 +264,31 @@ Products.delete(id: string): Promise<void>
 await Products.delete('product_xyz789');
 ```
 
-## Product Type
+## ProductInstance
 
+All product methods return `ProductInstance` objects with:
+
+**Direct Property Access:**
 ```typescript
-interface Product {
-  id: string;
-  name: string;
-  price: number;
-  category?: string;
-  sku?: string;
-  inStock: boolean;
-  description?: string;
-  [key: string]: any;
-}
+product.name
+product.price
+product.sku
+product.inStock
+product.category
+product.description
+// Any custom fields
+```
+
+**Instance Methods:**
+```typescript
+await product.update({ price: 999.99 });
+await product.delete();
+```
+
+**Backward Compatible:**
+```typescript
+product.name;        // ✅ New way
+product.data.name;   // ✅ Old way still works
 ```
 
 ## Complete Examples

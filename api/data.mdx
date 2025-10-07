@@ -5,20 +5,52 @@ description: "Custom data storage with semantic vector search"
 
 ## Overview
 
-The Data API allows you to store custom data in collections with powerful semantic search capabilities using vector embeddings.
+The Data API allows you to store custom data in collections with powerful semantic search capabilities using vector embeddings. Returns **DataEntryInstance** objects with direct property access.
 
 ```typescript
 import { Data } from 'lua-cli';
 
-// Create with search indexing
-await Data.create('movies', {
+// Create with search indexing - returns DataEntryInstance
+const entry = await Data.create('movies', {
   title: 'Inception',
   director: 'Christopher Nolan'
 }, 'Inception Christopher Nolan sci-fi thriller dreams');
 
-// Semantic search
+// Direct property access
+console.log(entry.title);     // "Inception"
+console.log(entry.director);  // "Christopher Nolan"
+console.log(entry.id);        // "entry_abc123"
+
+// Instance methods
+await entry.update({ rating: 9.5 }, 'inception nolan 9.5 rating');
+await entry.delete();
+
+// Semantic search - returns array of DataEntryInstance
 const results = await Data.search('movies', 'mind-bending thriller', 10, 0.7);
+
+// Direct array methods and property access
+results.forEach(entry => {
+  console.log(`${entry.title}: ${entry.score * 100}% match`);
+});
+
+const highScoring = results.filter(entry => entry.score > 0.8);
+const titles = results.map(entry => entry.title);
 ```
+
+<CardGroup cols={2}>
+  <Card title="Direct Access" icon="bolt">
+    Access `entry.title` not `entry.data.title`
+  </Card>
+  <Card title="Search Scores" icon="chart-line">
+    Results include relevance scores
+  </Card>
+  <Card title="Instance Methods" icon="wrench">
+    Built-in `update()` and `delete()`
+  </Card>
+  <Card title="Array Methods" icon="list">
+    Use `.map()`, `.filter()` on search results
+  </Card>
+</CardGroup>
 
 ## Key Features
 

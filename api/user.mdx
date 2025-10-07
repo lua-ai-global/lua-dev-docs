@@ -5,121 +5,328 @@ description: "Access and manage user profile data"
 
 ## Overview
 
-The User API provides access to the current user's profile information.
+The User API provides access to the current user's profile information through a powerful `UserDataInstance` class with direct property access.
 
 ```typescript
 import { User } from 'lua-cli';
 
+// Get user instance
 const user = await User.get();
+
+// Direct property access (NEW! ✨)
+console.log(user.name);
+console.log(user.email);
+
+// Update user data
+await user.update({ name: "John Doe" });
 ```
 
-## Methods
+## Features
 
-### get()
+<CardGroup cols={2}>
+  <Card title="Direct Access" icon="bolt">
+    Access properties with `user.name` instead of `user.data.name`
+  </Card>
+  <Card title="Auto Sanitization" icon="shield">
+    Removes sensitive fields automatically
+  </Card>
+  <Card title="Built-in Methods" icon="wrench">
+    `update()` and `clear()` included
+  </Card>
+  <Card title="Type-Safe" icon="code">
+    Full TypeScript support
+  </Card>
+</CardGroup>
 
-Retrieve the current user's data.
+## get()
+
+Retrieve the current user's data as a UserDataInstance.
 
 ```typescript
-User.get(): Promise<UserData>
+User.get(): Promise<UserDataInstance>
 ```
 
-**Returns:**
-
-```typescript
-{
-  id: string;
-  email: string;
-  name: string;
-  phone?: string;
-  // Additional user fields
-}
-```
+**Returns:** `UserDataInstance` with proxy-based property access
 
 **Example:**
 
 ```typescript
 import { User } from 'lua-cli';
 
-const user = await User.get();
-
-console.log(user.name);   // "John Doe"
-console.log(user.email);  // "john@example.com"
+// In your tool
+async execute(input: any, context: ToolContext) {
+  const user = await User.get();
+  // or
+  const user = context.user;  // Available through context
+  
+  // Direct property access
+  console.log(user.name);    // "John Doe"
+  console.log(user.email);   // "john@example.com"
+  console.log(user.phone);   // "555-0123"
+  
+  return { userName: user.name };
+}
 ```
 
-## Complete Example
+## UserDataInstance API
+
+### Property Access (Direct)
+
+Access any user property directly:
 
 ```typescript
-import { LuaTool, User } from 'lua-cli';
+// Reading properties
+const name = user.name;
+const email = user.email;
+const preferences = user.preferences;
+const customField = user.customField;
+
+// Setting properties (local only - call update() to persist)
+user.name = "Jane Doe";
+user.email = "jane@example.com";
+user.preferences = { theme: "dark" };
+
+// Checking existence
+if ('name' in user) {
+  console.log('User has a name');
+}
+```
+
+### update()
+
+Update user data on the server and locally.
+
+```typescript
+user.update(data: Record<string, any>): Promise<any>
+```
+
+<ParamField path="data" type="object" required>
+  Object containing fields to update or add
+</ParamField>
+
+**Returns:** Promise resolving to updated sanitized user data
+
+**Examples:**
+
+```typescript
+// Update single field
+await user.update({ name: "John Doe" });
+
+// Update multiple fields
+await user.update({
+  name: "John Doe",
+  email: "john@example.com",
+  phone: "555-1234"
+});
+
+// Update nested objects
+await user.update({
+  preferences: {
+    theme: "dark",
+    notifications: true,
+    language: "en"
+  }
+});
+
+// Access updated data immediately
+console.log(user.name);  // "John Doe"
+console.log(user.preferences.theme);  // "dark"
+```
+
+### clear()
+
+Clear all user data for the current user.
+
+```typescript
+user.clear(): Promise<boolean>
+```
+
+**Returns:** Promise resolving to `true` if successful
+
+**Example:**
+
+```typescript
+try {
+  const success = await user.clear();
+  if (success) {
+    console.log('User data cleared successfully');
+  }
+} catch (error) {
+  console.error('Failed to clear user data:', error);
+}
+```
+
+<Warning>
+**Destructive operation!** This removes all user data. Use with caution.
+</Warning>
+
+## Data Sanitization
+
+UserDataInstance automatically removes sensitive fields:
+
+**Removed (not accessible):**
+- `agentId`
+- `userId`
+
+**Available (accessible):**
+- `name`, `email`, `phone`
+- Custom fields you set
+- Preferences and settings
+- Any other data
+
+```typescript
+// Server returns:
+{
+  userId: "12345",       // ❌ Removed
+  agentId: "agent-123",  // ❌ Removed
+  name: "John Doe",      // ✅ Accessible
+  email: "john@example.com"  // ✅ Accessible
+}
+
+// Your user instance has:
+{
+  name: "John Doe",
+  email: "john@example.com"
+}
+```
+
+## Complete Examples
+
+### Example 1: User Preferences
+
+```typescript
+import { LuaTool } from 'lua-cli';
 import { z } from 'zod';
 
-export class GetUserProfileTool implements LuaTool {
-  name = "get_user_profile";
-  description = "Retrieve current user's profile information";
+export class ManagePreferencesTool implements LuaTool {
+  name = "manage_preferences";
+  description = "Manage user preferences";
   
-  inputSchema = z.object({});
+  inputSchema = z.object({
+    theme: z.enum(['light', 'dark']).optional(),
+    notifications: z.boolean().optional(),
+    language: z.string().optional()
+  });
 
-  async execute(input: any) {
-    const user = await User.get();
+  async execute(input: any, context: ToolContext) {
+    const user = context.user;
+    
+    // Direct property access
+    const currentPrefs = user.preferences || {};
+    
+    // Merge with new preferences
+    const newPrefs = {
+      ...currentPrefs,
+      ...input
+    };
+    
+    // Update on server
+    await user.update({ preferences: newPrefs });
     
     return {
-      name: user.name,
-      email: user.email,
-      phone: user.phone,
-      memberId: user.id
+      message: 'Preferences updated successfully',
+      preferences: user.preferences  // Direct access to updated data
     };
   }
 }
 ```
 
-## Use Cases
+### Example 2: Shopping Cart Persistence
 
-### Personalized Greetings
+```typescript
+export class CartTool implements LuaTool {
+  name = "manage_cart";
+  description = "Manage shopping cart";
+  
+  inputSchema = z.object({
+    action: z.enum(['add', 'remove', 'get']),
+    productId: z.string().optional(),
+    quantity: z.number().optional()
+  });
+
+  async execute(input: any, context: ToolContext) {
+    const user = context.user;
+    
+    // Get current cart (direct access)
+    let cart = user.cart || [];
+    
+    if (input.action === 'add') {
+      cart.push({
+        productId: input.productId,
+        quantity: input.quantity
+      });
+      await user.update({ cart });
+    }
+    
+    if (input.action === 'remove') {
+      cart = cart.filter(item => item.productId !== input.productId);
+      await user.update({ cart });
+    }
+    
+    return {
+      cart: user.cart,  // Direct access
+      itemCount: cart.length
+    };
+  }
+}
+```
+
+### Example 3: User Profile Management
+
+```typescript
+export class ProfileTool implements LuaTool {
+  name = "update_profile";
+  description = "Update user profile information";
+  
+  inputSchema = z.object({
+    firstName: z.string().optional(),
+    lastName: z.string().optional(),
+    phone: z.string().optional(),
+    bio: z.string().optional()
+  });
+
+  async execute(input: any, context: ToolContext) {
+    const user = context.user;
+    
+    // Update user data
+    await user.update(input);
+    
+    // Return updated profile (direct access)
+    return {
+      success: true,
+      profile: {
+        firstName: user.firstName,
+        lastName: user.lastName,
+        phone: user.phone,
+        bio: user.bio
+      },
+      message: 'Profile updated successfully'
+    };
+  }
+}
+```
+
+### Example 4: Personalized Greeting
 
 ```typescript
 export class GreetUserTool implements LuaTool {
-  async execute(input: any) {
-    const user = await User.get();
+  name = "greet_user";
+  description = "Greet user with personalized message";
+  
+  inputSchema = z.object({});
+
+  async execute(input: any, context: ToolContext) {
+    const user = context.user;
+    
+    // Direct property access
+    const hour = new Date().getHours();
+    const timeGreeting = hour < 12 ? 'Good morning'
+      : hour < 18 ? 'Good afternoon'
+      : 'Good evening';
     
     return {
-      message: `Hello ${user.name}! How can I help you today?`
+      message: `${timeGreeting}, ${user.name}! How can I help you today?`
     };
-  }
-}
-```
-
-### User Verification
-
-```typescript
-export class VerifyUserTool implements LuaTool {
-  async execute(input: any) {
-    const user = await User.get();
-    
-    // Check user has required permissions
-    if (!user.email.endsWith('@company.com')) {
-      throw new Error('Access restricted to company members');
-    }
-    
-    return { verified: true };
-  }
-}
-```
-
-### Audit Logging
-
-```typescript
-export class CreateOrderTool implements LuaTool {
-  async execute(input: any) {
-    const user = await User.get();
-    
-    // Create order with user info
-    const order = await Orders.create({
-      ...input,
-      createdBy: user.email,
-      userId: user.id,
-      customerName: user.name
-    });
-    
-    return order;
   }
 }
 ```
@@ -127,65 +334,108 @@ export class CreateOrderTool implements LuaTool {
 ## Best Practices
 
 <AccordionGroup>
-  <Accordion title="Cache User Data">
-    If you need user data multiple times, cache it:
-    
+  <Accordion title="✅ Use Direct Property Access">
     ```typescript
-    export class MyTool implements LuaTool {
-      private userCache: any = null;
-      
-      async execute(input: any) {
-        // Get user once
-        if (!this.userCache) {
-          this.userCache = await User.get();
-        }
-        
-        // Use cached data
-        return {
-          user: this.userCache.name
-        };
-      }
-    }
+    // ✅ Recommended
+    const name = user.name;
+    const email = user.email;
+    
+    // 🟡 Still works but verbose
+    const name = user.data.name;
+    const email = user.data.email;
     ```
   </Accordion>
 
-  <Accordion title="Handle Missing Fields">
+  <Accordion title="✅ Batch Updates">
+    Combine multiple updates into one call:
+    
+    ```typescript
+    // ✅ Good - Single update call
+    await user.update({
+      name: "John Doe",
+      email: "john@example.com",
+      phone: "555-1234"
+    });
+    
+    // ❌ Bad - Multiple update calls
+    await user.update({ name: "John Doe" });
+    await user.update({ email: "john@example.com" });
+    await user.update({ phone: "555-1234" });
+    ```
+  </Accordion>
+
+  <Accordion title="✅ Handle Missing Fields">
     Not all fields may be present:
     
     ```typescript
-    const user = await User.get();
-    
     const phone = user.phone || 'Not provided';
     const name = user.name || 'Guest';
+    const preferences = user.preferences || {};
     ```
   </Accordion>
 
-  <Accordion title="Don't Expose Sensitive Data">
-    Be careful what you return to the AI:
+  <Accordion title="✅ Use for Personalization">
+    ```typescript
+    // Personalized responses
+    return {
+      message: `Welcome back, ${user.name}!`,
+      savedItems: user.cart?.length || 0,
+      lastVisit: user.lastSeen
+    };
+    ```
+  </Accordion>
+
+  <Accordion title="⚠️ Remember to Call update()">
+    Setting properties locally doesn't persist:
     
     ```typescript
-    // ✅ Good - Only necessary fields
-    return {
-      name: user.name,
-      firstName: user.name.split(' ')[0]
-    };
+    // ❌ Won't persist
+    user.name = "John";
     
-    // ❌ Bad - Exposing everything
-    return { user };  // May include sensitive fields
+    // ✅ Persists to server
+    user.name = "John";
+    await user.update({ name: user.name });
+    
+    // ✅ Better: Update directly
+    await user.update({ name: "John" });
     ```
   </Accordion>
 </AccordionGroup>
 
-## Type Definition
+## TypeScript Support
 
 ```typescript
-interface UserData {
-  id: string;
-  email: string;
-  name: string;
+interface UserDataInstance {
+  // Properties (dynamic based on stored data)
+  name?: string;
+  email?: string;
   phone?: string;
   [key: string]: any;
+  
+  // Methods
+  update(data: Record<string, any>): Promise<any>;
+  clear(): Promise<boolean>;
+  toJSON(): Record<string, any>;
 }
+```
+
+### Usage with Types
+
+```typescript
+// Define your user data shape
+interface MyUserData {
+  name: string;
+  email: string;
+  preferences: {
+    theme: 'light' | 'dark';
+    notifications: boolean;
+  };
+}
+
+// Access with type safety
+const user = context.user;
+const name: string = user.name;
+const theme = user.preferences?.theme || 'light';
 ```
 
 ## Next Steps

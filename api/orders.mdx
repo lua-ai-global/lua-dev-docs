@@ -5,20 +5,45 @@ description: "Order creation and management"
 
 ## Overview
 
-The Orders API manages order creation, status tracking, and fulfillment.
+The Orders API manages order creation, status tracking, and fulfillment. Returns **OrderInstance** objects with direct property access.
 
 ```typescript
 import { Orders, OrderStatus } from 'lua-cli';
 
-// Create order
+// Create order - returns OrderInstance
 const order = await Orders.create({
   basketId: 'basket_abc123',
   data: { shippingAddress, paymentMethod }
 });
 
-// Update status
-await Orders.updateStatus(OrderStatus.FULFILLED, order.id);
+// Direct property access
+console.log(order.status);       // "pending"
+console.log(order.totalAmount);  // 59.98
+console.log(order.items);        // Array of items
+
+// Instance methods
+await order.updateStatus(OrderStatus.FULFILLED);
+await order.update({ trackingNumber: 'ABC123' });
+
+// Access updated properties
+console.log(order.status);          // "fulfilled"
+console.log(order.trackingNumber);  // "ABC123"
 ```
+
+<CardGroup cols={2}>
+  <Card title="Direct Access" icon="bolt">
+    Access `order.status` not `order.common.status`
+  </Card>
+  <Card title="Instance Methods" icon="wrench">
+    Built-in `updateStatus()` and `update()` methods
+  </Card>
+  <Card title="Auto-Sync" icon="sync">
+    Properties update after method calls
+  </Card>
+  <Card title="Type-Safe" icon="shield">
+    Full TypeScript support
+  </Card>
+</CardGroup>
 
 ## Order Statuses
 
@@ -56,7 +81,7 @@ import { OrderStatus } from 'lua-cli';
 Create a new order.
 
 ```typescript
-Orders.create(orderData: OrderInput): Promise<Order>
+Orders.create(orderData: OrderInput): Promise<OrderInstance>
 ```
 
 <ParamField path="orderData.basketId" type="string" required>
@@ -66,6 +91,8 @@ Orders.create(orderData: OrderInput): Promise<Order>
 <ParamField path="orderData.data" type="object" required>
   Order details (shipping, payment, etc.)
 </ParamField>
+
+**Returns:** `OrderInstance` with direct property access and methods
 
 **Example:**
 
@@ -83,7 +110,15 @@ const order = await Orders.create({
   }
 });
 
-console.log(order.id); // "order_def456"
+// Direct property access
+console.log(order.id);          // "order_def456"
+console.log(order.status);      // "pending"
+console.log(order.totalAmount); // 59.98
+console.log(order.items);       // Array of items
+console.log(order.shippingAddress.city); // "New York"
+
+// Instance methods available
+await order.updateStatus(OrderStatus.PROCESSING);
 ```
 
 ### get()
@@ -112,16 +147,25 @@ const fulfilled = await Orders.get(OrderStatus.FULFILLED);
 Get a specific order by ID.
 
 ```typescript
-Orders.getById(orderId: string): Promise<Order>
+Orders.getById(orderId: string): Promise<OrderInstance>
 ```
+
+**Returns:** `OrderInstance` with direct property access
 
 **Example:**
 
 ```typescript
 const order = await Orders.getById('order_def456');
 
-console.log(order.common.status);      // "fulfilled"
-console.log(order.common.totalAmount); // 59.98
+// Direct property access (no .common needed!)
+console.log(order.status);       // "fulfilled"
+console.log(order.totalAmount);  // 59.98
+console.log(order.items);        // Array of items
+console.log(order.shippingAddress); // Address object
+
+// Instance methods
+await order.updateStatus(OrderStatus.DELIVERED);
+await order.update({ deliveryDate: '2025-10-15' });
 ```
 
 ### updateStatus()
@@ -129,20 +173,32 @@ console.log(order.common.totalAmount); // 59.98
 Update order status.
 
 ```typescript
-Orders.updateStatus(status: OrderStatus, orderId: string): Promise<Order>
+Orders.updateStatus(status: OrderStatus, orderId: string): Promise<OrderInstance>
 ```
+
+Or use instance method:
+```typescript
+order.updateStatus(status: OrderStatus): Promise<OrderInstance>
+```
+
+**Returns:** `OrderInstance` with updated status
 
 **Example:**
 
 ```typescript
-// Confirm order
-await Orders.updateStatus(OrderStatus.CONFIRMED, orderId);
+// Using static method
+const order = await Orders.updateStatus(OrderStatus.CONFIRMED, orderId);
 
-// Mark as fulfilled
-await Orders.updateStatus(OrderStatus.FULFILLED, orderId);
+// Or using instance method (recommended)
+await order.updateStatus(OrderStatus.PROCESSING);
+await order.updateStatus(OrderStatus.SHIPPED);
+await order.updateStatus(OrderStatus.DELIVERED);
+
+// Access updated status directly
+console.log(order.status); // "delivered"
 
 // Cancel order
-await Orders.updateStatus(OrderStatus.CANCELLED, orderId);
+await order.updateStatus(OrderStatus.CANCELLED);
 ```
 
 ### updateData()
@@ -164,22 +220,34 @@ await Orders.updateData({
 }, orderId);
 ```
 
-## Order Type
+## OrderInstance
 
+All order methods return `OrderInstance` objects with:
+
+**Direct Property Access:**
 ```typescript
-interface Order {
-  id: string;
-  common: {
-    status: OrderStatus;
-    totalAmount: number;
-    itemCount: number;
-    currency: string;
-    items: OrderItem[];
-  };
-  data?: object;
-  createdAt: number;
-  updatedAt: number;
-}
+order.id
+order.status          // No .common needed!
+order.totalAmount     // Direct access
+order.itemCount       // Direct access
+order.items           // Array of items
+order.currency
+order.shippingAddress // Data property via proxy
+order.paymentMethod   // Data property via proxy
+order.createdAt       // Via proxy
+order.updatedAt       // Via proxy
+```
+
+**Instance Methods:**
+```typescript
+await order.updateStatus(OrderStatus.SHIPPED);
+await order.update({ trackingNumber: 'ABC123' });
+```
+
+**Backward Compatible:**
+```typescript
+order.status;         // ✅ New way
+order.common.status;  // ✅ Old way still works
 ```
 
 ## Complete Examples
