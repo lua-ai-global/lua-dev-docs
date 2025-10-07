@@ -17,8 +17,7 @@ export default function ChatWidget() {
     script.onload = () => {
       window.LuaPop?.init({
         agentId: "your-agent-id",
-        position: "bottom-right",
-        theme: "light"
+        position: "bottom-right"
       });
     };
     document.body.appendChild(script);
@@ -47,7 +46,6 @@ export default function ChatWidget() {
         agentId: process.env.REACT_APP_AGENT_ID,
         environment: process.env.NODE_ENV === 'production' ? 'production' : 'staging',
         position: "bottom-right",
-        theme: "light",
         sessionId: `user-${Date.now()}`
       });
     };
@@ -79,8 +77,7 @@ export default function RootLayout({ children }) {
             window.LuaPop?.init({
               agentId: process.env.NEXT_PUBLIC_AGENT_ID,
               environment: process.env.NODE_ENV === 'production' ? 'production' : 'staging',
-              position: "bottom-right",
-              theme: "light"
+              position: "bottom-right"
             });
           }}
         />
@@ -137,8 +134,7 @@ onMounted(() => {
   script.onload = () => {
     window.LuaPop?.init({
       agentId: import.meta.env.VITE_AGENT_ID,
-      position: "bottom-right",
-      theme: "light"
+      position: "bottom-right"
     });
   };
   document.body.appendChild(script);
@@ -157,8 +153,7 @@ export default defineNuxtPlugin(() => {
     script.onload = () => {
       window.LuaPop?.init({
         agentId: useRuntimeConfig().public.agentId,
-        position: "bottom-right",
-        theme: "light"
+        position: "bottom-right"
       });
     };
     document.body.appendChild(script);
@@ -185,8 +180,7 @@ export class AppComponent implements OnInit {
     script.onload = () => {
       (window as any).LuaPop?.init({
         agentId: environment.agentId,
-        position: "bottom-right",
-        theme: "light"
+        position: "bottom-right"
       });
     };
     document.body.appendChild(script);
@@ -207,8 +201,7 @@ export class AppComponent implements OnInit {
     script.onload = () => {
       window.LuaPop?.init({
         agentId: import.meta.env.VITE_AGENT_ID,
-        position: "bottom-right",
-        theme: "light"
+        position: "bottom-right"
       });
     };
     document.body.appendChild(script);
@@ -227,7 +220,6 @@ export class AppComponent implements OnInit {
   window.LuaPop.init({
     agentId: "<?php echo get_option('luapop_agent_id', 'your-agent-id'); ?>",
     position: "bottom-right",
-    theme: "light",
     chatTitle: "<?php bloginfo('name'); ?> Support"
   });
 </script>
@@ -248,7 +240,6 @@ Install plugin like "Insert Headers and Footers" or "Code Snippets" and add the 
     chatTitle: "{{ shop.name }} Assistant",
     buttonText: "🛍️ Shop Help",
     position: "bottom-right",
-    theme: "light",
     {% if customer %}
     sessionId: "customer-{{ customer.id }}",
     runtimeContext: "customer:{{ customer.email }}"
@@ -272,7 +263,6 @@ declare global {
 interface LuaPopConfig {
   agentId: string;
   position?: "bottom-right" | "bottom-left" | "top-right" | "top-left";
-  theme?: "light" | "dark";
   buttonText?: string;
   buttonColor?: string;
   environment?: "staging" | "production" | "custom";
@@ -287,8 +277,7 @@ interface LuaPopConfig {
 // Usage with type safety
 window.LuaPop.init({
   agentId: "your-agent-id",
-  position: "bottom-right", // TypeScript autocomplete works!
-  theme: "light"
+  position: "bottom-right" // TypeScript autocomplete works!
 });
 ```
 

@@ -33,7 +33,6 @@ This guide helps you migrate from popular chat widgets to LuaPop with minimal di
     agentId: "your-agent-id",
     sessionId: "john-doe-123",
     position: "bottom-right",
-    theme: "light",
     runtimeContext: "user:john@example.com"
   });
 </script>
@@ -69,7 +68,6 @@ This guide helps you migrate from popular chat widgets to LuaPop with minimal di
   window.LuaPop.init({
     agentId: "your-agent-id",
     position: "bottom-right",
-    theme: "light",
     buttonColor: "#78a300"
   });
 </script>
@@ -91,7 +89,6 @@ drift.load('your-drift-id');
   window.LuaPop.init({
     agentId: "your-agent-id",
     position: "bottom-right",
-    theme: "light",
     buttonText: "👋 Let's chat",
     buttonColor: "#2d88ff",
     voiceModeEnabled: true
@@ -120,7 +117,6 @@ var Tawk_API = Tawk_API || {};
   window.LuaPop.init({
     agentId: "your-agent-id",
     position: "bottom-right",
-    theme: "light",
     buttonColor: "#00b894"
   });
 </script>
@@ -220,8 +216,7 @@ class GradualMigration {
   initLuaPop() {
     window.LuaPop.init({
       agentId: "migration-agent",
-      position: "bottom-right",
-      theme: "light"
+      position: "bottom-right"
     });
   }
 

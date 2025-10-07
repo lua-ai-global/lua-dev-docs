@@ -33,7 +33,6 @@ Add this code right before the closing `</body>` tag:
   window.LuaPop.init({
     agentId: "your-agent-id",
     position: "bottom-right",
-    theme: "light"
   });
 </script>
 ```
@@ -58,7 +57,6 @@ Add this code right before the closing `</body>` tag:
     window.LuaPop.init({
       agentId: "your-agent-id",
       position: "bottom-right",
-      theme: "light",
       buttonText: "Chat with AI"
     });
   </script>
@@ -105,7 +103,6 @@ pnpm add @lua/pop
             config={{
               agentId: "your-agent-id",
               position: "bottom-right",
-              theme: "light",
               buttonText: "Chat with AI"
             }}
             apiUrl="https://api.heylua.ai"
@@ -134,7 +131,6 @@ pnpm add @lua/pop
     const chatConfig = {
       agentId: "your-agent-id",
       position: "bottom-right",
-      theme: "light"
     };
     </script>
     ```
@@ -148,7 +144,6 @@ pnpm add @lua/pop
     const config: LuaPopConfig = {
       agentId: "your-agent-id",
       position: "bottom-right",
-      theme: "light",
       buttonText: "Chat with AI"
     };
 
@@ -178,7 +173,6 @@ pnpm add @lua/pop
       window.LuaPop.init({
         agentId: "<?php echo get_option('luapop_agent_id'); ?>",
         position: "bottom-right",
-        theme: "light"
       });
     </script>
     ```
@@ -208,7 +202,6 @@ pnpm add @lua/pop
         chatTitle: "Shop Assistant",
         buttonText: "🛍️ Shop Help",
         position: "bottom-right",
-        theme: "light"
       });
     </script>
     ```
@@ -237,7 +230,6 @@ pnpm add @lua/pop
       window.LuaPop.init({
         agentId: "your-agent-id",
         position: "bottom-right",
-        theme: "light"
       });
     </script>
     ```
@@ -262,8 +254,7 @@ pnpm add @lua/pop
     <script>
       window.LuaPop.init({
         agentId: "your-agent-id",
-        position: "bottom-right",
-        theme: "light"
+        position: "bottom-right"
       });
     </script>
     ```
@@ -288,8 +279,7 @@ pnpm add @lua/pop
     <script>
       window.LuaPop.init({
         agentId: "your-agent-id",
-        position: "bottom-right",
-        theme: "light"
+        position: "bottom-right"
       });
     </script>
     ```
@@ -317,7 +307,6 @@ export default function ChatWidget() {
       window.LuaPop?.init({
         agentId: process.env.NEXT_PUBLIC_AGENT_ID,
         position: "bottom-right",
-        theme: "light",
         sessionId: `user-${Date.now()}`
       });
     };
@@ -364,8 +353,7 @@ export default function RootLayout({ children }) {
           onLoad={() => {
             window.LuaPop?.init({
               agentId: process.env.NEXT_PUBLIC_AGENT_ID,
-              position: "bottom-right",
-              theme: "light"
+              position: "bottom-right"
             });
           }}
         />
