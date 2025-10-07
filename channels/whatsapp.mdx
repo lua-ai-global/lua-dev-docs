@@ -1,0 +1,414 @@
+---
+title: "WhatsApp Business"
+description: "Connect your agent to WhatsApp Business API"
+---
+
+## Overview
+
+WhatsApp Business API allows your agent to communicate with customers via WhatsApp - the world's most popular messaging app with 2+ billion users.
+
+<CardGroup cols={2}>
+  <Card title="Business Messaging" icon="building">
+    Professional customer communication
+  </Card>
+  <Card title="Rich Media" icon="image">
+    Images, videos, documents, location
+  </Card>
+  <Card title="High Engagement" icon="chart-line">
+    98% open rates
+  </Card>
+  <Card title="Global Reach" icon="globe">
+    Available in 180+ countries
+  </Card>
+</CardGroup>
+
+## Prerequisites
+
+Before connecting WhatsApp, you need:
+
+<Steps>
+  <Step title="Meta Business Account">
+    Create account at https://business.facebook.com
+    
+    <Frame>
+      <img src="/images/channels/meta-business-signup.png" alt="Meta Business signup" />
+    </Frame>
+    
+    *Screenshot: Meta Business account creation page*
+  </Step>
+  
+  <Step title="WhatsApp Business Account (WABA)">
+    Set up in Meta Business Suite
+    
+    <Frame>
+      <img src="/images/channels/waba-setup.png" alt="WABA setup" />
+    </Frame>
+    
+    *Screenshot: WhatsApp Business Account setup in Meta*
+  </Step>
+  
+  <Step title="Phone Number">
+    Add and verify business phone number
+    
+    <Frame>
+      <img src="/images/channels/whatsapp-phone-verify.png" alt="Phone verification" />
+    </Frame>
+    
+    *Screenshot: Phone number verification screen*
+  </Step>
+  
+  <Step title="Get Credentials">
+    Collect required information:
+    - Phone Number ID
+    - WABA ID
+    - Access Token
+    
+    <Frame>
+      <img src="/images/channels/whatsapp-credentials.png" alt="WhatsApp credentials" />
+    </Frame>
+    
+    *Screenshot: Where to find credentials in Meta Business Suite*
+  </Step>
+</Steps>
+
+## Connection Method 1: CLI
+
+### Step-by-Step CLI Setup
+
+<Steps>
+  <Step title="Run Command">
+    ```bash
+    lua channels
+    ```
+  </Step>
+  
+  <Step title="Select Link New Channel">
+    ```
+    ✅ Using agent: myAgent
+    
+    ? What would you like to do?
+    ❯ 🔗 Link new channel
+    ```
+  </Step>
+  
+  <Step title="Select WhatsApp">
+    ```
+    ? Select channel type:
+    ❯ 📱 WhatsApp
+      💬 Facebook Messenger
+      📧 Email
+      🔒 Slack (Private)
+    ```
+  </Step>
+  
+  <Step title="Enter Phone Number ID">
+    ```
+    ? Enter phone number ID: 647834045087314
+    ```
+    
+    Find this in Meta Business Suite → WhatsApp → Phone Numbers
+  </Step>
+  
+  <Step title="Enter WABA ID">
+    ```
+    ? Enter WhatsApp Business Account ID (WABA ID): 1390592278829291
+    ```
+    
+    Find this in Meta Business Suite → WhatsApp → Settings
+  </Step>
+  
+  <Step title="Enter Access Token">
+    ```
+    ? Enter access token: ****
+    ```
+    
+    Generate in Meta Business Suite → System Users → Generate Token
+  </Step>
+  
+  <Step title="Success">
+    ```
+    📡 Creating WhatsApp channel...
+    
+    ✅ WhatsApp channel created successfully!
+    
+    📱 Phone Number: +15557986280
+    📊 Status: CONNECTED
+    🌍 Country: USA
+    🎯 Webhook URL: https://wa.heylua.ai/whatsapp/webhook/abc123
+    ```
+  </Step>
+</Steps>
+
+### Configure Webhook in Meta
+
+<Steps>
+  <Step title="Copy Webhook URL">
+    Copy the webhook URL from CLI output
+  </Step>
+  
+  <Step title="Open Meta Business Suite">
+    Navigate to WhatsApp → Configuration
+    
+    <Frame>
+      <img src="/images/channels/meta-webhook-1.png" alt="Meta webhook config" />
+    </Frame>
+    
+    *Screenshot: WhatsApp Configuration page in Meta*
+  </Step>
+  
+  <Step title="Add Webhook">
+    Paste webhook URL and configure
+    
+    <Frame>
+      <img src="/images/channels/meta-webhook-2.png" alt="Add webhook" />
+    </Frame>
+    
+    *Screenshot: Webhook URL input field*
+  </Step>
+  
+  <Step title="Subscribe to Events">
+    Enable messages and message_status events
+    
+    <Frame>
+      <img src="/images/channels/meta-webhook-events.png" alt="Webhook events" />
+    </Frame>
+    
+    *Screenshot: Event subscription checkboxes*
+  </Step>
+  
+  <Step title="Verify">
+    Click verify button to confirm webhook
+    
+    <Frame>
+      <img src="/images/channels/meta-webhook-verified.png" alt="Webhook verified" />
+    </Frame>
+    
+    *Screenshot: Success message showing webhook verified*
+  </Step>
+</Steps>
+
+## Connection Method 2: Admin Dashboard
+
+### Step-by-Step Dashboard Setup
+
+<Steps>
+  <Step title="Open Admin">
+    ```bash
+    lua admin
+    ```
+    
+    Or visit: https://admin.heylua.ai
+  </Step>
+  
+  <Step title="Navigate to Channels">
+    Click "Channels" in sidebar
+    
+    <Frame>
+      <img src="/images/channels/admin-channels-menu.png" alt="Channels menu" />
+    </Frame>
+    
+    *Screenshot: Admin sidebar with Channels highlighted*
+  </Step>
+  
+  <Step title="Click Connect New Channel">
+    Button in top right
+    
+    <Frame>
+      <img src="/images/channels/admin-connect-button.png" alt="Connect button" />
+    </Frame>
+    
+    *Screenshot: "Connect New Channel" button*
+  </Step>
+  
+  <Step title="Select WhatsApp">
+    <Frame>
+      <img src="/images/channels/admin-channel-types.png" alt="Channel types" />
+    </Frame>
+    
+    *Screenshot: Grid of channel type options*
+  </Step>
+  
+  <Step title="Enter Credentials">
+    Fill in WhatsApp credentials form
+    
+    <Frame>
+      <img src="/images/channels/admin-whatsapp-form.png" alt="WhatsApp form" />
+    </Frame>
+    
+    *Screenshot: Form with Phone ID, WABA ID, Token fields*
+  </Step>
+  
+  <Step title="Click Connect">
+    Submit form
+    
+    <Frame>
+      <img src="/images/channels/admin-whatsapp-connecting.png" alt="Connecting" />
+    </Frame>
+    
+    *Screenshot: Loading state while connecting*
+  </Step>
+  
+  <Step title="Connection Success">
+    <Frame>
+      <img src="/images/channels/admin-whatsapp-success.png" alt="WhatsApp connected" />
+    </Frame>
+    
+    *Screenshot: Success message with phone number, status, webhook URL*
+  </Step>
+  
+  <Step title="Configure Webhook">
+    Follow instructions to set webhook in Meta
+    
+    <Frame>
+      <img src="/images/channels/admin-whatsapp-webhook-guide.png" alt="Webhook guide" />
+    </Frame>
+    
+    *Screenshot: Step-by-step webhook configuration guide*
+  </Step>
+</Steps>
+
+## Testing Your WhatsApp Channel
+
+<Steps>
+  <Step title="Send Test Message">
+    From your phone, send WhatsApp message to your business number
+    
+    ```
+    You: Hi!
+    ```
+  </Step>
+  
+  <Step title="Agent Responds">
+    Your agent should respond automatically
+    
+    ```
+    Agent: Hello! How can I help you today?
+    ```
+  </Step>
+  
+  <Step title="Monitor in Admin">
+    View conversation in admin dashboard
+    
+    <Frame>
+      <img src="/images/channels/admin-whatsapp-conversation.png" alt="WhatsApp conversation" />
+    </Frame>
+    
+    *Screenshot: Real-time conversation view*
+  </Step>
+</Steps>
+
+## Status & Quality
+
+### Connection Status
+
+- 🟢 **CONNECTED** - Working normally
+- 🔴 **DISCONNECTED** - Needs reconnection
+- 🟡 **PENDING** - Setup in progress
+
+### Quality Rating
+
+Meta assigns quality ratings based on user feedback:
+
+- 🟢 **GREEN** - High quality (good!)
+- 🟡 **YELLOW** - Medium quality (watch carefully)
+- 🔴 **RED** - Low quality (take action)
+
+<Warning>
+Low quality ratings can result in rate limiting or account restrictions. Monitor quality in admin dashboard.
+</Warning>
+
+## Best Practices
+
+<AccordionGroup>
+  <Accordion title="Response Time">
+    - Respond within 24 hours
+    - Quick responses improve quality rating
+    - Agent handles this automatically
+  </Accordion>
+
+  <Accordion title="Message Templates">
+    - Use templates for notifications
+    - Required for messages after 24 hours
+    - Set up in Meta Business Suite
+  </Accordion>
+
+  <Accordion title="Opt-In Required">
+    - Users must message you first
+    - Cannot send unsolicited messages
+    - Respect user privacy
+  </Accordion>
+
+  <Accordion title="Monitor Quality">
+    ```bash
+    lua admin
+    # Check quality rating regularly
+    # Address any user complaints promptly
+    ```
+  </Accordion>
+</AccordionGroup>
+
+## Troubleshooting
+
+<AccordionGroup>
+  <Accordion title="Channel shows DISCONNECTED">
+    **Causes:**
+    - Token expired
+    - WABA disabled
+    - Phone number removed
+    
+    **Solution:**
+    1. Regenerate access token
+    2. Update in admin dashboard
+    3. Verify WABA is active
+  </Accordion>
+
+  <Accordion title="Messages not delivering">
+    **Check:**
+    - Quality rating (RED = issues)
+    - Webhook configured correctly
+    - Phone number status in Meta
+    - Message templates approved
+  </Accordion>
+
+  <Accordion title="Quality rating dropped">
+    **Actions:**
+    1. Review recent conversations
+    2. Check user feedback in Meta
+    3. Improve agent responses
+    4. Address user complaints
+    5. May need to adjust persona
+  </Accordion>
+</AccordionGroup>
+
+## Next Steps
+
+<CardGroup cols={2}>
+  <Card
+    title="Facebook Messenger"
+    icon="facebook"
+    href="/channels/facebook-messenger"
+  >
+    Connect another channel
+  </Card>
+  <Card
+    title="Test Your Agent"
+    icon="comments"
+    href="/cli/chat-command"
+  >
+    Test agent behavior
+  </Card>
+  <Card
+    title="Monitor Channels"
+    icon="chart-line"
+    href="/channels/admin-dashboard"
+  >
+    View channel analytics
+  </Card>
+  <Card
+    title="CLI Command Reference"
+    icon="terminal"
+    href="/cli/channels-command"
+  >
+    Complete CLI guide
+  </Card>
+</CardGroup>

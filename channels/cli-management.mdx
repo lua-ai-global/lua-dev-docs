@@ -1,0 +1,133 @@
+---
+title: "CLI Management"
+description: "Manage channels via terminal"
+---
+
+## Overview
+
+The `lua channels` command provides terminal-based channel management for developers who prefer command-line workflows.
+
+```bash
+lua channels
+```
+
+## Supported Operations
+
+<CardGroup cols={2}>
+  <Card title="List Channels" icon="list">
+    View all connected channels
+  </Card>
+  <Card title="Link New Channel" icon="link">
+    Connect new platforms
+  </Card>
+  <Card title="View Details" icon="info">
+    Channel status and configuration
+  </Card>
+  <Card title="Open Admin" icon="arrow-up-right-from-square">
+    Quick access to dashboard
+  </Card>
+</CardGroup>
+
+## Complete Command Reference
+
+<Card title="Full CLI Documentation" icon="terminal" href="/cli/channels-command" horizontal>
+  See complete `lua channels` command reference
+</Card>
+
+## Supported Channels via CLI
+
+<Tabs>
+  <Tab title="✅ Supported">
+    **Can connect via CLI:**
+    - 📱 WhatsApp Business
+    - 💬 Facebook Messenger
+    - 📧 Email
+    - 💼 Slack (Private & Public)
+    
+    All require credentials you provide
+  </Tab>
+
+  <Tab title="🌐 Admin Only">
+    **Require admin dashboard:**
+    - 📸 Instagram (OAuth flow)
+    - 💻 Website Widget (code snippet)
+    
+    These use visual OAuth flows or don't need "connection"
+  </Tab>
+</Tabs>
+
+## Quick Workflows
+
+### List All Channels
+
+```bash
+$ lua channels
+
+? What would you like to do? 📋 List channels
+
+✅ Found 4 channel(s)
+
+📱 WHATSAPP - +15557986280
+💬 FACEBOOK - Business Page  
+📧 EMAIL - support@company.com
+💼 SLACK - Team Workspace
+```
+
+### Link WhatsApp
+
+```bash
+$ lua channels
+→ Link new channel
+→ WhatsApp
+→ Enter credentials
+✅ Connected
+```
+
+### View Details
+
+```bash
+$ lua channels
+→ List channels
+→ Select channel
+📄 View full configuration
+```
+
+### Open Admin Dashboard
+
+```bash
+$ lua channels
+→ Link on admin dashboard
+🌐 Opens browser to admin
+```
+
+## When to Use CLI
+
+<AccordionGroup>
+  <Accordion title="✅ Use CLI when:">
+    - You're already in terminal
+    - Automating channel setup
+    - Scripting deployments
+    - Quick status checks
+    - You have credentials ready
+  </Accordion>
+
+  <Accordion title="🌐 Use Admin when:">
+    - OAuth flows needed (Instagram)
+    - Visual interface preferred
+    - Managing many channels
+    - Team collaboration
+    - Viewing analytics
+    - Non-technical users
+  </Accordion>
+</AccordionGroup>
+
+## Next Steps
+
+<CardGroup cols={2}>
+  <Card title="Admin Dashboard" icon="gauge" href="/channels/admin-dashboard">
+    Visual channel management
+  </Card>
+  <Card title="Command Reference" icon="book" href="/cli/channels-command">
+    Complete CLI documentation
+  </Card>
+</CardGroup>

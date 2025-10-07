@@ -1,0 +1,175 @@
+---
+title: "Response Formatting"
+description: "Create rich, visual responses across all channels"
+---
+
+## Overview
+
+Make your agent's responses visually appealing with **formatting components** that work across WhatsApp, Facebook, Instagram, Email, Slack, and your website.
+
+<Warning>
+**Important**: You must explicitly instruct your agent in the **Persona** or **Skill Context** to use these components. They won't be used automatically!
+</Warning>
+
+## 6 Visual Components
+
+<CardGroup cols={3}>
+  <Card title="List-Item" icon="list" href="/formatting/list-item">
+    **Products, rooms, menus**
+    
+    Structured lists with images, titles, and descriptions
+  </Card>
+  <Card title="Actions" icon="hand-pointer" href="/formatting/actions">
+    **Interactive buttons**
+    
+    Clickable action buttons for next steps
+  </Card>
+  <Card title="Links" icon="link" href="/formatting/links">
+    **Web URLs**
+    
+    Links with rich previews
+  </Card>
+  <Card title="Images" icon="image" href="/formatting/images">
+    **Photo galleries**
+    
+    Multiple images in gallery format
+  </Card>
+  <Card title="Payment" icon="credit-card" href="/formatting/payment">
+    **Checkout links**
+    
+    Secure payment and booking links
+  </Card>
+  <Card title="Navigate" icon="arrow-up-right-from-square" href="/formatting/navigate">
+    **Website navigation**
+    
+    Direct users to pages (WebChat only)
+  </Card>
+</CardGroup>
+
+## Quick Example
+
+### E-commerce Product Response
+
+**Without formatting:**
+```
+We have the UltraBook Pro for $1,299 and Student Laptop for $599.
+```
+
+**With formatting:**
+```
+::: list-item
+![image](https://cdn.example.com/laptop-pro.jpg)
+#UltraBook Pro
+##$1,299 - In Stock
+Professional laptop with 16GB RAM, 512GB SSD. Free 2-day shipping.
+:::
+
+::: list-item
+![image](https://cdn.example.com/laptop-student.jpg)
+#Student Laptop
+##$599 - Available
+Perfect for students with 8GB RAM, 256GB SSD. One-year warranty.
+:::
+
+::: actions
+- Add to Cart
+- Compare Laptops
+- View Full Specs
+:::
+```
+
+**Result**: Beautiful visual cards with images, structured info, and clickable actions!
+
+<Frame>
+  <img src="/images/formatting/example-comparison.png" alt="With vs without formatting" />
+</Frame>
+
+*Screenshot: Side-by-side comparison showing plain text vs formatted response*
+
+## How to Configure
+
+Tell your agent in **Persona** or **Skill Context**:
+
+```typescript
+persona: `
+  When showing products, use list-item format:
+  
+  ::: list-item
+  ![image](url)
+  #Product Name
+  ##$Price - Stock
+  Description here.
+  :::
+  
+  Then provide actions:
+  
+  ::: actions
+  - Add to Cart
+  - View Details
+  :::
+`
+```
+
+<Card title="Complete Configuration Guide" icon="book" href="/cli/persona-command">
+  Learn how to configure your agent's persona
+</Card>
+
+## Platform Support
+
+All components work across:
+- ✅ WhatsApp Business
+- ✅ Facebook Messenger
+- ✅ Instagram Messenger
+- ✅ Email
+- ✅ Slack
+- ✅ Website (LuaPop)
+
+<Note>
+**Navigate component** only works on WebChat/LuaPop (requires onNavigate handler)
+</Note>
+
+## Coming Soon
+
+<Card title="Custom Component Builder" icon="wand-magic-sparkles" href="/formatting/custom-components">
+  Create your own custom components (Q1 2025)
+</Card>
+
+## Explore Components
+
+Click on any component in the left sidebar to see:
+- Complete format specification
+- Multiple examples across channels
+- How to configure in persona/context
+- Best practices
+- Troubleshooting
+
+<CardGroup cols={2}>
+  <Card
+    title="Start with List-Item"
+    icon="list"
+    href="/formatting/list-item"
+  >
+    Most commonly used component
+  </Card>
+  <Card
+    title="Add Actions"
+    icon="hand-pointer"
+    href="/formatting/actions"
+  >
+    Make responses interactive
+  </Card>
+  <Card
+    title="Configure Persona"
+    icon="user"
+    href="/cli/persona-command"
+  >
+    Add formatting instructions
+  </Card>
+  <Card
+    title="Test Your Agent"
+    icon="comments"
+    href="/cli/chat-command"
+  >
+    Verify formatting works
+  </Card>
+</CardGroup>

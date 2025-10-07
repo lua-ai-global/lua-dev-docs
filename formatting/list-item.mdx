@@ -1,0 +1,190 @@
+---
+title: "List-Item Component"
+description: "Display structured lists of products, rooms, menu items, or articles"
+---
+
+## Overview
+
+The **List-Item** component displays structured information in a visually appealing format across all channels.
+
+<Card title="Perfect for:" icon="list">
+  Products, hotel rooms, menu items, articles, search results - any list of options
+</Card>
+
+## Format
+
+```
+::: list-item
+![image](Image-URL)
+#Item Title
+##Item Subheading
+Brief summary of the item (max ~40 words).
+:::
+```
+
+## Requirements
+
+<CardGroup cols={2}>
+  <Card title="Unique Titles" icon="fingerprint">
+    Each item must have unique heading and subheading
+  </Card>
+  <Card title="10 Item Max" icon="hashtag">
+    Maximum 10 items per response
+  </Card>
+  <Card title="Images Optional" icon="image">
+    Include when available
+  </Card>
+  <Card title="Concise" icon="text">
+    ~40 words max per summary
+  </Card>
+</CardGroup>
+
+## Complete Examples
+
+### E-commerce Product
+
+```
+::: list-item
+![image](https://cdn.example.com/laptop-pro.jpg)
+#UltraBook Pro Laptop
+##$1,299.00 - In Stock
+Professional-grade laptop with 16GB RAM, 512GB SSD, and stunning 14" Retina display. Perfect for developers and content creators. Free 2-day shipping on orders over $50.
+:::
+```
+
+<Frame>
+  <img src="/images/formatting/list-item-product-whatsapp.png" alt="Product in WhatsApp" />
+</Frame>
+
+*Screenshot: Product list item in WhatsApp showing image, title, price, and description*
+
+<Frame>
+  <img src="/images/formatting/list-item-product-facebook.png" alt="Product in Facebook" />
+</Frame>
+
+*Screenshot: Same product in Facebook Messenger*
+
+### Hotel Room
+
+```
+::: list-item
+![image](https://hotel.example.com/deluxe-ocean.jpg)
+#Deluxe Ocean View Suite
+##$250/night - 3 Rooms Available
+Spacious suite with king bed, private balcony overlooking the ocean, and modern amenities. Includes complimentary breakfast, WiFi, and parking. Maximum 2 guests.
+:::
+```
+
+<Frame>
+  <img src="/images/formatting/list-item-hotel-instagram.png" alt="Hotel in Instagram" />
+</Frame>
+
+*Screenshot: Hotel room in Instagram DM*
+
+### Restaurant Menu Item
+
+```
+::: list-item
+![image](https://restaurant.example.com/pasta-special.jpg)
+#Chef's Seafood Linguine
+##$24.99 - Available Tonight
+Handmade linguine with fresh seafood, cherry tomatoes, and basil in white wine sauce. Served with garlic bread. Gluten-free option available upon request.
+:::
+```
+
+<Frame>
+  <img src="/images/formatting/list-item-menu-email.png" alt="Menu in Email" />
+</Frame>
+
+*Screenshot: Menu item formatted in Email*
+
+## How to Configure
+
+### In Persona
+
+```yaml
+persona: |
+  When showing products, ALWAYS use list-item format:
+  
+  ::: list-item
+  ![image](product-image-url)
+  #Product Name
+  ##$Price - Stock Status
+  Product description here.
+  :::
+  
+  Format each product individually. Maximum 10 products per response.
+```
+
+### In Skill Context
+
+```typescript
+const ecommerceSkill = new LuaSkill({
+  context: `
+    When search_products returns results, format each as:
+    
+    ::: list-item
+    ![image](product.imageUrl)
+    #product.name
+    ##$product.price - product.stockStatus
+    product.description
+    :::
+    
+    Always include image if available.
+  `
+});
+```
+
+## Best Practices
+
+<AccordionGroup>
+  <Accordion title="✅ Make Titles Unique">
+    ```
+    ✅ Good:
+    #Deluxe Ocean View
+    #Standard Garden View
+    
+    ❌ Bad:
+    #Room Option
+    #Room Option
+    ```
+  </Accordion>
+
+  <Accordion title="✅ Include Key Info in Subheading">
+    ```
+    ✅ Good:
+    ##$250/night - Available
+    ##$45.99 - Chef's Recommendation
+    ##$1,299 - In Stock, Free Shipping
+    
+    ❌ Bad:
+    ##Product Info
+    ##Details
+    ```
+  </Accordion>
+
+  <Accordion title="✅ Keep Descriptions Concise">
+    ```
+    ✅ Good: ~40 words with key features
+    ❌ Bad: 200 word essay
+    ```
+  </Accordion>
+
+  <Accordion title="✅ Use Quality Images">
+    - High resolution
+    - Direct image URLs
+    - Web-accessible (HTTPS)
+    - Representative of item
+  </Accordion>
+</AccordionGroup>
+
+## Next Steps
+
+<CardGroup cols={2}>
+  <Card title="Actions Component" icon="hand-pointer" href="/formatting/actions">
+    Add interactive buttons after lists
+  </Card>
+  <Card title="Configure Persona" icon="user" href="/cli/persona-command">
+    Add formatting instructions
+  </Card>
+</CardGroup>

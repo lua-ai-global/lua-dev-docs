@@ -1,0 +1,57 @@
+---
+title: "Links Component"
+description: "Display web URLs and search results"
+---
+
+## Overview
+
+The **Links** component displays URLs with rich previews - perfect for web search results or documentation links.
+
+## Format
+
+```
+::: links
+![link](URL-1)
+![link](URL-2)
+![link](URL-3)
+:::
+```
+
+## Example
+
+```
+::: links
+![link](https://docs.example.com/getting-started)
+![link](https://docs.example.com/api-reference)
+![link](https://support.example.com/troubleshooting)
+:::
+```
+
+<Frame>
+  <img src="/images/formatting/links-component-whatsapp.png" alt="Links in WhatsApp" />
+</Frame>
+
+*Screenshot: Links with preview cards*
+
+## Configure in Persona
+
+```yaml
+persona: |
+  When user asks for documentation or web resources:
+  
+  ::: links
+  ![link](relevant-url-1)
+  ![link](relevant-url-2)
+  :::
+```
+
+## Best For
+
+- Web search results
+- Documentation links
+- Support articles
+- External resources
+
+<Card title="Images Component" icon="image" href="/formatting/images">
+  Next: Display image galleries
+</Card>

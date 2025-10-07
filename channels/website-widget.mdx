@@ -1,0 +1,184 @@
+---
+title: "Website Chat Widget"
+description: "Embed LuaPop chat widget on your website"
+---
+
+## Overview
+
+LuaPop is an embeddable chat widget that brings your AI agent directly to your website - no channel connection needed, just add a script tag!
+
+<CardGroup cols={2}>
+  <Card title="2-Minute Setup" icon="clock">
+    Single script tag
+  </Card>
+  <Card title="Fully Customizable" icon="palette">
+    Match your brand
+  </Card>
+  <Card title="Voice Chat" icon="microphone">
+    Optional voice support
+  </Card>
+  <Card title="Any Framework" icon="code">
+    Works everywhere
+  </Card>
+</CardGroup>
+
+## Quick Setup
+
+<Steps>
+  <Step title="Add Script to Website">
+    ```html
+    <script src="https://lua-ai-global.github.io/lua-pop/lua-pop.umd.js"></script>
+    <script>
+      window.LuaPop.init({
+        agentId: "your-agent-id",
+        position: "bottom-right",
+        theme: "dark"
+      });
+    </script>
+    ```
+    
+    Place before closing `</body>` tag
+  </Step>
+  
+  <Step title="Replace Agent ID">
+    Get your agent ID from:
+    
+    ```bash
+    lua production
+    ```
+    
+    Or from `lua.skill.yaml`
+  </Step>
+  
+  <Step title="Refresh Page">
+    Widget appears immediately!
+    
+    <Frame>
+      <img src="/images/channels/website-widget-button.png" alt="Widget button" />
+    </Frame>
+    
+    *Screenshot: Website with chat button in bottom-right*
+  </Step>
+  
+  <Step title="Test Chat">
+    Click button and send message
+    
+    <Frame>
+      <img src="/images/channels/website-widget-chat.png" alt="Chat window" />
+    </Frame>
+    
+    *Screenshot: Open chat window with conversation*
+  </Step>
+</Steps>
+
+## Customization
+
+```html
+<script>
+  window.LuaPop.init({
+    agentId: "your-agent-id",
+    
+    // Position
+    position: "bottom-right",  // or bottom-left, top-right, top-left
+    
+    // Appearance
+    theme: "dark",
+    buttonColor: "#ff173a",
+    buttonText: "💬 Chat with us",
+    chatTitle: "Customer Support",
+    
+    // Features
+    voiceModeEnabled: true,
+    
+    // Branding
+    chatHeaderSubtitle: {
+      visible: true,
+      brandName: "Your Company",
+      iconUrl: "/logo.png"
+    }
+  });
+</script>
+```
+
+<Frame>
+  <img src="/images/channels/widget-customization-examples.png" alt="Customization" />
+</Frame>
+
+*Screenshot: Multiple widget examples with different colors/positions*
+
+## Complete Documentation
+
+<Card title="Full LuaPop Guide" icon="book" href="/chat-widget/quick-start" horizontal>
+  Complete chat widget documentation with configuration, styling, events, frameworks, and more
+</Card>
+
+## Framework Integration
+
+<Tabs>
+  <Tab title="React">
+    ```tsx
+    import { useEffect } from 'react';
+    
+    export default function ChatWidget() {
+      useEffect(() => {
+        const script = document.createElement('script');
+        script.src = 'https://lua-ai-global.github.io/lua-pop/lua-pop.umd.js';
+        script.onload = () => {
+          window.LuaPop?.init({
+            agentId: process.env.REACT_APP_AGENT_ID,
+            position: "bottom-right"
+          });
+        };
+        document.body.appendChild(script);
+      }, []);
+      return null;
+    }
+    ```
+  </Tab>
+
+  <Tab title="Next.js">
+    ```tsx
+    import Script from 'next/script';
+    
+    export default function Layout({ children }) {
+      return (
+        <>
+          {children}
+          <Script 
+            src="https://lua-ai-global.github.io/lua-pop/lua-pop.umd.js"
+            onLoad={() => {
+              window.LuaPop?.init({
+                agentId: process.env.NEXT_PUBLIC_AGENT_ID
+              });
+            }}
+          />
+        </>
+      );
+    }
+    ```
+  </Tab>
+
+  <Tab title="WordPress">
+    Add to theme's `footer.php` or use "Insert Headers and Footers" plugin
+  </Tab>
+
+  <Tab title="Shopify">
+    Add to `theme.liquid` before `</body>`
+  </Tab>
+</Tabs>
+
+<Card title="Framework Guides" href="/chat-widget/frameworks">
+  Complete integration guides for all frameworks
+</Card>
+
+## Next Steps
+
+<CardGroup cols={2}>
+  <Card title="Widget Configuration" icon="cog" href="/chat-widget/configuration">
+    All configuration options
+  </Card>
+  <Card title="Styling Guide" icon="palette" href="/chat-widget/styling">
+    Customize appearance
+  </Card>
+</CardGroup>
+EOFEMAIL

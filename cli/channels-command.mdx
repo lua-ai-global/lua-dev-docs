@@ -1,0 +1,783 @@
+---
+title: "Channels Command"
+description: "Manage agent communication channels"
+---
+
+## Overview
+
+The `lua channels` command provides an interactive interface for managing your agent's communication channels - connect to WhatsApp, Facebook, Email, Slack, Instagram, and more.
+
+```bash
+lua channels
+```
+
+<CardGroup cols={2}>
+  <Card title="List Channels" icon="list">
+    View all connected channels
+  </Card>
+  <Card title="Link New Channel" icon="link">
+    Connect WhatsApp, Facebook, Slack, Email
+  </Card>
+  <Card title="Channel Details" icon="info">
+    View configuration and status
+  </Card>
+  <Card title="Admin Dashboard" icon="gauge">
+    Open visual interface
+  </Card>
+</CardGroup>
+
+## Currently Supported Channels
+
+Lua currently supports 6 communication channels:
+
+<Tabs>
+  <Tab title="📧 Email">
+    **Email Integration**
+    
+    Respond to emails automatically.
+    
+    **Requirements:**
+    - Sender Name
+    - Sender Email Address
+    - Email forwarding setup
+    
+    **Features:**
+    - Automated email responses
+    - Custom sender identity
+    - Professional communication
+    
+    **CLI Support:** ✅ Yes
+  </Tab>
+
+  <Tab title="💻 WebChat">
+    **LuaPop Widget**
+    
+    Chat widget for websites.
+    
+    **Requirements:**
+    - Agent ID (from lua.skill.yaml)
+    
+    **Features:**
+    - Embeddable widget
+    - Customizable styling
+    - Voice chat support
+    - Mobile responsive
+    
+    **Setup:** Code snippet (no channel connection needed)
+    
+    See [Chat Widget docs](/chat-widget/introduction)
+  </Tab>
+
+  <Tab title="💬 Facebook">
+    **Facebook Messenger**
+    
+    Connect to Facebook Page messages.
+    
+    **Requirements:**
+    - Page Access Token
+    - Page ID
+    
+    **Features:**
+    - Respond to page messages
+    - Customer conversations
+    - Rich media support
+    
+    **CLI Support:** ✅ Yes
+  </Tab>
+
+  <Tab title="📸 Instagram">
+    **Instagram Messenger**
+    
+    Respond to Instagram DMs.
+    
+    **Requirements:**
+    - Instagram Business Account
+    - Linked to Facebook Page
+    
+    **Features:**
+    - DM responses
+    - Story replies
+    - Visual platform
+    
+    **CLI Support:** ❌ Admin Dashboard only (OAuth)
+  </Tab>
+
+  <Tab title="📱 WhatsApp">
+    **WhatsApp Business**
+    
+    WhatsApp Business API integration.
+    
+    **Requirements:**
+    - Phone Number ID
+    - WABA ID
+    - Access Token
+    
+    **Features:**
+    - Business messaging
+    - Rich media support
+    - Quality ratings
+    - Global reach
+    
+    **CLI Support:** ✅ Yes
+  </Tab>
+
+  <Tab title="💼 Slack">
+    **Slack Integration**
+    
+    Connect to Slack workspaces.
+    
+    **Types:**
+    - Private Bot (simple)
+    - Public OAuth (distributable)
+    
+    **Features:**
+    - Direct messages
+    - Channel messages
+    - Team collaboration
+    
+    **CLI Support:** ✅ Yes (both types)
+  </Tab>
+</Tabs>
+
+<Note>
+**🚀 More channels coming soon!** SMS, Microsoft Teams, Discord, Telegram, LinkedIn, and WeChat are in active development.
+</Note>
+
+## Interactive Flow
+
+<Steps>
+  <Step title="Launch Command">
+    ```bash
+    lua channels
+    ```
+    
+    Automatically loads agent from `lua.skill.yaml`
+  </Step>
+  
+  <Step title="Choose Action">
+    ```
+    ✅ Using agent: myAgent
+    
+    ? What would you like to do?
+      📋 List channels
+      🔗 Link new channel
+      🌐 Link on admin dashboard
+    ```
+  </Step>
+  
+  <Step title="Complete Action">
+    Follow the prompts based on your selection
+  </Step>
+</Steps>
+
+## List Channels
+
+View all configured channels with detailed information:
+
+```bash
+? What would you like to do? 📋 List channels
+
+✅ Found 3 channel(s)
+
+? Select a channel to view details:
+❯ 📱 WHATSAPP - +15557986280
+  💬 FACEBOOK - My Business Page
+  💼 SLACK - My Workspace
+  ← Back to main menu
+```
+
+### Channel Details View
+
+```
+📱 WHATSAPP Channel Details
+──────────────────────────────────────────────────
+Type:           whatsapp
+Identifier:     647834045087314
+Created:        2/3/2025, 10:45:46 AM
+Phone Number:   +15557986280
+Phone ID:       647834045087314
+Status:         CONNECTED
+Quality:        GREEN
+WABA ID:        1390592278829291
+
+Metadata:
+  Verified Name:  My Business
+  Country:        USA
+──────────────────────────────────────────────────
+
+Press Enter to continue...
+```
+
+## Link New Channel
+
+### WhatsApp Setup
+
+```bash
+? What would you like to do? 🔗 Link new channel
+? Select channel type: 📱 WhatsApp
+
+? Enter phone number ID: 647834045087314
+? Enter WhatsApp Business Account ID (WABA ID): 1390592278829291
+? Enter access token: ****
+
+📡 Creating WhatsApp channel...
+
+✅ WhatsApp channel created successfully!
+
+📱 Channel Details:
+   Phone Number: +15557986280
+   Status: CONNECTED
+   Webhook: https://wa.heylua.ai/whatsapp/webhook/...
+```
+
+<Note>
+**Next Steps for WhatsApp:**
+1. Configure webhook in Meta Business Suite
+2. Copy webhook URL from output
+3. Set webhook URL in Meta dashboard
+4. Verify webhook connection
+</Note>
+
+### Facebook Setup
+
+```bash
+? What would you like to do? 🔗 Link new channel
+? Select channel type: 💬 Facebook Messenger
+
+? Enter Facebook page access token: ****
+? Enter Facebook page ID: 705555819301071
+
+📡 Creating Facebook channel...
+
+✅ Facebook channel created successfully!
+
+💬 Page Name: My Business Page
+📄 Page ID: 705555819301071
+🔗 Webhook: https://wa.heylua.ai/fb/webhook
+```
+
+### Email Setup
+
+```bash
+? What would you like to do? 🔗 Link new channel
+? Select channel type: 📧 Email
+
+? Enter sender name (shown in email header): Support Team
+? Enter sender email address: support@mybusiness.com
+
+📡 Creating Email channel...
+
+✅ Email channel created successfully!
+
+────────────────────────────────────────────────────
+⚠️  IMPORTANT: Email Forwarding Setup Required
+────────────────────────────────────────────────────
+
+📧 Sender: support@mybusiness.com
+📬 Forward all emails to:
+   b5469c03-082e-481d-929b-663daf66bbef@mail.heylua.ai
+
+Setup Instructions:
+
+1. Log into your email provider
+2. Create email forwarding rule
+3. Forward from: support@mybusiness.com
+4. Forward to: b5469c03-082e-481d-929b-663daf66bbef@mail.heylua.ai
+
+5. Test by sending email to support@mybusiness.com
+   Your agent will respond automatically!
+
+────────────────────────────────────────────────────
+```
+
+### Slack Private Setup
+
+```bash
+? What would you like to do? 🔗 Link new channel
+? Select channel type: 🔒 Slack (Private)
+
+? Enter Slack bot token (xoxb-...): ****
+
+📡 Creating Slack channel...
+
+✅ Slack channel created successfully!
+
+💼 Bot Name: My Agent Bot
+🏢 Workspace: My Workspace
+🔗 Webhook: https://wa.heylua.ai/slack/webhook
+```
+
+### Slack Public Setup
+
+```bash
+? What would you like to do? 🔗 Link new channel
+? Select channel type: 🌐 Slack (Public)
+
+? Enter Slack app ID: A09J8J6T6H0
+? Enter client ID: 1234567890.123456789012
+? Enter client secret: ****
+
+📡 Creating Slack app...
+
+✅ Slack app created successfully!
+
+📱 App ID: A09J8J6T6H0
+🔗 Redirect URI: https://auth.heylua.ai/slack/oauth_redirect/...
+🎯 Webhook: https://wa.heylua.ai/slack/webhook
+
+Next Steps:
+1. Copy the redirect URI
+2. Add to your Slack app OAuth settings
+3. Users can now install your Slack app
+```
+
+## Open Admin Dashboard
+
+```bash
+? What would you like to do? 🌐 Link on admin dashboard
+
+🌐 Opening Lua Admin Dashboard...
+✅ Dashboard opened in your browser
+
+  URL: https://admin.heylua.ai
+  Agent: myAgent
+```
+
+Opens the admin interface where you can:
+- Manage channels visually
+- Configure OAuth flows
+- View channel analytics
+- Test channel connections
+- Monitor message delivery
+
+## Use Cases
+
+### Multi-Channel Agent
+
+```bash
+# Connect all your channels
+$ lua channels
+
+→ Link WhatsApp
+→ Link Facebook
+→ Link Email
+→ Link Slack
+→ Link Instagram
+
+# Your agent now responds on all platforms!
+```
+
+### Channel Migration
+
+```bash
+# Moving from old WhatsApp number
+
+# 1. List current channels
+$ lua channels → List
+# Note: Old number 555-0000
+
+# 2. Add new channel
+$ lua channels → Link WhatsApp
+# New number: 555-1111
+
+# 3. Verify both working
+$ lua channels → List
+# See both channels
+
+# 4. Remove old channel via admin
+$ lua admin
+# Delete old WhatsApp channel
+```
+
+### Team Collaboration
+
+```bash
+# Add Slack for internal team
+$ lua channels → Link Slack
+
+# Now team can chat with agent
+# Useful for testing and demos
+```
+
+## Channel-Specific Features
+
+### WhatsApp
+
+**Phone Number Requirements:**
+- Must be registered with WhatsApp Business
+- Verified with Meta Business Suite
+- Has active WABA (Business Account)
+
+**Status Indicators:**
+- **CONNECTED**: Ready to send/receive
+- **DISCONNECTED**: Needs reconnection
+- **PENDING**: Setup in progress
+
+**Quality Ratings:**
+- **GREEN**: High quality, good delivery
+- **YELLOW**: Medium quality, some issues
+- **RED**: Low quality, delivery problems
+
+### Facebook
+
+**Page Requirements:**
+- Business or Creator page (not personal profile)
+- Page access token with messaging permissions
+- Page must be published
+
+**Capabilities:**
+- Respond to page messages
+- Handle conversation threads
+- Access messenger features
+
+### Email
+
+**Forwarding Setup:**
+- Critical for email to work
+- Must forward to provided address
+- Can use email rules/filters
+- Test after setup
+
+**Response Behavior:**
+- Agent replies to forwarded emails
+- Uses configured sender name/email
+- Threading supported
+- Attachments handled
+
+### Slack
+
+**Private (Bot Token):**
+- Simple bot installation
+- Direct messages
+- Channel mentions
+- App home tab
+
+**Public (OAuth App):**
+- Users install your app
+- Workspace-wide presence
+- OAuth consent flow
+- More complex setup
+
+## Troubleshooting
+
+<AccordionGroup>
+  <Accordion title="No agent ID found">
+    **Error:**
+    ```
+    ❌ No agent ID found in lua.skill.yaml
+    ```
+    
+    **Solution:**
+    ```bash
+    lua init
+    ```
+  </Accordion>
+
+  <Accordion title="API key missing">
+    **Error:**
+    ```
+    ❌ No API key found
+    ```
+    
+    **Solution:**
+    ```bash
+    lua auth configure
+    ```
+  </Accordion>
+
+  <Accordion title="Channel already exists">
+    **Error:**
+    ```
+    ❌ Channel already exists
+    💡 This WhatsApp number is already connected
+    ```
+    
+    **Solution:**
+    - List channels to see existing
+    - Use different number/account
+    - Remove old channel first (via admin)
+  </Accordion>
+
+  <Accordion title="Invalid credentials">
+    **Error:**
+    ```
+    ❌ Invalid access token
+    ```
+    
+    **Solution:**
+    - Verify token is correct
+    - Check token hasn't expired
+    - Regenerate token from platform
+    - Try again with new token
+  </Accordion>
+
+  <Accordion title="Email not working">
+    **Problem:** Agent not responding to emails
+    
+    **Check:**
+    1. Email forwarding is configured
+    2. Forward address is correct
+    3. Emails are being forwarded
+    4. Test by sending email
+    5. Check admin dashboard for errors
+  </Accordion>
+</AccordionGroup>
+
+## Best Practices
+
+<AccordionGroup>
+  <Accordion title="Test After Setup">
+    ```bash
+    # After linking channel
+    $ lua channels → List
+    # Verify channel appears
+    
+    # Test by sending message
+    # WhatsApp: Send to connected number
+    # Email: Send to configured address
+    # Slack: Message the bot
+    ```
+  </Accordion>
+
+  <Accordion title="Use Admin for OAuth">
+    ```bash
+    # Complex OAuth flows easier in admin
+    $ lua channels → Link on admin dashboard
+    
+    # Or directly:
+    $ lua admin
+    # Navigate to Channels section
+    ```
+  </Accordion>
+
+  <Accordion title="Document Your Channels">
+    ```bash
+    # Keep track of what's connected
+    $ lua channels → List
+    
+    # Document:
+    - WhatsApp: +1555-798-6280
+    - Facebook: Business Page
+    - Email: support@company.com
+    - Slack: Team workspace
+    ```
+  </Accordion>
+
+  <Accordion title="Regular Channel Review">
+    ```bash
+    # Monthly review
+    $ lua channels → List
+    
+    # Check:
+    - All channels CONNECTED
+    - No expired tokens
+    - Quality ratings GREEN
+    - Remove unused channels
+    ```
+  </Accordion>
+</AccordionGroup>
+
+## Common Workflows
+
+### Initial Setup
+
+```bash
+# 1. Create agent
+$ lua init
+
+# 2. Deploy skills
+$ lua push
+$ lua deploy
+
+# 3. Connect channels
+$ lua channels
+
+→ Link WhatsApp
+→ Link Facebook  
+→ Link Email
+
+# 4. Test channels
+# Send messages on each platform
+# Verify agent responds
+```
+
+### Add New Channel
+
+```bash
+# Existing agent, add channel
+$ lua channels
+→ Link new channel
+→ Select channel type
+→ Enter credentials
+✅ Channel created
+
+# Verify
+$ lua channels → List
+# See new channel in list
+```
+
+### Channel Audit
+
+```bash
+# Review all channels
+$ lua channels → List
+
+# For each channel:
+→ Select channel
+→ Note status and details
+→ Back to list
+
+# Document findings
+# Update any needed
+```
+
+## Integration with Admin Dashboard
+
+The CLI command and admin dashboard work together:
+
+<Tabs>
+  <Tab title="CLI (Quick)">
+    **Use CLI when:**
+    - Setting up via terminal
+    - Scripting channel creation
+    - Quick channel listing
+    - During development workflow
+    
+    ```bash
+    lua channels
+    ```
+  </Tab>
+
+  <Tab title="Admin (Visual)">
+    **Use Admin when:**
+    - Visual interface preferred
+    - OAuth flows needed
+    - Managing many channels
+    - Viewing analytics
+    - Team collaboration
+    
+    ```bash
+    lua admin
+    # Or
+    lua channels → Link on admin dashboard
+    ```
+  </Tab>
+</Tabs>
+
+## Channel Requirements by Platform
+
+### WhatsApp Business
+
+**Before you start:**
+1. Register with Meta Business Suite
+2. Create WhatsApp Business Account
+3. Add phone number
+4. Get API access
+5. Obtain access token
+
+**Then:**
+```bash
+lua channels → Link WhatsApp
+# Enter: Phone ID, WABA ID, Token
+```
+
+### Facebook Messenger
+
+**Before you start:**
+1. Create Facebook Business Page
+2. Create Facebook App
+3. Add Messenger product
+4. Get page access token
+
+**Then:**
+```bash
+lua channels → Link Facebook
+# Enter: Page token, Page ID
+```
+
+### Email
+
+**Before you start:**
+1. Have email address ready
+2. Access to email provider settings
+3. Ability to configure forwarding
+
+**Then:**
+```bash
+lua channels → Link Email
+# Enter: Sender name, Sender email
+# Configure forwarding as instructed
+```
+
+### Slack
+
+**Private (Simple):**
+1. Create Slack app
+2. Add bot token scopes
+3. Install to workspace
+4. Copy bot token
+
+```bash
+lua channels → Link Slack (Private)
+# Enter: Bot token
+```
+
+**Public (OAuth):**
+1. Create Slack app
+2. Configure OAuth
+3. Set redirect URLs
+4. Get credentials
+
+```bash
+lua channels → Link Slack (Public)
+# Enter: App ID, Client ID, Secret
+```
+
+## Security
+
+<Warning>
+**Token Security:**
+- All tokens are masked during input
+- Never logged or displayed
+- Stored securely server-side
+- Use environment-specific tokens
+</Warning>
+
+**Best practices:**
+- Use test accounts in development
+- Production tokens in production only
+- Rotate tokens regularly
+- Revoke compromised tokens immediately
+
+## Next Steps
+
+<CardGroup cols={2}>
+  <Card
+    title="Admin Dashboard"
+    icon="gauge"
+    href="/cli/utility-commands#lua-admin"
+  >
+    Visual channel management
+  </Card>
+  <Card
+    title="Chat Widget"
+    icon="comments"
+    href="/chat-widget/introduction"
+  >
+    Add website chat channel
+  </Card>
+  <Card
+    title="Test Your Agent"
+    icon="message"
+    href="/cli/chat-command"
+  >
+    Test agent responses
+  </Card>
+  <Card
+    title="Production Monitor"
+    icon="chart-line"
+    href="/cli/production-command"
+  >
+    Monitor live channels
+  </Card>
+</CardGroup>

@@ -1,0 +1,1020 @@
+---
+title: "Navigate Component"
+description: "Direct users to specific pages on your website"
+---
+
+## Overview
+
+The **Navigate** component allows your agent to send users to specific pages on your website - perfect for directing to pricing, product pages, checkout, documentation, or any URL.
+
+<Card title="WebChat/LuaPop Only" icon="globe">
+  This component only works with the website chat widget (LuaPop). It triggers the onNavigate callback you configure.
+</Card>
+
+<CardGroup cols={2}>
+  <Card title="Deep Linking" icon="link">
+    Send users to any page on your site
+  </Card>
+  <Card title="Query Parameters" icon="cog">
+    Pass data via URL parameters
+  </Card>
+  <Card title="Seamless UX" icon="arrows-turn-right">
+    Navigation without leaving chat
+  </Card>
+  <Card title="Trackable" icon="chart-line">
+    Know what users are clicking
+  </Card>
+</CardGroup>
+
+## Format
+
+```
+::: navigate
+![navigate](pathname?param1=value1&param2=value2)
+:::
+```
+
+<Warning>
+**Important**: The Navigate component **does not render visually** in the chat. It triggers the `onNavigate` callback directly, causing immediate navigation. Users won't see a button or link - they'll be navigated automatically to the specified page.
+</Warning>
+
+**Parts:**
+- `pathname` - The page path (e.g., `/pricing`, `/products/laptop`, `/checkout`)
+- `?param1=value1` - Optional query parameters
+
+## How It Works
+
+<Steps>
+  <Step title="Agent Uses Navigate Component">
+    ```
+    ::: navigate
+    ![navigate](/pricing?channel=web)
+    :::
+    ```
+  </Step>
+  
+  <Step title="Widget Calls onNavigate">
+    ```javascript
+    onNavigate: (pathname, options) => {
+      // pathname: "/pricing"
+      // options: { query: { channel: "web" } }
+    }
+    ```
+  </Step>
+  
+  <Step title="Your Code Handles Navigation">
+    ```javascript
+    // React Router
+    navigate(pathname, { state: options.query });
+    
+    // Next.js
+    router.push({ pathname, query: options.query });
+    
+    // Simple
+    window.location.href = pathname;
+    ```
+  </Step>
+  
+  <Step title="User Navigates">
+    User is taken to the specified page
+  </Step>
+</Steps>
+
+## Examples
+
+### Navigate to Pricing Page
+
+**Agent Response:**
+```
+Our pricing scales with your monthly expenses, starting at $300/month 
+for companies under $30k in monthly spend, with a free 30-day trial 
+and special YC founder discounts.
+
+Here's the full breakdown:
+
+::: navigate
+![navigate](/pricing?channel=web)
+:::
+```
+
+**What happens:**
+
+<Note>
+**No visual rendering** - The navigate component does not display as a button or link. Instead, it immediately triggers the `onNavigate` callback and navigates the user to the specified page.
+</Note>
+
+**onNavigate called with:**
+```javascript
+onNavigate("/pricing", {
+  query: { channel: "web" }
+});
+```
+
+### Navigate to Product Page
+
+**User:** "Tell me more about the UltraBook Pro"
+
+**Agent:**
+```
+The UltraBook Pro is our premium laptop with 16GB RAM and 512GB SSD.
+Perfect for developers and content creators.
+
+See full specifications and reviews:
+
+::: navigate
+![navigate](/products/ultrabook-pro?source=chat)
+:::
+```
+
+<Frame>
+  <img src="/images/formatting/navigate-product-button.png" alt="Navigate to product" />
+</Frame>
+
+*Screenshot: "View Product Details" button*
+
+**onNavigate called with:**
+```javascript
+onNavigate("/products/ultrabook-pro", {
+  query: { source: "chat" }
+});
+```
+
+### Navigate to Checkout
+
+**Agent:**
+```
+Perfect! I've added 2 items to your cart. Total: $149.98
+
+Ready to complete your purchase?
+
+::: navigate
+![navigate](/checkout?items=2&total=149.98)
+:::
+```
+
+<Frame>
+  <img src="/images/formatting/navigate-checkout-button.png" alt="Navigate to checkout" />
+</Frame>
+
+*Screenshot: "Proceed to Checkout" button*
+
+**onNavigate called with:**
+```javascript
+onNavigate("/checkout", {
+  query: { items: "2", total: "149.98" }
+});
+```
+
+### Navigate to Documentation
+
+**Agent:**
+```
+I can help you get started! Here's our comprehensive guide:
+
+::: navigate
+![navigate](/docs/getting-started?ref=chat)
+:::
+```
+
+### Navigate to Account Settings
+
+**Agent:**
+```
+You can update your preferences in account settings:
+
+::: navigate
+![navigate](/account/settings?tab=preferences)
+:::
+```
+
+### Navigate to Order Status
+
+**Agent:**
+```
+Your order #12345 is being processed. Track it here:
+
+::: navigate
+![navigate](/orders/12345?view=tracking)
+:::
+```
+
+---
+
+## Complete Use Cases
+
+### E-commerce Example
+
+```typescript
+persona: `
+  You are a shopping assistant.
+  
+  When users ask about products, after providing info, 
+  direct them to the product page:
+  
+  ::: navigate
+  ![navigate](/products/PRODUCT_ID?source=chat)
+  :::
+  
+  When ready to checkout:
+  
+  ::: navigate
+  ![navigate](/checkout?from=chat)
+  :::
+  
+  For pricing questions:
+  
+  ::: navigate
+  ![navigate](/pricing?channel=chat)
+  :::
+`
+```
+
+**Example conversation:**
+```
+User: "Show me laptops"
+
+Agent: We have several great options!
+
+[Shows product list-items]
+
+Want to see full details? Visit our laptop collection:
+
+::: navigate
+![navigate](/products/laptops?category=professional)
+:::
+```
+
+### SaaS Product Example
+
+```typescript
+context: `
+  When explaining features, link to documentation:
+  
+  ::: navigate
+  ![navigate](/docs/FEATURE_NAME?ref=agent)
+  :::
+  
+  For account issues:
+  
+  ::: navigate
+  ![navigate](/account/settings?section=RELEVANT_SECTION)
+  :::
+  
+  For billing questions:
+  
+  ::: navigate
+  ![navigate](/billing?view=invoices)
+  :::
+`
+```
+
+### Booking System Example
+
+```typescript
+persona: `
+  After showing available options, direct to booking page:
+  
+  ::: navigate
+  ![navigate](/book?date=DATE&guests=COUNT)
+  :::
+  
+  For viewing reservations:
+  
+  ::: navigate
+  ![navigate](/reservations/CONFIRMATION_CODE)
+  :::
+`
+```
+
+---
+
+## Widget Configuration
+
+### Setup onNavigate Handler
+
+```javascript
+window.LuaPop.init({
+  agentId: "your-agent-id",
+  position: "bottom-right",
+  
+  // Navigation handler
+  onNavigate: (pathname, options) => {
+    console.log('Navigate to:', pathname);
+    console.log('Query params:', options.query);
+    
+    // Handle navigation based on your framework
+  }
+});
+```
+
+### React Router
+
+```javascript
+import { useNavigate } from 'react-router-dom';
+
+function App() {
+  const navigate = useNavigate();
+  
+  window.LuaPop.init({
+    agentId: "your-agent-id",
+    onNavigate: (pathname, options) => {
+      // Navigate with query params
+      navigate({
+        pathname: pathname,
+        search: new URLSearchParams(options.query).toString()
+      });
+    }
+  });
+}
+```
+
+### Next.js Router
+
+```javascript
+import { useRouter } from 'next/router';
+
+export default function Layout() {
+  const router = useRouter();
+  
+  useEffect(() => {
+    window.LuaPop?.init({
+      agentId: process.env.NEXT_PUBLIC_AGENT_ID,
+      onNavigate: (pathname, options) => {
+        router.push({
+          pathname: pathname,
+          query: options.query
+        });
+      }
+    });
+  }, [router]);
+}
+```
+
+### Vue Router
+
+```javascript
+import { useRouter } from 'vue-router';
+
+export default {
+  setup() {
+    const router = useRouter();
+    
+    window.LuaPop.init({
+      agentId: process.env.VUE_APP_AGENT_ID,
+      onNavigate: (pathname, options) => {
+        router.push({
+          path: pathname,
+          query: options.query
+        });
+      }
+    });
+  }
+}
+```
+
+### Simple Navigation
+
+```javascript
+window.LuaPop.init({
+  agentId: "your-agent-id",
+  onNavigate: (pathname, options) => {
+    // Build URL with query params
+    const params = new URLSearchParams(options.query);
+    const url = pathname + (params.toString() ? '?' + params.toString() : '');
+    
+    // Navigate
+    window.location.href = url;
+  }
+});
+```
+
+---
+
+## Query Parameters
+
+Pass data through URL parameters:
+
+```
+::: navigate
+![navigate](/products/laptop?source=chat&campaign=spring)
+:::
+```
+
+**Receives:**
+```javascript
+onNavigate("/products/laptop", {
+  query: {
+    source: "chat",
+    campaign: "spring"
+  }
+});
+```
+
+**Use cases:**
+- **Tracking**: `?source=chat` - Know users came from chat
+- **Context**: `?product=123` - Pre-fill forms
+- **Campaigns**: `?promo=SAVE10` - Auto-apply discounts
+- **State**: `?tab=specifications` - Open specific tab
+- **Filters**: `?category=electronics&price=1000` - Pre-filter results
+
+---
+
+## Advanced Examples
+
+### Navigate with User Context
+
+```
+::: navigate
+![navigate](/products/recommendations?userId={{user.id}}&preferences={{user.preferences}})
+:::
+```
+
+### Navigate with Cart Data
+
+```
+::: navigate
+![navigate](/checkout?items={{cart.itemCount}}&total={{cart.total}})
+:::
+```
+
+### Navigate with Search Query
+
+```
+User: "Show me running shoes"
+
+Agent: Here are our running shoes:
+
+::: navigate
+![navigate](/search?q=running+shoes&category=footwear)
+:::
+```
+
+### Navigate with Booking Data
+
+```
+::: navigate
+![navigate](/book?checkIn=2025-10-15&checkOut=2025-10-17&guests=2&room=deluxe)
+:::
+```
+
+---
+
+## Best Practices
+
+<AccordionGroup>
+  <Accordion title="✅ Descriptive Button Text">
+    The widget generates button text from context:
+    
+    ```
+    ::: navigate
+    ![navigate](/pricing)
+    :::
+    
+    Becomes: "View Pricing" or "See Pricing Details"
+    ```
+    
+    Provide context before the component so widget can generate appropriate text.
+  </Accordion>
+
+  <Accordion title="✅ Include Query Parameters">
+    ```
+    ✅ Good:
+    ![navigate](/products/laptop?source=chat&ref=agent)
+    
+    Why: You can track that users came from chat
+    ```
+  </Accordion>
+
+  <Accordion title="✅ Use Relative Paths">
+    ```
+    ✅ Good:
+    ![navigate](/pricing)
+    ![navigate](/products/123)
+    
+    ❌ Bad:
+    ![navigate](https://yoursite.com/pricing)
+    ```
+    
+    Relative paths work better with onNavigate
+  </Accordion>
+
+  <Accordion title="✅ Test Navigation">
+    ```javascript
+    // Test your onNavigate handler
+    onNavigate: (pathname, options) => {
+      console.log('Would navigate to:', pathname);
+      console.log('With params:', options.query);
+      
+      // Verify it works before deploying
+    }
+    ```
+  </Accordion>
+</AccordionGroup>
+
+---
+
+## How to Configure
+
+### In Persona
+
+```yaml
+persona: |
+  You are a sales assistant for our e-commerce site.
+  
+  When discussing products, direct users to product pages:
+  
+  ::: navigate
+  ![navigate](/products/PRODUCT_SLUG?source=chat)
+  :::
+  
+  For pricing questions:
+  
+  ::: navigate
+  ![navigate](/pricing?channel=web)
+  :::
+  
+  When user is ready to buy:
+  
+  ::: navigate
+  ![navigate](/checkout?from=chat)
+  :::
+  
+  Always include source=chat parameter for tracking.
+```
+
+### In Skill Context
+
+```typescript
+const ecommerceSkill = new LuaSkill({
+  context: `
+    After showing products, direct to product page:
+    
+    ::: navigate
+    ![navigate](/products/{{product.slug}}?ref=agent)
+    :::
+    
+    After adding to cart:
+    
+    ::: navigate
+    ![navigate](/cart?action=review)
+    :::
+    
+    For checkout:
+    
+    ::: navigate
+    ![navigate](/checkout?items={{itemCount}})
+    :::
+  `
+});
+```
+
+---
+
+## Troubleshooting
+
+<AccordionGroup>
+  <Accordion title="Navigation not working">
+    **Check:**
+    - onNavigate is configured in widget
+    - Handler is defined correctly
+    - Pathname is relative (starts with `/`)
+    - No console errors
+  </Accordion>
+
+  <Accordion title="Query parameters not received">
+    **Format:**
+    ```
+    ✅ Correct:
+    ![navigate](/page?param1=value1&param2=value2)
+    
+    ❌ Wrong:
+    ![navigate](/page?param1=value1?param2=value2)
+    ```
+  </Accordion>
+
+  <Accordion title="Agent not using navigate">
+    **Cause:** Not instructed in persona/context
+    
+    **Solution:** Add explicit navigate instructions with examples
+  </Accordion>
+</AccordionGroup>
+
+---
+
+## Complete Example: E-commerce Agent
+
+### Widget Setup
+
+```javascript
+import { useRouter } from 'next/router';
+
+window.LuaPop.init({
+  agentId: "ecommerce-agent",
+  position: "bottom-right",
+  
+  onNavigate: (pathname, options) => {
+    // Track navigation event
+    analytics.track('chat_navigation', {
+      path: pathname,
+      params: options.query
+    });
+    
+    // Navigate using Next.js router
+    router.push({
+      pathname: pathname,
+      query: options.query
+    });
+  }
+});
+```
+
+### Persona Configuration
+
+```yaml
+persona: |
+  You are a shopping assistant for TechStore.
+  
+  NAVIGATION GUIDELINES:
+  
+  When users ask about products:
+  - Show product info
+  - Direct to product page: ![navigate](/products/SLUG?source=chat)
+  
+  When discussing pricing:
+  - Explain pricing tiers
+  - Link to pricing: ![navigate](/pricing?channel=chat)
+  
+  When cart questions:
+  - Summarize cart
+  - Link to cart: ![navigate](/cart?action=review)
+  
+  When ready to checkout:
+  - Confirm items
+  - Link to checkout: ![navigate](/checkout?from=agent)
+  
+  Example response:
+  "The UltraBook Pro is $1,299 with free shipping. 
+  
+  See full specs and reviews:
+  
+  ::: navigate
+  ![navigate](/products/ultrabook-pro?source=chat&ref=agent)
+  :::"
+```
+
+### Example Conversation
+
+```
+User: "How much does the UltraBook Pro cost?"
+
+Agent:
+The UltraBook Pro is $1,299.00 with free 2-day shipping.
+
+It includes:
+- 16GB RAM
+- 512GB SSD
+- 14" Retina Display
+- 12-hour battery life
+
+See full specifications and customer reviews:
+
+::: navigate
+![navigate](/products/ultrabook-pro?source=chat)
+:::
+
+[User clicks button]
+[onNavigate called: ("/products/ultrabook-pro", { query: { source: "chat" } })]
+[User navigated to product page]
+[Chat widget minimizes or stays open based on your implementation]
+
+
+User: "What's your return policy?"
+
+Agent:
+We offer a 45-day return policy with free return shipping.
+
+View our complete return policy and start a return:
+
+::: navigate
+![navigate](/policies/returns?ref=agent)
+:::
+
+
+User: "I'm ready to buy"
+
+Agent:
+Great! I've added the UltraBook Pro to your cart.
+
+Review your cart and complete checkout:
+
+::: navigate
+![navigate](/checkout?product=ultrabook-pro&quantity=1)
+:::
+```
+
+---
+
+## Common Navigation Patterns
+
+### 1. Product Discovery
+
+```
+User asks about products
+  ↓
+Agent describes product
+  ↓
+::: navigate
+![navigate](/products/PRODUCT_ID?source=chat)
+:::
+```
+
+### 2. Pricing Inquiry
+
+```
+User asks about pricing
+  ↓
+Agent explains pricing tiers
+  ↓
+::: navigate
+![navigate](/pricing?channel=chat)
+:::
+```
+
+### 3. Documentation Request
+
+```
+User asks "how do I..."
+  ↓
+Agent provides quick answer
+  ↓
+::: navigate
+![navigate](/docs/TOPIC?ref=agent)
+:::
+```
+
+### 4. Account Management
+
+```
+User needs to update settings
+  ↓
+Agent explains what to change
+  ↓
+::: navigate
+![navigate](/account/settings?section=SETTING)
+:::
+```
+
+### 5. Support Resources
+
+```
+User has issue
+  ↓
+Agent provides solution
+  ↓
+::: navigate
+![navigate](/support/ISSUE_CATEGORY?from=chat)
+:::
+```
+
+---
+
+## Tracking & Analytics
+
+### Track Navigation Events
+
+```javascript
+window.LuaPop.init({
+  agentId: "your-agent-id",
+  onNavigate: (pathname, options) => {
+    // Google Analytics
+    gtag('event', 'agent_navigation', {
+      path: pathname,
+      source: options.query.source,
+      channel: options.query.channel
+    });
+    
+    // Mixpanel
+    mixpanel.track('Agent Navigation', {
+      pathname,
+      query: options.query
+    });
+    
+    // Your analytics
+    fetch('/api/analytics', {
+      method: 'POST',
+      body: JSON.stringify({
+        event: 'chat_navigation',
+        pathname,
+        query: options.query,
+        timestamp: new Date()
+      })
+    });
+    
+    // Then navigate
+    router.push({ pathname, query: options.query });
+  }
+});
+```
+
+### A/B Testing with Navigate
+
+```javascript
+onNavigate: (pathname, options) => {
+  // Add experiment tracking
+  const params = {
+    ...options.query,
+    experiment: 'chat_nav_v2',
+    variant: getUserVariant()
+  };
+  
+  router.push({
+    pathname,
+    query: params
+  });
+}
+```
+
+---
+
+## Multiple Navigation Options
+
+Combine with Actions component:
+
+```
+::: list-item
+![image](product.jpg)
+#UltraBook Pro
+##$1,299 - In Stock
+Professional laptop with amazing specs.
+:::
+
+::: actions
+- Add to Cart
+- View Details
+- Compare Similar
+:::
+
+::: navigate
+![navigate](/products/ultrabook-pro?source=chat&action=view)
+:::
+```
+
+<Frame>
+  <img src="/images/formatting/navigate-combined-components.png" alt="Combined components" />
+</Frame>
+
+*Screenshot: List item + actions + navigate button together*
+
+---
+
+## Best Practices
+
+<AccordionGroup>
+  <Accordion title="✅ Provide Context Before Navigate">
+    ```
+    ✅ Good:
+    "Our pricing starts at $300/month. Here's the full breakdown:"
+    ::: navigate
+    ![navigate](/pricing)
+    :::
+    
+    ❌ Bad:
+    ::: navigate
+    ![navigate](/pricing)
+    :::
+    (No context about what they'll see)
+    ```
+  </Accordion>
+
+  <Accordion title="✅ Use Descriptive Paths">
+    ```
+    ✅ Good:
+    /products/ultrabook-pro
+    /pricing/enterprise
+    /docs/getting-started
+    
+    ❌ Bad:
+    /p/123
+    /page1
+    /info
+    ```
+  </Accordion>
+
+  <Accordion title="✅ Include Tracking Parameters">
+    ```
+    Always add source tracking:
+    ![navigate](/page?source=chat&ref=agent)
+    
+    Helps you measure:
+    - How many users click
+    - Which pages are popular
+    - Conversion from chat
+    ```
+  </Accordion>
+
+  <Accordion title="✅ Handle Navigation Gracefully">
+    ```javascript
+    onNavigate: (pathname, options) => {
+      // Validate path exists
+      if (validPaths.includes(pathname)) {
+        router.push({ pathname, query: options.query });
+      } else {
+        console.error('Invalid path:', pathname);
+        // Fallback to home or show error
+      }
+    }
+    ```
+  </Accordion>
+</AccordionGroup>
+
+---
+
+## Troubleshooting
+
+<AccordionGroup>
+  <Accordion title="Button doesn't navigate">
+    **Check:**
+    1. onNavigate is defined in widget init
+    2. Console for JavaScript errors
+    3. Pathname is valid
+    4. Router is properly configured
+  </Accordion>
+
+  <Accordion title="Query parameters missing">
+    **Debug:**
+    ```javascript
+    onNavigate: (pathname, options) => {
+      console.log('Pathname:', pathname);
+      console.log('Query:', options.query);
+      // Verify query object has expected keys
+    }
+    ```
+  </Accordion>
+
+  <Accordion title="Agent not using navigate">
+    **Solution:**
+    ```bash
+    lua persona → Edit
+    # Add explicit navigate instructions
+    # Show format examples
+    # Test with lua chat
+    ```
+  </Accordion>
+</AccordionGroup>
+
+---
+
+## Summary
+
+<CardGroup cols={2}>
+  <Card title="No Visual Render" icon="eye-slash">
+    Doesn't display as button - triggers navigation immediately
+  </Card>
+  <Card title="WebChat Only" icon="globe">
+    Only works with LuaPop widget
+  </Card>
+  <Card title="onNavigate Required" icon="code">
+    Must configure handler
+  </Card>
+  <Card title="Query Params" icon="cog">
+    Pass data via URL
+  </Card>
+  <Card title="Trackable" icon="chart-line">
+    Analytics integration
+  </Card>
+</CardGroup>
+
+---
+
+## Next Steps
+
+<CardGroup cols={2}>
+  <Card
+    title="Widget Configuration"
+    icon="cog"
+    href="/chat-widget/configuration"
+  >
+    Set up onNavigate handler
+  </Card>
+  <Card
+    title="Configure Persona"
+    icon="user"
+    href="/cli/persona-command"
+  >
+    Add navigate instructions
+  </Card>
+  <Card
+    title="Actions Component"
+    icon="hand-pointer"
+    href="/formatting/actions"
+  >
+    Combine with other components
+  </Card>
+  <Card
+    title="Widget Events"
+    icon="bolt"
+    href="/chat-widget/events"
+  >
+    Learn about all widget events
+  </Card>
+</CardGroup>

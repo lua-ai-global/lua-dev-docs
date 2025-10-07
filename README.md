@@ -268,6 +268,7 @@ const example = "untyped";
 
 ### API Parameters
 
+````mdx
 ```mdx
 <ParamField path="paramName" type="string" required>
   Description of the parameter
@@ -278,6 +279,7 @@ const example = "untyped";
   ```
 </ParamField>
 ```
+````
 
 ## 🎨 Style Guide
 

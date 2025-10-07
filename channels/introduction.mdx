@@ -1,0 +1,331 @@
+---
+title: "Channels Overview"
+description: "Connect your agent to WhatsApp, Facebook, Email, Slack, and more"
+---
+
+## What are Channels?
+
+**Channels** are the communication platforms where users interact with your AI agent. They're the "front doors" that connect your users to your agent's capabilities.
+
+## Currently Supported Channels (6)
+
+<CardGroup cols={3}>
+  <Card title="Email" icon="envelope">
+    Professional communication
+  </Card>
+  <Card title="WebChat (LuaPop)" icon="globe">
+    Website chat widget
+  </Card>
+  <Card title="Facebook Messenger" icon="facebook">
+    Page messages
+  </Card>
+  <Card title="Instagram Messenger" icon="instagram">
+    Direct messages
+  </Card>
+  <Card title="WhatsApp" icon="whatsapp">
+    Business messaging
+  </Card>
+  <Card title="Slack" icon="slack">
+    Workspace integration
+  </Card>
+</CardGroup>
+
+<Note>
+**🚀 More channels coming soon!** SMS, Microsoft Teams, Discord, Telegram, LinkedIn, and WeChat are in active development. Want a specific channel? Let us know at support@heylua.ai
+</Note>
+
+## How Channels Work
+
+<Steps>
+  <Step title="User Sends Message">
+    Customer messages your business on WhatsApp, Facebook, Email, etc.
+  </Step>
+  
+  <Step title="Channel Forwards to Lua">
+    The channel forwards the message to your Lua agent
+  </Step>
+  
+  <Step title="Agent Processes">
+    Your agent understands the message and determines response
+  </Step>
+  
+  <Step title="Agent Uses Tools">
+    Agent calls your tools to take actions (search products, check orders, etc.)
+  </Step>
+  
+  <Step title="Response Sent Back">
+    Agent's response is sent back through the same channel
+  </Step>
+  
+  <Step title="User Receives Reply">
+    Customer gets response on their preferred platform
+  </Step>
+</Steps>
+
+## Multi-Channel Benefits
+
+<CardGroup cols={2}>
+  <Card title="Meet Users Anywhere" icon="location-dot">
+    Users on WhatsApp, Facebook, Email - all talk to same agent
+  </Card>
+  <Card title="Consistent Experience" icon="equals">
+    Same capabilities and personality across all platforms
+  </Card>
+  <Card title="Centralized Management" icon="grip">
+    Manage all channels from one place
+  </Card>
+  <Card title="Unified Analytics" icon="chart-line">
+    Track conversations across all channels together
+  </Card>
+</CardGroup>
+
+## Available Channels
+
+<Tabs>
+  <Tab title="Messaging">
+    ### WhatsApp Business
+    - Business messaging at scale
+    - Rich media support
+    - High engagement rates
+    - Popular in many regions
+    
+    <Card title="Setup Guide" href="/channels/whatsapp" />
+    
+    ### Facebook Messenger
+    - Facebook Page messaging
+    - Reach Facebook users
+    - Integrated with social
+    - Rich content support
+    
+    <Card title="Setup Guide" href="/channels/facebook-messenger" />
+    
+    ### Instagram
+    - Direct messages
+    - Story replies
+    - Visual platform
+    - Young demographic
+    
+    <Card title="Setup Guide" href="/channels/instagram" />
+  </Tab>
+
+  <Tab title="Business">
+    ### Email
+    - Professional communication
+    - B2B friendly
+    - Universal platform
+    - Formal inquiries
+    
+    <Card title="Setup Guide" href="/channels/email" />
+    
+    ### Slack
+    - Team collaboration
+    - Internal use
+    - Developer friendly
+    - Real-time messaging
+    
+    <Card title="Setup Guide" href="/channels/slack" />
+  </Tab>
+
+  <Tab title="Web">
+    ### Website Chat Widget
+    - Embed on website
+    - Customizable design
+    - Voice chat support
+    - Analytics built-in
+    
+    <Card title="Setup Guide" href="/channels/website-widget" />
+  </Tab>
+</Tabs>
+
+## Two Ways to Connect
+
+<Tabs>
+  <Tab title="CLI Command">
+    **Quick terminal-based setup**
+    
+    ```bash
+    lua channels
+    ```
+    
+    **Supported:**
+    - ✅ WhatsApp
+    - ✅ Facebook Messenger
+    - ✅ Email
+    - ✅ Slack (Private & Public)
+    
+    **Best for:**
+    - Developers
+    - Terminal workflow
+    - Automated setup
+    - Scripting
+    
+    <Card title="CLI Guide" href="/channels/cli-management" />
+  </Tab>
+
+  <Tab title="Admin Dashboard">
+    **Visual web interface**
+    
+    ```bash
+    lua admin
+    # Or visit: https://admin.heylua.ai
+    ```
+    
+    **Supported:**
+    - ✅ All channels
+    - ✅ Instagram (OAuth)
+    - ✅ SMS/Twilio
+    - ✅ Analytics
+    - ✅ Monitoring
+    
+    **Best for:**
+    - All users
+    - OAuth flows
+    - Visual management
+    - Team collaboration
+    
+    <Card title="Dashboard Guide" href="/channels/admin-dashboard" />
+  </Tab>
+</Tabs>
+
+## Channel Selection Guide
+
+### For E-commerce
+- ✅ **WhatsApp** - High engagement
+- ✅ **Instagram** - Visual products
+- ✅ **Facebook** - Social shoppers
+- ✅ **Website Widget** - On-site support
+
+### For B2B/SaaS
+- ✅ **Email** - Professional
+- ✅ **Slack** - Team integration
+- ✅ **Website Widget** - Product support
+
+### For Customer Support
+- ✅ **Email** - Ticket system
+- ✅ **WhatsApp** - Quick responses
+- ✅ **Website Widget** - Live help
+- ✅ **Facebook** - Social support
+
+### For Internal Use
+- ✅ **Slack** - Team collaboration
+- ✅ **Email** - Company communication
+
+## Quick Start
+
+<Steps>
+  <Step title="Deploy Your Agent">
+    ```bash
+    lua push
+    lua deploy
+    ```
+  </Step>
+  
+  <Step title="Choose Channel">
+    Pick where your users are
+  </Step>
+  
+  <Step title="Connect Channel">
+    Use CLI or admin dashboard
+  </Step>
+  
+  <Step title="Test">
+    Send message on that platform
+  </Step>
+  
+  <Step title="Go Live">
+    Users can now reach your agent!
+  </Step>
+</Steps>
+
+## Explore Channels
+
+<CardGroup cols={2}>
+  <Card
+    title="WhatsApp Business"
+    icon="whatsapp"
+    href="/channels/whatsapp"
+  >
+    Set up WhatsApp messaging
+  </Card>
+  <Card
+    title="Facebook Messenger"
+    icon="facebook"
+    href="/channels/facebook-messenger"
+  >
+    Connect Facebook Page
+  </Card>
+  <Card
+    title="Instagram"
+    icon="instagram"
+    href="/channels/instagram"
+  >
+    Instagram DMs
+  </Card>
+  <Card
+    title="Email"
+    icon="envelope"
+    href="/channels/email"
+  >
+    Email integration
+  </Card>
+  <Card
+    title="Slack"
+    icon="slack"
+    href="/channels/slack"
+  >
+    Workspace integration
+  </Card>
+  <Card
+    title="Website Widget"
+    icon="globe"
+    href="/channels/website-widget"
+  >
+    Embed on website
+  </Card>
+</CardGroup>
+
+## Coming Soon 🚀
+
+We're actively adding support for more channels:
+
+<CardGroup cols={3}>
+  <Card title="SMS/Twilio" icon="message">
+    Text messaging
+  </Card>
+  <Card title="Microsoft Teams" icon="microsoft">
+    Business communication
+  </Card>
+  <Card title="Discord" icon="discord">
+    Community platform
+  </Card>
+  <Card title="Telegram" icon="telegram">
+    Secure messaging
+  </Card>
+  <Card title="LinkedIn" icon="linkedin">
+    Professional network
+  </Card>
+  <Card title="WeChat" icon="weixin">
+    Chinese market
+  </Card>
+</CardGroup>
+
+<Note>
+Want a specific channel? Let us know at support@heylua.ai
+</Note>
+
+<CardGroup cols={2}>
+  <Card
+    title="CLI Management"
+    icon="terminal"
+    href="/channels/cli-management"
+  >
+    Terminal-based setup
+  </Card>
+  <Card
+    title="Admin Dashboard"
+    icon="gauge"
+    href="/channels/admin-dashboard"
+  >
+    Visual management
+  </Card>
+</CardGroup>

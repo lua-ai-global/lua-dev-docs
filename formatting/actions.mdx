@@ -1,0 +1,116 @@
+---
+title: "Actions Component"
+description: "Interactive buttons and quick replies"
+---
+
+## Overview
+
+The **Actions** component presents clickable action buttons that users can tap to take next steps.
+
+<Card title="Perfect for:" icon="hand-pointer">
+  Call-to-action buttons, quick replies, navigation options after showing information
+</Card>
+
+## Format
+
+```
+::: actions
+- Action Label 1
+- Action Label 2
+- Action Label 3
+:::
+```
+
+## Requirements
+
+- ✅ Maximum **10 actions**
+- ✅ Clear, action-oriented language
+- ✅ Only actions your agent can handle
+- ✅ Most relevant first
+
+## Examples
+
+### After Product Listing
+
+```
+::: actions
+- Add to Cart
+- View Details
+- Compare Products
+- Check Store Availability
+- Save for Later
+:::
+```
+
+<Frame>
+  <img src="/images/formatting/actions-ecommerce-whatsapp.png" alt="E-commerce actions" />
+</Frame>
+
+*Screenshot: Action buttons in WhatsApp for shopping*
+
+### After Hotel Rooms
+
+```
+::: actions
+- Book This Room
+- See More Photos
+- Check Other Dates
+- View Amenities
+- Get Directions
+:::
+```
+
+<Frame>
+  <img src="/images/formatting/actions-hotel-facebook.png" alt="Hotel actions" />
+</Frame>
+
+*Screenshot: Hotel actions in Facebook Messenger*
+
+### After Support Article
+
+```
+::: actions
+- Mark as Solved
+- Still Need Help
+- Read Related Articles
+- Contact Human Agent
+:::
+```
+
+<Frame>
+  <img src="/images/formatting/actions-support-email.png" alt="Support actions" />
+</Frame>
+
+*Screenshot: Support actions in Email as buttons*
+
+## How to Configure
+
+```typescript
+persona: `
+  After showing options to users, ALWAYS provide relevant actions:
+  
+  ::: actions
+  - [Primary action]
+  - [Secondary action]
+  - [Alternative action]
+  :::
+  
+  Examples:
+  - After products: "Add to Cart", "View Details"
+  - After rooms: "Book Now", "See Photos"
+  - After articles: "Read More", "Share"
+`
+```
+
+## Best Practices
+
+- Use verbs: "Book", "View", "Check"
+- Be specific: "Add to Cart" not "Continue"
+- Limit to 5-7 for best UX
+- Order by importance
+
+## Next Steps
+
+<Card title="Links Component" icon="link" href="/formatting/links">
+  Learn about displaying URLs
+</Card>

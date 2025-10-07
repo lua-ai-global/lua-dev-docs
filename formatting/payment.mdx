@@ -1,0 +1,61 @@
+---
+title: "Payment Component"
+description: "Secure payment and checkout links"
+---
+
+## Overview
+
+The **Payment** component displays secure payment links for checkout, bookings, or invoices.
+
+## Format
+
+```
+::: payment
+[Link text describing payment](Payment-URL)
+:::
+```
+
+## Example
+
+```
+::: payment
+[Complete your $1,299 order payment](https://checkout.stripe.com/session_abc123)
+:::
+```
+
+<Frame>
+  <img src="/images/formatting/payment-whatsapp.png" alt="Payment WhatsApp" />
+</Frame>
+
+*Screenshot: Payment link as secure button with lock icon*
+
+<Frame>
+  <img src="/images/formatting/payment-email.png" alt="Payment Email" />
+</Frame>
+
+*Screenshot: Payment button in Email*
+
+## Configure
+
+```typescript
+context: `
+  After creating order, provide payment:
+  
+  ::: payment
+  [Complete payment for Order #ID](payment-url)
+  :::
+  
+  Include order number and amount.
+`
+```
+
+## Best For
+
+- Checkout flows
+- Booking payments
+- Invoice links
+- Subscription payments
+
+<Card title="Custom Components" icon="wand-magic-sparkles" href="/formatting/custom-components">
+  Coming soon: Build your own
+</Card>

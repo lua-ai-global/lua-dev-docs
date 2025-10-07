@@ -1,0 +1,271 @@
+---
+title: "Facebook Messenger"
+description: "Connect your agent to Facebook Page messages"
+---
+
+## Overview
+
+Facebook Messenger integration allows your agent to respond to messages sent to your Facebook Business Page.
+
+<CardGroup cols={2}>
+  <Card title="2.9B Users" icon="users">
+    Massive Facebook user base
+  </Card>
+  <Card title="Page Integration" icon="facebook">
+    Connect to business page
+  </Card>
+  <Card title="Rich Media" icon="image">
+    Images, videos, buttons
+  </Card>
+  <Card title="Social Context" icon="network-wired">
+    See user's public profile
+  </Card>
+</CardGroup>
+
+## Prerequisites
+
+<Steps>
+  <Step title="Facebook Business Page">
+    Must have admin access to a Facebook Page
+    
+    <Frame>
+      <img src="/images/channels/facebook-page-admin.png" alt="Facebook Page" />
+    </Frame>
+    
+    *Screenshot: Your Facebook Business Page*
+  </Step>
+  
+  <Step title="Facebook App (Optional for CLI)">
+    Create at https://developers.facebook.com
+    
+    Only needed for CLI method
+  </Step>
+</Steps>
+
+## Connection Method 1: Admin Dashboard (Recommended)
+
+### Facebook OAuth Flow
+
+<Steps>
+  <Step title="Open Admin Dashboard">
+    ```bash
+    lua admin
+    ```
+    
+    Navigate to: Channels → Connect New Channel
+    
+    <Frame>
+      <img src="/images/channels/admin-connect-channel.png" alt="Connect channel" />
+    </Frame>
+    
+    *Screenshot: Connect New Channel button*
+  </Step>
+  
+  <Step title="Click Facebook Messenger">
+    <Frame>
+      <img src="/images/channels/facebook-messenger-tile.png" alt="Facebook tile" />
+    </Frame>
+    
+    *Screenshot: Facebook Messenger option in channel grid*
+  </Step>
+  
+  <Step title="Facebook Authorization Popup">
+    Click "Connect with Facebook"
+    
+    <Frame>
+      <img src="/images/channels/facebook-oauth-popup.png" alt="OAuth popup" />
+    </Frame>
+    
+    *Screenshot: "Connect with Facebook" button that triggers OAuth*
+  </Step>
+  
+  <Step title="Login to Facebook">
+    Facebook OAuth window opens
+    
+    <Frame>
+      <img src="/images/channels/facebook-login-dialog.png" alt="Facebook login" />
+    </Frame>
+    
+    *Screenshot: Facebook login dialog*
+  </Step>
+  
+  <Step title="Select Your Page">
+    Choose which page to connect
+    
+    <Frame>
+      <img src="/images/channels/facebook-page-selection.png" alt="Page selection" />
+    </Frame>
+    
+    *Screenshot: List of your pages with radio buttons/checkboxes*
+  </Step>
+  
+  <Step title="Grant Permissions">
+    Approve messaging permissions
+    
+    <Frame>
+      <img src="/images/channels/facebook-grant-permissions.png" alt="Grant permissions" />
+    </Frame>
+    
+    *Screenshot: Permission screen showing "Manage and access Page conversations in Messenger"*
+  </Step>
+  
+  <Step title="Connection Complete">
+    Returns to admin with success message
+    
+    <Frame>
+      <img src="/images/channels/facebook-connected-success.png" alt="Connected" />
+    </Frame>
+    
+    *Screenshot: Success message showing connected page name and details*
+  </Step>
+</Steps>
+
+## Connection Method 2: CLI (Advanced)
+
+### CLI Setup with Page Token
+
+<Steps>
+  <Step title="Get Page Access Token">
+    From Facebook App Dashboard:
+    1. Go to your app
+    2. Messenger → Settings
+    3. Generate Page Access Token
+    4. Copy token
+    
+    <Frame>
+      <img src="/images/channels/facebook-token-generation.png" alt="Generate token" />
+    </Frame>
+    
+    *Screenshot: Token generation in Facebook App*
+  </Step>
+  
+  <Step title="Get Page ID">
+    From your Facebook Page:
+    1. Go to page settings
+    2. Copy Page ID
+    
+    Or from URL: `facebook.com/[page-id]`
+  </Step>
+  
+  <Step title="Run lua channels">
+    ```bash
+    $ lua channels
+    ✅ Using agent: myAgent
+    
+    ? What would you like to do? 🔗 Link new channel
+    ? Select channel type: 💬 Facebook Messenger
+    
+    ? Enter Facebook page access token: ****
+    ? Enter Facebook page ID: 705555819301071
+    
+    📡 Creating Facebook channel...
+    
+    ✅ Facebook channel created successfully!
+    
+    💬 Page Name: My Business Page
+    📄 Category: Local Business
+    🔗 Webhook: https://wa.heylua.ai/fb/webhook/xyz789
+    ```
+  </Step>
+  
+  <Step title="Configure Webhook in Facebook App">
+    1. Go to App Dashboard
+    2. Messenger → Settings → Webhooks
+    3. Click "Add Callback URL"
+    4. Paste webhook URL
+    5. Enter verify token (optional)
+    6. Subscribe to:
+       - messages
+       - messaging_postbacks
+       - messaging_optins
+    
+    <Frame>
+      <img src="/images/channels/facebook-webhook-setup.png" alt="Webhook setup" />
+    </Frame>
+    
+    *Screenshot: Facebook webhook configuration screen*
+  </Step>
+</Steps>
+
+## Testing
+
+<Steps>
+  <Step title="Send Message to Page">
+    Open Messenger and message your page
+    
+    <Frame>
+      <img src="/images/channels/messenger-send-test.png" alt="Send test" />
+    </Frame>
+    
+    *Screenshot: Messenger conversation sending "Hi!"*
+  </Step>
+  
+  <Step title="Agent Responds">
+    <Frame>
+      <img src="/images/channels/messenger-agent-response.png" alt="Agent response" />
+    </Frame>
+    
+    *Screenshot: Agent's response in Messenger*
+  </Step>
+  
+  <Step title="View in Admin">
+    Monitor conversation in admin dashboard
+    
+    <Frame>
+      <img src="/images/channels/admin-facebook-conversation.png" alt="Admin conversation" />
+    </Frame>
+    
+    *Screenshot: Admin dashboard showing the conversation*
+  </Step>
+</Steps>
+
+## Features
+
+<CardGroup cols={2}>
+  <Card title="Text Messages" icon="message">
+    Send and receive text
+  </Card>
+  <Card title="Rich Media" icon="image">
+    Images, videos, files
+  </Card>
+  <Card title="Quick Replies" icon="list">
+    Suggested response buttons
+  </Card>
+  <Card title="Templates" icon="file">
+    Reusable message templates
+  </Card>
+</CardGroup>
+
+## Best Practices
+
+<AccordionGroup>
+  <Accordion title="Response Time">
+    - Respond quickly (within minutes)
+    - Facebook shows "Typically responds in..."
+    - Fast responses improve visibility
+  </Accordion>
+
+  <Accordion title="Use Page Features">
+    - Set greeting message
+    - Configure away message
+    - Use quick replies
+    - Add call-to-action buttons
+  </Accordion>
+
+  <Accordion title="Monitor Page Rating">
+    - Check page rating regularly
+    - Respond to all messages
+    - Address negative feedback
+  </Accordion>
+</AccordionGroup>
+
+## Next Steps
+
+<CardGroup cols={2}>
+  <Card title="Instagram" icon="instagram" href="/channels/instagram">
+    Connect Instagram DMs
+  </Card>
+  <Card title="Email" icon="envelope" href="/channels/email">
+    Add email support
+  </Card>
+</CardGroup>

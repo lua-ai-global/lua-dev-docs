@@ -1,0 +1,237 @@
+---
+title: "Email"
+description: "Connect your agent to email for automated responses"
+---
+
+## Overview
+
+Email integration allows your agent to automatically respond to emails sent to your support or business email address.
+
+<CardGroup cols={2}>
+  <Card title="Professional" icon="briefcase">
+    Business-appropriate channel
+  </Card>
+  <Card title="Universal" icon="globe">
+    Everyone has email
+  </Card>
+  <Card title="B2B Friendly" icon="handshake">
+    Preferred for business
+  </Card>
+  <Card title="Threaded" icon="reply">
+    Conversation threading
+  </Card>
+</CardGroup>
+
+## How It Works
+
+<Steps>
+  <Step title="User Sends Email">
+    Customer emails: support@yourcompany.com
+  </Step>
+  
+  <Step title="Email Forwards to Lua">
+    Your email provider forwards to Lua
+  </Step>
+  
+  <Step title="Agent Processes">
+    Agent reads and understands email
+  </Step>
+  
+  <Step title="Agent Responds">
+    Agent sends reply via email
+  </Step>
+  
+  <Step title="User Receives Reply">
+    Reply appears in their inbox
+  </Step>
+</Steps>
+
+## Connection Method 1: CLI
+
+```bash
+$ lua channels
+✅ Using agent: myAgent
+
+? What would you like to do? 🔗 Link new channel
+? Select channel type: 📧 Email
+
+? Enter sender name (shown in email header): Support Team
+? Enter sender email address: support@mybusiness.com
+
+📡 Creating Email channel...
+
+✅ Email channel created successfully!
+
+────────────────────────────────────────────────────
+⚠️  IMPORTANT: Email Forwarding Setup Required
+────────────────────────────────────────────────────
+
+📧 Sender: support@mybusiness.com
+📬 Forward ALL emails to:
+   b5469c03-082e-481d-929b-663daf66bbef@mail.heylua.ai
+
+[See setup instructions below]
+────────────────────────────────────────────────────
+```
+
+## Connection Method 2: Admin Dashboard
+
+<Steps>
+  <Step title="Open Admin">
+    ```bash
+    lua admin
+    ```
+    
+    Channels → Connect New Channel → Email
+  </Step>
+  
+  <Step title="Email Configuration Form">
+    <Frame>
+      <img src="/images/channels/admin-email-form.png" alt="Email form" />
+    </Frame>
+    
+    *Screenshot: Form with Sender Name and Email Address fields*
+  </Step>
+  
+  <Step title="Click Create Channel">
+    <Frame>
+      <img src="/images/channels/admin-email-creating.png" alt="Creating" />
+    </Frame>
+  </Step>
+  
+  <Step title="Get Forwarding Address">
+    <Frame>
+      <img src="/images/channels/admin-email-forward-address.png" alt="Forward address" />
+    </Frame>
+    
+    *Screenshot: Success screen showing:*
+    - Unique forwarding address
+    - Copy button
+    - Setup instructions link
+  </Step>
+</Steps>
+
+## Email Provider Setup
+
+<Tabs>
+  <Tab title="Gmail">
+    **Gmail Forwarding:**
+    
+    1. Open Gmail Settings
+    2. "Forwarding and POP/IMAP" tab
+    3. "Add a forwarding address"
+    4. Paste Lua forwarding address
+    5. Check verification email
+    6. Click verification link
+    7. Return to Gmail settings
+    8. Enable "Forward a copy"
+    
+    <Frame>
+      <img src="/images/channels/gmail-forwarding-steps.png" alt="Gmail forwarding" />
+    </Frame>
+    
+    *Screenshot: Gmail forwarding settings page*
+  </Tab>
+
+  <Tab title="Outlook">
+    **Outlook Forwarding:**
+    
+    1. Open Outlook Settings
+    2. Mail → Forwarding
+    3. Enable forwarding
+    4. Enter Lua forwarding address
+    5. Save changes
+    
+    <Frame>
+      <img src="/images/channels/outlook-forwarding-steps.png" alt="Outlook forwarding" />
+    </Frame>
+  </Tab>
+
+  <Tab title="Google Workspace">
+    **Workspace Routing:**
+    
+    1. Admin Console
+    2. Apps → Gmail → Routing
+    3. Create routing rule
+    4. Condition: recipient = your email
+    5. Action: forward to Lua address
+    
+    <Frame>
+      <img src="/images/channels/workspace-routing-rule.png" alt="Workspace routing" />
+    </Frame>
+  </Tab>
+
+  <Tab title="cPanel">
+    **Email Forwarders:**
+    
+    1. cPanel → Email Forwarders
+    2. Add Forwarder
+    3. From: your email
+    4. To: Lua forwarding address
+    5. Add Forwarder
+    
+    <Frame>
+      <img src="/images/channels/cpanel-email-forwarder.png" alt="cPanel forwarder" />
+    </Frame>
+  </Tab>
+</Tabs>
+
+## Testing
+
+<Steps>
+  <Step title="Send Test Email">
+    ```
+    To: support@mybusiness.com
+    Subject: Test
+    Body: Is this working?
+    ```
+  </Step>
+  
+  <Step title="Check Admin Dashboard">
+    <Frame>
+      <img src="/images/channels/admin-email-test-received.png" alt="Email received" />
+    </Frame>
+    
+    *Screenshot: Admin showing received email*
+  </Step>
+  
+  <Step title="Agent Responds">
+    <Frame>
+      <img src="/images/channels/email-agent-response-inbox.png" alt="Response received" />
+    </Frame>
+    
+    *Screenshot: Response in your email inbox*
+  </Step>
+</Steps>
+
+## Best Practices
+
+<AccordionGroup>
+  <Accordion title="Professional Tone">
+    Email is formal - configure persona accordingly
+  </Accordion>
+
+  <Accordion title="Response Time">
+    - Aim for < 1 hour response
+    - Set auto-reply for delays
+    - Mention expected response time
+  </Accordion>
+
+  <Accordion title="Formatting">
+    - Use proper paragraphs
+    - Include signature
+    - Format lists clearly
+    - Proofread responses
+  </Accordion>
+</AccordionGroup>
+
+## Next Steps
+
+<CardGroup cols={2}>
+  <Card title="Website Widget" icon="globe" href="/channels/website-widget">
+    Add chat to website
+  </Card>
+  <Card title="All Channels" icon="list" href="/channels/introduction">
+    View all options
+  </Card>
+</CardGroup>

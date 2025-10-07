@@ -1,0 +1,350 @@
+---
+title: "Slack"
+description: "Connect your agent to Slack workspaces"
+---
+
+## Overview
+
+Slack integration allows your agent to participate in workspace conversations - perfect for internal teams or community support.
+
+<CardGroup cols={2}>
+  <Card title="Team Collaboration" icon="users">
+    Internal communication
+  </Card>
+  <Card title="Real-Time" icon="bolt">
+    Instant messaging
+  </Card>
+  <Card title="Developer Friendly" icon="code">
+    Popular with tech teams
+  </Card>
+  <Card title="Two Types" icon="list">
+    Private Bot or Public App
+  </Card>
+</CardGroup>
+
+## Two Integration Types
+
+<Tabs>
+  <Tab title="Private Bot">
+    **Simple bot installation**
+    
+    - Single workspace only
+    - Bot token authentication
+    - Quick setup
+    - Internal team use
+    
+    **CLI Support:** ✅ Yes
+  </Tab>
+
+  <Tab title="Public OAuth App">
+    **Distributable application**
+    
+    - Multiple workspaces
+    - OAuth authentication
+    - Public distribution
+    - Customer-facing
+    
+    **CLI Support:** ✅ Yes (credentials needed)
+  </Tab>
+</Tabs>
+
+## Prerequisites
+
+### For Private Bot
+
+<Steps>
+  <Step title="Create Slack App">
+    Go to https://api.slack.com/apps → Create New App → From Scratch
+    
+    <Frame>
+      <img src="/images/channels/slack-create-app.png" alt="Create Slack app" />
+    </Frame>
+    
+    *Screenshot: "Create New App" dialog*
+  </Step>
+  
+  <Step title="Use App Manifest (Recommended)">
+    Instead of configuring manually, use our app manifest:
+    
+    **App Manifest** (App Manifest → YAML):
+    
+    ```yaml
+    display_information:
+      name: 'Your Agent Name'
+      description: 'AI assistant powered by Lua'
+      background_color: '#000000'
+      long_description: 'Your AI agent that helps with customer support, sales, and more'
+    
+    features:
+      app_home:
+        home_tab_enabled: true
+        messages_tab_enabled: true
+        messages_tab_read_only_enabled: false
+      bot_user:
+        display_name: 'Your Agent Bot'
+        always_online: true
+    
+    oauth_config:
+      redirect_urls:
+        - 'https://auth.heylua.ai/slack/oauth_redirect/YOUR_APP_ID'
+      scopes:
+        bot:
+          - 'chat:write'
+          - 'channels:history'
+          - 'groups:history'
+          - 'im:history'
+          - 'mpim:history'
+          - 'channels:read'
+          - 'groups:read'
+          - 'im:read'
+          - 'mpim:read'
+          - 'users:read'
+          - 'app_mentions:read'
+          - 'users:read.email'
+          - 'files:read'
+    
+    settings:
+      event_subscriptions:
+        request_url: 'https://wa.heylua.ai/slack/webhook'
+        bot_events:
+          - 'app_mention'
+          - 'message.channels'
+          - 'message.groups'
+          - 'message.im'
+      interactivity:
+        is_enabled: true
+        request_url: 'https://wa.heylua.ai/slack/webhook'
+      org_deploy_enabled: false
+      socket_mode_enabled: false
+      token_rotation_enabled: false
+    ```
+    
+    <Frame>
+      <img src="/images/channels/slack-app-manifest.png" alt="App manifest" />
+    </Frame>
+    
+    *Screenshot: App Manifest editor in Slack*
+    
+    <Note>
+    **Important**: Replace `YOUR_APP_ID` in redirect_urls with your actual Slack App ID after creation
+    </Note>
+  </Step>
+  
+  <Step title="Or Configure Manually">
+    If not using manifest, configure these settings:
+    
+    **OAuth & Permissions → Bot Token Scopes:**
+    - `chat:write` - Send messages
+    - `channels:history` - Read channel messages
+    - `groups:history` - Read private channel messages
+    - `im:history` - Read DM history
+    - `mpim:history` - Read group DM history
+    - `channels:read` - View channels
+    - `groups:read` - View private channels
+    - `im:read` - View DMs
+    - `mpim:read` - View group DMs
+    - `users:read` - View user information
+    - `app_mentions:read` - Detect @mentions
+    - `users:read.email` - View user emails
+    - `files:read` - Access uploaded files
+    
+    <Frame>
+      <img src="/images/channels/slack-bot-scopes-manual.png" alt="Bot scopes" />
+    </Frame>
+    
+    *Screenshot: OAuth scopes selection interface*
+  </Step>
+  
+  <Step title="Configure Event Subscriptions">
+    Event Subscriptions → Enable Events
+    
+    **Request URL:**
+    ```
+    https://wa.heylua.ai/slack/webhook
+    ```
+    
+    **Subscribe to bot events:**
+    - `app_mention` - When @mentioned
+    - `message.channels` - Public channel messages
+    - `message.groups` - Private channel messages
+    - `message.im` - Direct messages
+    
+    <Frame>
+      <img src="/images/channels/slack-event-subscriptions.png" alt="Event subscriptions" />
+    </Frame>
+    
+    *Screenshot: Event Subscriptions configuration*
+  </Step>
+  
+  <Step title="Enable Interactivity">
+    Interactivity & Shortcuts → Turn On
+    
+    **Request URL:**
+    ```
+    https://wa.heylua.ai/slack/webhook
+    ```
+    
+    <Frame>
+      <img src="/images/channels/slack-interactivity.png" alt="Interactivity" />
+    </Frame>
+    
+    *Screenshot: Interactivity settings*
+  </Step>
+  
+  <Step title="Install to Workspace">
+    OAuth & Permissions → Install to Workspace
+    
+    <Frame>
+      <img src="/images/channels/slack-install-workspace.png" alt="Install app" />
+    </Frame>
+    
+    *Screenshot: "Install to Workspace" button*
+  </Step>
+  
+  <Step title="Copy Bot Token">
+    OAuth & Permissions → Bot User OAuth Token
+    
+    **Token format:** `xoxb-1234567890-...`
+    
+    <Frame>
+      <img src="/images/channels/slack-bot-token.png" alt="Bot token" />
+    </Frame>
+    
+    *Screenshot: Bot token with copy button (token partially masked)*
+  </Step>
+</Steps>
+
+### Scope Explanations
+
+<AccordionGroup>
+  <Accordion title="Message Scopes">
+    **Reading messages:**
+    - `channels:history` - Read public channel messages
+    - `groups:history` - Read private channel messages
+    - `im:history` - Read direct messages
+    - `mpim:history` - Read group direct messages
+    
+    **Sending messages:**
+    - `chat:write` - Required to send any messages
+  </Accordion>
+
+  <Accordion title="Channel Scopes">
+    **Reading channel info:**
+    - `channels:read` - List public channels
+    - `groups:read` - List private channels
+    - `im:read` - List DMs
+    - `mpim:read` - List group DMs
+  </Accordion>
+
+  <Accordion title="User Scopes">
+    **User information:**
+    - `users:read` - Get user display names
+    - `users:read.email` - Get user email addresses
+    
+    **Useful for:**
+    - Personalizing responses
+    - User identification
+    - Profile information
+  </Accordion>
+
+  <Accordion title="Additional Scopes">
+    **Other features:**
+    - `app_mentions:read` - Detect when bot is @mentioned
+    - `files:read` - Read uploaded files
+    
+    **For future:**
+    - Responding to mentions in channels
+    - Processing file attachments
+  </Accordion>
+</AccordionGroup>
+
+### Webhook Configuration
+
+<Warning>
+**Critical**: Both Event Subscriptions and Interactivity must use the same webhook URL:
+
+```
+https://wa.heylua.ai/slack/webhook
+```
+
+This URL handles all Slack events and interactions for your agent.
+</Warning>
+
+## Connection Method 1: CLI (Private Bot)
+
+```bash
+$ lua channels
+✅ Using agent: myAgent
+
+? What would you like to do? 🔗 Link new channel
+? Select channel type: 🔒 Slack (Private)
+
+? Enter Slack bot token (xoxb-...): ****
+
+📡 Creating Slack channel...
+
+✅ Slack channel created successfully!
+
+💼 Bot Name: My Agent Bot
+🏢 Workspace: My Company
+🔗 Webhook: https://wa.heylua.ai/slack/webhook
+```
+
+## Connection Method 2: Admin Dashboard
+
+<Steps>
+  <Step title="Open Admin">
+    ```bash
+    lua admin
+    ```
+    
+    Navigate to Channels
+  </Step>
+  
+  <Step title="Click Slack">
+    <Frame>
+      <img src="/images/channels/admin-slack-tile.png" alt="Slack tile" />
+    </Frame>
+  </Step>
+  
+  <Step title="Choose Integration Type">
+    <Frame>
+      <img src="/images/channels/slack-type-selection.png" alt="Slack type" />
+    </Frame>
+    
+    *Screenshot: Private Bot vs Public OAuth choice*
+  </Step>
+  
+  <Step title="For Private: Enter Token">
+    <Frame>
+      <img src="/images/channels/slack-token-form.png" alt="Token form" />
+    </Frame>
+  </Step>
+  
+  <Step title="Success">
+    <Frame>
+      <img src="/images/channels/slack-connected.png" alt="Slack connected" />
+    </Frame>
+  </Step>
+</Steps>
+
+## Testing
+
+Send DM to your bot in Slack:
+
+<Frame>
+  <img src="/images/channels/slack-test-conversation.png" alt="Slack conversation" />
+</Frame>
+
+*Screenshot: Slack conversation with agent responding*
+
+## Next Steps
+
+<CardGroup cols={2}>
+  <Card title="Email" icon="envelope" href="/channels/email">
+    Add email support
+  </Card>
+  <Card title="Management" icon="wrench" href="/channels/cli-management">
+    Manage all channels
+  </Card>
+</CardGroup>

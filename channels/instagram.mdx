@@ -1,0 +1,305 @@
+---
+title: "Instagram"
+description: "Connect your agent to Instagram Direct Messages"
+---
+
+## Overview
+
+Instagram integration allows your agent to respond to Direct Messages sent to your Instagram Business account.
+
+<CardGroup cols={2}>
+  <Card title="Visual Platform" icon="camera">
+    Image and video-focused
+  </Card>
+  <Card title="Young Demographic" icon="users">
+    Popular with Gen Z and Millennials
+  </Card>
+  <Card title="DMs & Story Replies" icon="message">
+    Respond to messages and story interactions
+  </Card>
+  <Card title="Business Account" icon="building">
+    Professional presence
+  </Card>
+</CardGroup>
+
+## Prerequisites
+
+<Steps>
+  <Step title="Instagram Business Account">
+    Convert your Instagram account to Business
+    
+    <Frame>
+      <img src="/images/channels/instagram-business-setup.png" alt="Instagram Business" />
+    </Frame>
+    
+    *Screenshot: Instagram app showing "Switch to Professional Account"*
+  </Step>
+  
+  <Step title="Link to Facebook Page">
+    Connect Instagram to a Facebook Business Page
+    
+    <Frame>
+      <img src="/images/channels/instagram-link-facebook.png" alt="Link Facebook" />
+    </Frame>
+    
+    *Screenshot: Instagram settings showing Facebook Page connection*
+  </Step>
+  
+  <Step title="Enable Messaging">
+    Allow message requests and DMs
+    
+    <Frame>
+      <img src="/images/channels/instagram-enable-messages.png" alt="Enable messages" />
+    </Frame>
+    
+    *Screenshot: Instagram messaging settings*
+  </Step>
+</Steps>
+
+## Connection Method: Admin Dashboard Only
+
+<Warning>
+**Instagram connection is only available through the admin dashboard** due to OAuth requirements and Meta's authentication flow.
+</Warning>
+
+### OAuth Setup Process
+
+<Steps>
+  <Step title="Open Admin Dashboard">
+    ```bash
+    lua admin
+    ```
+    
+    Navigate to: Channels → Connect New Channel
+    
+    <Frame>
+      <img src="/images/channels/admin-channels-page.png" alt="Channels page" />
+    </Frame>
+    
+    *Screenshot: Admin channels page with "Connect New Channel" button*
+  </Step>
+  
+  <Step title="Click Instagram">
+    Select Instagram from channel options
+    
+    <Frame>
+      <img src="/images/channels/admin-instagram-tile.png" alt="Instagram option" />
+    </Frame>
+    
+    *Screenshot: Instagram channel tile in the connection grid*
+  </Step>
+  
+  <Step title="Click Connect Instagram">
+    Initiates OAuth flow
+    
+    <Frame>
+      <img src="/images/channels/instagram-connect-modal.png" alt="Instagram modal" />
+    </Frame>
+    
+    *Screenshot: Instagram connection modal with "Connect with Instagram" button*
+  </Step>
+  
+  <Step title="Instagram Authorization Opens">
+    New window/popup opens to Instagram
+    
+    <Frame>
+      <img src="/images/channels/instagram-oauth-login.png" alt="Instagram OAuth" />
+    </Frame>
+    
+    *Screenshot: Instagram OAuth authorization screen*
+  </Step>
+  
+  <Step title="Log Into Instagram">
+    Enter Instagram credentials
+    
+    <Frame>
+      <img src="/images/channels/instagram-login-form.png" alt="Instagram login" />
+    </Frame>
+    
+    *Screenshot: Instagram login form*
+  </Step>
+  
+  <Step title="Grant Permissions">
+    Approve messaging permissions
+    
+    <Frame>
+      <img src="/images/channels/instagram-grant-permissions.png" alt="Grant permissions" />
+    </Frame>
+    
+    *Screenshot: Permission screen showing:*
+    - Access messages in your Instagram inbox
+    - Send messages on your behalf
+    - View your Instagram Business account
+  </Step>
+  
+  <Step title="Select Business Account">
+    Choose which Instagram Business account to connect
+    
+    <Frame>
+      <img src="/images/channels/instagram-select-account.png" alt="Select account" />
+    </Frame>
+    
+    *Screenshot: List of Instagram Business accounts with radio buttons*
+  </Step>
+  
+  <Step title="Confirm Selection">
+    Click "Continue" or "Connect"
+    
+    <Frame>
+      <img src="/images/channels/instagram-confirm.png" alt="Confirm connection" />
+    </Frame>
+    
+    *Screenshot: Confirmation screen with selected account details*
+  </Step>
+  
+  <Step title="Connection Complete">
+    Returns to admin dashboard with success
+    
+    <Frame>
+      <img src="/images/channels/instagram-connected-success.png" alt="Instagram connected" />
+    </Frame>
+    
+    *Screenshot: Success message showing:*
+    - Instagram handle (@yourbusiness)
+    - Account name
+    - Connection status
+    - "Test Channel" button
+  </Step>
+</Steps>
+
+## Testing Your Instagram Channel
+
+<Steps>
+  <Step title="Send DM from Personal Account">
+    Use your personal Instagram to message your business account
+    
+    <Frame>
+      <img src="/images/channels/instagram-send-test-dm.png" alt="Send test DM" />
+    </Frame>
+    
+    *Screenshot: Instagram DM conversation sending "Hi!"*
+  </Step>
+  
+  <Step title="Agent Responds">
+    Your agent replies automatically
+    
+    <Frame>
+      <img src="/images/channels/instagram-agent-response.png" alt="Agent response" />
+    </Frame>
+    
+    *Screenshot: Agent's response in Instagram DMs*
+  </Step>
+  
+  <Step title="View in Admin Dashboard">
+    Monitor conversation in real-time
+    
+    <Frame>
+      <img src="/images/channels/admin-instagram-conversation.png" alt="Admin conversation" />
+    </Frame>
+    
+    *Screenshot: Admin dashboard showing Instagram conversation with:*
+    - User profile picture
+    - Message history
+    - Timestamp
+    - "Reply" button for manual intervention
+  </Step>
+</Steps>
+
+## Features
+
+<CardGroup cols={2}>
+  <Card title="Direct Messages" icon="message">
+    Respond to DMs automatically
+  </Card>
+  <Card title="Story Replies" icon="reply">
+    Reply to story mentions
+  </Card>
+  <Card title="Rich Media" icon="image">
+    Send images, videos
+  </Card>
+  <Card title="Quick Replies" icon="bolt">
+    Suggested response buttons
+  </Card>
+</CardGroup>
+
+## Best Practices
+
+<AccordionGroup>
+  <Accordion title="Visual Content">
+    Instagram is visual - use:
+    - Product images
+    - Demo videos
+    - Infographics
+    - Visual guides
+  </Accordion>
+
+  <Accordion title="Casual Tone">
+    Instagram users expect:
+    - Friendly, casual communication
+    - Emojis and personality
+    - Quick, concise responses
+    - Less formal than email
+  </Accordion>
+
+  <Accordion title="Response Time">
+    - Respond within minutes if possible
+    - Instagram shows response time publicly
+    - Fast responses improve visibility
+  </Accordion>
+
+  <Accordion title="Monitor Engagement">
+    ```bash
+    lua admin
+    # Check Instagram engagement metrics
+    # Track response rates
+    # Monitor user satisfaction
+    ```
+  </Accordion>
+</AccordionGroup>
+
+## Troubleshooting
+
+<AccordionGroup>
+  <Accordion title="OAuth fails">
+    **Check:**
+    - Instagram account is Business type
+    - Linked to Facebook Page
+    - Permissions granted
+    - Pop-up blocker disabled
+  </Accordion>
+
+  <Accordion title="Messages not responding">
+    **Check:**
+    - Channel status in admin (CONNECTED)
+    - Instagram messaging is enabled
+    - Account not restricted
+    - Test with simple message
+  </Accordion>
+
+  <Accordion title="Can't find Business account">
+    **Ensure:**
+    - Account is converted to Business
+    - Linked to Facebook Page
+    - Page has admin access
+    - Try disconnecting and reconnecting
+  </Accordion>
+</AccordionGroup>
+
+## Next Steps
+
+<CardGroup cols={2}>
+  <Card
+    title="Slack"
+    icon="slack"
+    href="/channels/slack"
+  >
+    Connect team workspace
+  </Card>
+  <Card
+    title="Admin Dashboard"
+    icon="gauge"
+    href="/channels/admin-dashboard"
+  >
+    Manage all channels visually
+  </Card>
+</CardGroup>

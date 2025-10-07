@@ -1,0 +1,130 @@
+---
+title: "Custom Components"
+description: "Build your own visual components (Coming Soon)"
+---
+
+## Coming Soon 🚀
+
+We're building a **Custom Component Builder** that will allow you to create your own visual components with custom layouts, data structures, and interactions.
+
+<CardGroup cols={2}>
+  <Card title="Custom Layouts" icon="table-cells">
+    Design your own component structure
+  </Card>
+  <Card title="Custom Data" icon="database">
+    Define your own data fields
+  </Card>
+  <Card title="Custom Actions" icon="hand-pointer">
+    Create custom interactions
+  </Card>
+  <Card title="Reusable" icon="recycle">
+    Use across all channels
+  </Card>
+</CardGroup>
+
+## What You'll Be Able to Do
+
+### Create Custom Components
+
+```typescript
+// Future API (coming soon)
+const customComponent = {
+  type: "product-comparison",
+  layout: "side-by-side",
+  fields: [
+    { name: "image", type: "image" },
+    { name: "name", type: "text" },
+    { name: "price", type: "currency" },
+    { name: "rating", type: "stars" },
+    { name: "features", type: "list" }
+  ],
+  actions: [
+    { label: "Choose {{name}}", handler: "add_to_cart" }
+  ]
+};
+```
+
+### Use in Responses
+
+```
+::: custom:product-comparison
+{
+  "products": [
+    {
+      "image": "url",
+      "name": "Product A",
+      "price": 999,
+      "rating": 4.5,
+      "features": ["Feature 1", "Feature 2"]
+    }
+  ]
+}
+:::
+```
+
+### Examples We're Building
+
+<Tabs>
+  <Tab title="Product Comparison">
+    Side-by-side product comparisons with specs
+  </Tab>
+
+  <Tab title="Booking Calendar">
+    Interactive date selection
+  </Tab>
+
+  <Tab title="Location Map">
+    Embedded maps with directions
+  </Tab>
+
+  <Tab title="Rating Widget">
+    Star ratings and reviews
+  </Tab>
+
+  <Tab title="Progress Tracker">
+    Order/delivery status visualization
+  </Tab>
+
+  <Tab title="Form Builder">
+    Custom data collection forms
+  </Tab>
+</Tabs>
+
+## Timeline
+
+We're actively developing this feature. Expected release: Q1 2025
+
+## Stay Updated
+
+Want early access or have ideas for custom components?
+
+**Contact us:**
+- Email: support@heylua.ai
+- Feature requests: Share your use case
+
+<Note>
+We'll notify all users when Custom Component Builder launches. In the meantime, use the 5 built-in components for rich responses!
+</Note>
+
+## Current Components
+
+<CardGroup cols={2}>
+  <Card title="List-Item" icon="list" href="/formatting/list-item">
+    Available now
+  </Card>
+  <Card title="Actions" icon="hand-pointer" href="/formatting/actions">
+    Available now
+  </Card>
+  <Card title="Links" icon="link" href="/formatting/links">
+    Available now
+  </Card>
+  <Card title="Images" icon="image" href="/formatting/images">
+    Available now
+  </Card>
+  <Card title="Payment" icon="credit-card" href="/formatting/payment">
+    Available now
+  </Card>
+  <Card title="Custom" icon="wand-magic-sparkles">
+    Coming Q1 2026
+  </Card>
+</CardGroup>

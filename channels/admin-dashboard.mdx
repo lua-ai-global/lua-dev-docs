@@ -1,0 +1,373 @@
+---
+title: "Admin Dashboard"
+description: "Visual channel management interface"
+---
+
+## Overview
+
+The Lua Admin Dashboard provides a visual interface for managing all your channels, monitoring conversations, and configuring integrations.
+
+```bash
+lua admin
+# Or visit: https://admin.heylua.ai
+```
+
+<CardGroup cols={2}>
+  <Card title="Visual Interface" icon="window">
+    Point-and-click management
+  </Card>
+  <Card title="Real-Time" icon="bolt">
+    Live conversation monitoring
+  </Card>
+  <Card title="All Channels" icon="grip">
+    Manage everything in one place
+  </Card>
+  <Card title="Team Friendly" icon="users">
+    Easy for non-technical users
+  </Card>
+</CardGroup>
+
+## Dashboard Features
+
+### Channels Overview
+
+<Frame>
+  <img src="/images/channels/admin-dashboard-overview.png" alt="Dashboard overview" />
+</Frame>
+
+*Screenshot: Main dashboard showing:*
+- List of all connected channels
+- Status indicators (🟢 Active, 🔴 Error, 🟡 Warning)
+- Last message timestamp per channel
+- Message count per channel
+- "Connect New Channel" button
+
+### Channel Status Indicators
+
+<Tabs>
+  <Tab title="🟢 Active">
+    Channel is connected and working normally
+    
+    - Receiving messages
+    - Sending responses
+    - No errors
+  </Tab>
+
+  <Tab title="🟡 Warning">
+    Channel has minor issues but still functional
+    
+    - Slow responses
+    - Rate limiting
+    - Token expires soon
+  </Tab>
+
+  <Tab title="🔴 Error">
+    Channel is not working properly
+    
+    - Disconnected
+    - Invalid credentials
+    - Webhook not configured
+    - Needs immediate attention
+  </Tab>
+
+  <Tab title="⚪ Setup Required">
+    Channel partially configured
+    
+    - Email: Forwarding not set up
+    - WhatsApp: Webhook not configured
+    - OAuth: Not completed
+  </Tab>
+</Tabs>
+
+## Connecting Channels
+
+### Channel Connection Grid
+
+<Frame>
+  <img src="/images/channels/admin-connect-grid.png" alt="Connection grid" />
+</Frame>
+
+*Screenshot: Grid showing all available channel types as tiles:*
+- WhatsApp (with icon)
+- Facebook Messenger (with icon)
+- Instagram (with icon)
+- Email (with icon)
+- Slack (with icon)
+- Website Widget (with icon)
+- "More channels coming soon" tile
+
+### OAuth Flow Example (Instagram)
+
+<Steps>
+  <Step title="Click Instagram Tile">
+    <Frame>
+      <img src="/images/channels/admin-instagram-click.png" alt="Instagram tile" />
+    </Frame>
+  </Step>
+  
+  <Step title="OAuth Modal Opens">
+    <Frame>
+      <img src="/images/channels/admin-instagram-modal.png" alt="Instagram modal" />
+    </Frame>
+    
+    *Screenshot: Modal explaining what permissions are needed*
+  </Step>
+  
+  <Step title="Click Authorize">
+    <Frame>
+      <img src="/images/channels/admin-instagram-authorize.png" alt="Authorize button" />
+    </Frame>
+  </Step>
+  
+  <Step title="Instagram OAuth">
+    <Frame>
+      <img src="/images/channels/instagram-oauth-flow.png" alt="OAuth flow" />
+    </Frame>
+    
+    *Screenshot: Instagram authorization screens*
+  </Step>
+  
+  <Step title="Connection Success">
+    <Frame>
+      <img src="/images/channels/admin-instagram-success.png" alt="Success" />
+    </Frame>
+    
+    *Screenshot: Success notification with channel details*
+  </Step>
+</Steps>
+
+## Real-Time Conversations
+
+<Frame>
+  <img src="/images/channels/admin-conversations-list.png" alt="Conversations" />
+</Frame>
+
+*Screenshot: Conversations page showing:*
+- List of active conversations
+- User name/identifier
+- Last message preview
+- Channel indicator (WhatsApp/Facebook/etc.)
+- Timestamp
+- Unread count
+
+### Conversation Detail View
+
+<Frame>
+  <img src="/images/channels/admin-conversation-detail.png" alt="Conversation detail" />
+</Frame>
+
+*Screenshot: Full conversation view showing:*
+- Message history
+- User messages on left
+- Agent responses on right
+- Timestamps
+- "Take over" button to reply manually
+- Channel type indicator
+
+### Manual Reply
+
+<Frame>
+  <img src="/images/channels/admin-manual-reply.png" alt="Manual reply" />
+</Frame>
+
+*Screenshot: Interface for sending manual reply:*
+- Text input field
+- "Send" button
+- Option to disable auto-responses
+- Rich text formatting options
+
+## Channel Analytics
+
+<Frame>
+  <img src="/images/channels/admin-channel-analytics.png" alt="Analytics" />
+</Frame>
+
+*Screenshot: Analytics dashboard showing:*
+- Messages per channel (bar chart)
+- Response times by channel
+- User engagement rates
+- Peak usage times
+- Channel performance comparison
+
+### Metrics Tracked
+
+<CardGroup cols={2}>
+  <Card title="Volume" icon="chart-line">
+    Messages sent/received per channel
+  </Card>
+  <Card title="Response Time" icon="clock">
+    Average response time per channel
+  </Card>
+  <Card title="Engagement" icon="heart">
+    User satisfaction per channel
+  </Card>
+  <Card title="Errors" icon="triangle-exclamation">
+    Failed messages and issues
+  </Card>
+</CardGroup>
+
+## Channel Settings
+
+<Frame>
+  <img src="/images/channels/admin-channel-settings.png" alt="Channel settings" />
+</Frame>
+
+*Screenshot: Channel settings page with:*
+- Channel name
+- Status toggle (Enable/Disable)
+- Webhook URL (with copy button)
+- Credentials management
+- "Test Channel" button
+- "Delete Channel" button
+
+### Per-Channel Configuration
+
+<Tabs>
+  <Tab title="WhatsApp">
+    - Phone number
+    - WABA ID
+    - Quality rating
+    - Message templates
+    - Business profile
+  </Tab>
+
+  <Tab title="Facebook">
+    - Page name
+    - Page ID
+    - Connected account
+    - Greeting message
+    - Response time badge
+  </Tab>
+
+  <Tab title="Email">
+    - Sender name
+    - Sender email
+    - Forwarding address
+    - Signature
+    - Auto-reply settings
+  </Tab>
+
+  <Tab title="Slack">
+    - Workspace name
+    - Bot name
+    - Installed channels
+    - Permissions
+    - OAuth settings (if public)
+  </Tab>
+</Tabs>
+
+## User Management
+
+<Frame>
+  <img src="/images/channels/admin-users-page.png" alt="Users page" />
+</Frame>
+
+*Screenshot: Users management page:*
+- List of team members
+- Role assignments (Admin, Developer, Viewer)
+- Add user button
+- Remove user option
+- Permission settings per user
+
+### Add Team Member
+
+<Frame>
+  <img src="/images/channels/admin-add-user-modal.png" alt="Add user" />
+</Frame>
+
+*Screenshot: Add user modal with:*
+- Email input
+- Role selection dropdown
+- Permission checkboxes
+- "Send Invite" button
+
+## API Key Management
+
+<Frame>
+  <img src="/images/channels/admin-api-keys.png" alt="API keys" />
+</Frame>
+
+*Screenshot: API keys page showing:*
+- List of API keys
+- Key name
+- Created date
+- Last used
+- "Create New Key" button
+- "Revoke" button per key
+
+### Generate New Key
+
+<Frame>
+  <img src="/images/channels/admin-generate-key-modal.png" alt="Generate key" />
+</Frame>
+
+*Screenshot: Generate key modal:*
+- Key name input
+- Permission scopes
+- "Generate" button
+- Copy button for new key
+
+## Billing & Usage
+
+<Frame>
+  <img src="/images/channels/admin-billing-page.png" alt="Billing" />
+</Frame>
+
+*Screenshot: Billing page showing:*
+- Current plan
+- Usage this month (messages, tools called)
+- Billing history
+- Payment method
+- Upgrade/downgrade options
+
+## Best Practices
+
+<AccordionGroup>
+  <Accordion title="Regular Monitoring">
+    - Check dashboard daily
+    - Review conversations
+    - Monitor channel health
+    - Address errors quickly
+  </Accordion>
+
+  <Accordion title="Team Access">
+    - Give appropriate permissions
+    - Admin for deployment access
+    - Viewer for monitoring only
+    - Developer for testing
+  </Accordion>
+
+  <Accordion title="Channel Health">
+    - Monitor status indicators
+    - Address warnings promptly
+    - Test channels regularly
+    - Keep credentials updated
+  </Accordion>
+</AccordionGroup>
+
+## Quick Access
+
+```bash
+# Open from anywhere
+lua admin
+
+# Or from channels
+lua channels → Link on admin dashboard
+```
+
+## Next Steps
+
+<CardGroup cols={2}>
+  <Card title="CLI Management" icon="terminal" href="/channels/cli-management">
+    Terminal-based channel management
+  </Card>
+  <Card title="All Channels" icon="list" href="/channels/introduction">
+    View all channel options
+  </Card>
+  <Card title="WhatsApp Setup" icon="whatsapp" href="/channels/whatsapp">
+    Connect WhatsApp Business
+  </Card>
+  <Card title="Website Widget" icon="globe" href="/channels/website-widget">
+    Add chat to website
+  </Card>
+</CardGroup>

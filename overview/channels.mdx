@@ -1,0 +1,181 @@
+---
+title: "Channels"
+description: "How users connect with your AI agent"
+---
+
+## What are Channels?
+
+**Channels** are the communication platforms where users interact with your AI agent - like WhatsApp, Facebook Messenger, Email, Instagram, Slack, and your website.
+
+<Card title="Think of it as:" icon="broadcast-tower">
+  The connection points between your users and your AI agent - where conversations happen
+</Card>
+
+## Why Channels Matter
+
+Your agent can respond to users across **all their preferred platforms** - not just one.
+
+<CardGroup cols={2}>
+  <Card title="Multi-Platform" icon="globe">
+    One agent, many channels
+  </Card>
+  <Card title="Unified Experience" icon="equals">
+    Same agent everywhere
+  </Card>
+  <Card title="Meet Users Anywhere" icon="location-dot">
+    Users choose their platform
+  </Card>
+  <Card title="Centralized" icon="grip">
+    Manage all from one place
+  </Card>
+</CardGroup>
+
+## Currently Supported Channels
+
+We currently support 6 communication channels:
+
+<Tabs>
+  <Tab title="Messaging Apps">
+    - 📱 **WhatsApp** - Business messaging
+    - 💬 **Facebook Messenger** - Page messaging
+    - 📸 **Instagram Messenger** - Direct messages
+    - 💼 **Slack** - Workspace integration
+  </Tab>
+
+  <Tab title="Web & Email">
+    - 📧 **Email** - Professional communication
+    - 💻 **WebChat (LuaPop)** - Website chat widget
+  </Tab>
+</Tabs>
+
+<Note>
+**🚀 More channels coming soon!** SMS, Microsoft Teams, Discord, Telegram, and more are in development.
+</Note>
+
+## How It Works
+
+```
+Customer sends message on WhatsApp
+            ↓
+   Message forwarded to Lua
+            ↓
+    Your agent processes it
+            ↓
+    Agent calls your tools
+            ↓
+   Response sent back to WhatsApp
+            ↓
+  Customer receives reply
+```
+
+**Same process for all channels!**
+
+## Two Ways to Connect
+
+<Tabs>
+  <Tab title="CLI (Quick)">
+    ```bash
+    lua channels
+    ```
+    
+    **Supports:**
+    - WhatsApp
+    - Facebook
+    - Email
+    - Slack
+    
+    **Best for:** Developers, terminal workflow
+  </Tab>
+
+  <Tab title="Admin Dashboard (Visual)">
+    ```bash
+    lua admin
+    ```
+    
+    **Supports:**
+    - All channels
+    - OAuth flows
+    - Visual setup
+    - Analytics
+    
+    **Best for:** All users, OAuth platforms
+  </Tab>
+</Tabs>
+
+## Example: Multi-Channel Agent
+
+```
+Your agent on all platforms:
+
+📱 WhatsApp: +1-555-BUSINESS
+💬 Facebook: Business Page
+📧 Email: support@company.com
+💻 Website: Chat widget
+💼 Slack: #support channel
+
+Result: Customers reach you anywhere,
+        agent responds consistently everywhere
+```
+
+## Quick Setup
+
+<Steps>
+  <Step title="Deploy Agent">
+    ```bash
+    lua push && lua deploy
+    ```
+  </Step>
+  
+  <Step title="Connect Channels">
+    ```bash
+    lua channels
+    ```
+    
+    Or use admin dashboard
+  </Step>
+  
+  <Step title="Test">
+    Send message on each platform
+  </Step>
+  
+  <Step title="Monitor">
+    ```bash
+    lua admin
+    ```
+    
+    View conversations in real-time
+  </Step>
+</Steps>
+
+## Next Steps
+
+<CardGroup cols={2}>
+  <Card
+    title="Complete Channels Guide"
+    icon="book"
+    href="/channels/introduction"
+  >
+    Detailed setup for every channel type
+  </Card>
+  <Card
+    title="WhatsApp Setup"
+    icon="whatsapp"
+    href="/channels/whatsapp"
+  >
+    Connect WhatsApp Business
+  </Card>
+  <Card
+    title="Website Widget"
+    icon="globe"
+    href="/channels/website-widget"
+  >
+    Add chat to your website
+  </Card>
+  <Card
+    title="Admin Dashboard"
+    icon="gauge"
+    href="/channels/admin-dashboard"
+  >
+    Visual channel management
+  </Card>
+</CardGroup>

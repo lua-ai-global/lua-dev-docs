@@ -29,7 +29,8 @@
               "overview/persona",
               "overview/skill",
               "overview/tools",
-              "overview/resources"
+              "overview/resources",
+              "overview/channels"
             ]
           },
           {
@@ -74,6 +75,7 @@
               "cli/env-command",
               "cli/persona-command",
               "cli/resources-command",
+              "cli/channels-command",
               "cli/production-command",
               "cli/utility-commands",
               "cli/troubleshooting"
@@ -140,11 +142,79 @@
             ]
           },
           {
+            "group": "Features",
+            "pages": [
+              "formatting/navigate",
+              "chat-widget/voice-chat",
+              "chat-widget/analytics"
+            ]
+          },
+          {
+            "group": "Help",
+            "pages": [
+              "chat-widget/troubleshooting"
+            ]
+          }
+        ]
+      },
+      {
+        "tab": "Channels",
+        "groups": [
+          {
+            "group": "Overview",
+            "pages": [
+              "channels/introduction"
+            ]
+          },
+          {
+            "group": "Messaging Platforms",
+            "pages": [
+              "channels/whatsapp",
+              "channels/facebook-messenger",
+              "channels/instagram",
+              "channels/slack"
+            ]
+          },
+          {
+            "group": "Communication Channels",
+            "pages": [
+              "channels/email",
+              "channels/website-widget"
+            ]
+          },
+          {
+            "group": "Management",
+            "pages": [
+              "channels/cli-management",
+              "channels/admin-dashboard"
+            ]
+          }
+        ]
+      },
+      {
+        "tab": "Response Formatting",
+        "groups": [
+          {
+            "group": "Overview",
+            "pages": [
+              "formatting/introduction"
+            ]
+          },
+          {
+            "group": "Components",
+            "pages": [
+              "formatting/list-item",
+              "formatting/actions",
+              "formatting/links",
+              "formatting/images",
+              "formatting/payment",
+              "formatting/navigate"
+            ]
+          },
+          {
             "group": "Advanced",
             "pages": [
-              "chat-widget/voice-chat",
-              "chat-widget/analytics",
-              "chat-widget/troubleshooting"
+              "formatting/custom-components"
             ]
           }
         ]

@@ -1,0 +1,67 @@
+---
+title: "Images Component"
+description: "Display image galleries and multiple photos"
+---
+
+## Overview
+
+The **Images** component displays multiple images in gallery format.
+
+## Format
+
+```
+::: images
+![image](Image-URL-1)
+![image](Image-URL-2)
+![image](Image-URL-3)
+:::
+```
+
+## Example
+
+```
+::: images
+![image](https://example.com/product-front.jpg)
+![image](https://example.com/product-side.jpg)
+![image](https://example.com/product-back.jpg)
+:::
+```
+
+<Frame>
+  <img src="/images/formatting/images-gallery-whatsapp.png" alt="Gallery WhatsApp" />
+</Frame>
+
+*Screenshot: Image gallery in WhatsApp*
+
+<Frame>
+  <img src="/images/formatting/images-gallery-instagram.png" alt="Gallery Instagram" />
+</Frame>
+
+*Screenshot: Native Instagram carousel*
+
+## Configure
+
+```typescript
+persona: `
+  When showing product photos, use images component:
+  
+  ::: images
+  ![image](photo-1)
+  ![image](photo-2)
+  :::
+  
+  Always show multiple angles.
+`
+```
+
+## Best For
+
+- Product photos
+- Property images
+- Menu item photos
+- Before/after
+- Gallery views
+
+<Card title="Payment Component" icon="credit-card" href="/formatting/payment">
+  Next: Payment links
+</Card>
