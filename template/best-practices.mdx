@@ -321,7 +321,7 @@ Don't just test happy paths.
 Test conversationally before deploying.
 
 ```bash
-lua dev
+lua chat  # Choose sandbox mode
 
 # Test in chat:
 # - "What's the weather in London?"  ✅
@@ -334,13 +334,14 @@ lua dev
 
 ### Pre-Deployment Checklist
 
-- ✅ All tools tested with `lua test`
-- ✅ Conversational flows tested with `lua dev`
+- ✅ All tools tested with `lua chat` (sandbox mode)
+- ✅ Individual tools tested with `lua test` if needed
 - ✅ Version number updated
 - ✅ Tool descriptions updated
 - ✅ Error messages are helpful
 - ✅ No hardcoded secrets
 - ✅ Environment variables documented in `.env.example`
+- ✅ Environment configured with `lua env`
 - ✅ README updated
 
 ### Gradual Rollout
@@ -352,7 +353,7 @@ Test in sandbox before production.
 lua push
 
 # 2. Test in sandbox
-lua dev
+lua chat  # Choose sandbox mode
 
 # 3. If good, deploy
 lua deploy

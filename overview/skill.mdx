@@ -1,0 +1,412 @@
+---
+title: "Skill"
+description: "Collections of tools that give your agent capabilities"
+---
+
+## What is a Skill?
+
+A **skill** is a collection of related tools bundled together. It defines what capabilities your agent has and how to use them.
+
+<Card title="Think of it as:" icon="puzzle-piece">
+  A capability module - like "Customer Service" or "Order Management" - that groups related tools together
+</Card>
+
+## Anatomy of a Skill
+
+```typescript
+const customerServiceSkill = new LuaSkill({
+  name: "customer-service",
+  version: "1.0.0",
+  description: "Customer support and order management",
+  context: `...`,  // ← Critical! Tells agent how to use tools
+  tools: [
+    new SearchOrdersTool(),
+    new CreateTicketTool(),
+    new CheckStatusTool()
+  ]
+});
+```
+
+<CardGroup cols={2}>
+  <Card title="Name" icon="tag">
+    Unique identifier for the skill
+  </Card>
+  <Card title="Version" icon="code-branch">
+    Semantic version tracking
+  </Card>
+  <Card title="Description" icon="file-text">
+    Brief summary of capability
+  </Card>
+  <Card title="Context" icon="brain">
+    **Most Important**: How/when to use tools
+  </Card>
+  <Card title="Tools" icon="wrench">
+    Array of tool instances
+  </Card>
+</CardGroup>
+
+## The Context Field: Most Important Part
+
+The **context** field tells the AI agent **how and when** to use the tools in your skill.
+
+<Warning>
+**The context field is critical!** Without good context, the AI won't know when to use your tools or how to use them correctly.
+</Warning>
+
+### What Good Context Looks Like
+
+<Tabs>
+  <Tab title="❌ Bad Context">
+    ```typescript
+    context: "A skill with tools for stuff"
+    ```
+    
+    **Problems:**
+    - Too vague
+    - No tool guidance
+    - No usage instructions
+    - Agent won't know what to do
+  </Tab>
+
+  <Tab title="✅ Good Context">
+    ```typescript
+    context: `
+      This skill manages customer orders and support tickets.
+      
+      Tool Usage:
+      - search_orders: Use when customers ask about order status,
+        tracking, or "where is my order". Requires order number or email.
+      
+      - create_ticket: Use when customer has an unresolved issue
+        that needs human follow-up. Ask for issue details first.
+      
+      - check_status: Use to get current status of existing ticket.
+        Requires ticket ID from previous create_ticket call.
+      
+      Guidelines:
+      - Always ask for order number before searching
+      - Confirm issue details before creating ticket
+      - Provide ticket ID after creation
+      - Set expectations for response time (24 hours)
+      
+      Do NOT create tickets for:
+      - Simple questions answered by FAQ
+      - Order status checks (use search_orders instead)
+      - Product questions (use product-skill instead)
+    `
+    ```
+    
+    **Why it's good:**
+    - Explains when to use each tool
+    - Provides usage guidelines
+    - Sets expectations
+    - Defines boundaries
+  </Tab>
+</Tabs>
+
+## Context Field Structure
+
+```typescript
+context: `
+  [1. What this skill does - one sentence]
+  
+  Tool Usage:
+  - tool_name_1: [When to use] [What it needs] [What it returns]
+  - tool_name_2: [When to use] [What it needs] [What it returns]
+  
+  Guidelines:
+  - [Important rule 1]
+  - [Important rule 2]
+  - [Edge case handling]
+  
+  [Optional] Do NOT:
+  - [Boundary 1]
+  - [Boundary 2]
+  
+  [Optional] When [situation]:
+  - [Specific action]
+`
+```
+
+## Good Skill Examples
+
+### Example 1: E-commerce Skill
+
+```typescript
+const ecommerceSkill = new LuaSkill({
+  name: "ecommerce-assistant",
+  version: "1.0.0",
+  description: "Shopping and checkout assistance",
+  context: `
+    This skill helps customers shop and complete purchases.
+    
+    Tool Usage:
+    - search_products: When users describe what they want to buy.
+      Returns matching products with prices and availability.
+    
+    - add_to_cart: When customer decides to purchase something.
+      Confirm product and quantity before adding.
+    
+    - checkout: When customer is ready to complete purchase.
+      Must have items in cart. Ask for shipping address.
+    
+    Guidelines:
+    - Always confirm product details before adding to cart
+    - Show total price before checkout
+    - Mention free shipping over $50
+    - Ask about gift wrapping for orders > $100
+    
+    Do NOT:
+    - Add items without confirmation
+    - Checkout without shipping address
+    - Promise delivery dates you can't guarantee
+  `,
+  tools: [
+    new SearchProductsTool(),
+    new AddToCartTool(),
+    new CheckoutTool()
+  ]
+});
+```
+
+### Example 2: Support Skill
+
+```typescript
+const supportSkill = new LuaSkill({
+  name: "customer-support",
+  version: "2.0.0",
+  description: "Help desk and troubleshooting",
+  context: `
+    This skill provides technical support and issue resolution.
+    
+    Tool Usage:
+    - search_kb: ALWAYS check knowledge base FIRST before asking
+      user for details. Search for relevant articles.
+    
+    - create_ticket: Create support ticket ONLY if knowledge base
+      doesn't solve the issue. Ask for full problem description.
+    
+    - get_ticket_status: Check status of existing ticket.
+      Requires ticket ID from previous conversation.
+    
+    Workflow:
+    1. User describes issue
+    2. Search knowledge base (search_kb)
+    3. If found: Provide solution from KB
+    4. If not found: Create ticket (create_ticket)
+    5. Provide ticket ID and set expectations
+    
+    Guidelines:
+    - Search KB before bothering user with questions
+    - Ask diagnostic questions if KB search unclear
+    - Always provide ticket ID after creation
+    - Mention 24-hour response time for tickets
+    - Be empathetic with frustrated users
+  `,
+  tools: [
+    new SearchKnowledgeBaseTool(),
+    new CreateTicketTool(),
+    new GetTicketStatusTool()
+  ]
+});
+```
+
+### Example 3: Booking Skill
+
+```typescript
+const bookingSkill = new LuaSkill({
+  name: "hotel-booking",
+  version: "1.5.0",
+  description: "Hotel reservations and room service",
+  context: `
+    This skill manages hotel bookings and guest services.
+    
+    Tool Usage:
+    - check_availability: Search for available rooms.
+      Needs: check-in date, check-out date, number of guests.
+      Always ask for these before searching.
+    
+    - create_reservation: Book a room after confirming availability.
+      Needs: guest name, email, phone, room selection.
+      Confirm all details before booking.
+    
+    - get_reservation: Look up existing reservation.
+      Needs: confirmation code OR email.
+      Useful for modifications or cancellations.
+    
+    - cancel_reservation: Cancel existing booking.
+      Confirm cancellation policy first (24-hour notice).
+    
+    - order_room_service: In-room dining or amenities.
+      Needs: confirmation code to link to room.
+    
+    Guidelines:
+    - Always ask for check-in/out dates and guest count first
+    - Confirm reservation details before creating
+    - Provide confirmation code after booking
+    - Mention cancellation policy (24-hour notice)
+    - Ask about special requests (early check-in, late checkout)
+    - Suggest room upgrades when available
+    
+    Room Types:
+    - Standard: $150/night (2 guests)
+    - Deluxe: $200/night (2 guests, city view)
+    - Suite: $350/night (4 guests, separate living area)
+  `,
+  tools: [
+    new CheckAvailabilityTool(),
+    new CreateReservationTool(),
+    new GetReservationTool(),
+    new CancelReservationTool(),
+    new RoomServiceTool()
+  ]
+});
+```
+
+## Key Principles
+
+### 1. One Skill = One Purpose
+
+<CodeGroup>
+
+```typescript Good: Focused
+const orderSkill = new LuaSkill({
+  name: "order-management",
+  description: "Order processing and tracking",
+  tools: [
+    new CreateOrderTool(),
+    new TrackOrderTool(),
+    new CancelOrderTool()
+  ]
+});
+```
+
+```typescript Bad: Unfocused
+const everythingSkill = new LuaSkill({
+  name: "all-features",
+  description: "Does everything",
+  tools: [
+    new OrderTool(),
+    new WeatherTool(),
+    new EmailTool(),
+    new RandomTool()
+    // Unrelated tools mixed together
+  ]
+});
+```
+
+</CodeGroup>
+
+### 2. Context is Your Guide
+
+The context field is where you teach the AI how to be effective:
+
+```typescript
+// ✅ Good context teaches the agent
+context: `
+  Tool Usage:
+  - search_orders: When user says "where is my order",
+    "track my package", or "order status". 
+    Ask for order number if not provided.
+  
+  When NOT to use:
+  - Don't search_orders for product questions
+  - Don't search_orders without order number
+`
+
+// ❌ Bad context doesn't teach
+context: "Use the tools when needed"
+```
+
+### 3. Include Tool Descriptions
+
+Explain **when** and **how** to use each tool:
+
+```typescript
+context: `
+  - search_products: Use when users describe what they want to buy
+    (e.g., "looking for laptop", "need running shoes").
+    Returns: List of matching products.
+    
+  - get_product_details: Use when user wants more info about
+    a specific product (e.g., "tell me more about item #123").
+    Returns: Full specs, reviews, availability.
+`
+```
+
+## Managing Skills
+
+<CardGroup cols={2}>
+  <Card title="Build" icon="code">
+    Write skills in `src/index.ts`
+  </Card>
+  <Card title="Test" icon="flask">
+    ```bash
+    lua test
+    ```
+    Test individual tools
+  </Card>
+  <Card title="Deploy" icon="upload">
+    ```bash
+    lua push
+    lua deploy
+    ```
+    Push to production
+  </Card>
+  <Card title="Monitor" icon="chart-line">
+    ```bash
+    lua production
+    ```
+    View deployed versions
+  </Card>
+</CardGroup>
+
+## Multi-Skill Projects
+
+You can have multiple skills in one project:
+
+```typescript
+// Skill 1: Product browsing
+const catalogSkill = new LuaSkill({
+  name: "product-catalog",
+  description: "Product search and details",
+  tools: [new SearchTool(), new DetailsTool()]
+});
+
+// Skill 2: Shopping cart
+const cartSkill = new LuaSkill({
+  name: "shopping-cart",
+  description: "Cart and checkout",
+  tools: [new AddToCartTool(), new CheckoutTool()]
+});
+
+// Skill 3: Orders
+const orderSkill = new LuaSkill({
+  name: "order-tracking",
+  description: "Order status and tracking",
+  tools: [new TrackOrderTool()]
+});
+```
+
+**Benefits:**
+- Logical separation
+- Independent versioning
+- Clear ownership
+- Easier maintenance
+
+## Next Steps
+
+<CardGroup cols={2}>
+  <Card title="Learn About Tools" icon="wrench" href="/overview/tools">
+    Understand what tools are and how to build them
+  </Card>
+  <Card title="Persona Command" icon="terminal" href="/cli/persona-command">
+    Complete guide to managing personas
+  </Card>
+  <Card title="See Examples" icon="layer-group" href="/demos/overview">
+    11 complete skill implementations
+  </Card>
+  <Card title="Build Your First Skill" icon="rocket" href="/getting-started/first-skill">
+    Step-by-step tutorial
+  </Card>
+</CardGroup>

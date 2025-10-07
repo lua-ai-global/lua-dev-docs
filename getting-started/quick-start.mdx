@@ -9,9 +9,21 @@ Get from zero to your first deployed AI skill in minutes.
 
 <Steps>
   <Step title="Install the CLI">
-    ```bash
+    <CodeGroup>
+    
+    ```bash npm
     npm install -g lua-cli
     ```
+    
+    ```bash yarn
+    yarn global add lua-cli
+    ```
+    
+    ```bash pnpm
+    pnpm add -g lua-cli
+    ```
+    
+    </CodeGroup>
   </Step>
 
   <Step title="Set up authentication">
@@ -40,15 +52,7 @@ Get from zero to your first deployed AI skill in minutes.
     lua test
     ```
     
-    Select a tool and try it out!
-  </Step>
-
-  <Step title="Start development mode">
-    ```bash
-    lua dev
-    ```
-    
-    Chat with your AI at http://localhost:3000
+    Select a tool and try it out with different inputs!
   </Step>
 </Steps>
 
@@ -78,19 +82,17 @@ Select tools to test:
 - `search_products` - Enter query: "laptop"
 - `create_basket` - Create a shopping cart
 
-### Start Dev Mode
+### Test Your Tools
 
 ```bash
-lua dev
+lua test
 ```
 
-**Opens at http://localhost:3000**
-
-Try these in the chat:
-- "What's the weather in Tokyo?"
-- "Show me your products"
-- "Create a shopping basket"
-- "Add product XYZ to my basket"
+Try testing these tools:
+- `get_weather` - Enter "Tokyo"
+- `search_products` - Enter "laptop"
+- `create_basket` - Create a shopping cart
+- `add_to_basket` - Add items to cart
 
 ## Next Steps
 

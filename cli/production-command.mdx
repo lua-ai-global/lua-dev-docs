@@ -1,0 +1,356 @@
+---
+title: "Production Command"
+description: "Centralized control center for production environment"
+---
+
+## Overview
+
+The `lua production` command is your centralized control center for viewing and managing your production environment. It provides a unified interface to monitor deployed persona, skills, and environment variables.
+
+```bash
+lua production
+```
+
+<CardGroup cols={2}>
+  <Card title="Unified View" icon="eye">
+    See persona, skills, and env in one place
+  </Card>
+  <Card title="Quick Health Checks" icon="heart-pulse">
+    Verify production state in seconds
+  </Card>
+  <Card title="Environment Management" icon="cog">
+    Full CRUD for production variables
+  </Card>
+  <Card title="Safe Operations" icon="shield">
+    Read-only for persona and skills
+  </Card>
+</CardGroup>
+
+## Why This Command?
+
+### Before lua production
+
+```bash
+# Fragmented workflow
+$ lua persona    # Check persona
+$ lua deploy     # Wait, this deploys, not views!
+$ lua env        # Check environment variables
+# Multiple steps, confusing
+```
+
+### After lua production
+
+```bash
+# Unified workflow
+$ lua production
+→ Persona: ✓ Check current
+→ Skills: ✓ See all deployed
+→ Env: ✓ Manage variables
+# Everything in one place!
+```
+
+## Main Menu
+
+```
+============================================================
+🚀 Production Environment
+============================================================
+
+? What would you like to view?
+  🤖 Persona - View current persona and versions
+  ⚙️  Skills - View deployed skills and versions
+  🔐 Environment Variables - Manage production env
+  ❌ Exit
+```
+
+## Persona Section
+
+<Tabs>
+  <Tab title="View Current Persona">
+    ```bash
+    ? What would you like to view? 🤖 Persona
+
+    🔄 Loading persona information...
+
+    ============================================================
+    🤖 Current Production Persona
+    ============================================================
+
+    Version: 5 ⭐
+    Deployed: 1/15/2024, 10:30:15 AM
+    Created by: system
+
+    ------------------------------------------------------------
+
+    You are a helpful customer service assistant for AcmeCorp.
+
+    Your Role:
+    - Help customers find products
+    - Answer order questions
+    - Process returns professionally
+
+    Your Personality:
+    - Friendly and approachable
+    - Professional and knowledgeable
+
+    ============================================================
+
+    Total versions available: 5
+
+    Press Enter to continue...
+    ```
+    
+    Shows complete deployed persona
+  </Tab>
+
+  <Tab title="No Persona">
+    ```bash
+    ============================================================
+    🤖 Current Production Persona
+    ============================================================
+
+    ⚠️  No persona currently deployed.
+    💡 Deploy a version using: lua persona → Production → Deploy
+
+    Available versions:
+      1. Version 5 - 1/15/2024
+      2. Version 4 - 1/14/2024
+
+    Press Enter to continue...
+    ```
+    
+    Shows when no version is active
+  </Tab>
+</Tabs>
+
+**Use for:**
+- ✅ Quick verification of deployed persona
+- ✅ Checking version number
+- ✅ Reading full persona content
+- ✅ Confirming deployment dates
+
+## Skills Section
+
+```bash
+? What would you like to view? ⚙️  Skills
+
+🔄 Loading skill information...
+
+============================================================
+⚙️  Production Skills
+============================================================
+
+📦 customer-service
+   Skill ID: skill_abc123
+   Deployed Version: 2.5.0 ⭐
+   Deployed: 1/15/2024, 2:30:45 PM
+   Total Versions: 12
+
+📦 order-management
+   Skill ID: skill_def456
+   Deployed Version: 1.8.0 ⭐
+   Deployed: 1/14/2024, 4:15:30 PM
+   Total Versions: 9
+
+📦 inventory-check
+   Skill ID: skill_xyz789
+   Deployed Version: Not deployed
+   Total Versions: 3
+
+============================================================
+
+Press Enter to continue...
+```
+
+**Information per skill:**
+- Skill name and ID
+- Deployed version (⭐ if active)
+- Deployment timestamp
+- Total versions available
+
+**Use for:**
+- ✅ Production inventory
+- ✅ Version verification
+- ✅ Deployment dates
+- ✅ Finding not-deployed skills
+
+## Environment Variables Section
+
+```bash
+? What would you like to view? 🔐 Environment Variables
+
+============================================================
+🔐 Production Environment Variables
+============================================================
+
+1. DATABASE_URL = post**********************
+2. STRIPE_KEY = sk-l**********************
+3. API_SECRET = abc1**********************
+4. MAX_RETRIES = 5
+5. DEBUG_MODE = false
+
+? What would you like to do?
+  ➕ Add new variable
+  ✏️  Update existing variable
+  🗑️  Delete variable
+  👁️  View variable value
+  🔄 Refresh list
+  ⬅️  Back to main menu
+```
+
+<CardGroup cols={2}>
+  <Card title="Add" icon="plus">
+    Create new production variable
+  </Card>
+  <Card title="Update" icon="pen">
+    Modify existing variable
+  </Card>
+  <Card title="Delete" icon="trash">
+    Remove variable (with confirmation)
+  </Card>
+  <Card title="View" icon="eye">
+    See unmasked value
+  </Card>
+</CardGroup>
+
+## Common Workflows
+
+### Quick Health Check (30 seconds)
+
+```bash
+$ lua production
+
+→ 🤖 Persona
+# Version 5, deployed 2 weeks ago ✓
+Press Enter...
+
+→ ⚙️ Skills
+# 3 skills deployed, latest versions ✓
+Press Enter...
+
+→ 🔐 Environment Variables
+# 7 variables configured ✓
+→ Back
+
+→ ❌ Exit
+```
+
+### Update API Key
+
+```bash
+$ lua production
+→ 🔐 Environment Variables
+→ ✏️ Update existing variable
+→ Select: STRIPE_KEY
+? New value: sk_live_new_key_2024
+✅ Updated
+
+→ 👁️ View variable value
+→ Select: STRIPE_KEY
+# Verify: sk_live_new_key_2024 ✓
+```
+
+### Troubleshoot Issue
+
+```bash
+# User: "Feature not working"
+
+$ lua production
+→ ⚙️ Skills
+# Check: feature-skill
+# Status: Not deployed ❌
+
+# Found the problem!
+$ lua deploy → feature-skill → v1.0.0
+$ lua production → ⚙️ Skills
+# Verify: feature-skill v1.0.0 ⭐ ✓
+```
+
+## Best Practices
+
+<AccordionGroup>
+  <Accordion title="Daily Production Check">
+    ```bash
+    # Morning routine (5 min)
+    $ lua production
+    → Check persona still correct
+    → Verify all skills deployed
+    → Scan environment variables
+    ```
+  </Accordion>
+
+  <Accordion title="Pre-Deployment">
+    ```bash
+    # Before deploying
+    $ lua production
+    # Document current state
+    # Verify dependencies
+    # Confirm env vars ready
+    ```
+  </Accordion>
+
+  <Accordion title="Post-Deployment">
+    ```bash
+    # After deploying
+    $ lua production
+    # Confirm new versions deployed
+    # Verify no unexpected changes
+    # Check env vars unchanged
+    ```
+  </Accordion>
+
+  <Accordion title="Team Handoffs">
+    ```bash
+    # Documenting production state
+    $ lua production
+    # Screenshot or note:
+    # - Persona version
+    # - Skill versions
+    # - Env var count
+    ```
+  </Accordion>
+</AccordionGroup>
+
+## Comparison with Other Commands
+
+| Feature | lua production | lua persona | lua deploy | lua env |
+|---------|---------------|-------------|------------|---------|
+| View persona | ✅ Current | ✅ All versions | ❌ | ❌ |
+| View skills | ✅ All | ❌ | ✅ One at a time | ❌ |
+| View env | ✅ Production | ❌ | ❌ | ✅ Both modes |
+| Manage env | ✅ Full CRUD | ❌ | ❌ | ✅ Full CRUD |
+| Deploy | ❌ | ✅ Persona | ✅ Skills | ❌ |
+| **Best for** | **Overview** | Persona mgmt | Skill deploy | Env mgmt |
+
+## Next Steps
+
+<CardGroup cols={2}>
+  <Card
+    title="Manage Persona"
+    icon="user"
+    href="/cli/persona-command"
+  >
+    Edit and deploy persona versions
+  </Card>
+  <Card
+    title="Deploy Skills"
+    icon="rocket"
+    href="/cli/skill-management#lua-deploy"
+  >
+    Deploy skill versions to production
+  </Card>
+  <Card
+    title="Manage Environment"
+    icon="key"
+    href="/cli/env-command"
+  >
+    Configure sandbox and production variables
+  </Card>
+  <Card
+    title="Test in Production"
+    icon="comments"
+    href="/cli/chat-command"
+  >
+    Chat with production agent
+  </Card>
+</CardGroup>

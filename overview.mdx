@@ -40,12 +40,31 @@ Write TypeScript functions that connect to any API - your CRM, payment processor
     - One-command deployment
     
     ### Quick Start
-    ```bash
+    
+    <CodeGroup>
+    
+    ```bash npm
     npm install -g lua-cli
     lua auth configure
     lua init
-    lua dev
+    lua chat
     ```
+    
+    ```bash yarn
+    yarn global add lua-cli
+    lua auth configure
+    lua init
+    lua chat
+    ```
+    
+    ```bash pnpm
+    pnpm add -g lua-cli
+    lua auth configure
+    lua init
+    lua chat
+    ```
+    
+    </CodeGroup>
     
     <Card title="Explore Lua CLI" icon="terminal" href="/getting-started/quick-start">
       Build your first AI agent in 5 minutes
@@ -110,6 +129,16 @@ Write TypeScript functions that connect to any API - your CRM, payment processor
     ```
   </Step>
   
+  <Step title="Test with Interactive Chat">
+    Chat with your agent to test everything works
+    
+    ```bash
+    lua chat
+    ```
+    
+    Select sandbox mode to test with your local skills
+  </Step>
+  
   <Step title="Deploy Your Agent">
     Push to production with one command
     
@@ -126,6 +155,10 @@ Write TypeScript functions that connect to any API - your CRM, payment processor
     **AI**: *Calls OrderLookupTool with your API* → "Your order shipped yesterday and will arrive tomorrow!"
   </Step>
 </Steps>
+
+<Note>
+**Testing Individual Tools**: Need to test a specific tool with exact inputs? Use `lua test` to test tools one at a time. For most development, `lua chat` is faster for testing complete workflows.
+</Note>
 
 ## Complete Flexibility
 

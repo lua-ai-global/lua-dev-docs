@@ -297,7 +297,7 @@ Output: {
 
 ## lua push
 
-Push your compiled skill version to the Lua server.
+Push your compiled skill version to the Lua server with optional immediate deployment.
 
 ```bash
 lua push
@@ -306,12 +306,21 @@ lua push
 ### What It Does
 
 <Steps>
-  <Step title="Read Version">
-    Gets version from `lua.skill.yaml`
+  <Step title="Select Skill">
+    Choose which skill to push (if multiple)
   </Step>
   
-  <Step title="Confirm">
-    Prompts for confirmation
+  <Step title="Enter Version">
+    Enter new version number (auto-suggests next patch)
+    
+    ```
+    Current version: 1.0.0
+    ? Enter new version to push: (1.0.1)
+    ```
+  </Step>
+  
+  <Step title="Update Configuration">
+    Updates version in `lua.skill.yaml`
   </Step>
   
   <Step title="Authenticate">
@@ -319,36 +328,172 @@ lua push
   </Step>
   
   <Step title="Compile">
-    Compiles the skill if needed
+    Automatically compiles the skill
   </Step>
   
   <Step title="Upload">
     Uploads bundles to server
   </Step>
   
-  <Step title="Version Created">
-    New version available for testing/deployment
+  <Step title="Optional Deploy">
+    Choose to deploy immediately or later
+    
+    ```
+    ? Would you like to deploy this version to production now? (y/N)
+    ```
   </Step>
 </Steps>
 
-### Example
+### Example: Push Only
 
 ```bash
 $ lua push
-? Are you sure you want to push version 1.0.0? Yes
+📦 Pushing skill: customer-service
+
+Current version: 1.0.0
+? Enter new version to push: (1.0.1) ⏎
+
+📝 Updating version from 1.0.0 to 1.0.1
 ✅ Authenticated
 🔄 Compiling skill...
 ✅ Skill compiled successfully - 10 tools bundled
 🔄 Pushing version to server...
-✅ Version 1.0.0 pushed successfully
+✅ Version 1.0.1 of "customer-service" pushed successfully
+
+? Would you like to deploy this version to production now? No
+
+[Version pushed, use 'lua deploy' to deploy later]
 ```
+
+### Example: Push and Deploy
+
+```bash
+$ lua push
+📦 Pushing skill: order-management
+
+Current version: 0.5.0
+? Enter new version to push: 1.0.0
+
+📝 Updating version from 0.5.0 to 1.0.0
+✅ Authenticated
+🔄 Compiling skill...
+✅ Skill compiled successfully - 8 tools bundled
+🔄 Pushing version to server...
+✅ Version 1.0.0 of "order-management" pushed successfully
+
+? Would you like to deploy this version to production now? Yes
+
+⚠️  WARNING: You are about to deploy to PRODUCTION!
+⚠️  This will affect ALL users immediately.
+
+? Are you absolutely sure you want to deploy? Yes
+
+🔄 Publishing version...
+✅ Version 1.0.0 deployed successfully to production
+```
+
+### Version Management
+
+<Tabs>
+  <Tab title="Auto-Increment">
+    The command auto-suggests the next patch version:
+    
+    ```
+    Current: 1.0.0  → Suggests: 1.0.1
+    Current: 1.5.9  → Suggests: 1.5.10
+    Current: 2.0.0  → Suggests: 2.0.1
+    ```
+    
+    Press Enter to accept or type your own version
+  </Tab>
+
+  <Tab title="Custom Version">
+    You can enter any valid semver version:
+    
+    ```
+    Current: 0.5.0
+    ? Enter: 1.0.0  # Major release
+    
+    Current: 1.2.3
+    ? Enter: 1.3.0  # Minor update
+    
+    Current: 2.0.0
+    ? Enter: 2.0.1-beta  # Pre-release
+    ```
+  </Tab>
+
+  <Tab title="Semantic Versioning">
+    Follow semver conventions:
+    
+    - **MAJOR** (2.0.0): Breaking changes
+    - **MINOR** (1.1.0): New features
+    - **PATCH** (1.0.1): Bug fixes
+    
+    ```yaml
+    # In lua.skill.yaml
+    skills:
+      - name: my-skill
+        version: 1.0.1  # Auto-updated by push
+    ```
+  </Tab>
+</Tabs>
+
+### Deploy Now or Later?
+
+<Tabs>
+  <Tab title="Deploy Later (Recommended)">
+    **Push now, test, deploy when ready**
+    
+    ```bash
+    $ lua push
+    ? Deploy now? No  # Default
+    
+    # Test in sandbox
+    $ lua chat → Sandbox mode
+    
+    # Deploy when satisfied
+    $ lua deploy
+    ```
+    
+    **Best for:**
+    - Major changes
+    - Need more testing
+    - Team coordination
+    - Off-peak deployment
+  </Tab>
+
+  <Tab title="Deploy Immediately">
+    **One-command deployment**
+    
+    ```bash
+    $ lua push
+    ? Deploy now? Yes
+    ? Absolutely sure? Yes
+    ✅ Deployed
+    ```
+    
+    **Best for:**
+    - Critical hotfixes
+    - Small bug fixes
+    - Well-tested changes
+    - Urgent updates
+  </Tab>
+</Tabs>
 
 ### Important Notes
 
 <Warning>
-**Pushing does NOT deploy to production!**
+**Version Management:**
+- Always increments version (cannot overwrite)
+- Version is updated in `lua.skill.yaml`
+- All versions are preserved on server
+- Can deploy any previous version
 
-After pushing, the version is uploaded but not live. Use `lua deploy` to make it available to users.
+**Immediate Deployment:**
+- Requires two confirmations for safety
+- Affects all users immediately
+- Have rollback plan ready
+- Monitor after deployment
 </Warning>
 
 ### Version Management
@@ -432,7 +577,7 @@ $ lua deploy
 <Warning>
 **Deployment is immediate!**
 
-All users will get the new version right away. Test thoroughly with `lua dev` first!
+All users will get the new version right away. Test thoroughly with `lua chat` first!
 </Warning>
 
 ## Complete Workflow
@@ -460,16 +605,22 @@ lua deploy
 ### Development Workflow
 
 ```bash
-# Start dev mode (keep running)
-lua dev
+# Configure environment if needed
+lua env  # Add new API keys, etc.
 
-# In another terminal:
 # Make changes to src/tools/*.ts
 
-# Test changes in browser (auto-reloads)
+# Test your agent
+lua chat  # Choose sandbox mode
+
+# Optional: Test specific tools
+lua test  # For debugging individual tools
 
 # When satisfied, push
 lua push
+
+# Update production environment if needed
+lua env  # Select Production mode
 
 # Deploy to production
 lua deploy
@@ -535,9 +686,22 @@ lua deploy
     **Error**: `❌ Cannot find module 'lua-cli'`
     
     **Solution**: Install dependencies:
-    ```bash
+    
+    <CodeGroup>
+    
+    ```bash npm
     npm install
     ```
+    
+    ```bash yarn
+    yarn install
+    ```
+    
+    ```bash pnpm
+    pnpm install
+    ```
+    
+    </CodeGroup>
   </Accordion>
 </AccordionGroup>
 
@@ -548,7 +712,7 @@ lua deploy
     Always test locally first:
     ```bash
     lua test     # Test individual tools
-    lua dev      # Test conversationally
+    lua chat     # Test conversationally
     lua push     # Then push
     ```
   </Accordion>
@@ -562,7 +726,7 @@ lua deploy
   <Accordion title="Test in Sandbox Before Deploy">
     ```bash
     lua push     # Upload version
-    lua dev      # Test in sandbox
+    lua chat     # Test in sandbox
     # If good, then:
     lua deploy   # Deploy to production
     ```

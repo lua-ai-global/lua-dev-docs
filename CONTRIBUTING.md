@@ -9,8 +9,10 @@ Thank you for contributing to Lua's documentation! This guide will help you get 
 git clone <your-fork-url>
 cd mintlify-docs
 
-# 2. Install Mintlify CLI
-npm install -g mintlify
+# 2. Install Mintlify CLI (choose one)
+npm install -g mintlify    # npm
+yarn global add mintlify   # yarn
+pnpm add -g mintlify      # pnpm
 
 # 3. Create a branch
 git checkout -b docs/your-feature-name

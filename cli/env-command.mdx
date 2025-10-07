@@ -1,0 +1,450 @@
+---
+title: "Environment Variables Command"
+description: "Manage environment variables for sandbox and production"
+---
+
+## Overview
+
+The `lua env` command provides an interactive interface for managing environment variables in both sandbox (development) and production environments.
+
+```bash
+lua env
+```
+
+<CardGroup cols={2}>
+  <Card title="Sandbox Mode" icon="flask">
+    Manage `.env` file locally
+  </Card>
+  <Card title="Production Mode" icon="rocket">
+    Manage variables on server via API
+  </Card>
+  <Card title="Interactive Menu" icon="list">
+    Add, update, delete, and view variables
+  </Card>
+  <Card title="Secure" icon="lock">
+    Values masked in list view
+  </Card>
+</CardGroup>
+
+## Quick Start
+
+<Steps>
+  <Step title="Run Command">
+    ```bash
+    lua env
+    ```
+  </Step>
+  
+  <Step title="Choose Environment">
+    ```
+    ? Select environment:
+      🔧 Sandbox (.env file)
+      🚀 Production (API)
+    ```
+  </Step>
+  
+  <Step title="Manage Variables">
+    - ➕ Add new variable
+    - ✏️ Update existing
+    - 🗑️ Delete variable
+    - 👁️ View full value
+  </Step>
+</Steps>
+
+## Environment Selection
+
+<Tabs>
+  <Tab title="Sandbox (.env)">
+    **Local Development**
+    
+    Manages your `.env` file in the project directory.
+    
+    ```
+    ? Select environment: 🔧 Sandbox (.env file)
+    ```
+    
+    **Features:**
+    - ✅ No authentication required
+    - ✅ Instant changes
+    - ✅ Local file management
+    - ✅ Used by `lua test` and `lua chat`
+    
+    **File location:** `PROJECT_ROOT/.env`
+  </Tab>
+
+  <Tab title="Production (API)">
+    **Production Environment**
+    
+    Manages variables on the server via API.
+    
+    ```
+    ? Select environment: 🚀 Production (API)
+    ✅ Authenticated
+    ```
+    
+    **Features:**
+    - ✅ Secure server storage
+    - ✅ Team collaboration
+    - ✅ Audit logging
+    - ✅ Used by deployed skills
+    
+    **Requires:** Valid API key (`lua auth configure`)
+  </Tab>
+</Tabs>
+
+## Actions Available
+
+### Add New Variable
+
+```bash
+? What would you like to do? ➕ Add new variable
+? Variable name: STRIPE_API_KEY
+? Variable value: sk_test_abc123
+🔄 Saving...
+✅ Variable "STRIPE_API_KEY" added successfully
+```
+
+<ParamField path="Variable name" type="string" required>
+  Must start with letter/underscore, contain only letters, numbers, underscores
+</ParamField>
+
+<ParamField path="Variable value" type="string" required>
+  Any string value (can include spaces, special characters)
+</ParamField>
+
+### Update Existing Variable
+
+```bash
+? What would you like to do? ✏️ Update existing variable
+? Select variable to update: STRIPE_API_KEY
+? New value for STRIPE_API_KEY: sk_test_xyz789
+🔄 Saving...
+✅ Variable "STRIPE_API_KEY" updated successfully
+```
+
+### Delete Variable
+
+```bash
+? What would you like to do? 🗑️ Delete variable
+? Select variable to delete: OLD_KEY
+? Are you sure you want to delete "OLD_KEY"? Yes
+🔄 Saving...
+✅ Variable "OLD_KEY" deleted successfully
+```
+
+<Warning>
+Deletion requires confirmation to prevent accidents. Default is "No".
+</Warning>
+
+### View Variable Value
+
+```bash
+? What would you like to do? 👁️ View variable value
+? Select variable to view: STRIPE_API_KEY
+============================================================
+Variable: STRIPE_API_KEY
+============================================================
+sk_test_abc123xyz789
+============================================================
+
+Press Enter to continue...
+```
+
+Shows the full unmasked value for copying.
+
+## Variable Display
+
+Variables are **masked for security** in the list view:
+
+```
+============================================================
+📋 Environment Variables (Sandbox)
+============================================================
+
+1. DATABASE_URL = post**********************
+2. STRIPE_KEY = sk-t**********************
+3. API_SECRET = abc1**********************
+```
+
+**Masking rules:**
+- Shows first 4 characters
+- Replaces rest with asterisks (max 20)
+- Values < 4 chars show only asterisks
+
+## Variable Naming Rules
+
+<Tabs>
+  <Tab title="Valid Names">
+    ```bash
+    DATABASE_URL           ✅
+    API_KEY                ✅
+    STRIPE_SECRET_KEY      ✅
+    MAX_CONNECTIONS        ✅
+    enable_feature         ✅
+    _INTERNAL_CONFIG       ✅
+    ```
+  </Tab>
+
+  <Tab title="Invalid Names">
+    ```bash
+    123_NUMBER             ❌ Starts with number
+    MY-VARIABLE            ❌ Contains hyphen
+    MY VARIABLE            ❌ Contains space
+    MY.VARIABLE            ❌ Contains dot
+    ```
+  </Tab>
+</Tabs>
+
+## Use in Development Workflow
+
+### Step 1: Configure Variables
+
+```bash
+# Set up environment variables first
+lua env
+
+# Choose Sandbox
+# Add: DATABASE_URL, API_KEY, STRIPE_SECRET, etc.
+```
+
+### Step 2: Test Locally
+
+```bash
+# Variables are automatically loaded
+lua test
+
+# Or test in conversation
+lua chat
+```
+
+### Step 3: Configure Production
+
+```bash
+# Before deploying, set production variables
+lua env
+
+# Choose Production
+# Add production API keys and URLs
+```
+
+### Step 4: Deploy
+
+```bash
+lua push
+lua deploy
+```
+
+## Sandbox vs Production
+
+<Tabs>
+  <Tab title="When to Use Sandbox">
+    **Local Development**
+    
+    ```bash
+    lua env  # → Choose Sandbox
+    ```
+    
+    **Add variables like:**
+    ```
+    DATABASE_URL=postgresql://localhost:5432/dev
+    STRIPE_KEY=sk_test_...
+    DEBUG=true
+    ```
+    
+    **Used by:**
+    - `lua test`
+    - `lua chat` (sandbox mode)
+    - Local development
+  </Tab>
+
+  <Tab title="When to Use Production">
+    **Production Deployment**
+    
+    ```bash
+    lua env  # → Choose Production
+    ```
+    
+    **Add variables like:**
+    ```
+    DATABASE_URL=postgresql://prod-host:5432/prod
+    STRIPE_KEY=sk_live_...
+    DEBUG=false
+    ```
+    
+    **Used by:**
+    - Deployed skills
+    - `lua chat` (production mode)
+    - Live user interactions
+  </Tab>
+</Tabs>
+
+## Best Practices
+
+<AccordionGroup>
+  <Accordion title="Use Different Keys per Environment">
+    ```bash
+    # Sandbox - Test keys
+    STRIPE_KEY=sk_test_abc123
+    DATABASE=dev_database
+    
+    # Production - Live keys
+    STRIPE_KEY=sk_live_xyz789
+    DATABASE=prod_database
+    ```
+  </Accordion>
+
+  <Accordion title="Never Commit .env">
+    Add to `.gitignore`:
+    ```
+    .env
+    .env.local
+    .env.*.local
+    ```
+    
+    Commit `.env.example` instead with placeholder values
+  </Accordion>
+
+  <Accordion title="Document Required Variables">
+    Create `.env.example`:
+    ```bash
+    # Required API Keys
+    STRIPE_KEY=sk_test_your_key_here
+    DATABASE_URL=postgresql://localhost:5432/dbname
+    
+    # Optional
+    DEBUG=true
+    MAX_RETRIES=3
+    ```
+  </Accordion>
+
+  <Accordion title="Rotate Secrets Regularly">
+    Update sensitive keys every 90 days:
+    - API keys
+    - Database passwords
+    - JWT secrets
+    - Encryption keys
+  </Accordion>
+</AccordionGroup>
+
+## Example Session
+
+```bash
+$ lua env
+? Select environment: 🔧 Sandbox (.env file)
+
+============================================================
+📋 Environment Variables (Sandbox)
+============================================================
+
+ℹ️  No environment variables configured.
+
+? What would you like to do? ➕ Add new variable
+? Variable name: DATABASE_URL
+? Variable value: postgresql://localhost:5432/myapp
+🔄 Saving...
+✅ Variable "DATABASE_URL" added successfully
+
+============================================================
+📋 Environment Variables (Sandbox)
+============================================================
+
+1. DATABASE_URL = post**********************
+
+? What would you like to do? ➕ Add new variable
+? Variable name: STRIPE_KEY
+? Variable value: sk_test_abc123
+🔄 Saving...
+✅ Variable "STRIPE_KEY" added successfully
+
+============================================================
+📋 Environment Variables (Sandbox)
+============================================================
+
+1. DATABASE_URL = post**********************
+2. STRIPE_KEY = sk-t**********************
+
+? What would you like to do? ❌ Exit
+
+👋 Goodbye!
+```
+
+## Troubleshooting
+
+<AccordionGroup>
+  <Accordion title="Variable not loading in tools">
+    **Problem**: Tool can't find environment variable
+    
+    **Solution:**
+    ```typescript
+    import { env } from 'lua-cli';
+    
+    const apiKey = env('STRIPE_KEY');
+    if (!apiKey) {
+      throw new Error('STRIPE_KEY not configured. Run: lua env');
+    }
+    ```
+  </Accordion>
+
+  <Accordion title=".env file permissions error">
+    **Error**: `EACCES: permission denied`
+    
+    **Solution:**
+    ```bash
+    chmod 644 .env
+    ```
+  </Accordion>
+
+  <Accordion title="Production variables not saving">
+    **Problem**: Changes don't persist
+    
+    **Solutions:**
+    1. Verify API key: `lua auth key`
+    2. Check network connection
+    3. Try again
+  </Accordion>
+
+  <Accordion title="Invalid variable name">
+    **Error**: Validation error
+    
+    **Fix:** Use valid format:
+    - Start with letter or underscore
+    - Only letters, numbers, underscores
+    - No hyphens, spaces, or special characters
+  </Accordion>
+</AccordionGroup>
+
+## Related Commands
+
+<CardGroup cols={2}>
+  <Card title="lua test" icon="flask">
+    Uses sandbox environment variables
+  </Card>
+  <Card title="lua chat" icon="comments">
+    Uses sandbox or production based on mode
+  </Card>
+  <Card title="lua push" icon="upload">
+    Doesn't include env vars (stored separately)
+  </Card>
+  <Card title="lua deploy" icon="rocket">
+    Uses production environment variables
+  </Card>
+</CardGroup>
+
+## Next Steps
+
+<CardGroup cols={2}>
+  <Card
+    title="Environment Variables Guide"
+    icon="key"
+    href="/concepts/environment-variables"
+  >
+    Complete guide to configuration management
+  </Card>
+  <Card
+    title="Test Your Skills"
+    icon="flask"
+    href="/cli/skill-management#lua-test"
+  >
+    Test tools with your environment variables
+  </Card>
+</CardGroup>

@@ -6,17 +6,38 @@ description: "Best practices for developing, testing, and deploying skills"
 ## Development Lifecycle
 
 <Steps>
-  <Step title="Local Development">
-    Build and test your skills locally with live reload
+  <Step title="Configure Environment">
+    Set up environment variables
     ```bash
-    lua dev
+    lua env
     ```
+    
+    Add API keys and configuration for sandbox
+  </Step>
+  
+  <Step title="Configure Persona">
+    Define your agent's personality
+    ```bash
+    lua persona
+    ```
+    
+    Edit persona in sandbox mode
+  </Step>
+  
+  <Step title="Local Development">
+    Build and test your skills locally
+    ```bash
+    lua chat
+    ```
+    
+    Use sandbox mode for testing
   </Step>
   
   <Step title="Testing">
-    Test individual tools and conversational flows
+    Test conversational flows and individual tools
     ```bash
-    lua test
+    lua chat  # Primary testing
+    lua test  # Optional: Test specific tools
     ```
   </Step>
   
@@ -30,8 +51,10 @@ description: "Best practices for developing, testing, and deploying skills"
   <Step title="Sandbox Testing">
     Test in sandbox environment before production
     ```bash
-    lua dev
+    lua chat
     ```
+    
+    Choose sandbox mode when prompted
   </Step>
   
   <Step title="Deploy to Production">
@@ -46,17 +69,19 @@ description: "Best practices for developing, testing, and deploying skills"
 
 ### Starting Development
 
+Test your skills with two commands:
+
 ```bash
-# Start dev mode
-lua dev
+# Test individual tools
+lua test
+
+# Test conversational flows
+lua chat
 ```
 
-This:
-1. Compiles your TypeScript code
-2. Pushes to sandbox environment
-3. Opens chat interface at http://localhost:3000
-4. Watches for file changes
-5. Auto-recompiles and pushes on save
+**lua test** - Test tools one at a time with specific inputs
+
+**lua chat** - Interactive conversation testing in sandbox or production
 
 ### The Development Loop
 
@@ -76,52 +101,49 @@ This:
     ```
   </Tab>
 
-  <Tab title="Save">
-    Save the file (Cmd+S / Ctrl+S)
+  <Tab title="Test Tools">
+    Test individual tools:
+    ```bash
+    lua test
+    ```
     
-    CLI automatically:
-    - Detects the change
-    - Recompiles the code
-    - Pushes to sandbox
-    - Logs the status
+    - Select tool from list
+    - Enter test inputs
+    - Verify output
   </Tab>
 
-  <Tab title="Test">
-    Test in the browser at http://localhost:3000
+  <Tab title="Test Chat">
+    Test conversational flows:
+    ```bash
+    lua chat
+    ```
     
-    Try your tool:
-    - In chat interface
-    - In tools panel
-    - With different inputs
+    - Choose sandbox mode
+    - Chat naturally with agent
+    - Verify tool selection and execution
   </Tab>
 
   <Tab title="Iterate">
-    Repeat: Edit → Save → Test
+    Repeat: Edit → Test → Refine
     
-    No need to restart the server!
+    Test until satisfied with results
   </Tab>
 </Tabs>
 
-### Live Reload Features
+### Testing Features
 
 <CardGroup cols={2}>
-  <Card title="Auto-Compilation" icon="gears">
-    TypeScript automatically compiled to JavaScript
+  <Card title="Tool Testing" icon="flask">
+    Test individual tools with specific inputs
   </Card>
-  <Card title="Auto-Push" icon="upload">
-    Changes automatically pushed to sandbox
+  <Card title="Chat Testing" icon="comments">
+    Test conversational flows and tool selection
   </Card>
-  <Card title="Chat Interface" icon="comments">
-    Test conversational flows in real-time
+  <Card title="Sandbox Mode" icon="sandbox">
+    Test with local changes before deploying
   </Card>
-  <Card title="Tool Testing" icon="wrench">
-    Test individual tools with custom inputs
-  </Card>
-  <Card title="WebSocket Logs" icon="terminal">
-    Real-time log streaming
-  </Card>
-  <Card title="Environment Editor" icon="key">
-    Edit environment variables in UI
+  <Card title="Production Validation" icon="check">
+    Verify deployed changes work correctly
   </Card>
 </CardGroup>
 
@@ -129,7 +151,7 @@ This:
 
 ### Interactive Tool Testing
 
-Test individual tools before conversational testing:
+Test individual tools with specific inputs:
 
 ```bash
 lua test
@@ -155,11 +177,13 @@ lua test
 
 ### Conversational Testing
 
-Test how the AI uses your tools:
+Test how the AI uses your tools in natural conversation:
 
 ```bash
-lua dev
+lua chat
 ```
+
+Select **Sandbox mode** to test with your local changes.
 
 **Test Scenarios:**
 
@@ -255,8 +279,9 @@ Before deploying to production, test in sandbox:
 lua push
 
 # Test in sandbox
-lua dev
+lua chat
 
+# Select sandbox mode when prompted
 # Verify everything works
 ```
 
@@ -302,11 +327,11 @@ lua deploy
     - Add complexity gradually
   </Tab>
 
-  <Tab title="Use Dev Mode">
-    Keep `lua dev` running while developing
-    - Instant feedback
-    - Live reload
-    - Real-time testing
+  <Tab title="Test Iteratively">
+    Test changes quickly
+    - Use `lua test` for tool logic
+    - Use `lua chat` for conversations
+    - Iterate based on results
   </Tab>
 
   <Tab title="Test Edge Cases">
@@ -351,7 +376,7 @@ git commit -m "docs: update tool descriptions"
     Always test locally before pushing:
     ```bash
     lua test  # Test tools
-    lua dev   # Test conversations
+    lua chat  # Test conversations (sandbox mode)
     lua push  # Then push
     ```
   </Accordion>
@@ -360,7 +385,7 @@ git commit -m "docs: update tool descriptions"
     Test pushed versions in sandbox before deploying:
     ```bash
     lua push
-    lua dev   # Tests sandbox version
+    lua chat  # Choose sandbox mode
     # If good, then deploy
     lua deploy
     ```
@@ -379,11 +404,11 @@ git commit -m "docs: update tool descriptions"
 <Warning>
 **Pre-Deployment Checklist:**
 - ✅ Tested all tools with `lua test`
-- ✅ Tested conversational flows with `lua dev`
+- ✅ Tested conversational flows with `lua chat`
 - ✅ Updated version number
 - ✅ Updated tool descriptions
 - ✅ Checked error messages
-- ✅ Tested in sandbox
+- ✅ Tested in sandbox mode
 - ✅ Verified environment variables
 </Warning>
 
@@ -409,12 +434,13 @@ lua deploy
 # 1. Create feature branch
 git checkout -b feature/new-tool
 
-# 2. Develop with live reload
-lua dev
-# Edit, save, test, repeat...
+# 2. Develop and test
+lua test  # Test tool logic
+lua chat  # Test in conversation
 
 # 3. Test thoroughly
-lua test
+lua test  # All tools
+lua chat  # All scenarios
 
 # 4. Commit changes
 git add .
@@ -436,11 +462,13 @@ lua deploy
 ```bash
 # Developer 1: Working on Skill A
 cd skill-a
-lua dev  # Runs on port 3000
+lua test
+lua chat  # Independent sandbox
 
 # Developer 2: Working on Skill B
 cd skill-b
-lua dev  # Runs on port 3000 (different project)
+lua test
+lua chat  # Independent sandbox
 
 # Each developer has independent sandbox
 # Deploy when ready
@@ -449,14 +477,24 @@ lua dev  # Runs on port 3000 (different project)
 ## Troubleshooting
 
 <AccordionGroup>
-  <Accordion title="Dev mode not reloading">
-    **Problem**: Changes not appearing after save
+  <Accordion title="Chat not working">
+    **Problem**: Cannot start chat session
     
     **Solutions**:
-    1. Check terminal for compilation errors
-    2. Restart dev mode (Ctrl+C, then `lua dev`)
-    3. Check file is actually saved
-    4. Verify file is in `src/` directory
+    1. Run `lua auth configure` to set up API key
+    2. Ensure `lua.skill.yaml` exists (run `lua init`)
+    3. Deploy skills with `lua push` before using sandbox
+    4. Check network connection
+  </Accordion>
+
+  <Accordion title="Skills not appearing in sandbox">
+    **Problem**: Local changes not reflected
+    
+    **Solutions**:
+    1. Ensure you selected "Sandbox" mode
+    2. Check compilation succeeded
+    3. Verify skills pushed to sandbox successfully
+    4. Try running `lua push` first
   </Accordion>
 
   <Accordion title="Deploy showing old version">
@@ -465,7 +503,7 @@ lua dev  # Runs on port 3000 (different project)
     **Solutions**:
     1. Verify correct version was deployed
     2. Check `lua.skill.yaml` version number
-    3. Clear browser cache
+    3. Test in production mode with `lua chat`
     4. Check if deploy actually succeeded
   </Accordion>
 

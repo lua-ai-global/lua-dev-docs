@@ -1,0 +1,507 @@
+---
+title: "Resources Command"
+description: "Manage your agent's knowledge base and reference materials"
+---
+
+## Overview
+
+The `lua resources` command manages your agent's knowledge base - documents and information that your agent can reference during conversations.
+
+```bash
+lua resources
+```
+
+<CardGroup cols={2}>
+  <Card title="Knowledge Base" icon="book">
+    Create documents for your agent to reference
+  </Card>
+  <Card title="Full CRUD" icon="database">
+    Create, read, update, and delete resources
+  </Card>
+  <Card title="Editor Integration" icon="pen">
+    Write long-form content easily
+  </Card>
+  <Card title="Always Current" icon="clock">
+    Update resources as info changes
+  </Card>
+</CardGroup>
+
+## What Are Resources?
+
+Resources are documents that your agent can access and reference - think of them as your agent's knowledge library.
+
+**Examples:**
+- Product catalogs and specifications
+- Company policies and procedures
+- FAQs and common questions
+- Return/refund policies
+- Shipping information
+- Troubleshooting guides
+- Company history and values
+- Pricing information
+
+## Quick Start
+
+<Steps>
+  <Step title="Run Command">
+    ```bash
+    lua resources
+    ```
+  </Step>
+  
+  <Step title="Create Resource">
+    ```
+    ? What would you like to do? ➕ Create new resource
+    ? Resource name: Product Catalog
+    ```
+    
+    Opens your editor
+  </Step>
+  
+  <Step title="Write Content">
+    Write your content in the editor:
+    
+    ```
+    Our complete product catalog for 2024.
+    
+    Categories:
+    - Electronics
+    - Home & Garden
+    - Clothing
+    ...
+    ```
+  </Step>
+  
+  <Step title="Save">
+    Save and close editor
+    
+    ```
+    ✅ Resource "Product Catalog" created successfully
+    ```
+  </Step>
+</Steps>
+
+## Operations
+
+### Create New Resource
+
+```bash
+? What would you like to do? ➕ Create new resource
+
+? Resource name: Return Policy
+[Opens editor]
+
+# Write content:
+AcmeCorp Return Policy
+
+Returns accepted within 45 days of purchase.
+
+Conditions:
+- Item must be unused in original packaging
+- Receipt or order number required
+- Free return shipping on defective items
+
+Process:
+1. Contact support@acmecorp.com
+2. Receive return authorization
+3. Ship item within 7 days
+4. Refund processed within 3-5 business days
+
+[Save and close]
+
+🔄 Creating resource...
+✅ Resource "Return Policy" created successfully
+```
+
+### Update Existing Resource
+
+```bash
+? What would you like to do? ✏️ Update existing resource
+
+? Select resource to update:
+❯ Return Policy
+  Shipping Information
+  Product Catalog
+
+? Resource name: (Return Policy) Return Policy - 2024
+[Opens editor with current content]
+
+# Modify content
+# Save and close
+
+🔄 Updating resource...
+✅ Resource "Return Policy - 2024" updated successfully
+```
+
+### View Resource
+
+```bash
+? What would you like to do? 👁️  View resource content
+
+? Select resource to view: Product Catalog
+
+============================================================
+📄 Resource: Product Catalog
+============================================================
+Created: 1/10/2024, 9:00:00 AM
+Updated: 1/15/2024, 2:30:00 PM
+============================================================
+
+Our complete product catalog for 2024.
+
+Categories:
+- Electronics: Laptops, tablets, smartphones
+- Home & Garden: Furniture, appliances, tools
+...
+
+============================================================
+
+Press Enter to continue...
+```
+
+### Delete Resource
+
+```bash
+? What would you like to do? 🗑️  Delete resource
+
+? Select resource to delete: Old FAQ 2023
+
+? Are you sure you want to delete "Old FAQ 2023"? Yes
+
+🔄 Deleting resource...
+✅ Resource "Old FAQ 2023" deleted successfully
+```
+
+<Warning>
+Deletion is permanent and cannot be undone. Always confirm before deleting.
+</Warning>
+
+## Resource Best Practices
+
+### Structure Your Resources
+
+<Tabs>
+  <Tab title="By Category">
+    ```
+    - Company Information
+    - Product Catalog
+    - Policies (Return, Shipping, Privacy)
+    - FAQ Documents
+    - Troubleshooting Guides
+    - Regional Information
+    ```
+  </Tab>
+
+  <Tab title="By Function">
+    ```
+    - Sales Resources
+      → Product catalogs
+      → Pricing
+      → Promotions
+    
+    - Support Resources
+      → Troubleshooting
+      → Policies
+      → How-to guides
+    
+    - Company Resources
+      → About us
+      → Contact info
+      → Hours
+    ```
+  </Tab>
+
+  <Tab title="By User Journey">
+    ```
+    - Pre-Purchase
+      → Product catalog
+      → Sizing guide
+      → Comparisons
+    
+    - Purchase
+      → Payment options
+      → Shipping choices
+    
+    - Post-Purchase
+      → Order tracking
+      → Returns
+      → Support
+    ```
+  </Tab>
+</Tabs>
+
+### Content Guidelines
+
+<AccordionGroup>
+  <Accordion title="✅ Be Specific">
+    ```
+    ❌ "We have good return policy"
+    
+    ✅ "Returns accepted within 45 days.
+        Item must be unused in original packaging.
+        Receipt required.
+        Refund processed in 3-5 business days."
+    ```
+  </Accordion>
+
+  <Accordion title="✅ Use Structure">
+    ```
+    Product Name: UltraBook Pro
+    Price: $1,299
+    
+    Specs:
+    - 16GB RAM
+    - 512GB SSD
+    - 14" Display
+    
+    Best For:
+    - Professionals
+    - Content creators
+    ```
+  </Accordion>
+
+  <Accordion title="✅ Include Timestamps">
+    ```
+    Last Updated: January 15, 2024
+    Valid Through: December 31, 2024
+    Next Review: July 1, 2024
+    ```
+  </Accordion>
+
+  <Accordion title="✅ Anticipate Questions">
+    ```
+    Q: Can I return opened items?
+    A: Yes, if defective. No, if unwanted.
+    
+    Q: What if I lost my receipt?
+    A: We can look up by email or phone.
+    ```
+  </Accordion>
+</AccordionGroup>
+
+## Use Cases
+
+### Product Knowledge Base
+
+```bash
+$ lua resources → Create
+
+Name: Electronics Catalog
+Content:
+Laptops:
+1. UltraBook Pro - $1299
+   - Professional grade
+   - 16GB RAM, 512GB SSD
+   - 12-hour battery
+
+2. Student Laptop - $599
+   - Perfect for students
+   - 8GB RAM, 256GB SSD
+   - 8-hour battery
+```
+
+### Policy Documentation
+
+```bash
+$ lua resources → Create
+
+Name: Customer Service Policies
+Content:
+Returns: 45 days, original packaging
+Exchanges: Same item or store credit
+Refunds: 3-5 business days
+Warranties: Manufacturer warranty
+Price Matching: Within 14 days
+```
+
+### FAQ Repository
+
+```bash
+$ lua resources → Create
+
+Name: Shipping FAQ
+Content:
+Q: How long does shipping take?
+A: Standard 3-5 days, Express 1-2 days
+
+Q: International shipping?
+A: US and Canada only currently
+
+Q: Track my order?
+A: Tracking link sent via email
+```
+
+## Integration with Agent
+
+### How Agents Use Resources
+
+**Automatically:**
+- Searches when relevant
+- Retrieves accurate information
+- Provides consistent answers
+- References specific resources
+
+**Example conversation:**
+```
+User: "What's your return policy?"
+
+Agent: [Searches resources]
+       [Finds "Return Policy"]
+       [Reads content]
+       
+Response: "We accept returns within 45 days of purchase.
+The item must be unused in original packaging..."
+```
+
+### Combine with Persona
+
+```bash
+# In persona
+$ lua persona → Edit
+
+"You are a customer service agent.
+
+When answering questions, always check your resources for:
+- Product details → Product Catalog
+- Return questions → Return Policy
+- Shipping questions → Shipping Information
+
+Provide accurate information from resources, not guesses."
+```
+
+## Common Workflows
+
+### Build Knowledge Base
+
+```bash
+$ lua resources
+
+# Day 1: Core resources
+→ Create: Company Information
+→ Create: Product Catalog
+→ Create: Return Policy
+
+# Day 2: Support resources
+→ Create: FAQ - General
+→ Create: Troubleshooting Guide
+
+# Day 3: Details
+→ Create: Product Specifications
+→ Create: Warranty Information
+```
+
+### Seasonal Update
+
+```bash
+# Before holidays
+$ lua resources
+→ Update: Product Catalog  # Add gift guides
+→ Update: Shipping Info    # Add deadlines
+→ Create: Holiday Guide
+
+# After holidays
+$ lua resources
+→ Update: Product Catalog  # Remove holiday items
+→ Delete: Holiday Guide
+```
+
+### Policy Change
+
+```bash
+# Return window extended 30 → 45 days
+
+$ lua resources
+→ View: Return Policy  # Check current
+→ Update: Return Policy  # Change to 45 days
+✅ Updated
+
+# Test
+$ lua chat
+💬: "What's your return policy?"
+🤖: "45 days..." ✓ Using updated policy
+```
+
+## Best Practices
+
+<AccordionGroup>
+  <Accordion title="Keep Current">
+    - Update monthly minimum
+    - Review quarterly
+    - Archive old resources
+    - Track last update dates
+  </Accordion>
+
+  <Accordion title="Use Clear Names">
+    ```
+    ✅ Product Catalog 2024
+    ✅ Return Policy - Updated Jan 2024
+    ✅ FAQ - Shipping Questions
+    
+    ❌ Doc1
+    ❌ stuff
+    ❌ temp
+    ```
+  </Accordion>
+
+  <Accordion title="Optimal Size">
+    - **Good**: 500-5000 characters
+    - **Too small**: < 100 characters
+    - **Too large**: > 50,000 characters
+    
+    Break large docs into focused resources
+  </Accordion>
+
+  <Accordion title="Test After Changes">
+    ```bash
+    $ lua resources → Update
+    $ lua chat  # Test agent uses updated info
+    ```
+  </Accordion>
+</AccordionGroup>
+
+## Troubleshooting
+
+<AccordionGroup>
+  <Accordion title="Agent not using resources">
+    **Solution**: Update persona to reference resources
+    
+    ```bash
+    $ lua persona → Edit
+    # Add: "Always check resources for accurate info"
+    ```
+  </Accordion>
+
+  <Accordion title="Editor won't open">
+    **Solution**: Set default editor
+    
+    ```bash
+    export EDITOR=nano
+    $ lua resources
+    ```
+  </Accordion>
+
+  <Accordion title="Content too long">
+    **Solution**: Split into multiple resources
+    
+    One large doc → Multiple focused docs
+  </Accordion>
+</AccordionGroup>
+
+## Next Steps
+
+<CardGroup cols={2}>
+  <Card
+    title="Configure Persona"
+    icon="user"
+    href="/cli/persona-command"
+  >
+    Define how agent uses resources
+  </Card>
+  <Card
+    title="Test Your Agent"
+    icon="comments"
+    href="/cli/chat-command"
+  >
+    Verify agent references resources correctly
+  </Card>
+</CardGroup>

@@ -26,9 +26,21 @@ description: "Install Lua CLI and set up your development environment"
 
 Install Lua CLI globally to use it from anywhere:
 
-```bash
+<CodeGroup>
+
+```bash npm
 npm install -g lua-cli
 ```
+
+```bash yarn
+yarn global add lua-cli
+```
+
+```bash pnpm
+pnpm add -g lua-cli
+```
+
+</CodeGroup>
 
 Verify installation:
 
@@ -36,16 +48,28 @@ Verify installation:
 lua --version
 ```
 
-### Using npx (No Installation)
+### Using Package Runners (No Installation)
 
 Run Lua CLI without installing:
 
-```bash
+<CodeGroup>
+
+```bash npx
 npx lua-cli [command]
 ```
 
+```bash yarn
+yarn dlx lua-cli [command]
+```
+
+```bash pnpm
+pnpm dlx lua-cli [command]
+```
+
+</CodeGroup>
+
 <Note>
-Using npx is great for trying out Lua CLI, but global installation is recommended for regular use.
+Package runners are great for trying out Lua CLI, but global installation is recommended for regular use.
 </Note>
 
 ## Authentication

@@ -19,7 +19,7 @@ description: "Step-by-step guide to creating custom skills"
   </Step>
   
   <Step title="Test Locally">
-    Test with `lua test` and `lua dev`
+    Test with `lua chat` (sandbox mode) and optionally `lua test`
   </Step>
   
   <Step title="Deploy">
@@ -151,12 +151,14 @@ const taskSkill = new LuaSkill({
 ### Step 4: Test
 
 ```bash
-# Test individual tools
-lua test
+# Test conversationally (primary)
+lua chat
 
-# Test conversationally
-lua dev
+# Optional: Test individual tools
+lua test
 ```
+
+Select sandbox mode to test with your local skills.
 
 ### Step 5: Deploy
 

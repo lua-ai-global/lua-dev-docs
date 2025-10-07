@@ -3,26 +3,80 @@ title: "CLI Overview"
 description: "Command-line interface for building and deploying AI skills"
 ---
 
+## Lua AI CLI v2.3.3
+
+Build and deploy AI agents with superpowers
+
+```bash
+lua [options] [command]
+```
+
+### Options
+
+```bash
+-V, --version   # Output the version number
+-h, --help      # Display help for command
+```
+
+### All Commands
+
+| Command | Category | Description |
+|---------|----------|-------------|
+| `lua auth` | 🔐 Authentication | Manage API keys and authentication |
+| `lua init` | 🚀 Project Setup | Initialize a new Lua skill project |
+| `lua env` | ⚙️ Configuration | Manage environment variables |
+| `lua persona` | 🤖 Configuration | Manage agent persona |
+| `lua compile` | 📦 Development | Compile skill to deployable format |
+| `lua test` | 💬 Testing | Test skill tools interactively |
+| `lua chat` | 💬 Testing | Interactive chat with your agent |
+| `lua push` | ☁️ Deployment | Push skill version to server |
+| `lua deploy` | 🚀 Deployment | Deploy version to production |
+| `lua production` | 🚀 Deployment | View and manage production environment |
+
+### Quick Examples
+
+```bash
+lua auth configure      # 🔑 Set up your API key
+lua init               # 🚀 Initialize a new project
+lua env                # ⚙️ Manage environment variables
+lua persona            # 🤖 Manage agent persona
+lua compile            # 📦 Compile your skills
+lua test               # 🧪 Test tools interactively
+lua chat               # 💬 Start interactive chat
+lua push               # ☁️ Push to server
+lua deploy             # 🚀 Deploy to production
+```
+
+<Note>
+**Get help for any command**: `lua [command] --help` or `lua help [command]`
+
+**Documentation**: https://docs.heylua.ai  
+**Support**: https://heylua.ai/support
+</Note>
+
 ## Quick Command Reference
 
 <CardGroup cols={3}>
   <Card title="lua init" icon="plus">
     Initialize new skill project
   </Card>
+  <Card title="lua env" icon="key">
+    Manage environment variables
+  </Card>
+  <Card title="lua persona" icon="user">
+    Configure agent personality
+  </Card>
   <Card title="lua test" icon="flask">
     Test tools interactively
   </Card>
-  <Card title="lua dev" icon="code">
-    Development mode with live reload
+  <Card title="lua chat" icon="comments">
+    Interactive chat with your agent
   </Card>
   <Card title="lua push" icon="upload">
     Upload version to server
   </Card>
   <Card title="lua deploy" icon="rocket">
     Deploy to production
-  </Card>
-  <Card title="lua compile" icon="gears">
-    Compile TypeScript code
   </Card>
 </CardGroup>
 
@@ -140,20 +194,19 @@ description: "Command-line interface for building and deploying AI skills"
     <Card title="Learn More" href="/cli/skill-management#deploy" />
   </Tab>
 
-  <Tab title="dev">
-    Development mode
+  <Tab title="chat">
+    Interactive chat
     ```bash
-    lua dev
+    lua chat
     ```
     
     Features:
-    - Chat interface at :3000
-    - Live file watching
-    - Auto-recompile
-    - WebSocket logs
-    - Environment editor
+    - Sandbox or production mode
+    - Test conversational flows
+    - Skill overrides
+    - Persona customization
     
-    <Card title="Learn More" href="/cli/development" />
+    <Card title="Learn More" href="/cli/chat-command" />
   </Tab>
 </Tabs>
 
@@ -175,16 +228,32 @@ description: "Command-line interface for building and deploying AI skills"
     ```
   </Step>
   
-  <Step title="Test">
+  <Step title="Configure Environment">
     ```bash
-    lua test
+    lua env
     ```
+    
+    Add API keys and configuration (choose Sandbox)
   </Step>
   
-  <Step title="Develop">
+  <Step title="Configure Persona">
     ```bash
-    lua dev
+    lua persona
     ```
+    
+    Define your agent's personality (choose Sandbox → Edit)
+  </Step>
+  
+  <Step title="Test Your Agent">
+    ```bash
+    lua chat
+    ```
+    
+    Interactive chat in sandbox mode
+    
+    <Note>
+    **Optional**: Use `lua test` to test individual tools with specific inputs
+    </Note>
   </Step>
   
   <Step title="Deploy">
@@ -198,24 +267,43 @@ description: "Command-line interface for building and deploying AI skills"
 ### Development Workflow
 
 <Steps>
-  <Step title="Start Dev Mode">
+  <Step title="Configure Environment (if needed)">
     ```bash
-    lua dev
+    lua env
     ```
     
-    Keep this running while developing
+    Add any new API keys or configuration needed
   </Step>
   
-  <Step title="Edit Files">
-    Make changes to `src/tools/*.ts`
+  <Step title="Update Persona (if needed)">
+    ```bash
+    lua persona
+    ```
     
-    Files auto-reload on save
+    Refine agent personality based on feedback
   </Step>
   
-  <Step title="Test in Browser">
-    Test at http://localhost:3000
+  <Step title="Make Changes">
+    Edit your tools in `src/tools/*.ts`
+  </Step>
+  
+  <Step title="Test Your Agent">
+    ```bash
+    lua chat
+    ```
     
-    Try tools in chat interface
+    Select sandbox mode to test with local changes
+    
+    <Note>
+    **Pro tip**: Use `lua test` to debug specific tool logic if needed
+    </Note>
+  </Step>
+  
+  <Step title="Update Production Config">
+    ```bash
+    lua env        # Update environment variables
+    lua persona    # Create and deploy persona version
+    ```
   </Step>
   
   <Step title="Push When Ready">
@@ -241,8 +329,11 @@ description: "Command-line interface for building and deploying AI skills"
 # Edit the tool
 vim src/tools/MyTool.ts
 
-# Test it
+# Test the tool
 lua test
+
+# Test conversationally
+lua chat
 
 # Push and deploy
 lua push && lua deploy
@@ -422,11 +513,18 @@ skill:
     Learn all skill management commands
   </Card>
   <Card
-    title="Development Mode"
-    icon="code"
-    href="/cli/development"
+    title="Chat Command"
+    icon="comments"
+    href="/cli/chat-command"
   >
-    Master development workflow
+    Interactive chat with your agent
+  </Card>
+  <Card
+    title="Production Command"
+    icon="server"
+    href="/cli/production-command"
+  >
+    View and manage production
   </Card>
   <Card
     title="Troubleshooting"

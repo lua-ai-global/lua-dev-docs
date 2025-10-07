@@ -1,0 +1,254 @@
+---
+title: "Persona"
+description: "Define your agent's personality and behavior"
+---
+
+## What is a Persona?
+
+A **persona** is the personality, tone, and behavioral guidelines that define how your AI agent communicates and interacts with users.
+
+<Card title="Think of it as:" icon="user">
+  Your agent's character sheet - who they are, how they talk, and what they do
+</Card>
+
+## Why Personas Matter
+
+<CardGroup cols={2}>
+  <Card title="Consistency" icon="check">
+    Same personality across all conversations
+  </Card>
+  <Card title="Brand Alignment" icon="palette">
+    Matches your company's voice and values
+  </Card>
+  <Card title="User Experience" icon="heart">
+    Creates connection and trust
+  </Card>
+  <Card title="Effectiveness" icon="bullseye">
+    Guidelines ensure helpful responses
+  </Card>
+</CardGroup>
+
+## Persona Structure
+
+A good persona includes:
+
+<Steps>
+  <Step title="Role & Mission">
+    Who the agent is and their primary purpose
+    
+    ```
+    You are a customer service representative for AcmeCorp,
+    specializing in electronics support.
+    ```
+  </Step>
+  
+  <Step title="Responsibilities">
+    What the agent helps with
+    
+    ```
+    Your responsibilities:
+    - Answer product questions
+    - Check order status
+    - Process returns
+    - Provide technical guidance
+    ```
+  </Step>
+  
+  <Step title="Personality Traits">
+    How the agent behaves
+    
+    ```
+    Your personality:
+    - Friendly and approachable
+    - Professional and knowledgeable
+    - Patient with frustrated customers
+    - Solution-oriented
+    ```
+  </Step>
+  
+  <Step title="Guidelines">
+    Rules the agent follows
+    
+    ```
+    Always:
+    - Greet warmly
+    - Ask clarifying questions
+    - Confirm understanding
+    
+    Never:
+    - Make promises you can't keep
+    - Blame customers
+    - Rush conversations
+    ```
+  </Step>
+  
+  <Step title="Context">
+    Background information
+    
+    ```
+    Context:
+    AcmeCorp serves 50,000+ customers.
+    2-day shipping standard.
+    30-day return policy.
+    ```
+  </Step>
+</Steps>
+
+## Good vs Bad Examples
+
+<Tabs>
+  <Tab title="❌ Bad Persona">
+    ```
+    You help customers.
+    Be nice.
+    ```
+    
+    **Problems:**
+    - Too vague
+    - No specific guidance
+    - No personality
+    - No context
+  </Tab>
+
+  <Tab title="✅ Good Persona">
+    ```
+    You are a customer service representative for AcmeCorp,
+    specializing in electronics and home goods support.
+
+    Your Role:
+    - Answer product questions with technical details
+    - Check order status and provide tracking
+    - Process returns within our 45-day policy
+    - Provide personalized recommendations
+
+    Your Personality:
+    - Warm and friendly while professional
+    - Patient and empathetic
+    - Knowledgeable without being condescending
+    - Solution-oriented
+
+    Your Guidelines:
+    Always:
+    - Greet customers warmly
+    - Ask clarifying questions
+    - Confirm understanding before action
+    - Thank them for patience
+
+    Never:
+    - Make promises outside company policy
+    - Provide uncertain information
+    - Blame customers for issues
+    - Rush through conversations
+
+    When customer is frustrated:
+    1. Acknowledge their feelings
+    2. Apologize genuinely
+    3. Focus on solution
+    4. Offer escalation if needed
+
+    Context:
+    AcmeCorp is an online retailer since 2010.
+    10,000+ products.
+    Free shipping over $50.
+    45-day return policy.
+    Business hours: 9 AM - 6 PM EST.
+    ```
+    
+    **Why it's good:**
+    - Specific role defined
+    - Clear personality
+    - Actionable guidelines
+    - Relevant context
+  </Tab>
+</Tabs>
+
+## How to Write a Great Persona
+
+### 1. Define the Role Clearly
+
+```
+You are [specific role] for [company name],
+specializing in [area of expertise].
+```
+
+### 2. List Specific Responsibilities
+
+```
+You help with:
+- [Specific task 1]
+- [Specific task 2]
+- [Specific task 3]
+
+You do NOT:
+- [What's outside scope]
+- [What needs escalation]
+```
+
+### 3. Describe Personality
+
+```
+Your personality:
+- [Trait 1]: [How it shows]
+- [Trait 2]: [When you use it]
+- [Communication style]
+```
+
+### 4. Provide Clear Guidelines
+
+```
+Always:
+- [Action 1]
+- [Action 2]
+
+Never:
+- [Avoid 1]
+- [Avoid 2]
+
+When [situation]:
+- [Specific response]
+```
+
+### 5. Add Business Context
+
+```
+Context:
+- Founded: [year]
+- Customers: [number]
+- Policies: [key policies]
+- Hours: [availability]
+```
+
+## Managing Your Persona
+
+<CardGroup cols={2}>
+  <Card title="Edit" icon="pen" href="/cli/persona-command">
+    ```bash
+    lua persona
+    ```
+    
+    Edit and test persona
+  </Card>
+  <Card title="Test" icon="comments" href="/cli/chat-command">
+    ```bash
+    lua chat
+    ```
+    
+    Test persona in sandbox
+  </Card>
+  <Card title="Deploy" icon="rocket" href="/cli/persona-command">
+    Create versions and deploy to production
+  </Card>
+  <Card title="Monitor" icon="eye" href="/cli/production-command">
+    ```bash
+    lua production
+    ```
+    
+    View deployed persona
+  </Card>
+</CardGroup>
+
+## Next Steps
+
+<Card title="Complete Persona Guide" icon="book" href="/cli/persona-command">
+  See comprehensive documentation with more examples, industry templates, and deployment workflows
+</Card>

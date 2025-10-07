@@ -1,0 +1,393 @@
+---
+title: "Chat Command"
+description: "Interactive command-line chat with your AI agent"
+---
+
+## Overview
+
+The `lua chat` command provides an interactive command-line interface for conversing with your Lua AI agent in both sandbox and production environments.
+
+```bash
+lua chat
+```
+
+## Features
+
+<CardGroup cols={2}>
+  <Card title="Sandbox Mode" icon="flask">
+    Test with local skill overrides and persona customizations
+  </Card>
+  <Card title="Production Mode" icon="rocket">
+    Chat with your live production agent
+  </Card>
+  <Card title="Interactive Loop" icon="arrows-rotate">
+    Continuous conversation until exit
+  </Card>
+  <Card title="Multi-Skill Support" icon="layer-group">
+    All skills automatically included in sandbox
+  </Card>
+</CardGroup>
+
+## Prerequisites
+
+<Steps>
+  <Step title="Configure API Key">
+    ```bash
+    lua auth configure
+    ```
+  </Step>
+  
+  <Step title="Initialize Project">
+    ```bash
+    lua init
+    ```
+    
+    Ensures `lua.skill.yaml` exists
+  </Step>
+  
+  <Step title="Deploy Skills">
+    ```bash
+    lua push
+    ```
+    
+    Required for sandbox testing
+  </Step>
+</Steps>
+
+## How It Works
+
+<Steps>
+  <Step title="Authentication">
+    ```
+    ✅ Authenticated
+    ```
+    
+    Validates your API key and retrieves user data
+  </Step>
+  
+  <Step title="Environment Selection">
+    ```
+    ? Select environment: 
+      🔧 Sandbox (with skill overrides)
+      🚀 Production
+    ```
+    
+    Choose between sandbox (testing) or production (live)
+  </Step>
+  
+  <Step title="Sandbox Setup (if Sandbox)">
+    ```
+    🔄 Compiling skill...
+    🔄 Pushing skills to sandbox...
+    ✅ Pushed 2 skills to sandbox
+    ```
+    
+    Compiles and deploys your local skills to sandbox
+  </Step>
+  
+  <Step title="Chat Interface">
+    ```
+    ============================================================
+    💬 Lua Chat Interface
+    Environment: 🔧 Sandbox
+    Press Ctrl+C to exit
+    ============================================================
+
+    🤖 Assistant: Hi there! How can I help you today?
+
+    👤 You: 
+    ```
+    
+    Interactive conversation begins
+  </Step>
+</Steps>
+
+## Sandbox vs Production
+
+<Tabs>
+  <Tab title="Sandbox Mode">
+    **For Development & Testing**
+    
+    ```bash
+    $ lua chat
+    ? Select environment: 🔧 Sandbox
+    ```
+    
+    **Features:**
+    - ✅ Local skill overrides
+    - ✅ Persona customization
+    - ✅ Environment variables from `.env`
+    - ✅ Test before deploying
+    
+    **Setup time:** ~10-30 seconds (includes compilation)
+    
+    **Use when:**
+    - Developing new features
+    - Testing skill changes
+    - Iterating on persona
+    - Before pushing to production
+  </Tab>
+
+  <Tab title="Production Mode">
+    **For Validation**
+    
+    ```bash
+    $ lua chat
+    ? Select environment: 🚀 Production
+    ```
+    
+    **Features:**
+    - ✅ Production skills only
+    - ✅ Live production persona
+    - ✅ Real environment variables
+    - ✅ Verify deployed changes
+    
+    **Setup time:** ~1-2 seconds
+    
+    **Use when:**
+    - Validating deployed changes
+    - Testing production experience
+    - Verifying skill interactions
+  </Tab>
+</Tabs>
+
+## Example Session
+
+### Sandbox Mode
+
+```bash
+$ lua chat
+✅ Authenticated
+? Select environment: 🔧 Sandbox (with skill overrides)
+🔄 Setting up sandbox environment...
+🔄 Compiling skill...
+✅ Skill compiled successfully - 3 tools bundled
+🔄 Pushing skills to sandbox...
+✅ Pushed 2 skills to sandbox
+
+============================================================
+💬 Lua Chat Interface
+Environment: 🔧 Sandbox
+Press Ctrl+C to exit
+============================================================
+
+🤖 Assistant: Hi there! How can I help you today?
+
+👤 You: What's the weather in London?
+🤖 Assistant: ...
+🤖 Assistant: The current weather in London is 15°C and cloudy with light wind.
+
+👤 You: Search for laptops
+🤖 Assistant: ...
+🤖 Assistant: I found 5 laptops in our catalog:
+1. MacBook Pro - $1999
+2. Dell XPS 13 - $1299
+3. ThinkPad X1 - $1499
+...
+
+👤 You: ^C
+
+👋 Goodbye!
+```
+
+## Persona Override
+
+### Configuration
+
+In `lua.skill.yaml`:
+
+```yaml
+agent:
+  agentId: "agent_abc123"
+  organizationId: "org_xyz789"
+  persona: |
+    You are a helpful customer service assistant.
+    You help users with product inquiries and order management.
+    Be friendly, professional, and concise.
+```
+
+**In Sandbox Mode:**
+- Persona is automatically loaded and sent with each request
+- Test different persona variations
+- Iterate quickly
+
+**In Production Mode:**
+- Uses production persona (from server)
+- No local override
+
+## Skill Override
+
+### How It Works
+
+**Sandbox mode automatically:**
+1. Compiles all skills in your project
+2. Pushes to sandbox environment
+3. Gets sandbox IDs for each skill
+4. Includes all sandbox IDs in chat requests
+
+**Example override:**
+```json
+{
+  "skillOverride": [
+    {
+      "skillId": "skill_abc123",
+      "sandboxId": "sandbox_def456"
+    }
+  ]
+}
+```
+
+The AI uses your local sandbox versions instead of production versions.
+
+## Keyboard Shortcuts
+
+| Shortcut | Action |
+|----------|--------|
+| `Enter` | Send message |
+| `Ctrl+C` | Exit chat |
+| `Ctrl+D` | Exit chat (alternative) |
+
+## Best Practices
+
+<AccordionGroup>
+  <Accordion title="Development Workflow">
+    1. Make changes to your skills
+    2. Run `lua chat` in sandbox mode
+    3. Test changes interactively
+    4. Iterate until satisfied
+    5. Run `lua push` to deploy
+    6. Test again in production mode
+    7. Deploy with `lua deploy`
+  </Accordion>
+
+  <Accordion title="Testing Strategy">
+    **Start with sandbox:**
+    - Test happy paths
+    - Test error cases
+    - Test edge cases
+    - Test multi-step flows
+    
+    **Validate with production:**
+    - Verify deployed changes work
+    - Test with production data
+    - Confirm no regressions
+  </Accordion>
+
+  <Accordion title="Persona Iteration">
+    1. Update `agent.persona` in `lua.skill.yaml`
+    2. Run `lua chat` in sandbox
+    3. Test conversation style
+    4. Refine persona
+    5. Repeat until satisfied
+    6. Deploy to production
+  </Accordion>
+</AccordionGroup>
+
+## Troubleshooting
+
+<AccordionGroup>
+  <Accordion title="No API key found">
+    **Error:**
+    ```
+    ❌ No API key found
+    ```
+    
+    **Solution:**
+    ```bash
+    lua auth configure
+    ```
+  </Accordion>
+
+  <Accordion title="Configuration file missing">
+    **Error:**
+    ```
+    ❌ No agent ID found in lua.skill.yaml
+    ```
+    
+    **Solution:**
+    ```bash
+    lua init
+    ```
+  </Accordion>
+
+  <Accordion title="Compilation failed">
+    **Error:**
+    ```
+    ❌ Compilation failed
+    ```
+    
+    **Solution:**
+    - Fix TypeScript errors in your code
+    - Check `src/index.ts` for syntax errors
+    - Verify all imports are correct
+  </Accordion>
+
+  <Accordion title="Skills not in sandbox">
+    **Error:**
+    ```
+    ❌ Failed to push skills to sandbox
+    ```
+    
+    **Solution:**
+    ```bash
+    lua push  # Deploy skills first
+    lua chat  # Then try again
+    ```
+  </Accordion>
+
+  <Accordion title="Slow responses">
+    **Issue:** Long wait times in sandbox
+    
+    **Causes:**
+    - First request after compilation
+    - Large skill bundles
+    - Network latency
+    
+    **Solution:** Subsequent messages will be faster
+  </Accordion>
+
+  <Accordion title="Persona not working">
+    **Issue:** Persona override not being applied
+    
+    **Check:**
+    - Using sandbox mode (not production)
+    - `agent.persona` exists in `lua.skill.yaml`
+    - Persona is properly formatted YAML
+  </Accordion>
+</AccordionGroup>
+
+## Related Commands
+
+<CardGroup cols={2}>
+  <Card title="lua test" icon="flask">
+    Test individual tools with specific inputs
+  </Card>
+  <Card title="lua push" icon="upload">
+    Deploy skills to server
+  </Card>
+  <Card title="lua deploy" icon="rocket">
+    Publish version to production
+  </Card>
+  <Card title="lua compile" icon="gears">
+    Compile TypeScript code
+  </Card>
+</CardGroup>
+
+## Next Steps
+
+<CardGroup cols={2}>
+  <Card
+    title="Test Individual Tools"
+    icon="flask"
+    href="/cli/skill-management#lua-test"
+  >
+    Test tools one at a time
+  </Card>
+  <Card
+    title="Deploy to Production"
+    icon="rocket"
+    href="/cli/skill-management#lua-deploy"
+  >
+    Push your skills live
+  </Card>
+</CardGroup>

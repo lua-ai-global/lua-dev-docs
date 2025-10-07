@@ -8,11 +8,27 @@ Official documentation for Lua CLI and LuaPop Chat Widget. Built with [Mintlify]
 # Clone the repository
 git clone <repository-url>
 cd mintlify-docs
+```
 
-# Install Mintlify CLI
+Install Mintlify CLI:
+
+**npm:**
+```bash
 npm install -g mintlify
+```
 
-# Start local development server
+**yarn:**
+```bash
+yarn global add mintlify
+```
+
+**pnpm:**
+```bash
+pnpm add -g mintlify
+```
+
+Start local development server:
+```bash
 mintlify dev
 # or
 mint dev

@@ -34,6 +34,14 @@ export class SendEmailTool implements LuaTool {
 
 ## Setting Environment Variables
 
+<Note>
+**Quick Setup**: Use `lua env` command for an interactive interface to manage environment variables in both sandbox and production environments.
+
+```bash
+lua env
+```
+</Note>
+
 There are three ways to set environment variables, loaded in this priority order:
 
 <Steps>
@@ -134,29 +142,33 @@ skill:
 Use this for production secrets that shouldn't be in git.
 </Note>
 
-## Method 3: Dev Mode UI
+## Method 3: Interactive Command
 
-When running `lua dev`, you can edit environment variables in the browser:
+Use the `lua env` command for an interactive interface:
 
 <Steps>
-  <Step title="Start Dev Mode">
+  <Step title="Run Command">
     ```bash
-    lua dev
+    lua env
     ```
   </Step>
   
-  <Step title="Open Environment Tab">
-    Navigate to http://localhost:3000 and click the "Environment" tab
+  <Step title="Select Environment">
+    Choose Sandbox (.env file) or Production (API)
   </Step>
   
-  <Step title="Edit Variables">
-    Add, edit, or remove environment variables in the UI
+  <Step title="Manage Variables">
+    Add, update, delete, or view variables through interactive menu
   </Step>
   
-  <Step title="Save">
-    Changes are automatically saved to your `.env` file
+  <Step title="Changes Saved">
+    Variables are saved to `.env` (sandbox) or API (production)
   </Step>
 </Steps>
+
+<Card title="Complete Guide" icon="key" href="/cli/env-command">
+  See full documentation for the `lua env` command
+</Card>
 
 ## Example: External API Integration
 
@@ -328,13 +340,16 @@ Environment variables are automatically loaded from `.env` when you run:
 lua test
 ```
 
-### In lua dev
+### In lua chat
 
-Environment variables are loaded and can be edited in the UI:
+Environment variables are loaded based on selected mode:
 
 ```bash
-lua dev
+lua chat
 ```
+
+- **Sandbox mode**: Uses `.env` file
+- **Production mode**: Uses production variables from server
 
 ## Troubleshooting
 
@@ -345,7 +360,7 @@ lua dev
     **Solutions**:
     1. Check spelling in `.env` file
     2. Ensure `.env` is in project root
-    3. Restart `lua dev` if running
+    3. Restart `lua chat` if running
     4. Check `lua.skill.yaml` for typos
   </Accordion>
 
@@ -355,14 +370,20 @@ lua dev
     **Solution**: Restart the CLI command:
     ```bash
     # Stop current process (Ctrl+C)
-    lua dev  # Start again
+    lua chat  # Start again
     ```
   </Accordion>
 
   <Accordion title="Different values in dev vs production">
     **Problem**: Works locally but not when deployed
     
-    **Solution**: Set production values in `lua.skill.yaml`:
+    **Solution**: Use `lua env` to manage production variables:
+    ```bash
+    lua env  # Select Production mode
+    # Add production API keys
+    ```
+    
+    Or set in `lua.skill.yaml`:
     ```yaml
     skill:
       env:

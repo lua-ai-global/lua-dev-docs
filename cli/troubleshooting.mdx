@@ -162,9 +162,22 @@ description: "Common issues and solutions for Lua CLI"
     **Cause**: Dependencies not installed.
     
     **Solution**:
-    ```bash
+    
+    <CodeGroup>
+    
+    ```bash npm
     npm install
     ```
+    
+    ```bash yarn
+    yarn install
+    ```
+    
+    ```bash pnpm
+    pnpm install
+    ```
+    
+    </CodeGroup>
   </Accordion>
 
   <Accordion title="Tool name invalid">
@@ -258,7 +271,7 @@ description: "Common issues and solutions for Lua CLI"
     **Error:**
     ```
     💡 The skill doesn't exist on the server.
-    Please run "lua push" first to deploy your skill, then try "lua dev" again.
+    Please run "lua push" first to deploy your skill.
     ```
     
     **Cause**: Skill hasn't been pushed to server yet.
@@ -266,21 +279,21 @@ description: "Common issues and solutions for Lua CLI"
     **Solution**:
     ```bash
     lua push  # Push first
-    lua dev   # Then start dev mode
+    lua chat  # Then test in sandbox mode
     ```
   </Accordion>
 
-  <Accordion title="Changes not reloading">
-    **Problem**: File changes not detected in dev mode.
+  <Accordion title="Changes not reflected in chat">
+    **Problem**: Local changes not showing in sandbox mode.
     
     **Solutions**:
     1. Verify file is in `src/` directory
     2. Check file is actually saved
-    3. Look for compilation errors in terminal
-    4. Restart dev mode:
+    3. Ensure you selected "Sandbox" mode in `lua chat`
+    4. Check for compilation errors
+    5. Try again:
        ```bash
-       # Ctrl+C to stop
-       lua dev  # Start again
+       lua chat  # Will recompile and push to sandbox
        ```
   </Accordion>
 </AccordionGroup>
@@ -503,7 +516,12 @@ description: "Common issues and solutions for Lua CLI"
     **Solution**: Restart the CLI command:
     ```bash
     # Stop current process (Ctrl+C)
-    lua dev  # Start again
+    lua chat  # Start again
+    ```
+    
+    Or manage variables with:
+    ```bash
+    lua env
     ```
   </Accordion>
 </AccordionGroup>
@@ -579,11 +597,10 @@ ver       # Windows
   <Accordion title="Test Before Deploy">
     Always test locally:
     ```bash
-    lua test  # Test tools
-    lua dev   # Test conversationally
-    lua push  # Push to sandbox
-    lua dev   # Test in sandbox
-    lua deploy  # Then deploy
+    lua chat  # Test conversationally (sandbox mode)
+    lua test  # Optional: Test specific tools
+    lua push  # Push when ready
+    lua deploy  # Deploy to production
     ```
   </Accordion>
 </AccordionGroup>

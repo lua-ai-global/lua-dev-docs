@@ -1,0 +1,411 @@
+---
+title: "Resources"
+description: "Your agent's knowledge base and reference materials"
+---
+
+## What are Resources?
+
+**Resources** are documents that your AI agent can access and reference during conversations - like a knowledge library.
+
+<Card title="Think of it as:" icon="book">
+  Reference materials your agent can look up - product catalogs, policies, FAQs, guides
+</Card>
+
+## Why Resources Matter
+
+<CardGroup cols={2}>
+  <Card title="Accurate Information" icon="check">
+    Agent provides facts, not guesses
+  </Card>
+  <Card title="Consistent Answers" icon="arrows-repeat">
+    Same info every time
+  </Card>
+  <Card title="Easy Updates" icon="pen">
+    Update knowledge without changing code
+  </Card>
+  <Card title="Scalable Knowledge" icon="chart-line">
+    Add unlimited reference materials
+  </Card>
+</CardGroup>
+
+## What to Put in Resources
+
+### Product Information
+
+```
+Resource: Product Catalog 2024
+
+Our complete product line:
+
+Laptops:
+- UltraBook Pro: $1299
+  • 16GB RAM, 512GB SSD
+  • Best for professionals
+  • 2-year warranty
+
+- Student Laptop: $599
+  • 8GB RAM, 256GB SSD
+  • Perfect for students
+  • 1-year warranty
+```
+
+### Company Policies
+
+```
+Resource: Return Policy
+
+Returns accepted within 45 days.
+
+Conditions:
+- Unused, original packaging
+- Receipt required
+- Free return shipping on defects
+
+Process:
+1. Contact support
+2. Get return authorization
+3. Ship within 7 days
+4. Refund in 3-5 days
+```
+
+### FAQs
+
+```
+Resource: Shipping FAQ
+
+Q: How long does shipping take?
+A: Standard 3-5 days, Express 1-2 days
+
+Q: Do you ship internationally?
+A: US and Canada only
+
+Q: Can I track my order?
+A: Yes, tracking link sent via email
+```
+
+### Troubleshooting Guides
+
+```
+Resource: Login Issues
+
+Can't log in?
+1. Verify email is correct
+2. Check caps lock
+3. Try "Forgot Password"
+4. Clear browser cache
+5. Try different browser
+6. Contact support: support@company.com
+```
+
+## How Agents Use Resources
+
+**Automatically during conversations:**
+
+```
+User: "What's your return policy?"
+
+Agent: [Searches resources]
+       [Finds "Return Policy"]
+       [Reads content]
+       
+Response: "We accept returns within 45 days.
+The item must be unused in original packaging..."
+```
+
+**The agent decides when to search resources based on:**
+- Question keywords
+- Context of conversation
+- Relevance to query
+- Semantic similarity
+
+## Creating Resources
+
+<Steps>
+  <Step title="Open Resources Command">
+    ```bash
+    lua resources
+    ```
+  </Step>
+  
+  <Step title="Create New Resource">
+    ```
+    ? What would you like to do? ➕ Create new resource
+    ? Resource name: Product Catalog
+    ```
+  </Step>
+  
+  <Step title="Write Content">
+    Opens your editor. Write your content:
+    
+    ```
+    Our products for 2024...
+    
+    [Save and close]
+    ```
+  </Step>
+  
+  <Step title="Test with Agent">
+    ```bash
+    lua chat
+    ```
+    
+    Ask agent about products, verify it uses the resource
+  </Step>
+</Steps>
+
+## Resource Best Practices
+
+### 1. Keep Resources Focused
+
+<CodeGroup>
+
+```text Bad: Everything in one
+Resource: Everything About Company
+- Products
+- Policies  
+- FAQ
+- History
+- Contact
+[10,000 characters of mixed info]
+```
+
+```text Good: Separate resources
+Resource: Product Catalog
+[Products only]
+
+Resource: Return Policy
+[Return info only]
+
+Resource: Company FAQ
+[Common questions only]
+
+Resource: Contact Information
+[Contact details only]
+```
+
+</CodeGroup>
+
+### 2. Use Clear Structure
+
+```
+Resource: Electronics Catalog
+
+## Laptops
+
+### UltraBook Pro - $1299
+- Specs: 16GB RAM, 512GB SSD
+- Best for: Professionals, creators
+- Warranty: 2 years
+
+### Student Laptop - $599
+- Specs: 8GB RAM, 256GB SSD
+- Best for: Students, basic use
+- Warranty: 1 year
+
+## Tablets
+
+### Pro Tablet - $899
+...
+```
+
+### 3. Include Timestamps
+
+```
+Resource: Pricing Information
+Last Updated: January 15, 2024
+Valid Through: March 31, 2024
+
+[This helps track when info needs updating]
+```
+
+### 4. Update Regularly
+
+<AccordionGroup>
+  <Accordion title="Weekly">
+    - Time-sensitive promotions
+    - Seasonal information
+    - Limited-time offers
+  </Accordion>
+
+  <Accordion title="Monthly">
+    - Product availability
+    - Pricing updates
+    - Policy changes
+  </Accordion>
+
+  <Accordion title="Quarterly">
+    - Complete review
+    - Archive old resources
+    - Reorganize if needed
+  </Accordion>
+</AccordionGroup>
+
+## Resources + Persona
+
+Resources work best when referenced in your persona:
+
+```typescript
+// In lua persona
+persona: `
+  You are a customer service agent for AcmeCorp.
+  
+  When answering questions, check your resources:
+  - Product questions → Product Catalog
+  - Return questions → Return Policy  
+  - Shipping questions → Shipping Information
+  
+  Always provide accurate info from resources.
+`
+```
+
+## Common Use Cases
+
+<Tabs>
+  <Tab title="E-commerce">
+    **Resources:**
+    - Product Catalog
+    - Size Guide
+    - Return Policy
+    - Shipping Options
+    - Gift Services
+    
+    **Agent can answer:**
+    - "Do you have this in size medium?"
+    - "What's your return policy?"
+    - "How long does shipping take?"
+  </Tab>
+
+  <Tab title="Support">
+    **Resources:**
+    - Troubleshooting Guides
+    - FAQ Database
+    - Known Issues
+    - Contact Information
+    - Service Hours
+    
+    **Agent can answer:**
+    - "How do I reset my password?"
+    - "App won't open, what do I do?"
+    - "How do I contact support?"
+  </Tab>
+
+  <Tab title="Booking">
+    **Resources:**
+    - Room Types
+    - Amenities List
+    - Cancellation Policy
+    - Local Attractions
+    - Check-in Process
+    
+    **Agent can answer:**
+    - "What room types do you have?"
+    - "Can I cancel my reservation?"
+    - "What's nearby?"
+  </Tab>
+</Tabs>
+
+## Managing Resources
+
+<CardGroup cols={2}>
+  <Card title="Create" icon="plus">
+    ```bash
+    lua resources
+    ```
+    
+    Add new knowledge documents
+  </Card>
+  <Card title="Update" icon="pen">
+    Keep information current
+  </Card>
+  <Card title="Test" icon="comments">
+    ```bash
+    lua chat
+    ```
+    
+    Verify agent uses resources
+  </Card>
+  <Card title="Monitor" icon="eye">
+    Track what users ask about
+  </Card>
+</CardGroup>
+
+## Quick Tips
+
+<AccordionGroup>
+  <Accordion title="Start Small">
+    Begin with 3-5 core resources:
+    - Company overview
+    - Main products/services
+    - Top FAQ
+    - Contact information
+    - Key policy
+    
+    Add more as needed
+  </Accordion>
+
+  <Accordion title="Use Clear Names">
+    ```
+    ✅ Product Catalog 2024
+    ✅ Return Policy - Updated Jan 2024
+    ✅ FAQ - Shipping Questions
+    
+    ❌ Doc1
+    ❌ Stuff
+    ❌ Notes
+    ```
+  </Accordion>
+
+  <Accordion title="Test After Adding">
+    ```bash
+    # Add resource
+    $ lua resources → Create
+
+    # Test immediately
+    $ lua chat
+    💬: "Ask about the new resource topic"
+    🤖: [Should reference the resource]
+    ```
+  </Accordion>
+</AccordionGroup>
+
+## Resources vs Tools vs Skills
+
+| Concept | Purpose | Example |
+|---------|---------|---------|
+| **Tool** | Execute action | `search_products` - Searches catalog |
+| **Skill** | Group of tools | E-commerce - Search, cart, checkout |
+| **Resource** | Reference info | Product Catalog - What products exist |
+
+**How they work together:**
+- **Resources** provide knowledge
+- **Tools** take actions
+- **Skills** organize tools
+- **Persona** defines personality
+
+**Example:**
+```
+User: "Do you have laptops under $1000?"
+
+1. Persona: "Be friendly and helpful"
+2. Resource: Agent checks Product Catalog
+3. Tool: Calls search_products tool
+4. Skill: E-commerce skill coordinates everything
+5. Result: "Yes! We have 3 laptops under $1000..."
+```
+
+## Next Steps
+
+<CardGroup cols={2}>
+  <Card title="Manage Resources" icon="database" href="/cli/resources-command">
+    Complete guide to resources command
+  </Card>
+  <Card title="Learn About Persona" icon="user" href="/overview/persona">
+    How persona uses resources
+  </Card>
+  <Card title="Learn About Skills" icon="puzzle-piece" href="/overview/skill">
+    How skills organize tools
+  </Card>
+  <Card title="See Complete Examples" icon="layer-group" href="/demos/overview">
+    11 demos using resources
+  </Card>
+</CardGroup>

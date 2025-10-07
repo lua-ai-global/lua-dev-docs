@@ -19,9 +19,23 @@ cd mintlify-docs
 
 ### 2. Install Mintlify CLI
 
+**npm:**
 ```bash
 npm install -g mintlify
-# or use the package.json script
+```
+
+**yarn:**
+```bash
+yarn global add mintlify
+```
+
+**pnpm:**
+```bash
+pnpm add -g mintlify
+```
+
+**Or use package.json script:**
+```bash
 npm run install-cli
 ```
 

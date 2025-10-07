@@ -1,7 +1,11 @@
 {
   "$schema": "https://mintlify.com/docs.json",
-  "theme": "mint",
+  "theme": "dark",
   "name": "Lua CLI",
+  "modeToggle": {
+    "default": "dark",
+    "isHidden": true
+  },
   "colors": {
     "primary": "#ff173a",
     "light": "#fe1052",
@@ -17,6 +21,15 @@
             "group": "Welcome",
             "pages": [
               "overview"
+            ]
+          },
+          {
+            "group": "Key Concepts",
+            "pages": [
+              "overview/persona",
+              "overview/skill",
+              "overview/tools",
+              "overview/resources"
             ]
           },
           {
@@ -57,7 +70,11 @@
               "cli/overview",
               "cli/authentication",
               "cli/skill-management",
-              "cli/development",
+              "cli/chat-command",
+              "cli/env-command",
+              "cli/persona-command",
+              "cli/resources-command",
+              "cli/production-command",
               "cli/troubleshooting"
             ]
           },
