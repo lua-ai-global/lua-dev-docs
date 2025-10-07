@@ -17,7 +17,6 @@ Add AI chat to your website in 3 simple steps:
       window.LuaPop.init({
         agentId: "your-agent-id",
         position: "bottom-right",
-        theme: "light",
         buttonText: "Chat with AI"
       });
     </script>
@@ -49,7 +48,6 @@ Add AI chat to your website in 3 simple steps:
     chatTitle: "Customer Support",
     buttonText: "💬 Need Help?",
     position: "bottom-right",
-    theme: "light",
     chatInputPlaceholder: "How can we help you today?"
   });
 </script>
@@ -65,8 +63,7 @@ Add AI chat to your website in 3 simple steps:
     chatTitle: "Sales Assistant",
     buttonText: "💰 Get Quote",
     buttonColor: "#28a745",
-    position: "bottom-right",
-    theme: "light"
+    position: "bottom-right"
   });
 </script>
 ```
@@ -85,8 +82,7 @@ Add AI chat to your website in 3 simple steps:
     displayMode: "embedded",
     embeddedDisplayConfig: {
       targetContainerId: "chat-container"
-    },
-    theme: "light"
+    }
   });
 </script>
 ```
@@ -118,26 +114,6 @@ Add AI chat to your website in 3 simple steps:
   </Tab>
 </Tabs>
 
-### Change Theme
-
-<CodeGroup>
-
-```javascript Light Theme
-window.LuaPop.init({
-  agentId: "your-agent-id",
-  theme: "light"  // Clean, professional
-});
-```
-
-```javascript Dark Theme
-window.LuaPop.init({
-  agentId: "your-agent-id",
-  theme: "dark"  // Modern dark mode
-});
-```
-
-</CodeGroup>
-
 ### Custom Colors & Button
 
 ```javascript
@@ -158,8 +134,7 @@ window.LuaPop.init({
 window.LuaPop.init({
   agentId: "your-agent-id",
   environment: "staging", // Uses api.lua.dev
-  position: "bottom-right",
-  theme: "light"
+  position: "bottom-right"
 });
 ```
 
@@ -169,8 +144,7 @@ window.LuaPop.init({
 window.LuaPop.init({
   agentId: "your-agent-id",
   environment: "production", // Uses api.heylua.ai
-  position: "bottom-right",
-  theme: "light"
+  position: "bottom-right"
 });
 ```
 
@@ -192,8 +166,7 @@ export default function ChatWidget() {
     script.onload = () => {
       window.LuaPop?.init({
         agentId: "your-agent-id",
-        position: "bottom-right",
-        theme: "light"
+        position: "bottom-right"
       });
     };
     document.body.appendChild(script);

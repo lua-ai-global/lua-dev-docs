@@ -28,7 +28,6 @@ description: "Real-world implementation examples for different industries"
       chatTitle: "Customer Support",
       buttonText: "💬 Get Help",
       position: "bottom-right",
-      theme: "light",
       chatInputPlaceholder: "How can we help you today?"
     });
   </script>
@@ -47,8 +46,7 @@ description: "Real-world implementation examples for different industries"
     buttonText: "🛒 Shop Help",
     buttonColor: "#e74c3c",
     position: "bottom-right",
-    theme: "light",
-    
+
     onNavigate: (pathname, options) => {
       // Navigate to product pages
       if (pathname.startsWith('/product/')) {
@@ -77,8 +75,7 @@ description: "Real-world implementation examples for different industries"
     buttonText: "🛎️ Concierge",
     buttonColor: "#d4af37",
     position: "bottom-right",
-    theme: "light",
-    
+
     popupButtonStyles: {
       borderRadius: "50%",
       width: "70px",
@@ -112,7 +109,6 @@ window.LuaPop.init({
   buttonText: isNewUser ? "🚀 Get Started" : "💡 Need Help?",
   buttonColor: "#9b59b6",
   position: "bottom-right",
-  theme: "light",
   voiceModeEnabled: true,
   sessionId: `user-${Date.now()}`,
   
@@ -154,8 +150,7 @@ if (isNewUser) {
       targetContainerId: "docs-chat"
     },
     chatTitle: "Documentation Assistant",
-    chatInputPlaceholder: "Search documentation...",
-    theme: "light"
+    chatInputPlaceholder: "Search documentation..."
   });
 </script>
 ```
@@ -188,8 +183,7 @@ class ConditionalChatLoader {
   loadChat() {
     window.LuaPop.init({
       agentId: "conditional-agent",
-      position: "bottom-right",
-      theme: "light"
+      position: "bottom-right"
     });
   }
 }
@@ -216,7 +210,6 @@ function getAgentForPage() {
 window.LuaPop.init({
   agentId: getAgentForPage(),
   position: "bottom-right",
-  theme: "light",
   runtimeContext: `page:${window.location.pathname}`
 });
 ```
