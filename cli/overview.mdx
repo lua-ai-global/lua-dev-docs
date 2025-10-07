@@ -26,12 +26,15 @@ lua [options] [command]
 | `lua init` | 🚀 Project Setup | Initialize a new Lua skill project |
 | `lua env` | ⚙️ Configuration | Manage environment variables |
 | `lua persona` | 🤖 Configuration | Manage agent persona |
+| `lua resources` | 📚 Configuration | Manage agent knowledge base |
 | `lua compile` | 📦 Development | Compile skill to deployable format |
 | `lua test` | 💬 Testing | Test skill tools interactively |
 | `lua chat` | 💬 Testing | Interactive chat with your agent |
 | `lua push` | ☁️ Deployment | Push skill version to server |
 | `lua deploy` | 🚀 Deployment | Deploy version to production |
 | `lua production` | 🚀 Deployment | View and manage production environment |
+| `lua admin` | 🛠️ Utilities | Open admin dashboard in browser |
+| `lua docs` | 📖 Utilities | Open documentation in browser |
 
 ### Quick Examples
 
@@ -40,11 +43,14 @@ lua auth configure      # 🔑 Set up your API key
 lua init               # 🚀 Initialize a new project
 lua env                # ⚙️ Manage environment variables
 lua persona            # 🤖 Manage agent persona
+lua resources          # 📚 Manage knowledge base
 lua compile            # 📦 Compile your skills
 lua test               # 🧪 Test tools interactively
 lua chat               # 💬 Start interactive chat
 lua push               # ☁️ Push to server
 lua deploy             # 🚀 Deploy to production
+lua admin              # 🛠️ Open admin dashboard
+lua docs               # 📖 Open documentation
 ```
 
 <Note>
@@ -525,6 +531,13 @@ skill:
     href="/cli/production-command"
   >
     View and manage production
+  </Card>
+  <Card
+    title="Utility Commands"
+    icon="wrench"
+    href="/cli/utility-commands"
+  >
+    Admin dashboard and docs
   </Card>
   <Card
     title="Troubleshooting"

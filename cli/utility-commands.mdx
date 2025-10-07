@@ -1,0 +1,336 @@
+---
+title: "Utility Commands"
+description: "Quick access commands for admin interface and documentation"
+---
+
+## Overview
+
+Utility commands provide quick access to the Lua Admin interface and documentation in your browser.
+
+<CardGroup cols={2}>
+  <Card title="lua admin" icon="gauge">
+    Open admin dashboard
+  </Card>
+  <Card title="lua docs" icon="book">
+    Open documentation
+  </Card>
+</CardGroup>
+
+## lua admin
+
+Launch the Lua Admin interface in your default browser.
+
+```bash
+lua admin
+```
+
+### What It Opens
+
+The Lua Admin Dashboard provides complete control over your agent:
+
+**Conversations**
+- 💬 View conversations in real-time
+- 📝 Reply to user messages
+- 📊 Monitor conversation quality
+- 🔍 Search conversation history
+- 📈 Analyze user interactions
+
+**User Management**
+- 👥 Add users to your agent
+- ✏️ Edit user permissions
+- 🗑️ Remove users
+- 👀 View user activity
+- 📊 User analytics
+
+**API Keys**
+- 🔑 Generate new API keys
+- 👁️ View existing keys
+- 🗑️ Revoke keys
+- 📋 Copy keys for development
+- 🔒 Manage key permissions
+
+**Channel Connections**
+- 📱 WhatsApp integration
+- 📸 Instagram messaging
+- ✉️ Email integration
+- 👍 Facebook Messenger
+- 💬 Slack integration
+- 📞 SMS/Twilio
+- 🌐 Website chat widget
+- 🔗 Custom integrations
+
+**Billing & Subscription**
+- 💳 View current plan
+- 📊 Usage metrics
+- 💰 Billing history
+- 🔄 Update payment method
+- 📈 Upgrade/downgrade plan
+
+### Example
+
+```bash
+$ lua admin
+✓ Lua Admin Dashboard opened in your browser
+
+  Dashboard URL: https://admin.heylua.ai
+  Agent ID: agent-abc123
+  Organization ID: org-xyz789
+```
+
+### Requirements
+
+- Must be authenticated (`lua auth configure`)
+- Must be in a skill directory (has `lua.skill.yaml`)
+- Configuration must contain `agent.agentId` and `agent.orgId`
+
+### Use Cases
+
+<AccordionGroup>
+  <Accordion title="Monitor Conversations">
+    ```bash
+    $ lua admin
+    ```
+    
+    - View live conversations
+    - See how users interact with your agent
+    - Identify areas for improvement
+    - Take over conversations if needed
+  </Accordion>
+
+  <Accordion title="Manage Team Access">
+    ```bash
+    $ lua admin
+    ```
+    
+    - Add team members
+    - Set permissions (admin, developer, viewer)
+    - Manage API keys per user
+    - Control who can deploy
+  </Accordion>
+
+  <Accordion title="Connect Channels">
+    ```bash
+    $ lua admin
+    ```
+    
+    - Connect WhatsApp Business
+    - Set up Instagram messaging
+    - Configure email integration
+    - Add Slack workspace
+    - Enable Facebook Messenger
+  </Accordion>
+
+  <Accordion title="Review Analytics">
+    ```bash
+    $ lua admin
+    ```
+    
+    - View conversation metrics
+    - Check response times
+    - Monitor user satisfaction
+    - Track tool usage
+    - Analyze peak times
+  </Accordion>
+
+  <Accordion title="Manage Billing">
+    ```bash
+    $ lua admin
+    ```
+    
+    - Review usage this month
+    - Check billing history
+    - Update payment method
+    - Upgrade subscription
+    - Download invoices
+  </Accordion>
+</AccordionGroup>
+
+### Troubleshooting
+
+<AccordionGroup>
+  <Accordion title="Dashboard doesn't open">
+    **Check:**
+    1. Run `lua auth configure` to authenticate
+    2. Ensure `lua.skill.yaml` exists (`lua init`)
+    3. Verify agent ID is in config
+    
+    **Error:** "No API key found"
+    ```bash
+    $ lua auth configure
+    ```
+  </Accordion>
+
+  <Accordion title="Wrong agent displayed">
+    **Check:**
+    1. Verify you're in correct project directory
+    2. Check `agentId` in `lua.skill.yaml`
+    3. Switch to correct agent directory
+  </Accordion>
+
+  <Accordion title="Permission denied">
+    **Check:**
+    1. Verify you have admin access
+    2. Check with organization owner
+    3. Request proper permissions
+  </Accordion>
+</AccordionGroup>
+
+## lua docs
+
+Launch this documentation in your default browser.
+
+```bash
+lua docs
+```
+
+### What It Opens
+
+Opens the complete Lua documentation at https://docs.heylua.ai
+
+**Sections:**
+- 🏠 Overview and getting started
+- 📖 Key concepts (Persona, Skills, Tools, Resources)
+- ⌨️ All CLI commands
+- 📚 Complete API reference
+- 💼 11 production-ready demos
+- 💬 LuaPop chat widget guide
+
+### Example
+
+```bash
+$ lua docs
+✓ Lua Documentation opened in your browser
+
+  Documentation: https://docs.heylua.ai
+```
+
+### Requirements
+
+None - works from anywhere
+
+### Use Cases
+
+<AccordionGroup>
+  <Accordion title="Quick Reference">
+    ```bash
+    # Forgot a command syntax?
+    $ lua docs
+    # Navigate to CLI Commands
+    ```
+  </Accordion>
+
+  <Accordion title="API Lookup">
+    ```bash
+    # Need API method signature?
+    $ lua docs
+    # Go to API Reference
+    ```
+  </Accordion>
+
+  <Accordion title="Find Examples">
+    ```bash
+    # Need an example for your use case?
+    $ lua docs
+    # Check Demos section
+    ```
+  </Accordion>
+
+  <Accordion title="Share with Team">
+    ```bash
+    # Onboarding new developer?
+    $ lua docs
+    # Share the URL
+    ```
+  </Accordion>
+</AccordionGroup>
+
+### Keyboard Shortcut
+
+Add to your shell profile for even faster access:
+
+```bash
+# Add to ~/.zshrc or ~/.bashrc
+alias ld='lua docs'
+
+# Usage
+$ ld
+# Opens documentation instantly
+```
+
+## Quick Comparison
+
+| Command | Opens | Requires Auth | Use For |
+|---------|-------|---------------|---------|
+| `lua admin` | Admin dashboard | ✅ Yes | Managing agent, conversations, billing |
+| `lua docs` | Documentation | ❌ No | Reference, examples, learning |
+
+## Integration with Workflow
+
+### During Development
+
+```bash
+# Need API reference?
+$ lua docs
+# Check API section
+
+# Continue coding
+```
+
+### During Deployment
+
+```bash
+# Deploy skills
+$ lua push
+$ lua deploy
+
+# Check admin dashboard
+$ lua admin
+# Monitor conversations
+# Verify deployment working
+```
+
+### When Troubleshooting
+
+```bash
+# Issue with command
+$ lua docs
+# Search troubleshooting section
+
+# Check production state
+$ lua admin
+# View live conversations
+# Check for errors
+```
+
+## Next Steps
+
+<CardGroup cols={2}>
+  <Card
+    title="All CLI Commands"
+    icon="terminal"
+    href="/cli/overview"
+  >
+    Complete command reference
+  </Card>
+  <Card
+    title="Admin Features"
+    icon="gauge"
+    href="https://admin.heylua.ai"
+  >
+    Explore the admin dashboard
+  </Card>
+  <Card
+    title="Getting Started"
+    icon="rocket"
+    href="/getting-started/quick-start"
+  >
+    New to Lua? Start here
+  </Card>
+  <Card
+    title="Demos"
+    icon="layer-group"
+    href="/demos/overview"
+  >
+    11 production-ready solutions
+  </Card>
+</CardGroup>

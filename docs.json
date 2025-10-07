@@ -75,6 +75,7 @@
               "cli/persona-command",
               "cli/resources-command",
               "cli/production-command",
+              "cli/utility-commands",
               "cli/troubleshooting"
             ]
           },
