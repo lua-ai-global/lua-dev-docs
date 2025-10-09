@@ -221,6 +221,17 @@
         ]
       },
       {
+        "tab": "Integrations",
+        "groups": [
+          {
+            "group": "E-commerce",
+            "pages": [
+              "integrations/woocommerce"
+            ]
+          }
+        ]
+      },
+      {
         "tab": "Demos",
         "groups": [
           {
