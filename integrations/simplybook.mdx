@@ -1,0 +1,286 @@
+---
+title: "SimplyBook.me"
+description: "Connect your booking system with Lua AI agent"
+---
+
+## Overview
+
+### About SimplyBook.me
+
+**SimplyBook.me** is a powerful online booking and appointment scheduling system trusted by over 10,000 service-based businesses worldwide. From beauty salons and fitness studios to medical clinics and professional consultants, SimplyBook.me handles the complexity of appointment scheduling, payments, reminders, and customer management.
+
+### Automate Bookings with AI
+
+Integrate **Lua AI** with SimplyBook.me to give your customers an intelligent booking assistant that works 24/7. Instead of customers navigating your booking page alone, they chat with an AI agent that understands their needs, checks availability, and completes bookings instantly.
+
+**Why This Transforms Your Business:**
+- 📅 **More Bookings** - AI converts casual inquiries into confirmed appointments
+- ⏰ **24/7 Availability** - Book appointments even when you're closed
+- 💬 **Natural Conversations** - "I need a haircut tomorrow afternoon" → Done
+- 📱 **Multi-Channel Booking** - WhatsApp, Facebook, Instagram, Email, Website
+- ⚡ **Instant Confirmation** - No back-and-forth, immediate scheduling
+- 🔄 **Reduce No-Shows** - AI sends personalized reminders
+- 💰 **Upsell Services** - AI suggests additional services intelligently
+- 📊 **Fill Empty Slots** - AI proactively offers last-minute openings
+
+<CardGroup cols={2}>
+  <Card title="Appointment Scheduling" icon="calendar-check">
+    Complete booking management
+  </Card>
+  <Card title="API Integration" icon="plug">
+    Connect via official API
+  </Card>
+  <Card title="Multi-Industry" icon="briefcase">
+    Beauty, fitness, medical, professional
+  </Card>
+  <Card title="AI Booking Agent" icon="robot">
+    Conversational appointment scheduling
+  </Card>
+</CardGroup>
+
+## What SimplyBook.me Offers
+
+According to [SimplyBook.me](https://simplybook.me/en/):
+
+**Features:**
+- 📅 Online booking system
+- 📱 Client & Admin mobile apps
+- 💳 Payment processing (Stripe, PayPal, etc.)
+- 🔔 WhatsApp, SMS & Email notifications
+- 🌍 Multi-location support
+- 📊 Business analytics
+- 🔄 Calendar sync (Google, Outlook)
+- 🎨 Customizable booking websites
+
+**Perfect for:**
+- Beauty & Wellness
+- Sports & Fitness
+- Healthcare
+- Educational services
+- Events & Entertainment
+- Professional services
+- And more
+
+---
+
+## Prerequisites
+
+Before connecting to Lua, you need:
+
+1. **SimplyBook.me Account** - Active account at [simplybook.me](https://simplybook.me/en/)
+2. **Company Login** - Your unique SimplyBook.me identifier
+3. **API Access** - API custom feature enabled
+4. **API Key** - Generated from your account
+
+---
+
+## Setup Steps
+
+<Steps>
+  <Step title="Login to SimplyBook.me">
+    Go to [https://simplybook.me/en/](https://simplybook.me/en/) and log in to your account
+    
+    <Frame>
+      <img src="/images/integrations/simplybook-login.png" alt="SimplyBook.me login" />
+    </Frame>
+    
+    *Screenshot: SimplyBook.me login page*
+  </Step>
+  
+  <Step title="Access Account Info">
+    Hover over your account name (left menu) and select **Account Info**
+    
+    <Frame>
+      <img src="/images/integrations/simplybook-account-menu.png" alt="Account menu" />
+    </Frame>
+    
+    *Screenshot: Dropdown menu showing:*
+    - Account name
+    - Account Info (highlighted)
+    - Settings
+    - Logout
+  </Step>
+  
+  <Step title="Find Your Company Login">
+    On the Account Info page, locate your **Company Login**
+    
+    <Frame>
+      <img src="/images/integrations/simplybook-company-login.png" alt="Company login" />
+    </Frame>
+    
+    *Screenshot: Account Info page showing:*
+    - Company Login field (e.g., "yourcompany")
+    - This is your unique identifier
+    - Used in booking URL: yourcompany.simplybook.me
+    
+    <Note>
+    **Save your Company Login** - You'll need this for API integration with Lua
+    </Note>
+  </Step>
+  
+  <Step title="Enable API Custom Feature">
+    Navigate to: **Custom Features** tab
+    
+    Scroll down to find **API**
+    
+    Toggle it **ON** (if currently disabled)
+    
+    <Frame>
+      <img src="/images/integrations/simplybook-enable-api.png" alt="Enable API" />
+    </Frame>
+    
+    *Screenshot: Custom Features page showing:*
+    - List of custom features
+    - API toggle switch
+    - Toggle in OFF state (before)
+    - Toggle in ON state (after)
+  </Step>
+  
+  <Step title="Generate API Key">
+    If you don't have an API key yet:
+    
+    1. Find the API key section
+    2. Click **Generate New API Key**
+    3. Copy the generated key
+    
+    <Frame>
+      <img src="/images/integrations/simplybook-generate-api-key.png" alt="Generate API key" />
+    </Frame>
+    
+    *Screenshot: API key generation interface showing:*
+    - "Generate New API Key" button
+    - Generated key display (partially masked)
+    - Copy button
+    
+    <Warning>
+    **Save your API key securely!** You'll need this to integrate with Lua. This key provides access to your booking system.
+    </Warning>
+  </Step>
+</Steps>
+
+---
+
+## SimplyBook.me API Capabilities
+
+Your Lua agent can use the SimplyBook.me API to:
+
+<CardGroup cols={2}>
+  <Card title="Check Availability" icon="calendar-check">
+    View available appointment slots
+  </Card>
+  <Card title="Create Bookings" icon="plus">
+    Schedule appointments
+  </Card>
+  <Card title="Manage Bookings" icon="pen">
+    Update or cancel appointments
+  </Card>
+  <Card title="Customer Info" icon="user">
+    Access client data
+  </Card>
+  <Card title="Service Details" icon="info">
+    Get service information
+  </Card>
+  <Card title="Provider Schedule" icon="clock">
+    Check staff availability
+  </Card>
+</CardGroup>
+
+## Common Use Cases
+
+### Appointment Booking Agent
+
+```typescript
+// Tools your agent can use:
+- search_services: Find available services
+- check_availability: Show open time slots
+- create_booking: Schedule appointment
+- get_booking: Check booking details
+- cancel_booking: Cancel appointment
+- reschedule_booking: Change appointment time
+```
+
+**Example conversation:**
+```
+User: "I need a haircut appointment"
+
+Agent: "I can help you book a haircut! 
+        What day works best for you?"
+
+User: "Tomorrow afternoon"
+
+Agent: [Calls check_availability]
+       "Here are available times tomorrow afternoon:
+       - 2:00 PM
+       - 3:30 PM
+       - 4:00 PM
+       
+       Which time would you prefer?"
+
+User: "2:00 PM"
+
+Agent: [Calls create_booking]
+       "Perfect! Your haircut is booked for tomorrow at 2:00 PM.
+       You'll receive a confirmation via email."
+```
+
+---
+
+## Industries Supported
+
+SimplyBook.me works across [many industries](https://simplybook.me/en/):
+
+<Tabs>
+  <Tab title="Beauty & Wellness">
+    - Hair salons
+    - Spa & massage
+    - Nail salons
+    - Barber shops
+    - Beauty services
+  </Tab>
+
+  <Tab title="Health & Medical">
+    - Medical clinics
+    - Dental offices
+    - Physiotherapy
+    - Mental health
+    - Wellness centers
+  </Tab>
+
+  <Tab title="Sports & Fitness">
+    - Personal training
+    - Yoga studios
+    - Gyms
+    - Sports coaching
+    - Fitness classes
+  </Tab>
+
+  <Tab title="Professional">
+    - Consulting
+    - Legal services
+    - Financial advisors
+    - Coaching
+    - Photography
+  </Tab>
+
+  <Tab title="Other">
+    - Education & tutoring
+    - Events & entertainment
+    - Pet services
+    - Home services
+    - And more
+  </Tab>
+</Tabs>
+
+---
+
+## Next Steps
+
+<CardGroup cols={2}>
+  <Card
+    title="SimplyBook.me Account"
+    icon="external-link"
+    href="https://simplybook.me/en/"
+  >
+    Create account if you don't have one
+  </Card>
+</CardGroup>

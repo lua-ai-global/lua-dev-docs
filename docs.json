@@ -229,6 +229,12 @@
               "integrations/shopify",
               "integrations/woocommerce"
             ]
+          },
+          {
+            "group": "Booking Systems",
+            "pages": [
+              "integrations/simplybook"
+            ]
           }
         ]
       },
