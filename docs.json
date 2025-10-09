@@ -226,6 +226,7 @@
           {
             "group": "E-commerce",
             "pages": [
+              "integrations/shopify",
               "integrations/woocommerce"
             ]
           }
