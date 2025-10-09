@@ -1,0 +1,575 @@
+---
+title: "Square"
+description: "Connect Square Appointments with your AI booking assistant"
+---
+
+## Overview
+
+### About Square Appointments
+
+**Square Appointments** is the leading booking and scheduling system trusted by thousands of service-based businesses worldwide. From beauty salons and fitness studios to medical clinics and professional consultants, Square Appointments handles appointment scheduling, staff management, customer communications, and payments - all in one platform.
+
+### Automate Bookings with AI
+
+Integrate **Lua AI** with Square Appointments to give your customers an intelligent booking assistant that works 24/7. Instead of customers navigating your booking page alone, they chat with an AI agent that understands their needs, checks availability, and completes bookings instantly across any channel.
+
+**Why This Transforms Your Business:**
+
+- 📅 **More Bookings** - AI converts casual inquiries into confirmed appointments
+- ⏰ **24/7 Availability** - Book appointments even when you're closed
+- 💬 **Natural Conversations** - "I need a haircut tomorrow afternoon" → Done
+- 📱 **Multi-Channel Booking** - WhatsApp, Facebook, Instagram, Email, Website
+- ⚡ **Instant Confirmation** - No back-and-forth, immediate scheduling
+- 🔄 **Reduce No-Shows** - AI sends personalized reminders
+- 💰 **Upsell Services** - AI suggests additional services intelligently
+- 📊 **Fill Empty Slots** - AI proactively offers last-minute openings
+
+<CardGroup cols={2}>
+  <Card title="Complete Booking System" icon="calendar-check">
+    Full appointment management
+  </Card>
+  <Card title="5-Minute Setup" icon="bolt">
+    OAuth integration, zero configuration
+  </Card>
+  <Card title="Multi-Industry" icon="briefcase">
+    Beauty, fitness, medical, professional
+  </Card>
+  <Card title="AI Booking Agent" icon="robot">
+    Conversational appointment scheduling
+  </Card>
+</CardGroup>
+
+## What Square Appointments Offers
+
+According to [Square](https://squareup.com/us/en):
+
+**Appointment Features:**
+
+- 📅 **Online Booking** - 24/7 self-service scheduling
+- 📱 **Mobile Apps** - Client and staff apps
+- 💳 **Payment Processing** - Take deposits or full payment
+- 🔔 **SMS & Email Reminders** - Automated notifications
+- 👥 **Staff Management** - Schedule multiple team members
+- 🌍 **Multi-Location** - Handle multiple business locations
+- 📊 **Analytics** - Booking insights and reports
+- 🔄 **Calendar Sync** - Google, Outlook integration
+
+**Perfect for:**
+
+- 💅 Beauty & Wellness (salons, spas, barbershops)
+- 🏋️ Sports & Fitness (gyms, trainers, studios)
+- 🏥 Healthcare (clinics, therapy, wellness)
+- 💼 Professional Services (consulting, coaching, legal)
+- 🐕 Pet Services (grooming, training, veterinary)
+- 🏠 Home Services (cleaning, repairs, landscaping)
+
+---
+
+## Prerequisites
+
+Before connecting Square to Lua:
+
+1. **Active Square Account** - Sign up at [squareup.com](https://squareup.com)
+
+<Note>
+  Square Appointments is included with Square Plus ($29/month) or higher plans.
+  The free plan has limited appointment features.
+</Note>
+
+<Warning>
+**Important: Email Linking**
+
+When you connect Square to Lua, your admin account will be automatically linked to an email address from your Square business. The system searches for an email in this priority order:
+
+1. **Owner Email** - The merchant owner's email address
+2. **Business Email** - Your main location's business email
+3. **Team Member Email** - The first team member with owner role
+
+Make sure at least one of these emails is valid and accessible, as you'll use it to access your Lua admin dashboard.
+
+</Warning>
+
+---
+
+## Integration Setup
+
+<Steps>
+  <Step title="Navigate to Lua Square Auth">
+    Open your browser and go to:
+    **[https://auth.heylua.ai/square/auth](https://auth.heylua.ai/square/auth)**
+    
+    <Note>
+      This secure OAuth flow connects your Square account to Lua without sharing
+      your password.
+    </Note>
+  </Step>
+
+<Step title="Sign In to Square">
+  Click **"Sign in with Square"** or **"Continue with Square"** Enter your
+  Square account credentials: - Email address - Password - (Two-factor
+  authentication if enabled)
+  <Frame>
+    <img
+      src="/images/integrations/square-sign-in.png"
+      alt="Square login form"
+    />
+  </Frame>
+  *Screenshot: Square login form showing email and password fields*
+  <Tip>
+    Using Square with multiple businesses? Don't worry - you'll select which one
+    to connect in the next step.
+  </Tip>
+</Step>
+
+<Step title="Select Your Business (If Applicable)">
+  If your Square account manages multiple businesses, you'll see a selection
+  screen. Choose the business you want to connect to your Lua agent.
+  <Frame>
+    <img
+      src="/images/integrations/square-select-business.png"
+      alt="Select Square business"
+    />
+  </Frame>
+  *Screenshot: Business selection screen showing multiple Square
+  locations/businesses*
+  <Note>
+    **Managing multiple businesses?** You can connect different Lua agents to
+    different Square locations. Just repeat this process for each agent/business
+    combination.
+  </Note>
+</Step>
+
+<Step title="Grant Permissions">
+  Square will display the permissions that Lua needs to function. 
+  
+  **Lua requires access to:** 
+    * 📅 Appointments (for booking management)
+    * 👥 Staff (for team member availability)
+    * 👤 Customer Info (for personalized service)
+    * 💳 Payments (for booking deposits)
+    
+  Review the permissions and click **"Allow"** or **"Authorize"**
+  <Frame>
+    <img
+      src="/images/integrations/square-give-permissions.png"
+      alt="Square permissions screen"
+    />
+  </Frame>
+  *Screenshot: Square OAuth permission screen listing required access scopes
+  with "Allow" button*
+  <Warning>
+    **About Permissions**: Lua only requests the minimum permissions needed to
+    help your customers. Your payment details and sensitive business data remain
+    secure with Square.
+  </Warning>
+</Step>
+
+  <Step title="Integration Complete!">
+    You'll be redirected to your **Lua Admin Dashboard** Your Square integration
+    is now active and ready to use!
+    <Frame>
+      <img
+        src="/images/integrations/square-lua-dashboard.png"
+        alt="Lua admin dashboard"
+      />
+    </Frame>
+    *Screenshot: Lua admin dashboard showing successful Square integration*
+    <Check>
+      **Success!** Your Lua agent can now access your Square Appointments,
+      availability, and booking data in real-time.
+    </Check>
+  </Step>
+</Steps>
+
+---
+
+## What Your Agent Can Do
+
+With Square Appointments integration, your AI agent becomes a powerful booking assistant:
+
+<CardGroup cols={2}>
+  <Card title="Check Availability" icon="calendar-check">
+    View open appointment slots
+  </Card>
+  <Card title="Book Appointments" icon="calendar-plus">
+    Schedule services instantly
+  </Card>
+  <Card title="Service Details" icon="clipboard-list">
+    Pricing, duration, staff info
+  </Card>
+  <Card title="Staff Selection" icon="user-tie">
+    Choose specific providers
+  </Card>
+  <Card title="View Bookings" icon="list">
+    Check customer appointment history
+  </Card>
+  <Card title="Multi-Service" icon="layer-group">
+    Book multiple services at once
+  </Card>
+  <Card title="Location Support" icon="map-location-dot">
+    Handle multiple business locations
+  </Card>
+  <Card title="Booking Policies" icon="file-contract">
+    Communicate cancellation rules
+  </Card>
+</CardGroup>
+
+<Note>
+  **Current Limitation**: The AI agent can check availability and search for
+  rescheduling options, but cannot finalize rescheduling or cancel existing
+  bookings. Customers will need to manage changes through Square or contact you
+  directly.
+</Note>
+
+---
+
+## Use Cases by Industry
+
+<Tabs>
+  <Tab title="💅 Beauty & Wellness">
+    **Perfect for: Hair Salons, Nail Salons, Spas, Barbershops, Med Spas**
+    
+    Automated appointment booking:
+    - "I need a haircut tomorrow afternoon"
+    - Check stylist availability
+    - Book specific services
+    - View appointment history
+    - Upsell complementary services
+    
+    **Example Conversation:**
+    ```
+    Customer: "Can I get a haircut and color this week?"
+    
+    Agent: [Checks Square Appointments]
+           "I can help you book both services! 
+           We have availability:
+           - Thursday 2:00 PM (with Sarah)
+           - Friday 10:00 AM (with Mike)
+           - Saturday 11:30 AM (with Sarah)
+           
+           Which time works best for you?"
+    
+    Customer: "Thursday at 2 with Sarah"
+    
+    Agent: [Books appointment]
+           "Perfect! You're all set for Thursday at 2:00 PM.
+           Haircut & Color with Sarah - 2.5 hours - $150
+           You'll receive a confirmation text shortly."
+    ```
+  </Tab>
+
+<Tab title="🏋️ Fitness & Training">
+  **Perfect for: Personal Trainers, Yoga Studios, Gyms, Sports Coaching**
+  Streamline class and session booking: - Check trainer availability - Book
+  individual or group sessions - Explain class types and levels - Handle
+  recurring appointments - Manage waitlists **Example Conversation:** ```
+  Customer: "I want to try yoga, never done it before" Agent: [Searches
+  services] "Great! We have beginner-friendly classes: - Intro to Yoga (60 min)
+  - $25 - Gentle Flow (45 min) - $20 - Private Beginner Session (60 min) - $75 I
+  recommend starting with Intro to Yoga. We have classes Monday, Wednesday,
+  Friday at 6 PM." Customer: "Book me for Monday at 6" Agent: [Books class]
+  "You're booked! Monday 6 PM - Intro to Yoga Wear comfortable clothes and bring
+  water. See you there!" ```
+</Tab>
+
+<Tab title="🏥 Healthcare & Wellness">
+  **Perfect for: Medical Clinics, Therapy, Physiotherapy, Wellness Centers**
+  Professional appointment management: - Book consultations and treatments -
+  Check provider availability - Explain services and procedures - Handle new
+  patient intake - Provide appointment preparation info **Example
+  Conversation:** ``` Customer: "I need a physical therapy appointment for my
+  knee" Agent: [Checks availability] "I can help you schedule physical therapy.
+  First appointment includes: - Initial assessment (45 min) - $120 - Treatment
+  plan discussion Available times this week: - Tuesday 9:00 AM (Dr. Johnson) -
+  Wednesday 2:30 PM (Dr. Smith) - Friday 10:00 AM (Dr. Johnson) Which works for
+  you?" Customer: "Tuesday at 9" Agent: [Books appointment] "Booked! Tuesday
+  9:00 AM with Dr. Johnson Please arrive 10 minutes early to complete paperwork.
+  Confirmation sent to your email." ```
+</Tab>
+
+  <Tab title="💼 Professional Services">
+    **Perfect for: Consulting, Coaching, Legal Services, Financial Advisors**
+    
+    Intelligent consultation scheduling:
+    - Book discovery calls
+    - Schedule follow-up meetings
+    - Check consultant availability
+    - Explain service packages
+    - Handle virtual and in-person appointments
+    
+    **Example Conversation:**
+    ```
+    Customer: "I need a consultation about my business taxes"
+    
+    Agent: [Retrieves services]
+           "I can schedule a tax consultation.
+           
+           Options:
+           - 30-min Discovery Call (Free)
+           - 60-min Tax Consultation - $200
+           - 90-min Comprehensive Review - $300
+           
+           I recommend starting with the Discovery Call.
+           Virtual or in-person?"
+    
+    Customer: "Virtual discovery call"
+    
+    Agent: [Shows availability]
+           "Great choice! Available times:
+           - Today 4:00 PM
+           - Tomorrow 10:00 AM
+           - Tomorrow 3:00 PM"
+    
+    Customer: "Tomorrow at 10"
+    
+    Agent: [Books appointment]
+           "Perfect! Discovery Call tomorrow at 10:00 AM.
+           Video link will be sent before the meeting.
+           Looking forward to helping you!"
+    ```
+  </Tab>
+</Tabs>
+
+---
+
+## Multi-Channel Booking
+
+Square Appointments integration works across all Lua channels:
+
+<CardGroup cols={2}>
+  <Card title="Website Chat" icon="globe" href="/chat-widget/introduction">
+    Embedded booking widget
+  </Card>
+  <Card title="WhatsApp" icon="whatsapp" href="/channels/whatsapp">
+    Book via WhatsApp Business
+  </Card>
+  <Card title="Instagram" icon="instagram" href="/channels/instagram">
+    Scheduling through Instagram DMs
+  </Card>
+  <Card title="Facebook" icon="facebook" href="/channels/facebook-messenger">
+    Messenger booking experience
+  </Card>
+</CardGroup>
+
+**One booking system. Multiple booking channels. All managed by AI.**
+
+---
+
+## Disconnecting Square Integration
+
+If you need to disconnect Lua from your Square account:
+
+<Steps>
+  <Step title="Open Square Dashboard">
+    Log into your Square account at [squareup.com](https://squareup.com)
+  </Step>
+
+<Step title="Navigate to App Integrations">
+  Click on **Settings** in the left sidebar Select **App Integrations** from the
+  settings menu
+  <Frame>
+    <img
+      src="/images/integrations/square-disconnect-lua.png"
+      alt="Square app integrations"
+    />
+  </Frame>
+  *Screenshot: Square Settings showing App Integrations section with Lua
+  Assistant listed*
+</Step>
+
+<Step title="Find Lua Assistant">
+  Scroll through your connected apps to find **"Lua Assistant"** or **"Lua"**
+</Step>
+
+  <Step title="Disconnect App">
+    Click the **three dots (⋮)** on the right side of the Lua Assistant row
+    Select **"Disconnect App"** from the dropdown menu Confirm the disconnection
+    when prompted
+    <Warning>
+      **This will immediately stop your Lua agent from accessing Square data.**
+      Your agent will no longer be able to check availability or book
+      appointments.
+    </Warning>
+  </Step>
+</Steps>
+
+<Note>
+  **Want to reconnect?** Just go through the [integration
+  setup](#integration-setup) process again. All your Lua agent configuration is
+  preserved.
+</Note>
+
+---
+
+## Real-World Examples
+
+<Tabs>
+  <Tab title="Hair Salon">
+    **Luxe Hair Studio**
+    
+    "We switched to Square Appointments last year, and Lua automates 80% of our bookings now. Clients text our WhatsApp number like 'I need a haircut Thursday afternoon' and the AI books them in seconds. It even suggests add-on services like 'Would you like a deep conditioning treatment?' We've seen a 25% increase in service upgrades."
+    
+    **What they book:** Haircuts, coloring, treatments
+    **Channels:** WhatsApp, Website widget
+  </Tab>
+
+<Tab title="Fitness Studio">
+  **Core Strength Yoga** "Square Appointments manages our class schedule, and
+  Lua makes booking effortless. Students message us on Instagram, and the AI
+  shows them available classes, explains what each class offers, and books them
+  instantly. No more back-and-forth emails. Our class attendance is up 45% since
+  adding Lua." **What they book:** Yoga classes, private sessions, workshops
+  **Channels:** Instagram, Facebook, Website
+</Tab>
+
+  <Tab title="Medical Clinic">
+    **Wellness First Clinic**
+    
+    "Patient scheduling used to overwhelm our front desk. Now, Lua handles appointment booking 24/7 through our website and SMS. The AI understands 'I need a follow-up with Dr. Smith' and books the right appointment type. Our staff focuses on patient care instead of phone calls. Booking efficiency improved 60%."
+    
+    **What they book:** Consultations, treatments, follow-ups
+    **Channels:** Website widget, SMS integration
+  </Tab>
+</Tabs>
+
+---
+
+## Troubleshooting
+
+<AccordionGroup>
+  <Accordion title="Integration failed or shows error">
+    **Common causes:**
+    1. **Square account not fully set up** - Ensure you've completed Square onboarding
+    2. **Appointments not enabled** - Upgrade to Square Plus or Premium
+    3. **Missing permissions** - Try disconnecting and reconnecting with all permissions granted
+    4. **Browser issues** - Clear cache or try a different browser
+    
+    **Solution:** Start the integration process again at [auth.heylua.ai/square/auth](https://auth.heylua.ai/square/auth)
+  </Accordion>
+
+<Accordion title="Appointments not showing availability">
+  **Verify:** 1. Square Appointments is enabled in your Square account 2.
+  Services are set up with duration and pricing 3. Staff members have
+  availability hours configured 4. Booking permissions were granted during
+  integration 5. Location has operating hours set **Note:** Square free plan has
+  limited appointment features
+</Accordion>
+
+<Accordion title="No staff members showing up">
+  **Check:** 1. Staff have booking profiles in Square Appointments 2. Team
+  members are assigned to services 3. Staff availability hours are set 4. Staff
+  are enabled at the relevant location **Fix:** Configure in Square Dashboard →
+  Team → Booking Profiles
+</Accordion>
+
+<Accordion title="Can't book specific services">
+  **Verify:** 1. Service is marked as bookable in Square 2. Service has proper
+  duration and pricing set 3. At least one team member is assigned to the
+  service 4. Service is available at the selected location **Solution:** Check
+  Square Dashboard → Appointments → Services
+</Accordion>
+
+  <Accordion title="Booking confirmation not received">
+    **Check:**
+    1. Customer email/phone is correct in Square
+    2. Notification settings enabled in Square
+    3. Check spam/junk folders
+    4. Square SMS credits available (if using SMS)
+    5. Email not blocklisted
+    
+    **Note:** Confirmations are sent by Square, not Lua
+  </Accordion>
+</AccordionGroup>
+
+---
+
+## Best Practices
+
+<AccordionGroup>
+  <Accordion title="Configure Services Clearly">
+    **For booking businesses:**
+    
+    - ✅ Accurate service duration (include buffer time)
+    - ✅ Clear service names ("Women's Haircut" not just "Haircut")
+    - ✅ Detailed descriptions
+    - ✅ Proper pricing
+    - ✅ Staff availability accurately set
+    - ✅ Booking windows configured
+    
+    **Example:** Instead of "Basic Package" use "Basic Facial - 60 minutes"
+  </Accordion>
+
+<Accordion title="Set Smart Booking Policies">
+  **Configure in Square Appointments:** - Minimum lead time for bookings -
+  Maximum advance booking time - Cancellation policy and deadlines - Buffer time
+  between appointments - Booking deposit requirements **Why:** AI will
+  communicate these policies to customers automatically
+</Accordion>
+
+<Accordion title="Optimize Staff Schedules">
+  **Best practices:** - Set realistic availability blocks - Include break times
+  - Configure time off in advance - Assign services to appropriate staff -
+  Enable multiple staff per service when possible **Result:** More available
+  slots for customers to book
+</Accordion>
+
+<Accordion title="Monitor Booking Patterns">
+  **Track performance:** 1. **In Lua Admin:** - Booking conversion rates - Most
+  requested services - Popular time slots - Drop-off points 2. **In Square
+  Dashboard:** - No-show rates - Utilization rates - Revenue per appointment -
+  Customer retention 3. **Optimize:** - Adjust availability based on demand -
+  Promote underbooked time slots - Refine service descriptions
+</Accordion>
+</AccordionGroup>
+
+---
+
+## Pricing & Square Plans
+
+Square Appointments features by plan:
+
+- ❌ **Square Free** - Limited appointment features
+- ✅ **Square Plus** ($29/month) - Full Appointments features ⭐ Recommended
+- ✅ **Square Premium** ($69+/month) - Multi-location, advanced features
+
+<Tip>
+  **For Lua integration to work fully**, you need Square Plus or higher. This
+  includes full appointment booking, staff management, and automated reminders.
+</Tip>
+
+Learn more about [Square pricing](https://squareup.com/us/en/pricing)
+
+---
+
+## Next Steps
+
+<CardGroup cols={2}>
+  <Card
+    title="Connect Square Now"
+    icon="square"
+    href="https://auth.heylua.ai/square/auth"
+  >
+    Start integration in 5 minutes
+  </Card>
+  <Card
+    title="Configure Channels"
+    icon="broadcast-tower"
+    href="/channels/introduction"
+  >
+    Add WhatsApp, Instagram, Facebook
+  </Card>
+  <Card title="Configure Agent" icon="robot" href="/cli/persona-command">
+    Set up booking assistant personality
+  </Card>
+  <Card title="Test Your Agent" icon="comments" href="/cli/chat-command">
+    Test booking flows locally
+  </Card>
+</CardGroup>
+
+---
+
+<Card title="Need Help?" icon="question-circle">
+  Having trouble with Square Appointments integration? Email us at
+  **support@heylua.ai** or check the [troubleshooting section](#troubleshooting)
+  above.
+</Card>
