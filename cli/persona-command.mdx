@@ -8,8 +8,15 @@ description: "Manage your AI agent's personality and behavior"
 The `lua persona` command manages your AI agent's personality, behavior, and response style with separate workflows for sandbox and production environments.
 
 ```bash
-lua persona
+lua persona                # Interactive: choose environment
+lua persona sandbox        # Direct: manage sandbox persona
+lua persona staging        # Direct: alias for sandbox
+lua persona production     # Direct: deploy persona version
 ```
+
+<Note>
+**New in v2.6.0:** Direct environment access lets you skip the selection prompt for faster workflows!
+</Note>
 
 <CardGroup cols={2}>
   <Card title="Sandbox Mode" icon="flask">
@@ -26,17 +33,54 @@ lua persona
   </Card>
 </CardGroup>
 
-## Complete Workflow
+## Usage Modes
+
+<Tabs>
+  <Tab title="Interactive Mode">
+    **Default behavior - prompts for environment**
+    
+    ```bash
+    $ lua persona
+    ? Select environment:
+      › 🔧 Sandbox (edit and test)
+        🚀 Production (view and deploy versions)
+    ```
+    
+    Best for: When you're exploring options
+  </Tab>
+
+  <Tab title="Direct Mode - Sandbox">
+    **Skip prompt and go straight to sandbox**
+    
+    ```bash
+    $ lua persona sandbox
+    # No prompt - opens sandbox menu immediately
+    ```
+    
+    Best for: Quick edits during development
+  </Tab>
+
+  <Tab title="Direct Mode - Production">
+    **Skip prompt and go straight to production**
+    
+    ```bash
+    $ lua persona production
+    # No prompt - opens production menu immediately
+    ```
+    
+    Best for: Fast deployments, automation
+  </Tab>
+</Tabs>
+
+##Complete Workflow
 
 <Steps>
   <Step title="Edit in Sandbox">
     ```bash
-    lua persona
+    lua persona sandbox
     ```
     
-    Select Sandbox → Edit persona
-    
-    Opens your editor with current persona
+    Select "Edit persona" → Opens your editor with current persona
   </Step>
   
   <Step title="Test with Chat">
@@ -49,22 +93,18 @@ lua persona
   
   <Step title="Create Version">
     ```bash
-    lua persona
+    lua persona sandbox
     ```
     
-    Select Sandbox → Create version
-    
-    Uploads persona as new version
+    Select "Create version" → Uploads persona as new version
   </Step>
   
   <Step title="Deploy to Production">
     ```bash
-    lua persona
+    lua persona production
     ```
     
-    Select Production → Deploy persona version
-    
-    Choose version and confirm deployment
+    Select "Deploy persona version" → Choose version and confirm deployment
   </Step>
 </Steps>
 

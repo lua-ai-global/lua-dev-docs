@@ -31,10 +31,10 @@ await user.update({ name: "John Doe" });
     Removes sensitive fields automatically
   </Card>
   <Card title="Built-in Methods" icon="wrench">
-    `update()` and `clear()` included
+    `update()`, `save()`, `send()`, and `clear()` included
   </Card>
-  <Card title="Type-Safe" icon="code">
-    Full TypeScript support
+  <Card title="Messaging" icon="message">
+    Send text, images, and files to users
   </Card>
 </CardGroup>
 
@@ -132,6 +132,107 @@ await user.update({
 console.log(user.name);  // "John Doe"
 console.log(user.preferences.theme);  // "dark"
 ```
+
+### save()
+
+Save the current state of user data to the server. This is a convenience method that persists all changes made to the user instance.
+
+```typescript
+user.save(): Promise<boolean>
+```
+
+**Returns:** Promise resolving to `true` if successful
+
+**Examples:**
+
+```typescript
+const user = await User.get();
+
+// Modify properties
+user.name = "John Doe";
+user.email = "john@example.com";
+user.phone = "555-1234";
+
+// Save all changes at once
+await user.save();
+
+// Much cleaner than multiple update calls!
+```
+
+<Note>
+**New in Latest Version:** The `save()` method provides a simpler workflow - modify properties then save, rather than passing data to `update()`.
+</Note>
+
+### send()
+
+Send messages to the user conversation. Supports text, images, and file attachments.
+
+```typescript
+user.send(messages: Message[]): Promise<any>
+```
+
+<ParamField path="messages" type="Message[]" required>
+  Array of messages to send (text, image, or file)
+</ParamField>
+
+**Message Types:**
+
+```typescript
+// Text message
+type TextMessage = {
+  type: "text";
+  text: string;
+};
+
+// Image message
+type ImageMessage = {
+  type: "image";
+  image: string;      // Base64 encoded image data
+  mimeType: string;   // e.g., "image/png", "image/jpeg"
+};
+
+// File message
+type FileMessage = {
+  type: "file";
+  data: string;       // Base64 encoded file data
+  mimeType: string;   // e.g., "application/pdf"
+};
+```
+
+**Examples:**
+
+```typescript
+const user = await User.get();
+
+// Send a text message
+await user.send([
+  { type: "text", text: "Your order has been shipped!" }
+]);
+
+// Send multiple messages
+await user.send([
+  { type: "text", text: "Here is your receipt:" },
+  { 
+    type: "image", 
+    image: base64ImageData, 
+    mimeType: "image/png" 
+  }
+]);
+
+// Send a file
+await user.send([
+  { type: "text", text: "Your invoice is attached:" },
+  {
+    type: "file",
+    data: base64PdfData,
+    mimeType: "application/pdf"
+  }
+]);
+```
+
+<Note>
+**New in Latest Version:** Send proactive messages to users for notifications, updates, and automated workflows.
+</Note>
 
 ### clear()
 
@@ -331,6 +432,95 @@ export class GreetUserTool implements LuaTool {
 }
 ```
 
+### Example 5: Order Notification with Messaging
+
+```typescript
+export class SendOrderNotificationTool implements LuaTool {
+  name = "send_order_notification";
+  description = "Send order status notification to user";
+  
+  inputSchema = z.object({
+    orderId: z.string(),
+    status: z.enum(['shipped', 'delivered']),
+    trackingNumber: z.string().optional(),
+    receiptUrl: z.string().optional()
+  });
+
+  async execute(input: z.infer<typeof this.inputSchema>, context: ToolContext) {
+    const user = context.user;
+    
+    // Build notification message
+    const messages = [
+      {
+        type: "text" as const,
+        text: `Hi ${user.name}! Your order #${input.orderId} has been ${input.status}.`
+      }
+    ];
+    
+    // Add tracking info if shipped
+    if (input.status === 'shipped' && input.trackingNumber) {
+      messages.push({
+        type: "text" as const,
+        text: `Tracking number: ${input.trackingNumber}`
+      });
+    }
+    
+    // Send messages to user
+    await user.send(messages);
+    
+    // Update user's notification preferences
+    user.lastNotificationSent = new Date().toISOString();
+    await user.save();
+    
+    return {
+      success: true,
+      message: "Notification sent successfully"
+    };
+  }
+}
+```
+
+### Example 6: Send Receipt with Image
+
+```typescript
+export class SendReceiptTool implements LuaTool {
+  name = "send_receipt";
+  description = "Send order receipt with QR code";
+  
+  inputSchema = z.object({
+    orderId: z.string(),
+    amount: z.number(),
+    qrCodeBase64: z.string()
+  });
+
+  async execute(input: z.infer<typeof this.inputSchema>, context: ToolContext) {
+    const user = context.user;
+    
+    // Send receipt with QR code
+    await user.send([
+      {
+        type: "text",
+        text: `Thank you for your order! Total: $${input.amount.toFixed(2)}`
+      },
+      {
+        type: "text",
+        text: "Here's your receipt QR code for easy access:"
+      },
+      {
+        type: "image",
+        image: input.qrCodeBase64,
+        mimeType: "image/png"
+      }
+    ]);
+    
+    return {
+      success: true,
+      message: "Receipt sent to user"
+    };
+  }
+}
+```
+
 ## Best Practices
 
 <AccordionGroup>
@@ -385,19 +575,60 @@ export class GreetUserTool implements LuaTool {
     ```
   </Accordion>
 
-  <Accordion title="⚠️ Remember to Call update()">
-    Setting properties locally doesn't persist:
+  <Accordion title="✅ Use save() for Multiple Changes">
+    The new `save()` method is perfect for multiple changes:
     
     ```typescript
-    // ❌ Won't persist
-    user.name = "John";
+    // ✅ Recommended - Modify then save
+    user.name = "John Doe";
+    user.email = "john@example.com";
+    user.preferences = { theme: "dark" };
+    await user.save();
     
-    // ✅ Persists to server
-    user.name = "John";
-    await user.update({ name: user.name });
+    // 🟡 Still works - Update method
+    await user.update({
+      name: "John Doe",
+      email: "john@example.com",
+      preferences: { theme: "dark" }
+    });
+    ```
+  </Accordion>
+
+  <Accordion title="✅ Use send() for Proactive Notifications">
+    Send messages to users for order updates, alerts, and more:
     
-    // ✅ Better: Update directly
-    await user.update({ name: "John" });
+    ```typescript
+    // Send order shipped notification
+    await user.send([
+      { type: "text", text: "Your order has been shipped!" },
+      { type: "text", text: "Tracking: TRACK123456" }
+    ]);
+    
+    // Send with image
+    await user.send([
+      { type: "text", text: "Your boarding pass:" },
+      { type: "image", image: qrCodeBase64, mimeType: "image/png" }
+    ]);
+    ```
+  </Accordion>
+
+  <Accordion title="⚠️ Message Format Requirements">
+    Ensure correct message format:
+    
+    ```typescript
+    // ✅ Correct
+    await user.send([
+      { type: "text", text: "Hello!" }
+    ]);
+    
+    // ✅ Multiple messages
+    await user.send([
+      { type: "text", text: "Message 1" },
+      { type: "text", text: "Message 2" }
+    ]);
+    
+    // ❌ Wrong - Must be array
+    await user.send({ type: "text", text: "Hello!" });
     ```
   </Accordion>
 </AccordionGroup>
@@ -414,9 +645,31 @@ interface UserDataInstance {
   
   // Methods
   update(data: Record<string, any>): Promise<any>;
+  save(): Promise<boolean>;
+  send(messages: Message[]): Promise<any>;
   clear(): Promise<boolean>;
   toJSON(): Record<string, any>;
 }
+
+// Message types
+type TextMessage = {
+  type: "text";
+  text: string;
+};
+
+type ImageMessage = {
+  type: "image";
+  image: string;
+  mimeType: string;
+};
+
+type FileMessage = {
+  type: "file";
+  data: string;
+  mimeType: string;
+};
+
+type Message = TextMessage | ImageMessage | FileMessage;
 ```
 
 ### Usage with Types

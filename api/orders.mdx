@@ -24,6 +24,7 @@ console.log(order.items);        // Array of items
 // Instance methods
 await order.updateStatus(OrderStatus.FULFILLED);
 await order.update({ trackingNumber: 'ABC123' });
+await order.save();
 
 // Access updated properties
 console.log(order.status);          // "fulfilled"
@@ -35,7 +36,7 @@ console.log(order.trackingNumber);  // "ABC123"
     Access `order.status` not `order.common.status`
   </Card>
   <Card title="Instance Methods" icon="wrench">
-    Built-in `updateStatus()` and `update()` methods
+    Built-in `updateStatus()`, `update()`, and `save()` methods
   </Card>
   <Card title="Auto-Sync" icon="sync">
     Properties update after method calls
@@ -220,6 +221,36 @@ await Orders.updateData({
 }, orderId);
 ```
 
+### save() (Instance Method)
+
+Save the current state of the order to the server. This is a convenience method that persists all changes made to the order instance.
+
+```typescript
+order.save(): Promise<boolean>
+```
+
+**Returns:** Promise resolving to `true` if successful
+
+**Example:**
+
+```typescript
+const order = await Orders.getById('order_def456');
+
+// Modify order data properties
+order.trackingNumber = 'TRACK123456';
+order.carrier = 'UPS';
+order.estimatedDelivery = '2025-10-10';
+
+// Save all changes at once
+await order.save();
+
+// Much cleaner workflow!
+```
+
+<Note>
+**New in Latest Version:** The `save()` method provides a simpler workflow - modify properties then save, rather than calling `Orders.updateData()` with the order ID.
+</Note>
+
 ## OrderInstance
 
 All order methods return `OrderInstance` objects with:
@@ -242,6 +273,7 @@ order.updatedAt       // Via proxy
 ```typescript
 await order.updateStatus(OrderStatus.SHIPPED);
 await order.update({ trackingNumber: 'ABC123' });
+await order.save();
 ```
 
 **Backward Compatible:**

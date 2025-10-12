@@ -1,0 +1,520 @@
+---
+title: "Skills Command"
+description: "View and manage skills in sandbox and production environments"
+---
+
+## Overview
+
+The `lua skills` command provides a dedicated interface for viewing local skills and managing production skill deployments.
+
+```bash
+lua skills               # Interactive: choose environment
+lua skills sandbox       # Direct: view local skills
+lua skills staging       # Direct: alias for sandbox
+lua skills production    # Direct: manage production skills
+```
+
+<Note>
+**New in v2.6.0:** Dedicated skills management command with environment-specific features!
+</Note>
+
+<CardGroup cols={2}>
+  <Card title="Sandbox Mode" icon="flask">
+    View local skills from lua.skill.yaml
+  </Card>
+  <Card title="Production Mode" icon="rocket">
+    Manage deployed skills and versions
+  </Card>
+  <Card title="Version History" icon="clock">
+    View all skill versions
+  </Card>
+  <Card title="Deploy Versions" icon="upload">
+    Deploy specific versions to production
+  </Card>
+</CardGroup>
+
+## Usage Modes
+
+<Tabs>
+  <Tab title="Interactive Mode">
+    **Default behavior - prompts for environment**
+    
+    ```bash
+    $ lua skills
+    ? Select environment:
+      › 🔧 Sandbox (local skills)
+        🚀 Production (deployed skills)
+    ```
+    
+    Best for: When you're exploring or not sure which environment
+  </Tab>
+
+  <Tab title="Direct Mode - Sandbox">
+    **Skip prompt and view local skills**
+    
+    ```bash
+    $ lua skills sandbox
+    # No prompt - shows local skills immediately
+    ```
+    
+    Best for: Quick reference during development
+  </Tab>
+
+  <Tab title="Direct Mode - Production">
+    **Skip prompt and manage production skills**
+    
+    ```bash
+    $ lua skills production
+    # No prompt - opens production management immediately
+    ```
+    
+    Best for: Fast deployments, production management
+  </Tab>
+</Tabs>
+
+## Sandbox Mode
+
+View skills defined in your local `lua.skill.yaml` file.
+
+```bash
+lua skills sandbox
+```
+
+### Features
+
+<Steps>
+  <Step title="View Skills">
+    Display all skills from your configuration
+    
+    ```
+    ============================================================
+    🔧 Local Skills (Sandbox)
+    ============================================================
+    
+    1. customer-service
+       Version: 1.0.5
+       Skill ID: skill_abc123
+    
+    2. order-management
+       Version: 0.8.2
+       Skill ID: skill_xyz789
+    ```
+  </Step>
+  
+  <Step title="Quick Actions">
+    Access to common commands:
+    - 📦 Compile skill
+    - ☁️ Push to server
+    - 🔄 Refresh list
+  </Step>
+</Steps>
+
+### Example Session
+
+```bash
+$ lua skills sandbox
+
+============================================================
+🔧 Local Skills (Sandbox)
+============================================================
+
+1. customer-service
+   Version: 1.0.5
+   Skill ID: skill_abc123
+
+? What would you like to do?
+  › Refresh list
+    Compile skill
+    Push to server
+    Exit
+
+# Select "Compile skill"
+🔨 Compiling Lua skill...
+✅ Skill compiled successfully - 10 tools bundled
+```
+
+### Use Cases
+
+<AccordionGroup>
+  <Accordion title="Quick Reference">
+    Check skill names and IDs without opening the config file:
+    ```bash
+    lua skills sandbox
+    ```
+  </Accordion>
+
+  <Accordion title="Before Compiling">
+    Verify your skills are correctly defined:
+    ```bash
+    lua skills sandbox
+    # Check versions and IDs
+    lua compile
+    ```
+  </Accordion>
+
+  <Accordion title="Multi-Skill Projects">
+    View all skills in a multi-skill project:
+    ```bash
+    lua skills sandbox
+    # Shows all skills defined in lua.skill.yaml
+    ```
+  </Accordion>
+</AccordionGroup>
+
+## Production Mode
+
+View deployed skills and manage production versions.
+
+```bash
+lua skills production
+```
+
+### Features
+
+<Steps>
+  <Step title="View Deployed Skills">
+    List all skills with active versions
+    
+    ```
+    ============================================================
+    🚀 Production Skills
+    ============================================================
+    
+    1. customer-service
+       Active Version: 1.0.5
+       Skill ID: skill_abc123
+    
+    2. order-management
+       Active Version: 0.8.2
+       Skill ID: skill_xyz789
+    ```
+  </Step>
+  
+  <Step title="Version History">
+    View complete version history for each skill
+    
+    ```
+    ? Select skill: customer-service
+    
+    Version History for customer-service:
+    • 1.0.5 (ACTIVE) - Created: Oct 12, 2025
+    • 1.0.4 - Created: Oct 10, 2025
+    • 1.0.3 - Created: Oct 5, 2025
+    • 1.0.2 - Created: Oct 1, 2025
+    ```
+  </Step>
+  
+  <Step title="Deploy Specific Version">
+    Deploy any version to production
+    
+    ```
+    ? Select version to deploy: 1.0.4
+    
+    ⚠️  WARNING: You are about to deploy to PRODUCTION!
+    ⚠️  This will affect ALL users immediately.
+    
+    ? Are you absolutely sure? Yes
+    
+    🔄 Deploying version 1.0.4...
+    ✅ Version 1.0.4 deployed successfully
+    ```
+  </Step>
+</Steps>
+
+### Example Session
+
+```bash
+$ lua skills production
+✅ Authenticated
+
+============================================================
+🚀 Production Skills
+============================================================
+
+1. customer-service
+   Active Version: 1.0.5
+   Skill ID: skill_abc123
+
+2. order-management
+   Active Version: 0.8.2
+   Skill ID: skill_xyz789
+
+? What would you like to do?
+  › View version history
+    Deploy specific version
+    Refresh list
+    Exit
+
+# Select "View version history"
+? Select skill: customer-service
+
+Version History for customer-service:
+• 1.0.5 (ACTIVE) - Created: Oct 12, 2025 10:30 AM
+• 1.0.4 - Created: Oct 10, 2025 3:45 PM
+• 1.0.3 - Created: Oct 5, 2025 9:15 AM
+
+? Select version to deploy: 1.0.4
+
+⚠️  WARNING: You are about to deploy to PRODUCTION!
+⚠️  This will affect ALL users immediately.
+
+Current: 1.0.5
+New: 1.0.4
+
+? Are you absolutely sure you want to deploy? Yes
+
+🔄 Deploying version 1.0.4...
+✅ Version 1.0.4 deployed successfully to production
+```
+
+### Use Cases
+
+<AccordionGroup>
+  <Accordion title="Check Active Versions">
+    Verify what's running in production:
+    ```bash
+    lua skills production
+    # See active versions at a glance
+    ```
+  </Accordion>
+
+  <Accordion title="Rollback">
+    Roll back to a previous version:
+    ```bash
+    lua skills production
+    # Select skill → View history → Deploy older version
+    ```
+  </Accordion>
+
+  <Accordion title="Deploy Specific Version">
+    Deploy a specific version instead of latest:
+    ```bash
+    lua skills production
+    # Choose exact version to deploy
+    ```
+  </Accordion>
+
+  <Accordion title="Version Audit">
+    Review deployment history:
+    ```bash
+    lua skills production
+    # View when each version was created
+    ```
+  </Accordion>
+</AccordionGroup>
+
+### Safety Features
+
+<Warning>
+**Production deployments require two confirmations:**
+1. Select version to deploy
+2. Confirm deployment (defaults to "No")
+
+This prevents accidental deployments and ensures you're deploying the right version.
+</Warning>
+
+## Complete Workflows
+
+### Development Workflow
+
+```bash
+# 1. Check local skills
+lua skills sandbox
+
+# 2. Make changes to tools
+vim src/tools/MyTool.ts
+
+# 3. Compile
+lua compile
+
+# 4. Test
+lua test
+
+# 5. Push new version
+lua push skill
+
+# 6. Check production before deploying
+lua skills production
+
+# 7. Deploy
+lua deploy
+```
+
+### Rollback Workflow
+
+```bash
+# 1. Check what's deployed
+lua skills production
+
+# 2. View version history
+# Select skill → View history
+
+# 3. Deploy previous version
+# Select older version → Confirm
+
+# Done! Previous version is live
+```
+
+### Multi-Skill Management
+
+```bash
+# View all skills
+lua skills sandbox
+
+# Work on specific skill
+cd my-project
+vim src/tools/CustomerServiceTool.ts
+
+# Compile specific skill
+lua compile
+
+# Push only that skill
+lua push skill
+
+# Deploy to production
+lua skills production
+# Select the skill you just pushed
+```
+
+## Comparison with Other Commands
+
+| Command | Purpose | Environment |
+|---------|---------|-------------|
+| `lua skills sandbox` | View local skill configuration | Local |
+| `lua skills production` | Manage deployed skills | Server |
+| `lua compile` | Compile skills to bundles | Local |
+| `lua push skill` | Upload new skill version | Server |
+| `lua deploy` | Deploy to production (all skills) | Server |
+| `lua production` | View production environment | Server |
+
+## Best Practices
+
+<AccordionGroup>
+  <Accordion title="Check Before Deploying">
+    Always check what's currently deployed:
+    ```bash
+    lua skills production
+    # Review active versions
+    lua deploy
+    ```
+  </Accordion>
+
+  <Accordion title="Keep Version History">
+    Don't delete old versions - they're your rollback points:
+    ```bash
+    lua skills production
+    # View history → Shows all available versions
+    ```
+  </Accordion>
+
+  <Accordion title="Test in Sandbox First">
+    Always test locally before pushing:
+    ```bash
+    lua skills sandbox  # Verify configuration
+    lua test           # Test tools
+    lua chat           # Test conversationally
+    lua push skill     # Then push
+    ```
+  </Accordion>
+
+  <Accordion title="Document Version Changes">
+    Use semantic versioning and keep notes:
+    ```yaml
+    # In lua.skill.yaml
+    skills:
+      - name: customer-service
+        version: 1.1.0  # Minor: Added FAQ tool
+    ```
+  </Accordion>
+</AccordionGroup>
+
+## Troubleshooting
+
+<AccordionGroup>
+  <Accordion title="No skills found in sandbox">
+    **Error**: "No skills found in lua.skill.yaml"
+    
+    **Solution:**
+    1. Ensure you're in a skill directory
+    2. Check `lua.skill.yaml` has skills defined
+    3. Run `lua compile` to populate skills
+  </Accordion>
+
+  <Accordion title="Can't see production skills">
+    **Error**: "Failed to fetch production skills"
+    
+    **Solution:**
+    1. Verify authentication: `lua auth key`
+    2. Check network connection
+    3. Ensure you've pushed at least one version
+  </Accordion>
+
+  <Accordion title="Version not showing in history">
+    **Problem**: Pushed version doesn't appear
+    
+    **Solution:**
+    1. Refresh the list
+    2. Verify push was successful
+    3. Check you're viewing correct skill
+  </Accordion>
+
+  <Accordion title="Can't deploy version">
+    **Error**: "Version not found"
+    
+    **Solution:**
+    1. Verify version exists: `lua skills production`
+    2. Check version number matches exactly
+    3. Ensure version was pushed successfully
+  </Accordion>
+</AccordionGroup>
+
+## Related Commands
+
+<CardGroup cols={2}>
+  <Card title="lua compile" icon="gear">
+    Compile skills before viewing in sandbox
+  </Card>
+  <Card title="lua push skill" icon="upload">
+    Upload new skill versions
+  </Card>
+  <Card title="lua deploy" icon="rocket">
+    Deploy active skill versions
+  </Card>
+  <Card title="lua production" icon="server">
+    View overall production environment
+  </Card>
+</CardGroup>
+
+## Next Steps
+
+<CardGroup cols={2}>
+  <Card
+    title="Skill Management"
+    icon="wrench"
+    href="/cli/skill-management"
+  >
+    Learn about compiling and pushing skills
+  </Card>
+  <Card
+    title="Production Command"
+    icon="server"
+    href="/cli/production-command"
+  >
+    Comprehensive production management
+  </Card>
+  <Card
+    title="Build Your First Skill"
+    icon="hammer"
+    href="/getting-started/first-skill"
+  >
+    Complete skill development tutorial
+  </Card>
+  <Card
+    title="Multi-Skill Projects"
+    icon="layer-group"
+    href="/template/multi-skill-projects"
+  >
+    Managing multiple skills
+  </Card>
+</CardGroup>
+

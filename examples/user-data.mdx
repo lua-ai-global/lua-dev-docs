@@ -108,6 +108,87 @@ export class SavePreferencesTool {
 }
 ```
 
+### Using save() Method (New!)
+
+```typescript
+export class UpdateProfileTool {
+  async execute(input: { name: string, email: string, phone: string }) {
+    const user = await User.get();
+    
+    // Modify properties directly
+    user.name = input.name;
+    user.email = input.email;
+    user.phone = input.phone;
+    
+    // Save all changes at once
+    await user.save();
+    
+    return { 
+      message: "Profile updated successfully!",
+      user: {
+        name: user.name,
+        email: user.email,
+        phone: user.phone
+      }
+    };
+  }
+}
+```
+
+### Sending Messages to Users (New!)
+
+```typescript
+export class SendOrderUpdateTool {
+  async execute(input: { orderId: string, status: string }) {
+    const user = await User.get();
+    
+    // Send notification to user
+    await user.send([
+      {
+        type: "text",
+        text: `Hi ${user.name}! Your order #${input.orderId} is now ${input.status}.`
+      },
+      {
+        type: "text",
+        text: "Thank you for your purchase!"
+      }
+    ]);
+    
+    return { message: "Notification sent to user" };
+  }
+}
+```
+
+### Sending Images and Files (New!)
+
+```typescript
+export class SendReceiptTool {
+  async execute(input: { orderId: string, receiptData: string, qrCode: string }) {
+    const user = await User.get();
+    
+    // Send receipt with QR code
+    await user.send([
+      {
+        type: "text",
+        text: `Receipt for order #${input.orderId}`
+      },
+      {
+        type: "image",
+        image: input.qrCode,
+        mimeType: "image/png"
+      },
+      {
+        type: "file",
+        data: input.receiptData,
+        mimeType: "application/pdf"
+      }
+    ]);
+    
+    return { message: "Receipt sent to user" };
+  }
+}
+```
+
 ## What You'll Learn
 
 <CardGroup cols={2}>
@@ -120,8 +201,14 @@ export class SavePreferencesTool {
   <Card title="Partial Updates" icon="pen">
     Update only specified fields
   </Card>
-  <Card title="Simple Tools" icon="check">
-    Minimal implementation pattern
+  <Card title="save() Method" icon="floppy-disk">
+    Simpler workflow for multiple changes
+  </Card>
+  <Card title="Messaging Users" icon="message">
+    Send proactive notifications
+  </Card>
+  <Card title="Media Support" icon="image">
+    Send images and files to users
   </Card>
 </CardGroup>
 

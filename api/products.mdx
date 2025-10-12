@@ -29,6 +29,7 @@ console.log(product.price);  // 1999.99
 
 // Instance methods
 await product.update({ price: 1799.99 });
+await product.save();
 await product.delete();
 ```
 
@@ -40,7 +41,7 @@ await product.delete();
     Use `.map()`, `.filter()` on search results
   </Card>
   <Card title="Instance Methods" icon="wrench">
-    Built-in `update()` and `delete()`
+    Built-in `update()`, `save()`, and `delete()`
   </Card>
   <Card title="Iteration" icon="arrows-rotate">
     Use `for...of` loops
@@ -250,6 +251,36 @@ console.log(product.price);   // 24.99
 console.log(product.inStock); // false
 ```
 
+### save() (Instance Method)
+
+Save the current state of the product to the server. This is a convenience method that persists all changes made to the product instance.
+
+```typescript
+product.save(): Promise<boolean>
+```
+
+**Returns:** Promise resolving to `true` if successful
+
+**Example:**
+
+```typescript
+const product = await Products.getById('product_xyz789');
+
+// Modify product properties directly
+product.price = 24.99;
+product.inStock = false;
+product.description = "Updated description";
+
+// Save all changes at once
+await product.save();
+
+// Much cleaner workflow!
+```
+
+<Note>
+**New in Latest Version:** The `save()` method provides a simpler workflow - modify properties then save, rather than calling `Products.update()` with the product ID.
+</Note>
+
 ### delete()
 
 Delete a product.
@@ -282,6 +313,7 @@ product.description
 **Instance Methods:**
 ```typescript
 await product.update({ price: 999.99 });
+await product.save();
 await product.delete();
 ```
 

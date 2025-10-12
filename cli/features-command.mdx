@@ -1,0 +1,983 @@
+---
+title: "Features Command"
+description: "Manage agent capabilities and features"
+---
+
+## Overview
+
+The `lua features` command provides an interactive interface for managing your AI agent's capabilities, including Support Tickets, Knowledge Search (RAG), Web Search, and Inquiry Forms.
+
+```bash
+lua features
+```
+
+<Note>
+**New in v2.6.0:** Centralized control over agent features with instant enable/disable and context customization!
+</Note>
+
+<CardGroup cols={2}>
+  <Card title="View Features" icon="list">
+    See all available features and their status
+  </Card>
+  <Card title="Enable/Disable" icon="toggle-on">
+    Activate or deactivate features instantly
+  </Card>
+  <Card title="Update Context" icon="edit">
+    Customize feature instructions
+  </Card>
+  <Card title="Batch Updates" icon="layer-group">
+    Update status and context together
+  </Card>
+</CardGroup>
+
+## Available Features
+
+### Support Tickets (`tickets`)
+
+Create and manage customer support tickets directly from conversations.
+
+**Capabilities:**
+- Create support tickets
+- Track customer issues
+- Add comments to tickets
+- Close resolved tickets
+- View ticket history
+
+**Best for:** Customer support agents, help desk automation
+
+---
+
+### Knowledge Search (`rag`)
+
+RAG-based knowledge base search for retrieving information from your documentation.
+
+**Capabilities:**
+- Semantic search across knowledge base
+- Category-based search (FAQ, policies, instructions)
+- Document retrieval with citations
+- Contextual information retrieval
+
+**Best for:** Information agents, documentation assistants, customer support
+
+---
+
+### Web Search (`webSearch`)
+
+Real-time internet search capability for accessing current information.
+
+**Capabilities:**
+- Search the web in real-time
+- Retrieve up-to-date information
+- Access domain-specific data
+- Find current events and news
+
+**Best for:** Research agents, information lookup, real-time data needs
+
+---
+
+### Inquiry Forms (`inquiry`)
+
+Create and manage customer inquiry and contact forms.
+
+**Capabilities:**
+- Generate inquiry forms
+- Collect customer information
+- Track inquiries
+- Manage lead generation
+
+**Best for:** Sales agents, lead generation, contact management
+
+## Quick Start
+
+<Steps>
+  <Step title="Run Command">
+    ```bash
+    lua features
+    ```
+  </Step>
+  
+  <Step title="View Features">
+    See all available features with their current status:
+    
+    ```
+    Available features:
+
+    1. ✅ Support Tickets
+       Name: tickets
+       Status: Active
+
+    2. ✅ Knowledge Search (RAG)
+       Name: rag
+       Status: Active
+
+    3. ❌ WebSearch
+       Name: webSearch
+       Status: Inactive
+
+    4. ❌ Create Inquiry forms
+       Name: inquiry
+       Status: Inactive
+    ```
+  </Step>
+  
+  <Step title="Manage Features">
+    Select what you want to do:
+    - View feature details
+    - Manage a feature (enable/disable/update)
+    - Refresh list
+  </Step>
+</Steps>
+
+## Main Menu Actions
+
+<Tabs>
+  <Tab title="View Feature Details">
+    **See complete information about a feature**
+    
+    ```bash
+    ? What would you like to do? View feature details
+    ? Select feature: ✅ Support Tickets
+    
+    ============================================================
+    Feature: Support Tickets
+    ============================================================
+    
+    Name: tickets
+    Status: ✅ Active
+    
+    Context/Instructions:
+    Create and manage support tickets for customer issues.
+    Track problems, add comments, and close resolved tickets.
+    Use this when customers report problems or need help.
+    
+    Press Enter to continue...
+    ```
+    
+    **Use for:** Understanding what a feature does before enabling
+  </Tab>
+
+  <Tab title="Manage a Feature">
+    **Enable, disable, or update a feature**
+    
+    ```bash
+    ? What would you like to do? Manage a feature
+    ? Select feature: ❌ WebSearch
+    
+    ? What would you like to do with "WebSearch"?
+      › Activate feature
+        Update context/instructions
+        Update both status and context
+        Back to main menu
+    ```
+    
+    **Use for:** Changing feature settings
+  </Tab>
+
+  <Tab title="Refresh List">
+    **Reload features from server**
+    
+    ```bash
+    ? What would you like to do? Refresh list
+    🔄 Refreshing features...
+    ✅ Features refreshed successfully
+    ```
+    
+    **Use for:** Getting latest feature status after external changes
+  </Tab>
+</Tabs>
+
+## Managing Features
+
+### Enable a Feature
+
+<Steps>
+  <Step title="Select Manage">
+    ```bash
+    $ lua features
+    ? What would you like to do? Manage a feature
+    ```
+  </Step>
+  
+  <Step title="Choose Feature">
+    ```bash
+    ? Select feature: ❌ WebSearch
+    ```
+  </Step>
+  
+  <Step title="Activate">
+    ```bash
+    ? What would you like to do? Activate feature
+    
+    ⚠️  This will enable "WebSearch" for your agent.
+    
+    ? Are you sure? Yes
+    
+    🔄 Updating feature...
+    ✅ Feature "WebSearch" activated successfully
+    ```
+  </Step>
+</Steps>
+
+### Disable a Feature
+
+<Steps>
+  <Step title="Select Feature">
+    ```bash
+    $ lua features
+    ? What would you like to do? Manage a feature
+    ? Select feature: ✅ Support Tickets
+    ```
+  </Step>
+  
+  <Step title="Deactivate">
+    ```bash
+    ? What would you like to do? Deactivate feature
+    
+    ⚠️  This will disable "Support Tickets" for your agent.
+    
+    ? Are you sure? Yes
+    
+    🔄 Updating feature...
+    ✅ Feature "Support Tickets" deactivated successfully
+    ```
+  </Step>
+</Steps>
+
+### Update Feature Context
+
+Customize how your agent uses a feature by editing its instructions.
+
+<Steps>
+  <Step title="Select Feature">
+    ```bash
+    $ lua features
+    ? What would you like to do? Manage a feature
+    ? Select feature: ✅ Knowledge Search (RAG)
+    ```
+  </Step>
+  
+  <Step title="Update Context">
+    ```bash
+    ? What would you like to do? Update context/instructions
+    
+    Opening editor to modify feature context...
+    ```
+    
+    Your system editor opens with the current context:
+    
+    ```
+    Search the knowledge base for information.
+    Use categories: FAQ, policies, instructions.
+    Always cite sources when providing information.
+    ```
+  </Step>
+  
+  <Step title="Edit and Save">
+    Modify the instructions:
+    
+    ```
+    Search the knowledge base for product information.
+    
+    Categories available:
+    - FAQ: Common customer questions
+    - policies: Company policies and procedures
+    - instructions: How-to guides and documentation
+    
+    Guidelines:
+    - Always cite sources with document names
+    - If information is not found, say so clearly
+    - Suggest related topics when helpful
+    - Keep responses concise but complete
+    ```
+    
+    Save and exit your editor.
+  </Step>
+  
+  <Step title="Confirm">
+    ```bash
+    ? Do you want to save these changes? Yes
+    
+    🔄 Updating feature context...
+    ✅ Context updated successfully
+    ```
+  </Step>
+</Steps>
+
+### Batch Update (Status + Context)
+
+Update both feature status and context in one operation.
+
+<Steps>
+  <Step title="Select Feature">
+    ```bash
+    $ lua features
+    ? What would you like to do? Manage a feature
+    ? Select feature: ❌ Create Inquiry forms
+    ```
+  </Step>
+  
+  <Step title="Choose Batch Update">
+    ```bash
+    ? What would you like to do? Update both status and context
+    
+    ? New status for "Create Inquiry forms":
+      › Enable
+        Disable
+    ```
+  </Step>
+  
+  <Step title="Edit Context">
+    Your editor opens for context editing...
+    
+    Save your changes.
+  </Step>
+  
+  <Step title="Review and Confirm">
+    ```bash
+    Summary of changes:
+    - Status: Inactive → Active
+    - Context: Updated
+    
+    ? Do you want to apply these changes? Yes
+    
+    🔄 Updating feature...
+    ✅ Feature "Create Inquiry forms" updated successfully
+    ```
+  </Step>
+</Steps>
+
+## Use Cases
+
+### Customer Support Agent
+
+Enable features for comprehensive support:
+
+```bash
+$ lua features
+
+# Enable Support Tickets
+→ Manage: ❌ Support Tickets → Activate
+✅ Tickets enabled
+
+# Enable Knowledge Search
+→ Manage: ❌ Knowledge Search → Activate
+✅ RAG enabled
+
+# Disable unnecessary features
+→ Manage: ✅ WebSearch → Deactivate
+✅ WebSearch disabled
+
+# Result: Agent focused on support with internal knowledge
+```
+
+**Features Active:**
+- ✅ Support Tickets - Track customer issues
+- ✅ Knowledge Search - Access help docs
+- ❌ Web Search - Not needed for internal support
+- ❌ Inquiry Forms - Support only, no lead gen
+
+---
+
+### Sales Agent
+
+Configure for lead generation and product information:
+
+```bash
+$ lua features
+
+# Enable Inquiry Forms for lead capture
+→ Manage: ❌ Inquiry Forms → Activate
+→ Update context: "Collect contact info, company size, budget"
+✅ Inquiry forms enabled
+
+# Enable Knowledge Search for product info
+→ Manage: ❌ Knowledge Search → Activate
+✅ RAG enabled
+
+# Enable Web Search for competitive research
+→ Manage: ❌ Web Search → Activate
+✅ WebSearch enabled
+
+# Disable Support Tickets (not handling support)
+→ Manage: ✅ Support Tickets → Deactivate
+✅ Tickets disabled
+```
+
+**Features Active:**
+- ✅ Inquiry Forms - Lead generation
+- ✅ Knowledge Search - Product information
+- ✅ Web Search - Market research
+- ❌ Support Tickets - Sales focus only
+
+---
+
+### Information Agent
+
+Optimize for information retrieval:
+
+```bash
+$ lua features
+
+# Enable RAG as primary source
+→ Manage: ❌ Knowledge Search → Activate
+→ Update context: "Primary information source. Always check here first."
+✅ RAG enabled
+
+# Enable Web Search as backup
+→ Manage: ❌ Web Search → Activate
+→ Update context: "Use only when RAG doesn't have the answer."
+✅ WebSearch enabled
+
+# Disable transactional features
+→ Manage: ✅ Support Tickets → Deactivate
+→ Manage: ✅ Inquiry Forms → Deactivate
+✅ Focused on information only
+```
+
+**Features Active:**
+- ✅ Knowledge Search - Primary source
+- ✅ Web Search - Supplementary data
+- ❌ Support Tickets - Information only
+- ❌ Inquiry Forms - No lead generation
+
+## Customizing Feature Context
+
+### Writing Effective Context
+
+Good feature context should include:
+
+<AccordionGroup>
+  <Accordion title="Clear Purpose">
+    Explain what the feature is for:
+    
+    ```
+    ✅ Good:
+    "Use this feature to search our internal knowledge base
+    for product documentation, FAQs, and policies."
+    
+    ❌ Bad:
+    "Search stuff."
+    ```
+  </Accordion>
+
+  <Accordion title="When to Use">
+    Specify appropriate situations:
+    
+    ```
+    ✅ Good:
+    "Create a support ticket when:
+    - Customer reports a bug
+    - Issue requires technical team review
+    - Problem cannot be solved immediately
+    
+    Do NOT create tickets for:
+    - Simple questions answered in FAQ
+    - Billing issues (escalate to billing team)
+    - General information requests"
+    
+    ❌ Bad:
+    "Create tickets for problems."
+    ```
+  </Accordion>
+
+  <Accordion title="Guidelines and Rules">
+    Set boundaries and expectations:
+    
+    ```
+    ✅ Good:
+    "When using web search:
+    1. Use for current events and real-time data
+    2. Verify information with multiple sources
+    3. Cite sources in your response
+    4. If search fails, inform user honestly
+    5. Don't rely on search for company-specific info"
+    
+    ❌ Bad:
+    "Search the web when needed."
+    ```
+  </Accordion>
+
+  <Accordion title="Examples">
+    Provide concrete examples:
+    
+    ```
+    ✅ Good:
+    "Example inquiry form fields:
+    - Name (required)
+    - Email (required)
+    - Company name
+    - Company size (1-10, 11-50, 51-200, 201+)
+    - Budget range
+    - Timeline for decision
+    - Additional notes"
+    
+    ❌ Bad:
+    "Collect customer information."
+    ```
+  </Accordion>
+</AccordionGroup>
+
+### Context Templates
+
+#### Support Tickets Template
+
+```markdown
+Create support tickets for customer issues that require tracking.
+
+When to create tickets:
+- Technical problems or bugs
+- Feature requests
+- Issues requiring follow-up
+- Problems needing escalation
+
+Ticket information to collect:
+- Clear description of the issue
+- Steps to reproduce (for bugs)
+- Customer impact level (low/medium/high)
+- Any relevant context
+
+Do NOT create tickets for:
+- Simple questions (answer directly)
+- Billing issues (escalate to billing)
+- General information (use knowledge base)
+```
+
+#### Knowledge Search Template
+
+```markdown
+Search the internal knowledge base for information.
+
+Categories available:
+- FAQ: Frequently asked questions
+- policies: Company policies and procedures
+- instructions: Step-by-step guides
+- products: Product documentation
+
+Search best practices:
+1. Try specific queries first
+2. Use category filters when possible
+3. Always cite the document source
+4. If not found, try broader terms
+5. Suggest related topics when helpful
+
+When information is not found:
+- Say so clearly and honestly
+- Offer to escalate if needed
+- Suggest alternative resources
+```
+
+#### Web Search Template
+
+```markdown
+Use web search for real-time, current information.
+
+Appropriate for:
+- Current events and news
+- Real-time data (stock prices, weather)
+- Recent industry updates
+- Public information not in knowledge base
+
+Not appropriate for:
+- Company-specific information (use RAG)
+- Customer data or internal systems
+- Proprietary information
+- Historical company information
+
+Always:
+- Verify information quality
+- Cite sources with URLs
+- Cross-reference when possible
+- Note the date of information
+```
+
+#### Inquiry Forms Template
+
+```markdown
+Create inquiry forms to collect lead information.
+
+Standard fields to include:
+- Full name (required)
+- Email address (required)
+- Phone number (optional)
+- Company name
+- Company size
+- Industry
+- Budget range
+- Timeline
+- Specific needs/requirements
+
+Qualification questions:
+- What problem are you trying to solve?
+- Have you used similar solutions?
+- What's your timeline for implementation?
+- Who else is involved in the decision?
+
+After form submission:
+- Thank the prospect
+- Set expectations for response time
+- Offer immediate resources if available
+```
+
+## Complete Workflows
+
+### Initial Agent Setup
+
+```bash
+# 1. Configure features for your agent type
+lua features
+
+# 2. Enable necessary features
+→ Activate relevant features
+
+# 3. Customize each feature's context
+→ Update context for each enabled feature
+
+# 4. Test with chat
+lua chat
+# Test each feature's behavior
+
+# 5. Iterate based on results
+lua features
+→ Adjust context as needed
+```
+
+### Feature Testing Workflow
+
+```bash
+# 1. Enable test feature
+lua features
+→ Activate feature
+→ Add initial context
+
+# 2. Test in sandbox
+lua chat
+# Try using the feature
+
+# 3. Review and refine
+# Based on test results
+
+# 4. Update context
+lua features
+→ Update context with improvements
+
+# 5. Test again
+lua chat
+# Verify improvements
+
+# 6. Deploy when satisfied
+lua push skill
+lua deploy
+```
+
+### Feature Optimization
+
+```bash
+# 1. Review current features
+lua features
+→ View all features and their usage
+
+# 2. Disable unused features
+→ Deactivate features not being used
+# Improves performance and reduces complexity
+
+# 3. Optimize active features
+→ Update context for better behavior
+→ Add examples and guidelines
+
+# 4. Test optimization
+lua chat
+# Verify improvements
+
+# 5. Monitor results
+# Check conversations in admin dashboard
+lua admin
+```
+
+## Integration with Other Commands
+
+### Features + Persona
+
+Coordinate features with persona:
+
+```bash
+# 1. Enable features
+lua features
+→ Enable: tickets, rag
+
+# 2. Update persona to mention capabilities
+lua persona sandbox
+# Add: "I can search our knowledge base and create support tickets"
+
+# 3. Test together
+lua chat
+
+# 4. Deploy both
+lua push persona
+lua push skill
+```
+
+### Features + Skills
+
+Build skills that use features:
+
+```bash
+# 1. Enable feature
+lua features
+→ Activate: tickets
+
+# 2. Build skill tool that creates tickets
+vim src/tools/CreateTicketTool.ts
+
+# 3. Test
+lua test
+
+# 4. Deploy
+lua push skill
+```
+
+### Features + Environment
+
+Different features per environment:
+
+```bash
+# Development: Enable all features for testing
+lua features
+→ Activate: All features
+
+# Production: Enable only needed features
+lua features
+→ Activate: tickets, rag
+→ Deactivate: webSearch, inquiry
+```
+
+## Best Practices
+
+<AccordionGroup>
+  <Accordion title="Start Minimal">
+    Enable only features you need:
+    
+    ```bash
+    # ✅ Good: Start with essentials
+    lua features
+    → Enable: tickets, rag only
+    
+    # Test and add more as needed
+    
+    # ❌ Bad: Enable everything "just in case"
+    → Enable: All features
+    # Adds complexity and potential confusion
+    ```
+  </Accordion>
+
+  <Accordion title="Write Clear Context">
+    Detailed instructions improve results:
+    
+    ```bash
+    # ✅ Good: Detailed context
+    "Create support tickets for technical issues.
+    Include: problem description, steps to reproduce,
+    customer impact, and priority level."
+    
+    # ❌ Bad: Vague context
+    "Create tickets for problems."
+    ```
+  </Accordion>
+
+  <Accordion title="Test After Changes">
+    Always test feature changes:
+    
+    ```bash
+    lua features
+    → Update context
+    
+    lua chat
+    # Immediately test the changes
+    
+    # Verify behavior matches expectations
+    ```
+  </Accordion>
+
+  <Accordion title="Document Your Setup">
+    Keep notes on feature configuration:
+    
+    ```yaml
+    # In README.md or docs
+    ## Active Features
+    
+    - Support Tickets: Create for technical issues
+    - Knowledge Search: Internal docs only
+    - Web Search: Disabled (use internal knowledge)
+    - Inquiry Forms: Disabled (not doing lead gen)
+    ```
+  </Accordion>
+
+  <Accordion title="Review Regularly">
+    Audit features periodically:
+    
+    ```bash
+    # Monthly review
+    lua features
+    → Check active features
+    → Disable unused features
+    → Update context based on learnings
+    → Test improvements
+    ```
+  </Accordion>
+</AccordionGroup>
+
+## Troubleshooting
+
+<AccordionGroup>
+  <Accordion title="Features not loading">
+    **Error**: "Failed to fetch features"
+    
+    **Solutions:**
+    1. Verify authentication:
+       ```bash
+       lua auth key
+       ```
+    
+    2. Check lua.skill.yaml has agentId:
+       ```yaml
+       agent:
+         agentId: agent_abc123
+       ```
+    
+    3. Test API connection:
+       ```bash
+       lua admin
+       # If admin works, features should too
+       ```
+  </Accordion>
+
+  <Accordion title="Context not saving">
+    **Problem**: Editor opens but changes don't save
+    
+    **Solutions:**
+    1. Make sure you save in editor (`:wq` for vim)
+    2. Confirm when prompted after editing
+    3. Check for error messages
+    4. Try again with refresh:
+       ```bash
+       lua features
+       → Refresh list
+       → Try update again
+       ```
+  </Accordion>
+
+  <Accordion title="Feature not appearing in agent">
+    **Problem**: Enabled feature not available in chat
+    
+    **Solutions:**
+    1. Verify feature is active:
+       ```bash
+       lua features
+       # Check status shows ✅
+       ```
+    
+    2. Refresh agent session:
+       ```bash
+       lua chat
+       # Start new chat session
+       ```
+    
+    3. Check feature context is not empty
+    4. Redeploy if needed:
+       ```bash
+       lua push skill
+       lua deploy
+       ```
+  </Accordion>
+
+  <Accordion title="Cannot enable feature">
+    **Error**: "Feature update failed"
+    
+    **Solutions:**
+    1. Check agentId is correct
+    2. Verify API key has permissions
+    3. Ensure feature name is valid
+    4. Check network connection
+    5. Try refreshing features list first
+  </Accordion>
+
+  <Accordion title="Editor not opening">
+    **Problem**: Context update doesn't open editor
+    
+    **Solutions:**
+    1. Set EDITOR environment variable:
+       ```bash
+       export EDITOR=vim
+       # or nano, code, etc.
+       ```
+    
+    2. Add to shell config (~/.bashrc or ~/.zshrc):
+       ```bash
+       echo 'export EDITOR=vim' >> ~/.bashrc
+       source ~/.bashrc
+       ```
+    
+    3. Try different editor:
+       ```bash
+       export EDITOR=nano
+       lua features
+       ```
+  </Accordion>
+</AccordionGroup>
+
+## Requirements
+
+- **Authentication**: Valid API key (`lua auth configure`)
+- **Project**: Must be in skill directory with `lua.skill.yaml`
+- **Agent ID**: Configuration must contain `agent.agentId`
+- **Permissions**: API key must have agent management permissions
+
+## Related Commands
+
+<CardGroup cols={2}>
+  <Card title="lua persona" icon="user">
+    Configure agent personality to work with features
+  </Card>
+  <Card title="lua chat" icon="comments">
+    Test features in conversation
+  </Card>
+  <Card title="lua admin" icon="gauge">
+    View feature usage in admin dashboard
+  </Card>
+  <Card title="lua push skill" icon="upload">
+    Deploy skills that use features
+  </Card>
+</CardGroup>
+
+## Next Steps
+
+<CardGroup cols={2}>
+  <Card
+    title="Test Features"
+    icon="flask"
+    href="/cli/chat-command"
+  >
+    Use lua chat to test feature behavior
+  </Card>
+  <Card
+    title="Build Skills"
+    icon="hammer"
+    href="/cli/skill-management"
+  >
+    Create tools that leverage features
+  </Card>
+  <Card
+    title="Configure Persona"
+    icon="user"
+    href="/cli/persona-command"
+  >
+    Update persona to mention capabilities
+  </Card>
+  <Card
+    title="Admin Dashboard"
+    icon="gauge"
+    href="/cli/utility-commands#lua-admin"
+  >
+    Monitor feature usage
+  </Card>
+</CardGroup>
+

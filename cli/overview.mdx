@@ -3,13 +3,22 @@ title: "CLI Overview"
 description: "Command-line interface for building and deploying AI skills"
 ---
 
-## Lua AI CLI v2.3.3
+## Lua AI CLI v2.6.0
 
 Build and deploy AI agents with superpowers
 
 ```bash
 lua [options] [command]
 ```
+
+<Note>
+**New in v2.6.0:**
+- 🎯 Direct environment access for all commands
+- ⌨️ Shell autocomplete support (Bash, Zsh, Fish)
+- 🚀 New `lua skills` command for production skill management
+- ⚡ New `lua features` command for managing agent capabilities
+- ⚡ Faster workflows with `lua push skill`, `lua env production`, etc.
+</Note>
 
 ### Options
 
@@ -24,35 +33,62 @@ lua [options] [command]
 |---------|----------|-------------|
 | `lua auth` | 🔐 Authentication | Manage API keys and authentication |
 | `lua init` | 🚀 Project Setup | Initialize a new Lua skill project |
-| `lua env` | ⚙️ Configuration | Manage environment variables |
-| `lua persona` | 🤖 Configuration | Manage agent persona |
+| `lua env` | ⚙️ Configuration | Manage environment variables (sandbox/production) |
+| `lua persona` | 🤖 Configuration | Manage agent persona (sandbox/production) |
+| `lua features` | ⚡ Configuration | Manage agent capabilities and features |
 | `lua resources` | 📚 Configuration | Manage agent knowledge base |
+| `lua skills` | 🔧 Development | View and manage skills (sandbox/production) |
 | `lua compile` | 📦 Development | Compile skill to deployable format |
 | `lua test` | 💬 Testing | Test skill tools interactively |
 | `lua chat` | 💬 Testing | Interactive chat with your agent |
-| `lua push` | ☁️ Deployment | Push skill version to server |
+| `lua push` | ☁️ Deployment | Push skill or persona version to server |
 | `lua deploy` | 🚀 Deployment | Deploy version to production |
 | `lua production` | 🚀 Deployment | View and manage production environment |
 | `lua channels` | 🔌 Integration | Manage communication channels |
 | `lua logs` | 🐛 Debugging | View agent and skill execution logs |
+| `lua completion` | ⌨️ Utilities | Generate shell autocomplete scripts |
 | `lua admin` | 🛠️ Utilities | Open admin dashboard in browser |
 | `lua docs` | 📖 Utilities | Open documentation in browser |
 
 ### Quick Examples
 
 ```bash
+# Authentication & Setup
 lua auth configure      # 🔑 Set up your API key
 lua init               # 🚀 Initialize a new project
+
+# Configuration (Interactive or Direct)
 lua env                # ⚙️ Manage environment variables
+lua env sandbox        # 🎯 Direct: manage sandbox .env file
+lua env production     # 🎯 Direct: manage production env vars
 lua persona            # 🤖 Manage agent persona
+lua persona sandbox    # 🎯 Direct: edit sandbox persona
+lua persona production # 🎯 Direct: deploy persona version
+lua features           # ⚡ Manage agent capabilities (tickets, RAG, etc.)
 lua resources          # 📚 Manage knowledge base
+
+# Development
+lua skills             # 🔧 View and manage skills
+lua skills sandbox     # 🎯 Direct: view local skills
+lua skills production  # 🎯 Direct: manage production skills
 lua compile            # 📦 Compile your skills
 lua test               # 🧪 Test tools interactively
 lua chat               # 💬 Start interactive chat
-lua push               # ☁️ Push to server
+
+# Deployment (Interactive or Direct)
+lua push               # ☁️ Push to server (choose skill/persona)
+lua push skill         # 🎯 Direct: push skill
+lua push persona       # 🎯 Direct: push persona
 lua deploy             # 🚀 Deploy to production
+
+# Integration & Debugging
 lua channels           # 🔌 Manage communication channels
 lua logs               # 🐛 View execution logs
+
+# Utilities
+lua completion bash    # ⌨️ Generate bash autocomplete
+lua completion zsh     # ⌨️ Generate zsh autocomplete
+lua completion fish    # ⌨️ Generate fish autocomplete
 lua admin              # 🛠️ Open admin dashboard
 lua docs               # 📖 Open documentation
 ```
@@ -70,11 +106,17 @@ lua docs               # 📖 Open documentation
   <Card title="lua init" icon="plus">
     Initialize new skill project
   </Card>
+  <Card title="lua skills" icon="code">
+    View and manage skills
+  </Card>
   <Card title="lua env" icon="key">
     Manage environment variables
   </Card>
   <Card title="lua persona" icon="user">
     Configure agent personality
+  </Card>
+  <Card title="lua features" icon="sliders">
+    Manage agent capabilities
   </Card>
   <Card title="lua test" icon="flask">
     Test tools interactively
@@ -88,7 +130,116 @@ lua docs               # 📖 Open documentation
   <Card title="lua deploy" icon="rocket">
     Deploy to production
   </Card>
+  <Card title="lua completion" icon="terminal">
+    Shell autocomplete setup
+  </Card>
 </CardGroup>
+
+## Shell Autocomplete ⚡ NEW
+
+Enable tab completion for all Lua CLI commands and arguments:
+
+<Tabs>
+  <Tab title="Bash">
+    ```bash
+    # One-time setup
+    lua completion bash >> ~/.bashrc
+    source ~/.bashrc
+    
+    # Now try:
+    lua pu<TAB>      # Completes to: lua push
+    lua push <TAB>   # Shows: skill, persona
+    lua env <TAB>    # Shows: sandbox, staging, production
+    ```
+  </Tab>
+
+  <Tab title="Zsh">
+    ```bash
+    # One-time setup
+    lua completion zsh >> ~/.zshrc
+    source ~/.zshrc
+    
+    # Now try:
+    lua <TAB>        # Shows all commands
+    lua persona <TAB> # Shows: sandbox, staging, production
+    ```
+  </Tab>
+
+  <Tab title="Fish">
+    ```bash
+    # One-time setup
+    lua completion fish > ~/.config/fish/completions/lua.fish
+    
+    # Now try:
+    lua <TAB>        # Shows all commands with descriptions
+    ```
+  </Tab>
+</Tabs>
+
+<Card title="Learn More" href="/cli/utility-commands#autocomplete" />
+
+## Direct Mode ⚡ NEW
+
+Skip interactive prompts by specifying your target directly:
+
+<Tabs>
+  <Tab title="Push Commands">
+    ```bash
+    # Interactive (old way - still works!)
+    lua push
+    ? What would you like to push? 
+      › skill
+        persona
+    
+    # Direct (new way - faster!)
+    lua push skill      # Push skill directly
+    lua push persona    # Push persona directly
+    ```
+  </Tab>
+
+  <Tab title="Environment Commands">
+    ```bash
+    # Interactive
+    lua env
+    ? Select environment:
+      › Sandbox
+        Production
+    
+    # Direct
+    lua env sandbox     # Manage .env file
+    lua env production  # Manage API env vars
+    lua env staging     # Alias for sandbox
+    ```
+  </Tab>
+
+  <Tab title="Persona Commands">
+    ```bash
+    # Interactive
+    lua persona
+    ? Select environment:
+      › Sandbox
+        Production
+    
+    # Direct
+    lua persona sandbox     # Edit sandbox persona
+    lua persona production  # Deploy persona version
+    ```
+  </Tab>
+
+  <Tab title="Skills Commands">
+    ```bash
+    # Interactive
+    lua skills
+    ? Select environment:
+      › Sandbox
+        Production
+    
+    # Direct
+    lua skills sandbox     # View local skills
+    lua skills production  # Manage production skills
+    ```
+  </Tab>
+</Tabs>
 
 ## Command Categories
 
@@ -240,18 +391,18 @@ lua docs               # 📖 Open documentation
   
   <Step title="Configure Environment">
     ```bash
-    lua env
+    lua env sandbox
     ```
     
-    Add API keys and configuration (choose Sandbox)
+    Add API keys and configuration to .env file
   </Step>
   
   <Step title="Configure Persona">
     ```bash
-    lua persona
+    lua persona sandbox
     ```
     
-    Define your agent's personality (choose Sandbox → Edit)
+    Define your agent's personality in local file
   </Step>
   
   <Step title="Test Your Agent">
@@ -279,7 +430,8 @@ lua docs               # 📖 Open documentation
 <Steps>
   <Step title="Configure Environment (if needed)">
     ```bash
-    lua env
+    lua env sandbox        # Update local .env
+    lua env production     # Update production env vars
     ```
     
     Add any new API keys or configuration needed
@@ -287,7 +439,7 @@ lua docs               # 📖 Open documentation
   
   <Step title="Update Persona (if needed)">
     ```bash
-    lua persona
+    lua persona sandbox    # Edit and test locally
     ```
     
     Refine agent personality based on feedback
@@ -309,19 +461,20 @@ lua docs               # 📖 Open documentation
     </Note>
   </Step>
   
-  <Step title="Update Production Config">
+  <Step title="Push Persona to Production (if changed)">
     ```bash
-    lua env        # Update environment variables
-    lua persona    # Create and deploy persona version
-    ```
-  </Step>
-  
-  <Step title="Push When Ready">
-    ```bash
-    lua push
+    lua persona production # Deploy persona version
     ```
     
-    Upload new version
+    Or use: `lua push persona`
+  </Step>
+  
+  <Step title="Push Skill When Ready">
+    ```bash
+    lua push skill
+    ```
+    
+    Upload new skill version
   </Step>
   
   <Step title="Deploy to Production">
@@ -345,8 +498,8 @@ lua test
 # Test conversationally
 lua chat
 
-# Push and deploy
-lua push && lua deploy
+# Push and deploy (direct mode - faster!)
+lua push skill && lua deploy
 ```
 
 ## Global Flags
@@ -523,6 +676,27 @@ skill:
     Learn all skill management commands
   </Card>
   <Card
+    title="Environment Command"
+    icon="gear"
+    href="/cli/env-command"
+  >
+    Manage sandbox and production variables
+  </Card>
+  <Card
+    title="Persona Command"
+    icon="user"
+    href="/cli/persona-command"
+  >
+    Configure agent personality
+  </Card>
+  <Card
+    title="Features Command"
+    icon="sliders"
+    href="/cli/features-command"
+  >
+    Manage agent capabilities
+  </Card>
+  <Card
     title="Chat Command"
     icon="comments"
     href="/cli/chat-command"
@@ -530,25 +704,11 @@ skill:
     Interactive chat with your agent
   </Card>
   <Card
-    title="Production Command"
-    icon="server"
-    href="/cli/production-command"
-  >
-    View and manage production
-  </Card>
-  <Card
     title="Utility Commands"
-    icon="wrench"
+    icon="terminal"
     href="/cli/utility-commands"
   >
-    Admin dashboard and docs
-  </Card>
-  <Card
-    title="Troubleshooting"
-    icon="circle-question"
-    href="/cli/troubleshooting"
-  >
-    Solve common issues
+    Shell autocomplete and more
   </Card>
 </CardGroup>
 

@@ -8,8 +8,15 @@ description: "Manage environment variables for sandbox and production"
 The `lua env` command provides an interactive interface for managing environment variables in both sandbox (development) and production environments.
 
 ```bash
-lua env
+lua env                  # Interactive: choose environment
+lua env sandbox          # Direct: manage .env file
+lua env staging          # Direct: alias for sandbox
+lua env production       # Direct: manage production API vars
 ```
+
+<Note>
+**New in v2.6.0:** Direct environment access lets you skip the selection prompt for faster workflows!
+</Note>
 
 <CardGroup cols={2}>
   <Card title="Sandbox Mode" icon="flask">
@@ -26,16 +33,57 @@ lua env
   </Card>
 </CardGroup>
 
+## Usage Modes
+
+<Tabs>
+  <Tab title="Interactive Mode">
+    **Default behavior - prompts for environment**
+    
+    ```bash
+    $ lua env
+    ? Select environment:
+      › 🔧 Sandbox (.env file)
+        🚀 Production (API)
+    ```
+    
+    Best for: When you're not sure which environment
+  </Tab>
+
+  <Tab title="Direct Mode - Sandbox">
+    **Skip prompt and go straight to sandbox**
+    
+    ```bash
+    $ lua env sandbox
+    # No prompt - opens .env file management immediately
+    ```
+    
+    Best for: Quick local configuration during development
+  </Tab>
+
+  <Tab title="Direct Mode - Production">
+    **Skip prompt and go straight to production**
+    
+    ```bash
+    $ lua env production
+    # No prompt - opens production API management immediately
+    ```
+    
+    Best for: Fast production updates, automation
+  </Tab>
+</Tabs>
+
 ## Quick Start
 
 <Steps>
   <Step title="Run Command">
     ```bash
-    lua env
+    lua env sandbox        # Direct to sandbox
+    # or
+    lua env                # Interactive
     ```
   </Step>
   
-  <Step title="Choose Environment">
+  <Step title="Choose Environment (if interactive)">
     ```
     ? Select environment:
       🔧 Sandbox (.env file)
@@ -200,11 +248,13 @@ Variables are **masked for security** in the list view:
 ### Step 1: Configure Variables
 
 ```bash
-# Set up environment variables first
-lua env
-
-# Choose Sandbox
+# Set up sandbox environment variables
+lua env sandbox
 # Add: DATABASE_URL, API_KEY, STRIPE_SECRET, etc.
+
+# Set up production environment variables
+lua env production
+# Add production API keys and URLs
 ```
 
 ### Step 2: Test Locally
@@ -217,14 +267,11 @@ lua test
 lua chat
 ```
 
-### Step 3: Configure Production
+### Step 3: Verify Production Config
 
 ```bash
-# Before deploying, set production variables
-lua env
-
-# Choose Production
-# Add production API keys and URLs
+# Check production variables before deploying
+lua env production
 ```
 
 ### Step 4: Deploy
@@ -329,8 +376,8 @@ lua deploy
 ## Example Session
 
 ```bash
-$ lua env
-? Select environment: 🔧 Sandbox (.env file)
+$ lua env sandbox
+# Or interactive: lua env → Choose Sandbox
 
 ============================================================
 📋 Environment Variables (Sandbox)

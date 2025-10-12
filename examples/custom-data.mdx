@@ -262,6 +262,41 @@ export class UpdateMovieTool implements LuaTool {
 }
 ```
 
+### Using save() Method (New!)
+
+```typescript
+export class UpdateMovieRatingTool implements LuaTool {
+  name = "update_movie_rating";
+  description = "Update movie rating and review";
+  
+  inputSchema = z.object({
+    id: z.string(),
+    rating: z.number().min(0).max(10),
+    review: z.string().optional()
+  });
+
+  async execute(input: z.infer<typeof this.inputSchema>) {
+    // Get the entry
+    const movie = await Data.getEntry('movies', input.id);
+    
+    // Modify properties directly
+    movie.rating = input.rating;
+    if (input.review) {
+      movie.review = input.review;
+    }
+    movie.updatedAt = new Date().toISOString();
+    
+    // Save all changes at once
+    await movie.save();
+    
+    return { 
+      success: true,
+      message: `Updated "${movie.title}" rating to ${input.rating}` 
+    };
+  }
+}
+```
+
 ## What You'll Learn
 
 <CardGroup cols={2}>

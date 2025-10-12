@@ -5,9 +5,12 @@ description: "Quick access commands for admin interface and documentation"
 
 ## Overview
 
-Utility commands provide quick access to the Lua Admin interface and documentation in your browser.
+Utility commands provide quick access to the Lua Admin interface, documentation, and shell autocomplete setup.
 
-<CardGroup cols={2}>
+<CardGroup cols={3}>
+  <Card title="lua completion" icon="terminal">
+    Generate shell autocomplete
+  </Card>
   <Card title="lua admin" icon="gauge">
     Open admin dashboard
   </Card>
@@ -15,6 +18,327 @@ Utility commands provide quick access to the Lua Admin interface and documentati
     Open documentation
   </Card>
 </CardGroup>
+
+<Note>
+**New in v2.6.0:** Shell autocomplete support for Bash, Zsh, and Fish!
+</Note>
+
+## lua completion
+
+Generate shell autocomplete scripts for faster command-line workflows.
+
+```bash
+lua completion [shell]       # Generate completion script
+lua completion bash          # Generate for Bash
+lua completion zsh           # Generate for Zsh
+lua completion fish          # Generate for Fish
+```
+
+<Note>
+**New in v2.6.0:** Enable tab completion for all Lua CLI commands and arguments!
+</Note>
+
+### What It Does
+
+Generates shell-specific completion scripts that enable:
+- ✅ Tab completion for all commands
+- ✅ Subcommand suggestions
+- ✅ Environment option suggestions (sandbox, staging, production)
+- ✅ Argument completion for push, env, persona, skills
+- ✅ Context-aware completions
+
+### Supported Shells
+
+<Tabs>
+  <Tab title="Bash">
+    **Installation**
+    
+    ```bash
+    # Add to your ~/.bashrc
+    lua completion bash >> ~/.bashrc
+    source ~/.bashrc
+    
+    # Or for one-time setup
+    echo 'eval "$(lua completion bash)"' >> ~/.bashrc
+    source ~/.bashrc
+    ```
+    
+    **Test it**
+    
+    ```bash
+    lua pu<TAB>           # Completes to: lua push
+    lua push <TAB>        # Shows: skill, persona
+    lua env <TAB>         # Shows: sandbox, staging, production
+    lua persona <TAB>     # Shows: sandbox, staging, production
+    ```
+  </Tab>
+
+  <Tab title="Zsh">
+    **Installation**
+    
+    ```bash
+    # Add to your ~/.zshrc
+    lua completion zsh >> ~/.zshrc
+    source ~/.zshrc
+    
+    # Or for one-time setup
+    echo 'eval "$(lua completion zsh)"' >> ~/.zshrc
+    source ~/.zshrc
+    ```
+    
+    **Test it**
+    
+    ```bash
+    lua <TAB>             # Shows all commands
+    lua skills <TAB>      # Shows: sandbox, staging, production
+    lua auth <TAB>        # Shows: configure, logout, key
+    ```
+  </Tab>
+
+  <Tab title="Fish">
+    **Installation**
+    
+    ```bash
+    # Create completions directory if it doesn't exist
+    mkdir -p ~/.config/fish/completions
+    
+    # Generate completion file
+    lua completion fish > ~/.config/fish/completions/lua.fish
+    
+    # Completions are automatically loaded
+    ```
+    
+    **Test it**
+    
+    ```bash
+    lua <TAB>             # Shows all commands with descriptions
+    lua push <TAB>        # Shows: skill, persona
+    lua env <TAB>         # Shows: sandbox, staging, production
+    ```
+  </Tab>
+</Tabs>
+
+### Completion Features
+
+<AccordionGroup>
+  <Accordion title="Main Commands">
+    Tab completion for all Lua CLI commands:
+    
+    ```bash
+    lua a<TAB>        # auth, admin
+    lua p<TAB>        # push, persona, production
+    lua s<TAB>        # skills
+    lua e<TAB>        # env
+    lua f<TAB>        # features
+    lua c<TAB>        # compile, completion, chat, channels
+    ```
+  </Accordion>
+
+  <Accordion title="Subcommands">
+    Context-aware subcommand completion:
+    
+    ```bash
+    lua auth <TAB>         # configure, logout, key
+    lua push <TAB>         # skill, persona
+    lua chat <TAB>         # clear
+    lua completion <TAB>   # bash, zsh, fish
+    ```
+  </Accordion>
+
+  <Accordion title="Environment Options">
+    Environment selection for applicable commands:
+    
+    ```bash
+    lua env <TAB>          # sandbox, staging, production
+    lua persona <TAB>      # sandbox, staging, production
+    lua skills <TAB>       # sandbox, staging, production
+    ```
+  </Accordion>
+
+  <Accordion title="Help Flags">
+    Common flags available for all commands:
+    
+    ```bash
+    lua --<TAB>            # --help, --version
+    lua push --<TAB>       # --help
+    ```
+  </Accordion>
+</AccordionGroup>
+
+### Verification
+
+After installation, verify autocomplete is working:
+
+<Tabs>
+  <Tab title="Test Basic Completion">
+    ```bash
+    # Type this and press TAB
+    lua pu
+    
+    # Should complete to:
+    lua push
+    ```
+  </Tab>
+
+  <Tab title="Test Subcommands">
+    ```bash
+    # Type this and press TAB
+    lua push 
+    
+    # Should show options:
+    skill  persona
+    ```
+  </Tab>
+
+  <Tab title="Test Environment">
+    ```bash
+    # Type this and press TAB
+    lua env 
+    
+    # Should show:
+    sandbox  staging  production
+    ```
+  </Tab>
+</Tabs>
+
+### Troubleshooting
+
+<AccordionGroup>
+  <Accordion title="Completions not working">
+    **Problem**: Tab completion doesn't work after installation
+    
+    **Solutions:**
+    1. Restart your terminal or reload shell config:
+       ```bash
+       # Bash
+       source ~/.bashrc
+       
+       # Zsh
+       source ~/.zshrc
+       
+       # Fish (automatic)
+       ```
+    
+    2. Verify script was added correctly:
+       ```bash
+       # Check if completion is in config
+       tail ~/.bashrc    # or ~/.zshrc
+       ```
+    
+    3. Try explicit installation:
+       ```bash
+       eval "$(lua completion bash)"  # Or zsh
+       ```
+  </Accordion>
+
+  <Accordion title="Completions incomplete">
+    **Problem**: Some commands complete, others don't
+    
+    **Solutions:**
+    1. Regenerate completion script:
+       ```bash
+       lua completion bash > /tmp/lua_completions
+       cat /tmp/lua_completions >> ~/.bashrc
+       source ~/.bashrc
+       ```
+    
+    2. Check Lua CLI version:
+       ```bash
+       lua --version
+       # Should be v2.6.0 or higher
+       ```
+  </Accordion>
+
+  <Accordion title="Fish completions not loading">
+    **Problem**: Completions don't work in Fish shell
+    
+    **Solutions:**
+    1. Verify file location:
+       ```bash
+       ls ~/.config/fish/completions/lua.fish
+       ```
+    
+    2. Regenerate if missing:
+       ```bash
+       mkdir -p ~/.config/fish/completions
+       lua completion fish > ~/.config/fish/completions/lua.fish
+       ```
+    
+    3. Restart Fish shell
+  </Accordion>
+
+  <Accordion title="Conflict with existing completions">
+    **Problem**: Completions conflict with other tools
+    
+    **Solution:**
+    Remove old completion and reinstall:
+    ```bash
+    # Bash/Zsh: Remove old lines from config file
+    vim ~/.bashrc  # or ~/.zshrc
+    # Delete old lua completion lines
+    
+    # Fish: Remove old file
+    rm ~/.config/fish/completions/lua.fish
+    
+    # Reinstall
+    lua completion [your-shell]
+    ```
+  </Accordion>
+</AccordionGroup>
+
+### Benefits
+
+<CardGroup cols={2}>
+  <Card title="Faster Workflow" icon="bolt">
+    Type less, complete more with tab
+  </Card>
+  <Card title="Discover Commands" icon="compass">
+    See available options without docs
+  </Card>
+  <Card title="Fewer Typos" icon="check">
+    Autocomplete prevents mistakes
+  </Card>
+  <Card title="Better UX" icon="heart">
+    Professional CLI experience
+  </Card>
+</CardGroup>
+
+### Advanced Usage
+
+<AccordionGroup>
+  <Accordion title="Multiple Shells">
+    If you use multiple shells, install for each:
+    ```bash
+    # Bash
+    lua completion bash >> ~/.bashrc
+    
+    # Zsh
+    lua completion zsh >> ~/.zshrc
+    
+    # Fish
+    lua completion fish > ~/.config/fish/completions/lua.fish
+    ```
+  </Accordion>
+
+  <Accordion title="Team Setup">
+    Add to team onboarding:
+    ```bash
+    # In your team's setup script
+    echo "Setting up Lua CLI autocomplete..."
+    lua completion bash >> ~/.bashrc
+    source ~/.bashrc
+    echo "✅ Autocomplete enabled"
+    ```
+  </Accordion>
+
+  <Accordion title="Docker/Remote">
+    Include in Docker images:
+    ```dockerfile
+    # In Dockerfile
+    RUN lua completion bash >> /root/.bashrc
+    ```
+  </Accordion>
+</AccordionGroup>
 
 ## lua admin
 
@@ -259,8 +583,9 @@ $ ld
 
 ## Quick Comparison
 
-| Command | Opens | Requires Auth | Use For |
-|---------|-------|---------------|---------|
+| Command | Opens/Generates | Requires Auth | Use For |
+|---------|----------------|---------------|---------|
+| `lua completion` | Shell completion script | ❌ No | Tab completion, faster workflows |
 | `lua admin` | Admin dashboard | ✅ Yes | Managing agent, conversations, billing |
 | `lua docs` | Documentation | ❌ No | Reference, examples, learning |
 

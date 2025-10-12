@@ -23,6 +23,7 @@ console.log(entry.id);        // "entry_abc123"
 
 // Instance methods
 await entry.update({ rating: 9.5 }, 'inception nolan 9.5 rating');
+await entry.save();
 await entry.delete();
 
 // Semantic search - returns array of DataEntryInstance
@@ -45,7 +46,7 @@ const titles = results.map(entry => entry.title);
     Results include relevance scores
   </Card>
   <Card title="Instance Methods" icon="wrench">
-    Built-in `update()` and `delete()`
+    Built-in `update()`, `save()`, and `delete()`
   </Card>
   <Card title="Array Methods" icon="list">
     Use `.map()`, `.filter()` on search results
@@ -304,9 +305,75 @@ const updated = await Data.update('movies', 'entry_abc123', {
 Updates replace the entire data object. To preserve fields, read first then update.
 </Note>
 
+## DataEntryInstance Methods
+
+When you retrieve or create data entries, you get a `DataEntryInstance` object with convenient instance methods.
+
+### save()
+
+Save the current state of the data entry to the server. This is a convenience method that persists all changes made to the entry.
+
+```typescript
+entry.save(): Promise<boolean>
+```
+
+**Returns:** Promise resolving to `true` if successful
+
+**Example:**
+
+```typescript
+const entry = await Data.getEntry('movies', 'entry_abc123');
+
+// Modify properties directly
+entry.title = "Inception";
+entry.rating = 9.0;
+entry.year = 2010;
+
+// Save all changes at once
+await entry.save();
+
+// Much cleaner workflow!
+```
+
+<Note>
+**New in Latest Version:** The `save()` method provides a simpler workflow - modify properties then save, rather than calling `Data.update()` with the collection name and entry ID.
+</Note>
+
+### update() (Instance Method)
+
+Update the entry using the instance method.
+
+```typescript
+entry.update(data: object, searchText?: string): Promise<any>
+```
+
+**Example:**
+
+```typescript
+const entry = await Data.getEntry('movies', 'entry_abc123');
+await entry.update({ rating: 9.5 }, 'inception nolan 9.5 rating');
+```
+
+### delete() (Instance Method)
+
+Delete the entry using the instance method.
+
+```typescript
+entry.delete(): Promise<void>
+```
+
+**Example:**
+
+```typescript
+const entry = await Data.getEntry('movies', 'entry_abc123');
+await entry.delete();
+```
+
+## Static Methods
+
 ### delete()
 
-Delete an entry.
+Delete an entry using the static method.
 
 ```typescript
 Data.delete(

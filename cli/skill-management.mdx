@@ -297,16 +297,61 @@ Output: {
 
 ## lua push
 
-Push your compiled skill version to the Lua server with optional immediate deployment.
+Push your compiled skill or persona version to the Lua server with optional immediate deployment.
 
 ```bash
-lua push
+lua push              # Interactive: choose skill or persona
+lua push skill        # Direct: push skill
+lua push persona      # Direct: push persona
 ```
 
-### What It Does
+<Note>
+**New in v2.6.0:** Direct mode lets you skip the selection prompt for faster workflows!
+</Note>
+
+### Usage Modes
+
+<Tabs>
+  <Tab title="Interactive Mode">
+    **Default behavior - prompts for selection**
+    
+    ```bash
+    $ lua push
+    ? What would you like to push?
+      › skill
+        persona
+    ```
+    
+    Best for: When you're not sure or want to see options
+  </Tab>
+
+  <Tab title="Direct Mode - Skill">
+    **Skip prompt and push skill directly**
+    
+    ```bash
+    $ lua push skill
+    # No prompt - goes straight to pushing skill
+    ```
+    
+    Best for: Quick iterations, automation, when you know what you want
+  </Tab>
+
+  <Tab title="Direct Mode - Persona">
+    **Skip prompt and push persona directly**
+    
+    ```bash
+    $ lua push persona
+    # No prompt - goes straight to pushing persona
+    ```
+    
+    Best for: Persona-only updates, faster workflow
+  </Tab>
+</Tabs>
+
+### What It Does (Skills)
 
 <Steps>
-  <Step title="Select Skill">
+  <Step title="Select Skill (if interactive)">
     Choose which skill to push (if multiple)
   </Step>
   
@@ -344,10 +389,35 @@ lua push
   </Step>
 </Steps>
 
-### Example: Push Only
+### Example: Push Only (Interactive)
 
 ```bash
 $ lua push
+? What would you like to push?
+  › skill
+    persona
+
+📦 Pushing skill: customer-service
+
+Current version: 1.0.0
+? Enter new version to push: (1.0.1) ⏎
+
+📝 Updating version from 1.0.0 to 1.0.1
+✅ Authenticated
+🔄 Compiling skill...
+✅ Skill compiled successfully - 10 tools bundled
+🔄 Pushing version to server...
+✅ Version 1.0.1 of "customer-service" pushed successfully
+
+? Would you like to deploy this version to production now? No
+
+[Version pushed, use 'lua deploy' to deploy later]
+```
+
+### Example: Push Only (Direct Mode)
+
+```bash
+$ lua push skill
 📦 Pushing skill: customer-service
 
 Current version: 1.0.0
@@ -606,7 +676,8 @@ lua deploy
 
 ```bash
 # Configure environment if needed
-lua env  # Add new API keys, etc.
+lua env sandbox        # Add new API keys locally
+lua env production     # Update production env vars
 
 # Make changes to src/tools/*.ts
 
@@ -616,11 +687,11 @@ lua chat  # Choose sandbox mode
 # Optional: Test specific tools
 lua test  # For debugging individual tools
 
-# When satisfied, push
-lua push
+# When satisfied, push (direct mode - faster!)
+lua push skill
 
-# Update production environment if needed
-lua env  # Select Production mode
+# Update production persona if needed
+lua persona production # Or: lua push persona
 
 # Deploy to production
 lua deploy
@@ -635,8 +706,8 @@ vim src/tools/MyTool.ts
 # 2. Test
 lua test
 
-# 3. Push and deploy
-lua push
+# 3. Push and deploy (direct mode)
+lua push skill
 lua deploy
 ```
 

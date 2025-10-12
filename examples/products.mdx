@@ -167,6 +167,52 @@ const inStock = all.data.filter(p => p.inStock).length;
 const categories = [...new Set(all.data.map(p => p.category))];
 ```
 
+### Using save() Method (New!)
+
+```typescript
+// Get product and modify multiple fields
+const product = await Products.getById('product_123');
+
+// Modify properties directly
+product.price = 899.99;
+product.inStock = true;
+product.category = 'Electronics - Sale';
+product.description = 'Updated description';
+
+// Save all changes at once
+await product.save();
+
+// Much cleaner than calling update()!
+```
+
+### Practical Example: Bulk Price Update
+
+```typescript
+export class BulkDiscountTool implements LuaTool {
+  name = "apply_discount";
+  description = "Apply discount to products";
+  
+  inputSchema = z.object({
+    category: z.string(),
+    discountPercent: z.number()
+  });
+
+  async execute(input: z.infer<typeof this.inputSchema>) {
+    const products = await Products.get(1000);
+    
+    for (const product of products.data) {
+      if (product.category === input.category) {
+        // Modify and save
+        product.price = product.price * (1 - input.discountPercent / 100);
+        await product.save();
+      }
+    }
+    
+    return { message: `Discount applied to ${input.category} products` };
+  }
+}
+```
+
 ## What You'll Learn
 
 <CardGroup cols={2}>
