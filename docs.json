@@ -19,9 +19,7 @@
         "groups": [
           {
             "group": "Welcome",
-            "pages": [
-              "overview"
-            ]
+            "pages": ["overview"]
           },
           {
             "group": "Key Concepts",
@@ -154,9 +152,7 @@
           },
           {
             "group": "Help",
-            "pages": [
-              "chat-widget/troubleshooting"
-            ]
+            "pages": ["chat-widget/troubleshooting"]
           }
         ]
       },
@@ -165,9 +161,7 @@
         "groups": [
           {
             "group": "Overview",
-            "pages": [
-              "channels/introduction"
-            ]
+            "pages": ["channels/introduction"]
           },
           {
             "group": "Messaging Platforms",
@@ -180,17 +174,11 @@
           },
           {
             "group": "Communication Channels",
-            "pages": [
-              "channels/email",
-              "channels/website-widget"
-            ]
+            "pages": ["channels/email", "channels/website-widget"]
           },
           {
             "group": "Management",
-            "pages": [
-              "channels/cli-management",
-              "channels/admin-dashboard"
-            ]
+            "pages": ["channels/cli-management", "channels/admin-dashboard"]
           }
         ]
       },
@@ -199,9 +187,7 @@
         "groups": [
           {
             "group": "Overview",
-            "pages": [
-              "formatting/introduction"
-            ]
+            "pages": ["formatting/introduction"]
           },
           {
             "group": "Components",
@@ -216,9 +202,7 @@
           },
           {
             "group": "Advanced",
-            "pages": [
-              "formatting/custom-components"
-            ]
+            "pages": ["formatting/custom-components"]
           }
         ]
       },
@@ -229,13 +213,15 @@
             "group": "E-commerce",
             "pages": [
               "integrations/shopify",
-              "integrations/woocommerce"
+              "integrations/woocommerce",
+              "integrations/square-ecommerce"
             ]
           },
           {
             "group": "Booking Systems",
             "pages": [
-              "integrations/simplybook"
+              "integrations/simplybook",
+              "integrations/square-appointments"
             ]
           }
         ]
@@ -245,9 +231,7 @@
         "groups": [
           {
             "group": "Demo Gallery",
-            "pages": [
-              "demos/overview"
-            ]
+            "pages": ["demos/overview"]
           },
           {
             "group": "Customer-Facing Agents",
@@ -306,13 +290,7 @@
     }
   },
   "contextual": {
-    "options": [
-      "copy",
-      "view",
-      "chatgpt",
-      "claude",
-      "cursor"
-    ]
+    "options": ["copy", "view", "chatgpt", "claude", "cursor"]
   },
   "footer": {
     "socials": {
