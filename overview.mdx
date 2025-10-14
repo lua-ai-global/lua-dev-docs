@@ -160,126 +160,410 @@ Write TypeScript functions that connect to any API - your CRM, payment processor
 **Testing Individual Tools**: Need to test a specific tool with exact inputs? Use `lua test` to test tools one at a time. For most development, `lua chat` is faster for testing complete workflows.
 </Note>
 
-## Complete Flexibility
+## Complete Flexibility: Choose Your Integration Approach
 
-Choose your integration approach:
+One of Lua's core strengths is flexibility. You can integrate with your existing systems, use our optional Platform APIs, or mix both approaches. Here's how each approach works:
 
 <Tabs>
   <Tab title="Your APIs Only">
-    **100% Custom Integration**
+    ### 100% Custom Integration
+    
+    Connect directly to your existing backend, databases, and third-party services. This gives you complete control over your business logic, data, and infrastructure.
     
     ```typescript
+    import { LuaTool, env } from 'lua-cli';
+    import { z } from 'zod';
+    
     // Connect to YOUR systems
-    class YourTool implements LuaTool {
+    class YourCustomTool implements LuaTool {
+      name = "your_custom_action";
+      description = "Performs actions specific to your business";
+      inputSchema = z.object({ param: z.string() });
+      
       async execute(input) {
         // YOUR API
+        const apiKey = env('YOUR_API_KEY');
         const response = await fetch('https://your-backend.com/api/endpoint', {
-          headers: { 'X-API-Key': env('YOUR_API_KEY') }
+          headers: { 'Authorization': `Bearer ${apiKey}` }
         });
         
         // YOUR business logic
-        return processYourData(await response.json());
+        const data = await response.json();
+        return processYourData(data);
       }
     }
     ```
     
-    **Use when:**
-    - You have existing systems
+    **Perfect for:**
+    - Existing infrastructure and systems
     - Custom business requirements
-    - Want complete control
-    - Any industry, any use case
+    - Enterprise integrations
+    - Any industry or use case
+    - Complete control over data and logic
+    
+    **Real Examples:**
+    - CRM: Salesforce, HubSpot, your custom CRM
+    - E-commerce: Shopify, WooCommerce, Magento, your custom store
+    - ERP: SAP, Oracle, your internal systems
+    - Payments: Stripe, PayPal, Square, your payment gateway
+    - Databases: PostgreSQL, MongoDB, MySQL, your data warehouse
   </Tab>
 
   <Tab title="Platform APIs">
-    **Optional Built-In Helpers**
+    ### Optional Built-In Helpers
+    
+    For common e-commerce and data storage needs, we provide ready-to-use APIs. These are completely optional shortcuts.
     
     ```typescript
-    import { Products, Baskets, Data } from 'lua-cli';
+    import { Products, Baskets, Orders, Data } from 'lua-cli';
     
-    // Quick e-commerce or data storage
-    const products = await Products.search('laptop');
-    const basket = await Baskets.create({ currency: 'USD' });
-    const results = await Data.search('docs', 'query');
-    ```
-    
-    **Use when:**
-    - Building e-commerce quickly
-    - Need vector search
-    - Want rapid prototyping
-    - Don't have backend yet
-  </Tab>
-
-  <Tab title="Mix Both">
-    **Best of Both Worlds**
-    
-    ```typescript
-    import { Data } from 'lua-cli';
-    
-    class HybridTool implements LuaTool {
-      async execute(input) {
-        // 1. YOUR Shopify store
-        const products = await fetch('https://your-store.myshopify.com/api/...');
+    class QuickShopTool implements LuaTool {
+      name = "shop_assistant";
+      description = "Help users browse and purchase products";
+      
+      async execute(input: { query: string }) {
+        // Platform APIs - no backend needed
+        const products = await Products.search(input.query);
+        const basket = await Baskets.create({ currency: 'USD' });
         
-        // 2. Platform vector search for FAQs
-        const faqs = await Data.search('help', input.query);
+        // Add items to cart
+        await Baskets.addItem(basket.id, {
+          id: products[0].id,
+          price: products[0].price,
+          quantity: 1
+        });
         
-        // 3. YOUR payment system
-        const payment = await yourPaymentGateway.process();
-        
-        return { products, faqs, payment };
+        return { products, basketId: basket.id };
       }
     }
     ```
     
-    **Use when:**
-    - Want flexibility
-    - Leverage existing systems
-    - Add AI-powered search
-    - Best tool for each job
+    **Available Platform APIs:**
+    - **Products** - E-commerce catalog management
+    - **Baskets** - Shopping cart functionality
+    - **Orders** - Order processing and tracking
+    - **Data** - Vector search and data storage
+    - **User** - User profile management
+    
+    **Perfect for:**
+    - Building e-commerce quickly
+    - Need vector/semantic search
+    - Rapid prototyping and MVPs
+    - Don't have backend infrastructure yet
+    - Want to focus on AI experience first
+  </Tab>
+
+  <Tab title="Mix Both (Recommended)">
+    ### Best of Both Worlds
+    
+    Most production applications use a hybrid approach: your critical business systems combined with Platform helpers where they add value.
+    
+    ```typescript
+    import { Data, env } from 'lua-cli';
+    
+    class HybridSearchTool implements LuaTool {
+      name = "comprehensive_search";
+      description = "Search across all your data sources";
+      
+      async execute(input: { query: string }) {
+        // 1. YOUR Shopify store for products
+        const shopifyProducts = await fetch(
+          `https://your-store.myshopify.com/admin/api/2024-01/products.json`,
+          { 
+            headers: { 
+              'X-Shopify-Access-Token': env('SHOPIFY_TOKEN') 
+            }
+          }
+        ).then(r => r.json());
+        
+        // 2. Platform vector search for FAQs and docs
+        const helpArticles = await Data.search('help_articles', input.query, 5);
+        
+        // 3. YOUR custom database for user history
+        const userHistory = await fetch(
+          `https://your-api.com/users/${input.userId}/history`,
+          {
+            headers: { 'Authorization': `Bearer ${env('YOUR_API_KEY')}` }
+          }
+        ).then(r => r.json());
+        
+        return {
+          products: shopifyProducts.products,
+          help: helpArticles.data,
+          history: userHistory
+        };
+      }
+    }
+    ```
+    
+    **Perfect for:**
+    - Most production applications
+    - Pragmatic, flexible solutions
+    - Using best tool for each job
+    - Extending existing systems
+    - Adding AI-powered search to your stack
+    
+    **Common Patterns:**
+    - Your product catalog + Platform vector search
+    - Your authentication + Platform data storage
+    - Your payment system + Platform product management
+    - Your CRM + Platform semantic search
   </Tab>
 </Tabs>
 
+## Detailed Integration Examples
+
+### Example 1: Pure Custom - CRM Integration
+
+Connect to your existing CRM system (Salesforce, HubSpot, or custom):
+
+```typescript
+import { LuaTool, LuaSkill, env } from 'lua-cli';
+import { z } from 'zod';
+
+class GetCustomerTool implements LuaTool {
+  name = "get_customer";
+  description = "Look up customer in your CRM";
+  inputSchema = z.object({ 
+    email: z.string().email() 
+  });
+
+  async execute(input: { email: string }) {
+    // Call YOUR CRM API
+    const response = await fetch(
+      `https://your-crm.com/api/customers/${input.email}`,
+      {
+        headers: { 
+          'X-API-Key': env('YOUR_CRM_API_KEY'),
+          'Content-Type': 'application/json'
+        }
+      }
+    );
+    
+    if (!response.ok) {
+      throw new Error('Customer not found');
+    }
+    
+    return await response.json();
+  }
+}
+
+class CreateTicketTool implements LuaTool {
+  name = "create_ticket";
+  description = "Create support ticket in your system";
+  inputSchema = z.object({
+    customerId: z.string(),
+    subject: z.string(),
+    description: z.string()
+  });
+
+  async execute(input) {
+    const response = await fetch('https://your-crm.com/api/tickets', {
+      method: 'POST',
+      headers: {
+        'X-API-Key': env('YOUR_CRM_API_KEY'),
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(input)
+    });
+    
+    return await response.json();
+  }
+}
+
+const skill = new LuaSkill({
+  name: "crm-integration",
+  description: "Access our CRM system for customer support",
+  tools: [new GetCustomerTool(), new CreateTicketTool()]
+});
+```
+
+### Example 2: Platform APIs - Quick E-commerce
+
+Build an e-commerce assistant using Platform APIs:
+
+```typescript
+import { LuaTool, LuaSkill, Products, Baskets } from 'lua-cli';
+import { z } from 'zod';
+
+class ShopAssistantTool implements LuaTool {
+  name = "add_to_cart";
+  description = "Add product to shopping cart";
+  inputSchema = z.object({
+    productId: z.string(),
+    quantity: z.number().min(1)
+  });
+  
+  async execute(input: { productId: string; quantity: number }) {
+    // Use Platform APIs
+    const product = await Products.getById(input.productId);
+    const basket = await Baskets.create({ currency: 'USD' });
+    
+    await Baskets.addItem(basket.id, {
+      id: input.productId,
+      price: product.price,
+      quantity: input.quantity
+    });
+    
+    return { 
+      basketId: basket.id,
+      product: product.name,
+      quantity: input.quantity,
+      total: product.price * input.quantity
+    };
+  }
+}
+
+const skill = new LuaSkill({
+  name: "shop-assistant",
+  description: "Help users shop and add items to cart",
+  tools: [new ShopAssistantTool()]
+});
+```
+
+### Example 3: Hybrid - Real Business Solution
+
+Combine your systems with Platform helpers:
+
+```typescript
+import { LuaTool, Data, env } from 'lua-cli';
+import { z } from 'zod';
+
+class CompleteSearchTool implements LuaTool {
+  name = "smart_search";
+  description = "Search across all data sources intelligently";
+  inputSchema = z.object({
+    query: z.string(),
+    userId: z.string().optional()
+  });
+  
+  async execute(input: { query: string; userId?: string }) {
+    // 1. Search YOUR product API/database
+    const yourProducts = await fetch('https://your-api.com/search', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${env('YOUR_API_KEY')}`,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({ query: input.query })
+    }).then(r => r.json());
+    
+    // 2. Use Platform vector search for FAQs and documentation
+    const faqResults = await Data.search('faqs', input.query, 5, 0.7);
+    
+    // 3. If user provided, get their purchase history from YOUR system
+    let userHistory = null;
+    if (input.userId) {
+      userHistory = await fetch(
+        `https://your-api.com/users/${input.userId}/purchases`,
+        {
+          headers: { 'Authorization': `Bearer ${env('YOUR_API_KEY')}` }
+        }
+      ).then(r => r.json());
+    }
+    
+    // 4. Combine and return all results
+    return {
+      products: yourProducts,
+      faqs: faqResults.data,
+      userHistory,
+      message: `Found ${yourProducts.length} products and ${faqResults.count} help articles`
+    };
+  }
+}
+```
+
 ## Real-World Use Cases
+
+Lua can power AI agents for virtually any industry or use case. Here are some common scenarios:
 
 <CardGroup cols={2}>
   <Card title="E-commerce" icon="cart-shopping">
-    **Integrate with YOUR store or use our APIs**
+    **Shopping Assistant**
     
-    - Shopify/WooCommerce integration
-    - Custom product APIs
-    - Or use Platform Products/Baskets APIs
+    - Product search and recommendations
+    - Cart management and checkout
+    - Order tracking and updates
+    - Customer support and FAQs
     
-    Result: AI shopping assistant
+    **Integrate with:** Shopify, WooCommerce, Magento, your custom store, or Platform APIs
   </Card>
   
   <Card title="Customer Support" icon="headset">
-    **Connect to YOUR systems**
+    **24/7 AI Support Agent**
     
-    - Your ticketing system (Zendesk, Freshdesk, custom)
-    - Your knowledge base
-    - Your order database
+    - Ticket creation and management
+    - Knowledge base search
+    - Order lookups and status updates
+    - Escalation to human agents
     
-    Result: 24/7 AI support agent
+    **Integrate with:** Zendesk, Freshdesk, Intercom, your ticketing system
   </Card>
   
   <Card title="SaaS Products" icon="window-maximize">
-    **Extend YOUR application**
+    **In-App AI Assistant**
     
-    - Your product APIs
-    - Your user management
-    - Your analytics
+    - User onboarding and tutorials
+    - Feature guidance and help
+    - Account management
+    - Usage analytics and insights
     
-    Result: In-app AI assistant
+    **Integrate with:** Your product APIs, analytics platforms, auth systems
   </Card>
   
   <Card title="Internal Tools" icon="building">
-    **Access YOUR internal systems**
+    **AI-Powered Operations**
     
-    - Your ERP, CRM, databases
-    - Your reporting tools
-    - Your workflows
+    - Access ERP, CRM, and databases
+    - Generate reports and analytics
+    - Automate workflows
+    - Data lookups and updates
     
-    Result: AI-powered operations
+    **Integrate with:** Your internal systems, SAP, Oracle, Salesforce
+  </Card>
+  
+  <Card title="Finance & Banking" icon="building-columns">
+    **Account Management**
+    
+    - Balance inquiries and transfers
+    - Transaction history
+    - Payment processing
+    - Report generation
+    
+    **Integrate with:** Your banking APIs, Stripe, Plaid, accounting systems
+  </Card>
+  
+  <Card title="Healthcare" icon="heart-pulse">
+    **Patient Portal Assistant**
+    
+    - Appointment scheduling
+    - Prescription lookups
+    - Doctor directory search
+    - Health record access
+    
+    **Integrate with:** Your EMR, appointment systems, patient databases
+  </Card>
+  
+  <Card title="HR & Recruiting" icon="user-tie">
+    **Employee Assistant**
+    
+    - Policy and benefits search
+    - Leave requests and approvals
+    - Onboarding support
+    - Document access
+    
+    **Integrate with:** BambooHR, Workday, your HR systems
+  </Card>
+  
+  <Card title="Logistics" icon="truck">
+    **Shipping & Tracking**
+    
+    - Multi-carrier tracking
+    - Shipping quotes and labels
+    - Delivery status updates
+    - Route optimization
+    
+    **Integrate with:** UPS, FedEx, USPS APIs, your logistics system
   </Card>
 </CardGroup>
 
@@ -287,107 +571,169 @@ Choose your integration approach:
 
 <AccordionGroup>
   <Accordion title="🔓 No Vendor Lock-In">
-    Integrate with any API you choose. Your infrastructure, your choice. Not tied to our Platform APIs.
+    Build on your own infrastructure. Integrate with any API you choose. Not tied to our Platform APIs - they're completely optional. Your data stays with your systems, your authentication remains yours.
   </Accordion>
 
   <Accordion title="⚡ Fast Development">
-    Live reload, TypeScript autocomplete, instant testing. Build and iterate in minutes, not days.
+    Live reload during development means instant feedback. TypeScript autocomplete guides you. Test your agent with `lua chat` immediately. Deploy with one command. Build in minutes what would take days with other platforms.
   </Accordion>
 
   <Accordion title="🎯 Full Control">
-    Your code, your logic, your data. Complete control over authentication, business rules, and integrations.
+    Your code, your logic, your data. Complete control over authentication, business rules, error handling, and integrations. Not limited by platform constraints - if you can code it in TypeScript, you can build it.
   </Accordion>
 
   <Accordion title="🚀 Production Ready">
-    Version management, staging environments, one-command deployment. Ready for enterprise from day one.
+    Version management built-in. Sandbox for testing before production. Environment variables for secrets. One-command deployment. Monitoring and logs. Everything you need for enterprise production use.
   </Accordion>
 
   <Accordion title="🛠️ Real Developer Tools">
-    Actual TypeScript code, not YAML configs. Zod validation, proper testing, modern dev workflow.
+    Actual TypeScript code, not YAML configs or no-code builders. Zod validation for type-safe inputs. Proper testing with `lua test` and `lua chat`. Modern dev workflow you already know.
   </Accordion>
 
-  <Accordion title="🎁 Optional Helpers">
-    Platform APIs available for e-commerce and vector search if you need them. Use them or don't - your call.
+  <Accordion title="🎁 Optional Platform Helpers">
+    Platform APIs available when you need quick e-commerce or vector search. But they're completely optional - use them or don't, it's your choice. Most developers use a hybrid approach.
   </Accordion>
 </AccordionGroup>
 
-## Compare Approaches
+## Platform Architecture
 
-<Tabs>
-  <Tab title="Pure Custom">
-    ### Your APIs Only
-    
-    **What you build:**
-    ```typescript
-    // 100% your integrations
-    - Connect to Salesforce CRM
-    - Integrate with your warehouse system
-    - Access your payment gateway
-    - Use your authentication
-    ```
-    
-    **Best for:**
-    - Existing infrastructure
-    - Custom requirements
-    - Enterprise systems
-    - Any industry
-    
-    **Control:** 🟢 Complete
-    
-    **Speed:** 🟡 Build what you need
-  </Tab>
+Understanding how Lua works helps you build better agents:
 
-  <Tab title="Platform APIs">
-    ### Built-In Helpers
-    
-    **What you use:**
-    ```typescript
-    import { Products, Baskets, Orders, Data } from 'lua-cli';
-    
-    // Ready-made e-commerce & search
-    - Product catalog
-    - Shopping carts
-    - Order management
-    - Vector search
-    ```
-    
-    **Best for:**
-    - Quick prototypes
-    - E-commerce MVPs
-    - Testing ideas
-    - No backend yet
-    
-    **Control:** 🟡 Pre-built
-    
-    **Speed:** 🟢 Instant
-  </Tab>
+### Skills and Tools
 
-  <Tab title="Hybrid (Recommended)">
-    ### Mix Both
-    
-    **What you do:**
-    ```typescript
-    // Your critical systems
-    - YOUR Shopify/custom store
-    - YOUR authentication
-    - YOUR business logic
-    
-    // Platform helpers where useful
-    - Vector search for FAQs
-    - Data storage for sessions
-    ```
-    
-    **Best for:**
-    - Most businesses
-    - Pragmatic solutions
-    - Best tool for each job
-    - Flexibility
-    
-    **Control:** 🟢 Where it matters
-    
-    **Speed:** 🟢 Optimized
-  </Tab>
-</Tabs>
+**Tools** are TypeScript classes that implement `LuaTool`:
+- Each tool performs one specific action
+- Tools have names, descriptions, and input schemas
+- The AI decides when to call each tool based on context
+
+**Skills** are bundles of related tools:
+- Group tools that work together
+- Each skill can have multiple tools
+- Skills can be versioned and deployed independently
+
+### Development Workflow
+
+```bash
+# Local development with live reload
+lua chat
+
+# Test specific tools with exact inputs
+lua test
+
+# Push your code to the cloud
+lua push
+
+# Deploy to production
+lua deploy
+
+# Or combine push and deploy
+lua push && lua deploy
+```
+
+### Testing Strategies
+
+**Interactive Testing (`lua chat`):**
+- Best for testing complete workflows
+- Chat naturally and see tools called in real-time
+- Choose sandbox mode to test local code before deploying
+- Fast iteration during development
+
+**Individual Tool Testing (`lua test`):**
+- Test specific tools with exact inputs
+- Useful for debugging edge cases
+- Validates schemas and error handling
+- Good for automated testing
+
+## Security and Best Practices
+
+### Environment Variables
+
+Always use environment variables for API keys and secrets:
+
+```typescript
+import { env } from 'lua-cli';
+
+const apiKey = env('YOUR_API_KEY');
+const dbPassword = env('DATABASE_PASSWORD');
+```
+
+Set environment variables with:
+```bash
+lua env set YOUR_API_KEY "your-key-here"
+```
+
+### Error Handling
+
+Implement proper error handling in your tools:
+
+```typescript
+class SafeTool implements LuaTool {
+  async execute(input) {
+    try {
+      const response = await fetch('https://api.example.com/data');
+      
+      if (!response.ok) {
+        throw new Error(`API error: ${response.status}`);
+      }
+      
+      return await response.json();
+    } catch (error) {
+      // Log error for debugging
+      console.error('Tool execution failed:', error);
+      
+      // Return user-friendly message
+      return {
+        error: true,
+        message: 'Sorry, I encountered an issue. Please try again.'
+      };
+    }
+  }
+}
+```
+
+### Input Validation
+
+Use Zod schemas for type-safe validation:
+
+```typescript
+import { z } from 'zod';
+
+class ValidatedTool implements LuaTool {
+  inputSchema = z.object({
+    email: z.string().email(),
+    amount: z.number().positive(),
+    date: z.string().datetime()
+  });
+  
+  async execute(input) {
+    // Input is guaranteed to match schema
+    // TypeScript knows the types
+  }
+}
+```
+
+## Feature Highlights
+
+<CardGroup cols={3}>
+  <Card title="Any API" icon="link">
+    REST, GraphQL, WebSockets - integrate with anything callable from TypeScript
+  </Card>
+  <Card title="TypeScript" icon="code">
+    Full type safety with autocomplete and IntelliSense
+  </Card>
+  <Card title="Live Reload" icon="bolt">
+    Instant feedback during development with auto-recompilation
+  </Card>
+  <Card title="Optional Platform APIs" icon="database">
+    Ready-to-use helpers for e-commerce and vector search
+  </Card>
+  <Card title="Voice Chat" icon="microphone">
+    Voice interactions built into LuaPop widget
+  </Card>
+  <Card title="One-Command Deploy" icon="rocket">
+    Production deployment in seconds
+  </Card>
+</CardGroup>
 
 ## Get Started
 
@@ -399,9 +745,7 @@ Choose your integration approach:
   >
     **Lua CLI** - Create AI agents that integrate with your APIs
     
-    - Install CLI
-    - Write TypeScript tools
-    - Deploy instantly
+    Install CLI, write TypeScript tools, deploy instantly
     
     → 5 minute quick start
   </Card>
@@ -413,21 +757,19 @@ Choose your integration approach:
   >
     **LuaPop Widget** - Embed AI chat on your website
     
-    - One script tag
-    - Fully customizable
-    - Works anywhere
+    One script tag, fully customizable, works anywhere
     
     → 2 minute setup
   </Card>
 </CardGroup>
 
-## What You'll Learn
+## Learning Path
 
 <Steps>
-  <Step title="Understand the Platform">
+  <Step title="Understand Core Concepts">
     Learn how Lua enables AI agents to take real actions through your code
     
-    <Card title="Core Concepts" icon="book" href="/concepts/skills-and-tools" />
+    <Card title="Skills and Tools" icon="book" href="/concepts/skills-and-tools" />
   </Step>
   
   <Step title="Build Your First Agent">
@@ -449,41 +791,6 @@ Choose your integration approach:
   </Step>
 </Steps>
 
-## Feature Highlights
-
-<CardGroup cols={3}>
-  <Card title="Any API" icon="link">
-    REST, GraphQL, WebSockets
-    
-    Your choice of integrations
-  </Card>
-  <Card title="TypeScript" icon="code">
-    Full type safety
-    
-    Modern dev tools
-  </Card>
-  <Card title="Live Reload" icon="bolt">
-    Instant feedback
-    
-    Fast iteration
-  </Card>
-  <Card title="Platform APIs" icon="database">
-    Optional helpers
-    
-    E-commerce & search
-  </Card>
-  <Card title="Voice Chat" icon="microphone">
-    Voice interactions
-    
-    Accessibility built-in
-  </Card>
-  <Card title="One-Command Deploy" icon="rocket">
-    Production ready
-    
-    Instant deployment
-  </Card>
-</CardGroup>
-
 ## Popular Resources
 
 <CardGroup cols={2}>
@@ -499,7 +806,7 @@ Choose your integration approach:
     icon="plug"
     href="/concepts/platform-apis"
   >
-    Learn how to integrate with your APIs (or use ours)
+    Learn how to integrate with your APIs or use Platform APIs
   </Card>
   <Card
     title="Complete API Reference"
@@ -531,173 +838,6 @@ Choose your integration approach:
   </Card>
 </CardGroup>
 
-## See It In Action
-
-### Simple Example: Weather Tool
-
-```typescript
-import { LuaTool, LuaSkill } from 'lua-cli';
-import { z } from 'zod';
-
-// Create a tool that calls ANY external API
-class GetWeatherTool implements LuaTool {
-  name = "get_weather";
-  description = "Get current weather for a city";
-  
-  inputSchema = z.object({
-    city: z.string()
-  });
-
-  async execute(input: { city: string }) {
-    // Call any weather API
-    const response = await fetch(
-      `https://api.openweathermap.org/data/2.5/weather?q=${input.city}`
-    );
-    
-    const data = await response.json();
-    
-    return {
-      temperature: data.main.temp,
-      condition: data.weather[0].description,
-      city: input.city
-    };
-  }
-}
-
-// Bundle into a skill
-const weatherSkill = new LuaSkill({
-  name: "weather-skill",
-  version: "1.0.0",
-  description: "Provides weather information",
-  context: "Use get_weather when users ask about weather",
-  tools: [new GetWeatherTool()]
-});
-
-// Deploy
-// $ lua push && lua deploy
-```
-
-### Real Business Example: Order Management
-
-```typescript
-import { LuaTool } from 'lua-cli';
-
-// Integrate with YOUR order system
-class OrderLookupTool implements LuaTool {
-  name = "lookup_order";
-  description = "Look up order status in your system";
-  
-  inputSchema = z.object({
-    orderId: z.string()
-  });
-
-  async execute(input: { orderId: string }) {
-    // Call YOUR backend API
-    const response = await fetch(
-      `https://your-backend.com/api/orders/${input.orderId}`,
-      {
-        headers: {
-          'Authorization': `Bearer ${env('YOUR_API_KEY')}`,
-          'Content-Type': 'application/json'
-        }
-      }
-    );
-    
-    if (!response.ok) {
-      throw new Error('Order not found');
-    }
-    
-    const order = await response.json();
-    
-    // Return formatted data for the AI
-    return {
-      orderId: order.id,
-      status: order.status,
-      estimatedDelivery: order.delivery_date,
-      trackingNumber: order.tracking,
-      items: order.items.map(item => ({
-        name: item.product_name,
-        quantity: item.qty,
-        price: `$${item.price}`
-      }))
-    };
-  }
-}
-```
-
-**Result:** Users can ask "Where's my order #12345?" and get real-time status from YOUR system.
-
-## Enterprise Ready
-
-<CardGroup cols={2}>
-  <Card title="Security" icon="shield">
-    Token-based auth, HTTPS only, secure environment variables, session isolation
-  </Card>
-  <Card title="Scalability" icon="chart-line">
-    Auto-scaling, CDN delivery, WebSocket optimization, production monitoring
-  </Card>
-  <Card title="Compliance" icon="check-circle">
-    GDPR ready, SOC 2 compliant, data residency options, audit logs
-  </Card>
-  <Card title="Support" icon="life-ring">
-    Technical support, migration assistance, dedicated success team, SLA guarantees
-  </Card>
-</CardGroup>
-
-## Industry Examples
-
-<Tabs>
-  <Tab title="E-commerce">
-    **Shopping Assistant**
-    
-    Your agent can:
-    - Search products (your catalog or Platform API)
-    - Add to cart (your system or Platform API)
-    - Process checkout (Stripe, your gateway, or Platform API)
-    - Track orders (your API)
-    - Answer questions (your FAQs + vector search)
-  </Tab>
-
-  <Tab title="Healthcare">
-    **Patient Portal Assistant**
-    
-    Your agent can:
-    - Schedule appointments (YOUR system)
-    - Look up prescriptions (YOUR EMR)
-    - Find doctors (YOUR directory)
-    - Answer health questions (YOUR knowledge base)
-    - Process payments (Stripe or YOUR system)
-  </Tab>
-
-  <Tab title="SaaS">
-    **Product Onboarding**
-    
-    Your agent can:
-    - Access user accounts (YOUR auth)
-    - Fetch usage data (YOUR analytics)
-    - Create support tickets (YOUR ticketing)
-    - Search documentation (Platform vector search)
-    - Guide feature usage (YOUR product APIs)
-  </Tab>
-
-  <Tab title="Finance">
-    **Account Management**
-    
-    Your agent can:
-    - Check balances (YOUR banking API)
-    - Transfer funds (YOUR secure API)
-    - Look up transactions (YOUR database)
-    - Generate reports (YOUR reporting system)
-    - Verify identity (YOUR KYC system)
-  </Tab>
-</Tabs>
-
-## Pricing Model
-
-<Note>
-Lua offers flexible pricing based on usage, not per-seat or monthly fees. Contact sales@heylua.ai for details.
-</Note>
-
 ## Featured Demos
 
 See complete, production-ready implementations:
@@ -720,7 +860,7 @@ See complete, production-ready implementations:
   >
     Zendesk integration with AI knowledge base
     
-    **Uses:** Zendesk API + Lua Data (vector search)
+    **Uses:** Zendesk API + Platform Data (vector search)
   </Card>
   
   <Card
@@ -730,7 +870,7 @@ See complete, production-ready implementations:
   >
     KYC verification with document upload
     
-    **Uses:** Stripe Identity + Lua Data
+    **Uses:** Stripe Identity + Platform Data
   </Card>
   
   <Card
@@ -740,7 +880,7 @@ See complete, production-ready implementations:
   >
     Employee management and policy search
     
-    **Uses:** BambooHR + Lua Data
+    **Uses:** BambooHR + Platform Data
   </Card>
   
   <Card
@@ -764,51 +904,24 @@ See complete, production-ready implementations:
   </Card>
 </CardGroup>
 
-## Next Steps
+## Enterprise Features
 
 <CardGroup cols={2}>
-  <Card
-    title="🚀 Start Building"
-    icon="rocket"
-    href="/getting-started/quick-start"
-  >
-    **Lua CLI Quick Start**
-    
-    Install the CLI, create your first skill, and deploy in 5 minutes
+  <Card title="Security" icon="shield">
+    Token-based auth, HTTPS only, secure environment variables, session isolation
   </Card>
-  
-  <Card
-    title="💬 Add Chat Widget"
-    icon="comments"
-    href="/chat-widget/quick-start"
-  >
-    **LuaPop Quick Start**
-    
-    Embed AI chat on your website with one script tag
+  <Card title="Scalability" icon="chart-line">
+    Auto-scaling infrastructure, CDN delivery, WebSocket optimization
   </Card>
-  
-  <Card
-    title="📖 Learn Core Concepts"
-    icon="book"
-    href="/concepts/skills-and-tools"
-  >
-    **Understand the Platform**
-    
-    Learn about skills, tools, and how to integrate with any API
+  <Card title="Compliance" icon="check-circle">
+    GDPR ready, SOC 2 compliant, data residency options, audit logs
   </Card>
-  
-  <Card
-    title="💼 See Examples"
-    icon="layer-group"
-    href="/examples/overview"
-  >
-    **30+ Working Examples**
-    
-    External APIs, Platform APIs, and hybrid approaches
+  <Card title="Support" icon="life-ring">
+    Technical support, migration assistance, dedicated success team
   </Card>
 </CardGroup>
 
-## Questions?
+## Need Help?
 
 <CardGroup cols={3}>
   <Card title="Documentation" icon="book" href="/getting-started/quick-start">
@@ -825,11 +938,11 @@ See complete, production-ready implementations:
 ---
 
 <Card
-  title="Ready to Build?"
+  title="Ready to Build Your First Agent?"
   icon="rocket"
   href="/getting-started/quick-start"
   horizontal
 >
-  Get started with Lua CLI in 5 minutes →
+  Complete quick start tutorial with step-by-step instructions →
 </Card>
 
