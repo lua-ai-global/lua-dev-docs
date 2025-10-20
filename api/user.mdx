@@ -188,14 +188,14 @@ type TextMessage = {
 type ImageMessage = {
   type: "image";
   image: string;      // Base64 encoded image data
-  mimeType: string;   // e.g., "image/png", "image/jpeg"
+  mediaType: string;   // e.g., "image/png", "image/jpeg"
 };
 
 // File message
 type FileMessage = {
   type: "file";
   data: string;       // Base64 encoded file data
-  mimeType: string;   // e.g., "application/pdf"
+  mediaType: string;   // e.g., "application/pdf"
 };
 ```
 
@@ -215,7 +215,7 @@ await user.send([
   { 
     type: "image", 
     image: base64ImageData, 
-    mimeType: "image/png" 
+    mediaType: "image/png" 
   }
 ]);
 
@@ -225,7 +225,7 @@ await user.send([
   {
     type: "file",
     data: base64PdfData,
-    mimeType: "application/pdf"
+    mediaType: "application/pdf"
   }
 ]);
 ```
@@ -509,7 +509,7 @@ export class SendReceiptTool implements LuaTool {
       {
         type: "image",
         image: input.qrCodeBase64,
-        mimeType: "image/png"
+        mediaType: "image/png"
       }
     ]);
     
@@ -607,7 +607,7 @@ export class SendReceiptTool implements LuaTool {
     // Send with image
     await user.send([
       { type: "text", text: "Your boarding pass:" },
-      { type: "image", image: qrCodeBase64, mimeType: "image/png" }
+      { type: "image", image: qrCodeBase64, mediaType: "image/png" }
     ]);
     ```
   </Accordion>
@@ -660,13 +660,13 @@ type TextMessage = {
 type ImageMessage = {
   type: "image";
   image: string;
-  mimeType: string;
+  mediaType: string;
 };
 
 type FileMessage = {
   type: "file";
   data: string;
-  mimeType: string;
+  mediaType: string;
 };
 
 type Message = TextMessage | ImageMessage | FileMessage;
