@@ -1,0 +1,568 @@
+---
+title: "LuaWebhook"
+description: "HTTP endpoints for receiving external events and integrations"
+---
+
+## Overview
+
+`LuaWebhook` allows you to create HTTP endpoints that can receive events from external services like Stripe, Shopify, GitHub, or any other webhook-enabled platform.
+
+```typescript
+import { LuaWebhook } from 'lua-cli';
+
+const paymentWebhook = new LuaWebhook({
+  name: 'payment-webhook',
+  description: 'Handle Stripe payment events',
+  execute: async (event) => {
+    if (event.type === 'payment_intent.succeeded') {
+      // Handle successful payment
+      const paymentIntent = event.data.object;
+      // Process order, send confirmation, etc.
+    }
+    return { received: true };
+  }
+});
+
+export default paymentWebhook;
+```
+
+<Note>
+**New in v3.0.0:** HTTP webhooks for external integrations. Use with LuaAgent.
+</Note>
+
+## Use Cases
+
+<CardGroup cols={2}>
+  <Card title="Payment Events" icon="credit-card">
+    Stripe, PayPal webhooks for payment processing
+  </Card>
+  <Card title="E-commerce Updates" icon="cart-shopping">
+    Shopify, WooCommerce order notifications
+  </Card>
+  <Card title="Git Events" icon="code-branch">
+    GitHub, GitLab deployment triggers
+  </Card>
+  <Card title="Custom Integrations" icon="plug">
+    Any service that sends HTTP webhooks
+  </Card>
+</CardGroup>
+
+## Constructor
+
+### new LuaWebhook(config)
+
+Creates a new webhook endpoint.
+
+<ParamField path="config" type="LuaWebhookConfig" required>
+  Webhook configuration object
+</ParamField>
+
+## Configuration Parameters
+
+### Required Fields
+
+<ParamField path="name" type="string" required>
+  Unique webhook name
+  
+  **Format**: lowercase, hyphens, underscores
+  
+  **Examples**: `'payment-webhook'`, `'order-update-webhook'`
+</ParamField>
+
+<ParamField path="execute" type="function" required>
+  Function that handles incoming webhook events
+  
+  **Signature:** `(event: WebhookEvent) => Promise<any>`
+</ParamField>
+
+### Optional Fields
+
+<ParamField path="description" type="string">
+  Webhook description for documentation
+</ParamField>
+
+<ParamField path="verifySignature" type="boolean">
+  Whether to verify webhook signatures
+  
+  **Default:** true
+  
+  **Recommended:** Always verify signatures for security
+</ParamField>
+
+<ParamField path="secret" type="string">
+  Webhook secret for signature verification
+  
+  **Best Practice:** Use environment variables
+  
+  ```typescript
+  secret: env('STRIPE_WEBHOOK_SECRET')
+  ```
+</ParamField>
+
+## WebhookEvent Structure
+
+The event object passed to your execute function:
+
+```typescript
+interface WebhookEvent {
+  // Event type (e.g., "payment_intent.succeeded")
+  type: string;
+  
+  // Event data payload
+  data: any;
+  
+  // Request headers
+  headers: Record<string, string>;
+  
+  // Raw request body
+  body: string;
+  
+  // Webhook timestamp
+  timestamp: number;
+}
+```
+
+## Complete Examples
+
+### Stripe Payment Webhook
+
+```typescript
+import { LuaWebhook, env, Orders, User } from 'lua-cli';
+
+const stripeWebhook = new LuaWebhook({
+  name: 'stripe-payment-webhook',
+  description: 'Handle Stripe payment events',
+  
+  secret: env('STRIPE_WEBHOOK_SECRET'),
+  verifySignature: true,
+  
+  execute: async (event) => {
+    console.log('Stripe event:', event.type);
+    
+    switch (event.type) {
+      case 'payment_intent.succeeded':
+        const paymentIntent = event.data.object;
+        
+        // Update order status
+        const order = await Orders.getById(paymentIntent.metadata.orderId);
+        if (order) {
+          await order.updateStatus('CONFIRMED');
+          
+          // Notify user
+          const user = await User.get();
+          await user.send([{
+            type: 'text',
+            text: `✅ Payment confirmed! Order #${order.id} is being processed.`
+          }]);
+        }
+        
+        return { success: true, orderId: order?.id };
+        
+      case 'payment_intent.payment_failed':
+        const failed = event.data.object;
+        console.error('Payment failed:', failed);
+        
+        return { success: false, reason: failed.last_payment_error?.message };
+        
+      default:
+        console.log('Unhandled event type:', event.type);
+        return { received: true };
+    }
+  }
+});
+
+export default stripeWebhook;
+```
+
+### Shopify Order Webhook
+
+```typescript
+import { LuaWebhook, env, Data, User } from 'lua-cli';
+
+const shopifyOrderWebhook = new LuaWebhook({
+  name: 'shopify-order-webhook',
+  description: 'Handle Shopify order events',
+  
+  secret: env('SHOPIFY_WEBHOOK_SECRET'),
+  
+  execute: async (event) => {
+    const order = event.data;
+    
+    // Store order in custom data
+    await Data.create('shopify-orders', {
+      orderId: order.id,
+      orderNumber: order.order_number,
+      customer: order.customer,
+      total: order.total_price,
+      items: order.line_items,
+      status: order.financial_status,
+      createdAt: order.created_at
+    }, `Order #${order.order_number} ${order.customer.email} ${order.total_price}`);
+    
+    // Notify customer
+    const user = await User.get();
+    await user.send([{
+      type: 'text',
+      text: `🛍️ New order #${order.order_number} received!\n\nTotal: $${order.total_price}\nItems: ${order.line_items.length}`
+    }]);
+    
+    return {
+      success: true,
+      orderId: order.id,
+      orderNumber: order.order_number
+    };
+  }
+});
+
+export default shopifyOrderWebhook;
+```
+
+### GitHub Deployment Webhook
+
+```typescript
+import { LuaWebhook, env, User } from 'lua-cli';
+
+const githubWebhook = new LuaWebhook({
+  name: 'github-deployment-webhook',
+  description: 'Track GitHub deployment events',
+  
+  secret: env('GITHUB_WEBHOOK_SECRET'),
+  
+  execute: async (event) => {
+    const payload = event.data;
+    
+    if (event.type === 'deployment_status') {
+      const status = payload.deployment_status;
+      const deployment = payload.deployment;
+      
+      // Notify on deployment completion
+      if (status.state === 'success') {
+        const user = await User.get();
+        await user.send([{
+          type: 'text',
+          text: `🚀 Deployment successful!\n\nEnvironment: ${deployment.environment}\nRef: ${deployment.ref}\nURL: ${status.target_url}`
+        }]);
+      } else if (status.state === 'failure') {
+        const user = await User.get();
+        await user.send([{
+          type: 'text',
+          text: `❌ Deployment failed!\n\nEnvironment: ${deployment.environment}\nRef: ${deployment.ref}`
+        }]);
+      }
+      
+      return { success: true, state: status.state };
+    }
+    
+    return { received: true };
+  }
+});
+
+export default githubWebhook;
+```
+
+### Generic Webhook Template
+
+```typescript
+import { LuaWebhook, env } from 'lua-cli';
+
+const genericWebhook = new LuaWebhook({
+  name: 'custom-integration-webhook',
+  description: 'Handle events from custom service',
+  
+  secret: env('CUSTOM_WEBHOOK_SECRET'),
+  verifySignature: true,
+  
+  execute: async (event) => {
+    try {
+      // Validate event structure
+      if (!event.data || !event.type) {
+        throw new Error('Invalid event structure');
+      }
+      
+      // Log event for debugging
+      console.log('Received webhook:', {
+        type: event.type,
+        timestamp: event.timestamp,
+        dataKeys: Object.keys(event.data)
+      });
+      
+      // Process event based on type
+      switch (event.type) {
+        case 'resource.created':
+          await handleCreate(event.data);
+          break;
+          
+        case 'resource.updated':
+          await handleUpdate(event.data);
+          break;
+          
+        case 'resource.deleted':
+          await handleDelete(event.data);
+          break;
+          
+        default:
+          console.log('Unknown event type:', event.type);
+      }
+      
+      return { success: true, processed: event.type };
+      
+    } catch (error) {
+      console.error('Webhook processing error:', error);
+      
+      return {
+        success: false,
+        error: error.message,
+        timestamp: new Date().toISOString()
+      };
+    }
+  }
+});
+
+async function handleCreate(data: any) {
+  // Handle creation logic
+  console.log('Resource created:', data.id);
+}
+
+async function handleUpdate(data: any) {
+  // Handle update logic
+  console.log('Resource updated:', data.id);
+}
+
+async function handleDelete(data: any) {
+  // Handle deletion logic
+  console.log('Resource deleted:', data.id);
+}
+
+export default genericWebhook;
+```
+
+## Using with LuaAgent
+
+Webhooks are added to your agent configuration:
+
+```typescript
+import { LuaAgent } from 'lua-cli';
+import stripeWebhook from './webhooks/stripe';
+import shopifyWebhook from './webhooks/shopify';
+import githubWebhook from './webhooks/github';
+
+export const agent = new LuaAgent({
+  name: 'my-agent',
+  persona: '...',
+  skills: [...],
+  
+  webhooks: [
+    stripeWebhook,
+    shopifyWebhook,
+    githubWebhook
+  ]
+});
+```
+
+## Webhook URLs
+
+After deploying, your webhooks get URLs like:
+
+```
+https://api.heylua.ai/webhooks/{your-agent-id}/{webhook-name}
+```
+
+Configure this URL in your external service (Stripe, Shopify, etc.)
+
+## Testing Webhooks
+
+### Local Testing
+
+```bash
+lua test
+# Select: Webhook → your-webhook-name
+# Provide test payload
+```
+
+### Test Payloads
+
+```typescript
+// Example test payload for Stripe
+{
+  "type": "payment_intent.succeeded",
+  "data": {
+    "object": {
+      "id": "pi_test_123",
+      "amount": 2000,
+      "currency": "usd",
+      "metadata": {
+        "orderId": "order_456"
+      }
+    }
+  }
+}
+```
+
+## Security Best Practices
+
+<AccordionGroup>
+  <Accordion title="✅ Always Verify Signatures">
+    Enable signature verification to prevent unauthorized requests
+    
+    ```typescript
+    verifySignature: true,
+    secret: env('WEBHOOK_SECRET')  // From your service
+    ```
+  </Accordion>
+
+  <Accordion title="✅ Use Environment Variables">
+    Never hardcode secrets
+    
+    ```typescript
+    // ❌ Bad
+    secret: 'hardcoded_secret_key'
+    
+    // ✅ Good
+    secret: env('STRIPE_WEBHOOK_SECRET')
+    ```
+  </Accordion>
+
+  <Accordion title="✅ Validate Event Structure">
+    Always validate incoming data
+    
+    ```typescript
+    execute: async (event) => {
+      if (!event.data || !event.type) {
+        throw new Error('Invalid event');
+      }
+      // Process event...
+    }
+    ```
+  </Accordion>
+
+  <Accordion title="✅ Return Quickly">
+    Webhook handlers should return fast (< 5 seconds)
+    
+    ```typescript
+    // ✅ Queue long-running work
+    execute: async (event) => {
+      // Quick validation
+      if (!isValid(event)) {
+        return { error: 'Invalid' };
+      }
+      
+      // Queue processing job
+      await Jobs.create({
+        execute: async () => {
+          // Long-running work here
+        }
+      });
+      
+      return { received: true };
+    }
+    ```
+  </Accordion>
+</AccordionGroup>
+
+## Error Handling
+
+```typescript
+const robustWebhook = new LuaWebhook({
+  name: 'robust-webhook',
+  
+  execute: async (event) => {
+    try {
+      // Process event
+      const result = await processEvent(event);
+      
+      return {
+        success: true,
+        result,
+        timestamp: new Date().toISOString()
+      };
+      
+    } catch (error) {
+      // Log error for debugging
+      console.error('Webhook error:', {
+        eventType: event.type,
+        error: error.message,
+        stack: error.stack
+      });
+      
+      // Return error status (don't throw!)
+      return {
+        success: false,
+        error: error.message,
+        eventType: event.type,
+        timestamp: new Date().toISOString()
+      };
+    }
+  }
+});
+```
+
+## Common Integrations
+
+<Tabs>
+  <Tab title="Stripe">
+    **Webhook Events:**
+    - `payment_intent.succeeded`
+    - `payment_intent.payment_failed`
+    - `charge.refunded`
+    - `invoice.payment_succeeded`
+    
+    **Secret Location:** Stripe Dashboard → Developers → Webhooks
+  </Tab>
+
+  <Tab title="Shopify">
+    **Webhook Topics:**
+    - `orders/create`
+    - `orders/updated`
+    - `products/create`
+    - `products/delete`
+    
+    **Secret Location:** Shopify Admin → Settings → Notifications
+  </Tab>
+
+  <Tab title="GitHub">
+    **Webhook Events:**
+    - `push`
+    - `pull_request`
+    - `deployment_status`
+    - `release`
+    
+    **Secret Location:** Repository → Settings → Webhooks
+  </Tab>
+
+  <Tab title="Custom">
+    **Requirements:**
+    - POST request to webhook URL
+    - JSON payload in body
+    - Optional signature verification
+    - Event type in payload or header
+    
+    **Best Practices:**
+    - Include timestamp
+    - Version your payloads
+    - Support replay/retry
+  </Tab>
+</Tabs>
+
+## Related APIs
+
+<CardGroup cols={2}>
+  <Card title="LuaAgent" href="/api/luaagent" icon="robot">
+    Agent configuration
+  </Card>
+  <Card title="Jobs API" href="/api/jobs" icon="clock">
+    Queue long-running work
+  </Card>
+  <Card title="User API" href="/api/user" icon="user">
+    Send notifications
+  </Card>
+  <Card title="Data API" href="/api/data" icon="database">
+    Store webhook data
+  </Card>
+</CardGroup>
+
+## See Also
+
+- [LuaAgent](/api/luaagent) - Adding webhooks to your agent
+- [Environment Variables](/api/environment) - Securely managing secrets
+- [Workflows Concept](/concepts/workflows)
+

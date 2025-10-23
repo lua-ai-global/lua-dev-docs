@@ -99,6 +99,18 @@ Lua abstracts away all the complexity of building production AI agents so engine
     ```
   </Step>
   
+  <Step title="Configure Your Agent">
+    Use LuaAgent to configure everything in one place
+    
+    ```typescript
+    export const agent = new LuaAgent({
+      name: "support-agent",
+      persona: "You are a helpful customer support agent...",
+      skills: [customerServiceSkill]
+    });
+    ```
+  </Step>
+  
   <Step title="Deploy Your Agent">
     One command to push your agent live
     
@@ -295,10 +307,10 @@ Lua abstracts away all the complexity of building production AI agents so engine
 ## Simple Example
 
 ```typescript
-import { LuaTool, LuaSkill } from 'lua-cli';
+import { LuaAgent, LuaSkill, LuaTool } from 'lua-cli';
 import { z } from 'zod';
 
-// Create a tool that calls ANY external API
+// 1. Create a tool that calls ANY external API
 class GetWeatherTool implements LuaTool {
   name = "get_weather";
   description = "Get current weather for a city";
@@ -322,11 +334,19 @@ class GetWeatherTool implements LuaTool {
   }
 }
 
-// Bundle into a skill
+// 2. Bundle into a skill
 const weatherSkill = new LuaSkill({
   name: "weather-skill",
   description: "Provides weather information",
   tools: [new GetWeatherTool()]
+});
+
+// 3. Configure your agent (v3.0.0)
+export const agent = new LuaAgent({
+  name: "weather-assistant",
+  persona: "You are a friendly weather assistant. Provide accurate weather information for any city.",
+  welcomeMessage: "Hi! Ask me about the weather anywhere in the world.",
+  skills: [weatherSkill]
 });
 ```
 
@@ -471,6 +491,13 @@ Deploy with: `lua push && lua deploy`
     lua chat    # Test locally
     lua push && lua deploy
     ```
+  </Step>
+  <Step title="Test on Real Channels">
+    Test your agent on WhatsApp, Facebook, Instagram, and more - no channel setup needed!
+    
+    <Card title="Quick Testing" icon="bolt" href="/channels/quick-testing">
+      Link to existing Lua channels instantly
+    </Card>
   </Step>
 </Steps>
 

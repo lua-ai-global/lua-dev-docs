@@ -129,6 +129,19 @@ Write TypeScript functions that connect to any API - your CRM, payment processor
     ```
   </Step>
   
+  <Step title="Configure Your Agent">
+    **New in v3.0.0** - Use LuaAgent to configure everything
+    
+    ```typescript
+    export const agent = new LuaAgent({
+      name: "support-assistant",
+      persona: "You are a helpful customer support agent...",
+      welcomeMessage: "Hi! How can I help you today?",
+      skills: [customerService]
+    });
+    ```
+  </Step>
+  
   <Step title="Test with Interactive Chat">
     Chat with your agent to test everything works
     
@@ -159,6 +172,134 @@ Write TypeScript functions that connect to any API - your CRM, payment processor
 <Note>
 **Testing Individual Tools**: Need to test a specific tool with exact inputs? Use `lua test` to test tools one at a time. For most development, `lua chat` is faster for testing complete workflows.
 </Note>
+
+## v3.0.0: Beyond Skills and Tools
+
+The v3.0.0 release adds powerful new capabilities beyond basic skills and tools:
+
+<CardGroup cols={2}>
+  <Card title="LuaAgent" icon="robot">
+    **Unified Configuration** - Configure your entire agent in one place
+    
+    Combines persona, skills, webhooks, jobs, and processors
+  </Card>
+  <Card title="LuaWebhook" icon="webhook">
+    **HTTP Endpoints** - Receive events from external services
+    
+    Stripe payments, Shopify orders, GitHub deployments, etc.
+  </Card>
+  <Card title="LuaJob" icon="clock">
+    **Scheduled Tasks** - Automate recurring operations
+    
+    Daily reports, cleanup jobs, monitoring with cron patterns
+  </Card>
+  <Card title="Jobs API" icon="plus">
+    **Dynamic Scheduling** - Create jobs from tools at runtime
+    
+    User reminders, follow-ups, deferred work
+  </Card>
+  <Card title="PreProcessor" icon="filter">
+    **Message Filtering** - Process messages before your agent
+    
+    Spam detection, profanity filters, routing, validation
+  </Card>
+  <Card title="PostProcessor" icon="paper-plane">
+    **Response Formatting** - Enhance responses after generation
+    
+    Disclaimers, branding, translation, formatting
+  </Card>
+</CardGroup>
+
+### Complete v3.0.0 Example
+
+```typescript
+import { 
+  LuaAgent, 
+  LuaSkill, 
+  LuaWebhook, 
+  LuaJob,
+  PreProcessor,
+  PostProcessor 
+} from 'lua-cli';
+
+// Skills
+import { customerServiceSkill } from './skills/customer-service';
+import { productSkill } from './skills/products';
+
+// Webhooks
+const paymentWebhook = new LuaWebhook({
+  name: 'stripe-payment',
+  execute: async (event) => {
+    if (event.type === 'payment.succeeded') {
+      // Handle payment confirmation
+      await notifyCustomer(event.data);
+    }
+  }
+});
+
+// Scheduled Jobs
+const dailyReportJob = new LuaJob({
+  name: 'daily-report',
+  schedule: { type: 'cron', pattern: '0 9 * * *' },
+  execute: async (job) => {
+    const user = await job.user();
+    await user.send([{ type: 'text', text: 'Daily report ready!' }]);
+  }
+});
+
+// Message Processing
+const profanityFilter = new PreProcessor({
+  name: 'profanity-filter',
+  execute: async (message, user) => {
+    if (containsProfanity(message.content)) {
+      return { block: true, response: "Please keep it respectful." };
+    }
+    return { block: false };
+  }
+});
+
+const addDisclaimer = new PostProcessor({
+  name: 'add-disclaimer',
+  execute: async (response, user) => {
+    return {
+      modifiedResponse: response + "\n\n_AI-generated content for informational purposes._"
+    };
+  }
+});
+
+// Complete Agent Configuration
+export const agent = new LuaAgent({
+  name: "enterprise-assistant",
+  
+  persona: `You are a professional enterprise assistant.
+  
+Your role:
+- Help with customer inquiries
+- Process orders and payments
+- Provide product information
+
+Communication:
+- Professional and efficient
+- Clear and accurate
+- Proactive and helpful`,
+
+  welcomeMessage: "Welcome! How can I assist you today?",
+  
+  skills: [customerServiceSkill, productSkill],
+  webhooks: [paymentWebhook],
+  jobs: [dailyReportJob],
+  preProcessors: [profanityFilter],
+  postProcessors: [addDisclaimer]
+});
+```
+
+**Learn more about v3.0.0:**
+- [LuaAgent API](/api/luaagent)
+- [LuaWebhook API](/api/luawebhook)
+- [LuaJob API](/api/luajob)
+- [Jobs API](/api/jobs)
+- [PreProcessor API](/api/preprocessor)
+- [PostProcessor API](/api/postprocessor)
 
 ## Complete Flexibility: Choose Your Integration Approach
 
@@ -371,10 +512,17 @@ class CreateTicketTool implements LuaTool {
   }
 }
 
-const skill = new LuaSkill({
+const crmSkill = new LuaSkill({
   name: "crm-integration",
   description: "Access our CRM system for customer support",
   tools: [new GetCustomerTool(), new CreateTicketTool()]
+});
+
+// Configure agent (v3.0.0)
+export const agent = new LuaAgent({
+  name: "crm-support-agent",
+  persona: "You are a customer support specialist. Help users by looking up their information and creating support tickets when needed.",
+  skills: [crmSkill]
 });
 ```
 
@@ -383,7 +531,7 @@ const skill = new LuaSkill({
 Build an e-commerce assistant using Platform APIs:
 
 ```typescript
-import { LuaTool, LuaSkill, Products, Baskets } from 'lua-cli';
+import { LuaAgent, LuaTool, LuaSkill, Products, Baskets } from 'lua-cli';
 import { z } from 'zod';
 
 class ShopAssistantTool implements LuaTool {
@@ -414,10 +562,18 @@ class ShopAssistantTool implements LuaTool {
   }
 }
 
-const skill = new LuaSkill({
+const shopSkill = new LuaSkill({
   name: "shop-assistant",
   description: "Help users shop and add items to cart",
   tools: [new ShopAssistantTool()]
+});
+
+// Configure agent (v3.0.0)
+export const agent = new LuaAgent({
+  name: "shop-assistant",
+  persona: "You are a friendly shopping assistant. Help users find products and add them to their cart.",
+  welcomeMessage: "Welcome! Let me help you find what you're looking for.",
+  skills: [shopSkill]
 });
 ```
 
@@ -426,7 +582,7 @@ const skill = new LuaSkill({
 Combine your systems with Platform helpers:
 
 ```typescript
-import { LuaTool, Data, env } from 'lua-cli';
+import { LuaAgent, LuaSkill, LuaTool, Data, env } from 'lua-cli';
 import { z } from 'zod';
 
 class CompleteSearchTool implements LuaTool {
@@ -471,6 +627,19 @@ class CompleteSearchTool implements LuaTool {
     };
   }
 }
+
+const hybridSkill = new LuaSkill({
+  name: "hybrid-search",
+  description: "Search across all your systems and our platform",
+  tools: [new CompleteSearchTool()]
+});
+
+// Configure agent (v3.0.0)
+export const agent = new LuaAgent({
+  name: "hybrid-assistant",
+  persona: "You are a comprehensive search assistant. Help users find information across products, FAQs, and their history.",
+  skills: [hybridSkill]
+});
 ```
 
 ## Real-World Use Cases

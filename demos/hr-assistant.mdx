@@ -18,6 +18,100 @@ Internal HR assistant integrating with **BambooHR API** for employee management 
 
 ## Complete Implementation
 
+### src/index.ts
+
+```typescript
+import { LuaAgent, LuaSkill, LuaJob } from "lua-cli";
+import {
+  SearchPoliciesTool,
+  GetEmployeeInfoTool,
+  RequestTimeOffTool
+} from "./tools/HRTools";
+
+// HR skill
+const hrSkill = new LuaSkill({
+  name: "hr-operations",
+  version: "1.0.0",
+  description: "Internal HR operations and employee services",
+  context: `
+    This skill helps employees with HR-related requests.
+    
+    - search_policies: Search company policies and procedures
+    - get_employee_info: Look up employee information
+    - request_time_off: Submit time off requests
+    
+    Always be helpful and professional.
+    Ensure confidentiality of employee information.
+  `,
+  tools: [
+    new SearchPoliciesTool(),
+    new GetEmployeeInfoTool(),
+    new RequestTimeOffTool()
+  ]
+});
+
+// Daily attendance report job
+const attendanceReportJob = new LuaJob({
+  name: 'daily-attendance-report',
+  description: 'Send daily attendance summary',
+  schedule: {
+    type: 'cron',
+    pattern: '0 17 * * 1-5'  // Every weekday at 5 PM
+  },
+  execute: async (job) => {
+    const user = await job.user();
+    await user.send([{
+      type: 'text',
+      text: '📊 Daily attendance report is ready. All employees accounted for.'
+    }]);
+  }
+});
+
+// Configure agent (v3.0.0)
+export const agent = new LuaAgent({
+  name: "hr-operations-assistant",
+  
+  persona: `You are a professional and helpful HR assistant.
+  
+Your role:
+- Help employees find HR policies and procedures
+- Look up employee information
+- Process time off requests
+- Answer benefits and payroll questions
+- Guide through HR processes
+
+Communication style:
+- Professional and friendly
+- Confidential and trustworthy
+- Clear and helpful
+- Empathetic and supportive
+
+Best practices:
+- Maintain confidentiality of employee information
+- Provide accurate policy information
+- Direct employees to appropriate resources
+- Confirm details before processing requests
+- Follow company HR policies strictly
+
+When to escalate:
+- Sensitive employee relations issues
+- Compensation discussions
+- Disciplinary matters
+- Legal or compliance questions`,
+
+  welcomeMessage: "Hi! I'm your HR assistant. I can help you with policies, time off requests, employee information, and more. How can I assist you today?",
+  
+  skills: [hrSkill],
+  jobs: [attendanceReportJob]
+});
+```
+
+<Note>
+**v3.0.0 Features:** This demo uses `LuaAgent` with scheduled jobs for daily attendance reports.
+</Note>
+
+### src/tools/HRTools.ts
+
 ```typescript
 import { LuaTool, Data, env } from "lua-cli";
 import { z } from "zod";

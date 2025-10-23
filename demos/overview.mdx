@@ -5,22 +5,90 @@ description: "10 production-ready business solutions showcasing Lua's flexibilit
 
 ## Overview
 
-Explore 10 complete, production-ready AI agent implementations across different industries. Each demo shows full TypeScript code mixing external APIs and Lua Platform APIs.
+Explore 11 complete, production-ready AI agent implementations across different industries. Each demo shows full TypeScript code using the **v3.0.0 LuaAgent pattern** with external APIs and Lua Platform APIs.
+
+<Note>
+**All demos updated for v3.0.0:** Every demo now uses `LuaAgent` for unified configuration, showing how to combine skills, webhooks, jobs, and processors in real-world applications.
+</Note>
 
 <CardGroup cols={2}>
   <Card title="Customer-Facing" icon="users">
-    5 demos for end-user interactions
+    6 demos for end-user interactions
   </Card>
   <Card title="Internal Operations" icon="building">
     5 demos for business operations
   </Card>
+  <Card title="v3.0.0 Features" icon="sparkles">
+    All demos use LuaAgent pattern with webhooks, jobs, and processors where applicable
+  </Card>
   <Card title="External APIs" icon="cloud">
-    Stripe, Zendesk, Plaid, UPS, MLS, etc.
+    Stripe, Zendesk, Plaid, UPS, MLS, BambooHR, and more
   </Card>
   <Card title="Platform APIs" icon="database">
-    Products, Baskets, Orders, Data (vector search)
+    Products, Baskets, Orders, Data (vector search), Jobs
+  </Card>
+  <Card title="Production-Ready" icon="rocket">
+    Complete code with error handling, validation, and best practices
   </Card>
 </CardGroup>
+
+## v3.0.0 Features in Demos
+
+See real-world usage of v3.0.0 features across different demos:
+
+<Tabs>
+  <Tab title="LuaAgent">
+    **Used in: ALL demos**
+    
+    Every demo shows proper agent configuration:
+    ```typescript
+    export const agent = new LuaAgent({
+      name: "demo-agent",
+      persona: "...",
+      skills: [...],
+      webhooks: [...],
+      jobs: [...]
+    });
+    ```
+  </Tab>
+
+  <Tab title="Webhooks">
+    **Used in: E-commerce, Customer Support, Financial Onboarding**
+    
+    Real webhook integrations:
+    - Stripe payment events
+    - Shopify order notifications
+    - Zendesk ticket updates
+  </Tab>
+
+  <Tab title="Jobs">
+    **Used in: HR, Finance Ops, Customer Support**
+    
+    Scheduled automation:
+    - Daily reports
+    - Abandoned cart reminders
+    - Follow-up messages
+    - Data cleanup
+  </Tab>
+
+  <Tab title="PreProcessors">
+    **Used in: Healthcare, Financial Services**
+    
+    Message filtering:
+    - Verify patient consent
+    - Validate financial information
+    - Route by urgency
+  </Tab>
+
+  <Tab title="PostProcessors">
+    **Used in: Healthcare, Financial Services, Legal**
+    
+    Response formatting:
+    - Medical disclaimers
+    - Financial warnings
+    - Compliance footers
+  </Tab>
+</Tabs>
 
 ## Customer-Facing Agents
 
@@ -220,6 +288,64 @@ Explore 10 complete, production-ready AI agent implementations across different 
   </Tab>
 </Tabs>
 
+## Learning Paths by Feature
+
+Choose demos based on what v3.0.0 features you want to learn:
+
+<AccordionGroup>
+  <Accordion title="🤖 Learn LuaAgent (ALL Demos)">
+    **Every demo shows the v3.0.0 agent pattern**
+    
+    - How to configure agent with persona
+    - Adding skills to agent
+    - Welcome message best practices
+    - Complete agent structure
+    
+    **Start with:** E-commerce (simplest) or Customer Support (comprehensive)
+  </Accordion>
+
+  <Accordion title="🪝 Learn Webhooks">
+    **Demos with webhook integration:**
+    
+    - **E-commerce Assistant** - Stripe payment webhooks
+    - **Customer Support** - Zendesk ticket webhooks
+    - **Financial Onboarding** - Identity verification webhooks
+    
+    **Learn:** HTTP event handling, signature verification, real-time updates
+  </Accordion>
+
+  <Accordion title="⏰ Learn Jobs & Automation">
+    **Demos with scheduled tasks:**
+    
+    - **HR Assistant** - Daily attendance reports
+    - **Finance Operations** - Weekly reconciliation
+    - **Customer Support** - Follow-up reminders
+    - **E-commerce** - Abandoned cart notifications
+    
+    **Learn:** Cron patterns, scheduled notifications, automated reports
+  </Accordion>
+
+  <Accordion title="🔍 Learn PreProcessors">
+    **Demos with message filtering:**
+    
+    - **Healthcare Portal** - Patient consent verification
+    - **Financial Onboarding** - Information validation
+    - **Customer Support** - Business hours filtering
+    
+    **Learn:** Content filtering, routing, validation, rate limiting
+  </Accordion>
+
+  <Accordion title="✨ Learn PostProcessors">
+    **Demos with response formatting:**
+    
+    - **Healthcare Portal** - Medical disclaimers
+    - **Financial Onboarding** - Compliance footers
+    - **Customer Support** - Branding and signatures
+    
+    **Learn:** Adding disclaimers, branding, formatting, personalization
+  </Accordion>
+</AccordionGroup>
+
 ## Code Complexity Levels
 
 <AccordionGroup>
@@ -228,26 +354,61 @@ Explore 10 complete, production-ready AI agent implementations across different 
     - **Hotel Booking**: Lua Data API
     - **Restaurant**: Products + Data
     
-    Great for learning Platform APIs
+    Great for learning Platform APIs and basic LuaAgent configuration
   </Accordion>
 
   <Accordion title="⭐⭐ Intermediate (4 demos)">
-    - **Customer Support**: Zendesk + vector search
+    - **Customer Support**: Zendesk + vector search + webhooks + jobs
     - **Real Estate**: MLS + Lua Data
-    - **HR Assistant**: BambooHR + Lua Data
+    - **HR Assistant**: BambooHR + Lua Data + jobs
     - **SaaS Onboarding**: Your API + Lua Data
     
-    Shows hybrid integration patterns
+    Shows hybrid integration patterns with v3.0.0 features
   </Accordion>
 
-  <Accordion title="⭐⭐⭐ Advanced (3 demos)">
-    - **Finance**: Plaid banking integration
-    - **Healthcare**: FHIR-compliant EMR
+  <Accordion title="⭐⭐⭐ Advanced (4 demos)">
+    - **Finance**: Plaid banking integration + jobs
+    - **Healthcare**: FHIR-compliant EMR + pre/post processors
     - **Logistics**: Multi-carrier APIs
+    - **Financial Onboarding**: Stripe Identity + webhooks + processors
     
-    Complex external integrations
+    Complex external integrations with full v3.0.0 feature usage
   </Accordion>
 </AccordionGroup>
+
+<CardGroup cols={2}>
+  <Card title="v3.0.0 LuaAgent" icon="robot">
+    **Every demo shows:**
+    - Proper agent configuration
+    - Persona best practices
+    - Welcome message patterns
+    - Skill organization
+  </Card>
+  
+  <Card title="API Integration" icon="plug">
+    **You'll see how to:**
+    - Call external APIs (Stripe, Zendesk, etc.)
+    - Use Platform APIs (Products, Data, etc.)
+    - Mix both approaches
+    - Handle authentication
+  </Card>
+  
+  <Card title="Advanced Features" icon="sparkles">
+    **Selected demos show:**
+    - Webhooks for external events
+    - Jobs for scheduled tasks
+    - PreProcessors for validation
+    - PostProcessors for compliance
+  </Card>
+  
+  <Card title="Production Patterns" icon="shield">
+    **Best practices:**
+    - Error handling
+    - Input validation
+    - Security patterns
+    - Testing strategies
+  </Card>
+</CardGroup>
 
 ## Quick Start with Demos
 
@@ -298,6 +459,67 @@ Explore 10 complete, production-ready AI agent implementations across different 
 | Healthcare | Internal | EMR/FHIR | Data | ⭐⭐⭐ |
 | Logistics | Internal | UPS/FedEx/USPS | None | ⭐⭐⭐ |
 
+## Learn Concepts Through Demos
+
+See Key Concepts in action within real-world demos:
+
+<CardGroup cols={2}>
+  <Card
+    title="Agent Concept"
+    icon="robot"
+    href="/overview/agent"
+  >
+    **See in:** ALL demos
+    
+    Every demo shows LuaAgent configuration
+  </Card>
+  <Card
+    title="Skills & Tools"
+    icon="puzzle-piece"
+    href="/overview/skill"
+  >
+    **See in:** ALL demos
+    
+    How to organize tools into skills
+  </Card>
+  <Card
+    title="Webhooks"
+    icon="webhook"
+    href="/overview/webhooks"
+  >
+    **See in:** E-commerce, Support, Financial
+    
+    Real external event handling
+  </Card>
+  <Card
+    title="Jobs"
+    icon="clock"
+    href="/overview/jobs"
+  >
+    **See in:** HR, Finance, Support
+    
+    Scheduled automation examples
+  </Card>
+  <Card
+    title="PreProcessors"
+    icon="filter"
+    href="/overview/preprocessors"
+  >
+    **See in:** Healthcare, Financial
+    
+    Message validation and filtering
+  </Card>
+  <Card
+    title="PostProcessors"
+    icon="paper-plane"
+    href="/overview/postprocessors"
+  >
+    **See in:** Healthcare, Financial, Support
+    
+    Response formatting and disclaimers
+  </Card>
+</CardGroup>
+
 ## Next Steps
 
 <CardGroup cols={2}>
@@ -306,14 +528,21 @@ Explore 10 complete, production-ready AI agent implementations across different 
     icon="cart-shopping"
     href="/demos/ecommerce-assistant"
   >
-    Easiest demo - Platform APIs only
+    Easiest demo - Platform APIs only with LuaAgent
   </Card>
   <Card
     title="Try Customer Support"
     icon="headset"
     href="/demos/customer-support"
   >
-    Learn hybrid approach (Zendesk + Lua)
+    Comprehensive demo with webhooks + jobs
+  </Card>
+  <Card
+    title="Explore Key Concepts"
+    icon="book-open"
+    href="/overview/agent"
+  >
+    Learn v3.0.0 concepts before diving into demos
   </Card>
   <Card
     title="Quick Start Guide"
@@ -328,6 +557,13 @@ Explore 10 complete, production-ready AI agent implementations across different 
     href="/api/overview"
   >
     Complete API documentation
+  </Card>
+  <Card
+    title="Build Your Own"
+    icon="hammer"
+    href="/getting-started/first-skill"
+  >
+    Follow the first skill tutorial
   </Card>
 </CardGroup>
 

@@ -1,0 +1,227 @@
+---
+title: "Webhooks"
+description: "HTTP endpoints for receiving external events"
+---
+
+## What are Webhooks?
+
+**Webhooks** are HTTP endpoints that allow external services to send events to your agent. When something happens in an external system (like a payment completing or an order shipping), that system can notify your agent in real-time.
+
+<Card title="Think of it as:" icon="webhook">
+  A phone number for your agent - external services can "call" it when events happen
+</Card>
+
+<Note>
+**New in v3.0.0:** Built-in webhook support for seamless external integrations.
+</Note>
+
+## Why Webhooks?
+
+<CardGroup cols={2}>
+  <Card title="Real-Time Events" icon="bolt">
+    Get notified instantly when events happen in external systems
+  </Card>
+  <Card title="Automated Actions" icon="gears">
+    Automatically respond to external events without user interaction
+  </Card>
+  <Card title="Seamless Integration" icon="plug">
+    Connect with Stripe, Shopify, GitHub, and any webhook-enabled service
+  </Card>
+  <Card title="Event-Driven" icon="satellite-dish">
+    Build reactive agents that respond to real-world events
+  </Card>
+</CardGroup>
+
+## How Webhooks Work
+
+<Steps>
+  <Step title="External Event Occurs">
+    Something happens: payment completes, order ships, PR merges, etc.
+  </Step>
+  
+  <Step title="Service Sends HTTP Request">
+    The external service (Stripe, Shopify) sends a POST request to your webhook URL
+  </Step>
+  
+  <Step title="Your Webhook Receives Event">
+    Your LuaWebhook's execute function is called with the event data
+  </Step>
+  
+  <Step title="Your Code Takes Action">
+    Process the event: update orders, notify users, trigger jobs, etc.
+  </Step>
+  
+  <Step title="Return Response">
+    Return acknowledgment to the external service
+  </Step>
+</Steps>
+
+## Simple Example
+
+```typescript
+import { LuaWebhook, User } from 'lua-cli';
+
+const paymentWebhook = new LuaWebhook({
+  name: 'payment-webhook',
+  description: 'Handle Stripe payment events',
+  
+  execute: async (event) => {
+    if (event.type === 'payment_intent.succeeded') {
+      // Payment completed!
+      const user = await User.get();
+      await user.send([{
+        type: 'text',
+        text: '✅ Payment confirmed! Your order is being processed.'
+      }]);
+    }
+    
+    return { received: true };
+  }
+});
+```
+
+## Common Use Cases
+
+<Tabs>
+  <Tab title="Payments">
+    **Stripe, PayPal, Square**
+    
+    Handle payment events:
+    - Payment succeeded
+    - Payment failed
+    - Refund processed
+    - Subscription updated
+    
+    Actions:
+    - Update order status
+    - Notify customer
+    - Trigger fulfillment
+  </Tab>
+
+  <Tab title="E-commerce">
+    **Shopify, WooCommerce**
+    
+    Handle order events:
+    - Order created
+    - Order fulfilled
+    - Order cancelled
+    - Inventory updated
+    
+    Actions:
+    - Sync order data
+    - Update inventory
+    - Send confirmations
+  </Tab>
+
+  <Tab title="Development">
+    **GitHub, GitLab**
+    
+    Handle code events:
+    - Push to repository
+    - Pull request opened
+    - Deployment completed
+    - Release published
+    
+    Actions:
+    - Notify team
+    - Trigger workflows
+    - Update dashboards
+  </Tab>
+
+  <Tab title="Custom">
+    **Your Internal Systems**
+    
+    Any event from your backend:
+    - User signup
+    - Task completed
+    - Threshold exceeded
+    - Data changed
+    
+    Actions:
+    - Whatever you need!
+  </Tab>
+</Tabs>
+
+## Adding Webhooks to Your Agent
+
+Webhooks are added to your LuaAgent configuration:
+
+```typescript
+import { LuaAgent } from 'lua-cli';
+import paymentWebhook from './webhooks/payment';
+import orderWebhook from './webhooks/order';
+
+export const agent = new LuaAgent({
+  name: "my-agent",
+  persona: "...",
+  skills: [...],
+  
+  // Add webhooks
+  webhooks: [
+    paymentWebhook,
+    orderWebhook
+  ]
+});
+```
+
+## Webhook URLs
+
+After deploying, your webhooks get URLs like:
+
+```
+https://api.heylua.ai/webhooks/{agent-id}/{webhook-name}
+```
+
+Configure this URL in your external service's webhook settings.
+
+## Security
+
+<Warning>
+**Always verify webhook signatures!** This prevents unauthorized requests.
+</Warning>
+
+```typescript
+const secureWebhook = new LuaWebhook({
+  name: 'secure-webhook',
+  secret: env('WEBHOOK_SECRET'),
+  verifySignature: true,  // ← Important!
+  
+  execute: async (event) => {
+    // Only processes verified requests
+  }
+});
+```
+
+## Next Steps
+
+<CardGroup cols={2}>
+  <Card
+    title="Webhooks API Reference"
+    icon="book"
+    href="/api/luawebhook"
+  >
+    Complete API documentation with examples
+  </Card>
+  <Card
+    title="Agent Concept"
+    icon="robot"
+    href="/overview/agent"
+  >
+    Learn about LuaAgent configuration
+  </Card>
+  <Card
+    title="Jobs Concept"
+    icon="clock"
+    href="/overview/jobs"
+  >
+    Understand scheduled tasks
+  </Card>
+  <Card
+    title="Skills Concept"
+    icon="puzzle-piece"
+    href="/overview/skill"
+  >
+    Learn about skills and tools
+  </Card>
+</CardGroup>
+

@@ -21,7 +21,7 @@ Restaurant AI assistant for menu browsing, food ordering, and table reservations
 ### src/index.ts
 
 ```typescript
-import { LuaSkill } from "lua-cli";
+import { LuaAgent, LuaSkill } from "lua-cli";
 import {
   BrowseMenuTool,
   SearchMenuTool,
@@ -31,6 +31,7 @@ import {
   CheckReservationTool
 } from "./tools/RestaurantTools";
 
+// Restaurant ordering skill
 const restaurantSkill = new LuaSkill({
   name: "restaurant-assistant",
   version: "1.0.0",
@@ -61,7 +62,51 @@ const restaurantSkill = new LuaSkill({
     new CheckReservationTool()
   ]
 });
+
+// Configure agent (v3.0.0)
+export const agent = new LuaAgent({
+  name: "restaurant-assistant",
+  
+  persona: `You are a friendly restaurant host and server.
+  
+Your role:
+- Help guests browse the menu
+- Take food and drink orders
+- Make table reservations
+- Answer questions about ingredients and preparation
+- Accommodate dietary restrictions
+
+Communication style:
+- Warm and welcoming
+- Enthusiastic about the food
+- Attentive to details
+- Patient with questions
+- Knowledgeable about the menu
+
+Best practices:
+- Always mention today's specials
+- Ask about dietary restrictions and allergies
+- Confirm order details before submitting
+- Suggest wine pairings or desserts
+- Provide estimated wait times
+- Thank guests warmly
+
+Menu knowledge:
+- All dishes and ingredients
+- Preparation methods
+- Portion sizes
+- Dietary information (vegan, gluten-free, etc.)
+- Chef's recommendations`,
+
+  welcomeMessage: "Welcome! I'm delighted to help you today. Would you like to see our menu, make a reservation, or place an order?",
+  
+  skills: [restaurantSkill]
+});
 ```
+
+<Note>
+**v3.0.0 Pattern:** This demo now uses `LuaAgent` to configure the agent's persona, welcome message, and skills.
+</Note>
 
 ### src/tools/RestaurantTools.ts
 

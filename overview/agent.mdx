@@ -1,0 +1,306 @@
+---
+title: "Agent"
+description: "Unified configuration for your entire AI agent"
+---
+
+## What is LuaAgent?
+
+**LuaAgent** is the main configuration object for your entire AI agent. It brings together your persona, skills, webhooks, jobs, and message processors in one unified structure.
+
+<Card title="Think of it as:" icon="robot">
+  The "brain" of your AI - where you define who the agent is, what it can do, and how it behaves
+</Card>
+
+<Note>
+**New in v3.0.0:** LuaAgent replaces the old pattern of exporting individual skills. It's now the recommended way to configure agents.
+</Note>
+
+## Why LuaAgent?
+
+<CardGroup cols={2}>
+  <Card title="Single Source of Truth" icon="bullseye">
+    All agent configuration in one place instead of scattered exports
+  </Card>
+  <Card title="Better Organization" icon="layer-group">
+    Clear separation between persona, skills, webhooks, jobs, and processors
+  </Card>
+  <Card title="Auto-Sync" icon="arrows-rotate">
+    Automatically syncs with `lua.skill.yaml` configuration file
+  </Card>
+  <Card title="More Powerful" icon="bolt">
+    Support for webhooks, jobs, preprocessors, and postprocessors
+  </Card>
+</CardGroup>
+
+## Anatomy of an Agent
+
+```typescript
+import { LuaAgent } from 'lua-cli';
+
+export const agent = new LuaAgent({
+  // Required: Who is this agent?
+  name: "customer-support-agent",
+  
+  // Required: What's its personality and behavior?
+  persona: `You are a friendly customer support specialist.
+  
+Your role:
+- Help customers with orders and inquiries
+- Create support tickets when needed
+- Provide accurate information
+
+Communication style:
+- Patient and empathetic
+- Clear and professional
+- Proactive with solutions`,
+
+  // Optional: First message users see
+  welcomeMessage: "Hi! I'm here to help. What can I do for you?",
+  
+  // Optional: Skills with tools
+  skills: [customerServiceSkill, productSkill],
+  
+  // Optional: HTTP endpoints for external events
+  webhooks: [stripeWebhook, shopifyWebhook],
+  
+  // Optional: Scheduled automated tasks
+  jobs: [dailyReportJob, cleanupJob],
+  
+  // Optional: Filter messages before processing
+  preProcessors: [profanityFilter, rateLimiter],
+  
+  // Optional: Format responses before sending
+  postProcessors: [addDisclaimer, addBranding]
+});
+```
+
+## The Three Required Elements
+
+### 1. Name
+
+Unique identifier for your agent:
+
+```typescript
+name: "customer-support-agent"
+```
+
+**Best Practices:**
+- Use lowercase with hyphens
+- Be descriptive and specific
+- Keep it short (2-4 words)
+
+### 2. Persona
+
+Defines your agent's personality, behavior, and capabilities:
+
+```typescript
+persona: `You are Dr. Health, a medical information assistant.
+
+Role: Provide general health information and wellness tips.
+
+Guidelines:
+- Always clarify you're not a licensed doctor
+- Recommend seeing professionals for serious concerns
+- Use clear, non-technical language
+- Be empathetic and supportive
+
+Tone: Professional, caring, informative`
+```
+
+**Best Practices:**
+- Clearly define the role
+- List specific capabilities
+- Set boundaries and limitations
+- Define communication style
+- Include do's and don'ts
+
+### 3. Skills
+
+At least one skill with tools:
+
+```typescript
+skills: [mySkill]
+```
+
+Without skills, the agent has no capabilities!
+
+## Optional Components
+
+### Welcome Message
+
+First message users see:
+
+```typescript
+welcomeMessage: "Hi! I'm your shopping assistant. Ready to help you find the perfect product!"
+```
+
+### Webhooks
+
+HTTP endpoints for external events:
+
+```typescript
+webhooks: [paymentWebhook, orderWebhook]
+```
+
+**Use for:** Stripe payments, Shopify orders, GitHub events
+
+### Jobs
+
+Scheduled automated tasks:
+
+```typescript
+jobs: [dailyReportJob, weeklyCleanupJob]
+```
+
+**Use for:** Daily reports, cleanup tasks, monitoring
+
+### PreProcessors
+
+Filter messages before they reach your agent:
+
+```typescript
+preProcessors: [profanityFilter, businessHoursFilter]
+```
+
+**Use for:** Spam filtering, routing, validation
+
+### PostProcessors
+
+Format responses after agent generation:
+
+```typescript
+postProcessors: [addDisclaimer, addBranding]
+```
+
+**Use for:** Disclaimers, branding, translation
+
+## Real-World Example
+
+Complete agent with all features:
+
+```typescript
+import { 
+  LuaAgent, 
+  LuaSkill, 
+  LuaWebhook, 
+  LuaJob,
+  PreProcessor,
+  PostProcessor 
+} from 'lua-cli';
+
+export const agent = new LuaAgent({
+  name: "ecommerce-assistant",
+  
+  persona: `You are Emma, a helpful e-commerce assistant for Acme Store.
+  
+Your role:
+- Help customers find products
+- Assist with orders and cart management
+- Answer product questions
+
+Communication style:
+- Friendly and professional
+- Patient and helpful
+- Proactive with suggestions
+
+Limitations:
+- Cannot modify pricing
+- Cannot cancel shipped orders
+- Escalate refunds over $100 to manager`,
+
+  welcomeMessage: "Hi! I'm Emma from Acme Store. I can help you find products, manage your cart, and track orders.",
+  
+  skills: [
+    productSearchSkill,
+    cartManagementSkill,
+    orderTrackingSkill
+  ],
+  
+  webhooks: [
+    stripePaymentWebhook,
+    shopifyOrderWebhook
+  ],
+  
+  jobs: [
+    dailySalesReport,
+    abandonedCartReminder
+  ],
+  
+  preProcessors: [
+    profanityFilter,
+    rateLimiter
+  ],
+  
+  postProcessors: [
+    addLegalDisclaimer,
+    addBrandingFooter
+  ]
+});
+```
+
+## How It All Works Together
+
+```
+User Message
+    ↓
+PreProcessors (filter/validate)
+    ↓
+AI Agent (uses Persona)
+    ↓
+Calls Tools (from Skills)
+    ↓
+PostProcessors (format/enhance)
+    ↓
+Response to User
+
+External Events → Webhooks → Trigger Actions
+Scheduled Time → Jobs → Automated Tasks
+```
+
+## Next Steps
+
+<CardGroup cols={2}>
+  <Card
+    title="Skills Concept"
+    icon="puzzle-piece"
+    href="/overview/skill"
+  >
+    Learn about organizing tools into skills
+  </Card>
+  <Card
+    title="Tools Concept"
+    icon="wrench"
+    href="/overview/tools"
+  >
+    Understand individual tools
+  </Card>
+  <Card
+    title="Webhooks Concept"
+    icon="webhook"
+    href="/overview/webhooks"
+  >
+    Learn about HTTP endpoints
+  </Card>
+  <Card
+    title="Jobs Concept"
+    icon="clock"
+    href="/overview/jobs"
+  >
+    Understand scheduled tasks
+  </Card>
+  <Card
+    title="Full API Reference"
+    icon="book"
+    href="/api/luaagent"
+  >
+    Complete LuaAgent API documentation
+  </Card>
+  <Card
+    title="Build Your First Agent"
+    icon="rocket"
+    href="/getting-started/first-skill"
+  >
+    Step-by-step tutorial
+  </Card>
+</CardGroup>
+

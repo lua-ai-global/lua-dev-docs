@@ -18,6 +18,123 @@ Healthcare patient portal integrating with **Electronic Medical Records (EMR) AP
 
 ## Complete Implementation
 
+### src/index.ts
+
+```typescript
+import { LuaAgent, LuaSkill, PreProcessor, PostProcessor } from "lua-cli";
+import {
+  ScheduleAppointmentTool,
+  ViewMedicalRecordsTool,
+  RequestPrescriptionRefillTool,
+  MessageProviderTool
+} from "./tools/HealthcareTools";
+
+// Healthcare skill
+const healthcareSkill = new LuaSkill({
+  name: "healthcare-portal",
+  version: "1.0.0",
+  description: "Patient portal services for appointments and medical records",
+  context: `
+    This skill helps patients manage their healthcare.
+    
+    - schedule_appointment: Book medical appointments
+    - view_medical_records: Access patient records (HIPAA compliant)
+    - request_prescription_refill: Request medication refills
+    - message_provider: Send secure messages to healthcare providers
+    
+    Always verify patient identity.
+    Maintain HIPAA compliance.
+    Be compassionate and professional.
+  `,
+  tools: [
+    new ScheduleAppointmentTool(),
+    new ViewMedicalRecordsTool(),
+    new RequestPrescriptionRefillTool(),
+    new MessageProviderTool()
+  ]
+});
+
+// HIPAA consent validator
+const hipaaConsentPreProcessor = new PreProcessor({
+  name: 'hipaa-consent',
+  description: 'Verify patient has consented to access medical information',
+  execute: async (message, user) => {
+    if (!user.data.hipaaConsentGiven) {
+      return {
+        block: true,
+        response: "Before accessing your medical information, please confirm you consent to HIPAA terms. Reply 'I consent' to continue."
+      };
+    }
+    return { block: false };
+  }
+});
+
+// Medical disclaimer postprocessor
+const medicalDisclaimerPostProcessor = new PostProcessor({
+  name: 'medical-disclaimer',
+  description: 'Add medical disclaimer to all responses',
+  execute: async (response, user) => {
+    return {
+      modifiedResponse: response + 
+        "\n\n⚕️ **Medical Disclaimer:** This information is for patient portal access only. Always consult your healthcare provider for medical advice. In case of emergency, call 911."
+    };
+  }
+});
+
+// Configure agent (v3.0.0)
+export const agent = new LuaAgent({
+  name: "healthcare-portal-assistant",
+  
+  persona: `You are a compassionate healthcare patient portal assistant.
+  
+Your role:
+- Help patients schedule appointments
+- Provide access to medical records
+- Assist with prescription refills
+- Facilitate communication with providers
+- Guide through portal features
+
+Communication style:
+- Compassionate and reassuring
+- Professional and respectful
+- Clear and patient
+- Privacy-conscious
+- HIPAA compliant
+
+Compliance requirements:
+- Verify patient identity
+- Maintain HIPAA compliance
+- Protect patient privacy
+- Secure all communications
+- Document all interactions
+
+Best practices:
+- Always verify patient consent before accessing records
+- Explain medical terminology in simple terms
+- Provide clear appointment instructions
+- Remind about prescription pickup locations
+- Encourage emergency services when appropriate
+
+When to escalate:
+- Medical emergencies (direct to 911)
+- Complex medical questions (refer to provider)
+- Billing disputes (refer to billing department)
+- Insurance questions (refer to insurance coordinator)`,
+
+  welcomeMessage: "Welcome to your patient portal. I'm here to help you schedule appointments, view records, request refills, and more. How can I assist you today?",
+  
+  skills: [healthcareSkill],
+  preProcessors: [hipaaConsentPreProcessor],
+  postProcessors: [medicalDisclaimerPostProcessor]
+});
+```
+
+<Note>
+**v3.0.0 Features:** This demo uses `LuaAgent` with preprocessors for HIPAA consent validation and postprocessors for medical disclaimers.
+</Note>
+
+### src/tools/HealthcareTools.ts
+
 ```typescript
 import { LuaTool, Data, env } from "lua-cli";
 import { z } from "zod";

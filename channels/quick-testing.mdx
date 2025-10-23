@@ -1,0 +1,522 @@
+---
+title: "Quick Testing Channels"
+description: "Test your agent on existing Lua channels without setup"
+---
+
+## Overview
+
+During development, you can test your newly created agent on **existing Lua channels** without setting up your own integrations. This is perfect for quick testing and validation before deploying to your own channels.
+
+<Note>
+**Quick Testing Only:** These channels are for development and testing. For production, you'll want to set up your own dedicated channels.
+</Note>
+
+<CardGroup cols={2}>
+  <Card title="Instant Testing" icon="bolt">
+    No channel setup required - start testing immediately
+  </Card>
+  <Card title="All Platforms" icon="grid">
+    Test on WhatsApp, Facebook, Instagram, Email, and Slack
+  </Card>
+  <Card title="Real Environment" icon="check">
+    Test exactly how your agent will behave in production
+  </Card>
+  <Card title="Easy Switch" icon="arrows-rotate">
+    Link and unlink agents anytime during development
+  </Card>
+</CardGroup>
+
+## How to Link Your Agent
+
+Each channel uses a special "link" command with your agent ID. Find your agent ID in your `lua.skill.yaml` file:
+
+```yaml
+agent:
+  agentId: agent_abc123xyz456  # ← Your agent ID
+```
+
+---
+
+## WhatsApp Testing
+
+**Instant link via WhatsApp:**
+
+<Steps>
+  <Step title="Get Your Link">
+    Replace `agentId` with your actual agent ID from `lua.skill.yaml`:
+    
+    **Format:**
+    ```
+    https://wa.me/13023778932?text=link-me-to:agentId
+    ```
+    
+    **Example with agent ID:**
+    ```
+    https://wa.me/13023778932?text=link-me-to:agent_abc123xyz456
+    ```
+    
+    <Card 
+      title="📱 Click to Open WhatsApp" 
+      icon="whatsapp"
+      href="https://wa.me/13023778932?text=link-me-to:YOUR_AGENT_ID"
+    >
+      Replace YOUR_AGENT_ID in the URL with your actual agent ID before clicking
+    </Card>
+  </Step>
+  
+  <Step title="Send Message">
+    The message will be pre-filled with your link command. Just tap Send!
+  </Step>
+  
+  <Step title="Start Testing">
+    Your agent is now linked. Start chatting to test your agent!
+  </Step>
+</Steps>
+
+---
+
+## Facebook Messenger Testing
+
+<Steps>
+  <Step title="Copy Link Command">
+    Copy this text and replace `agentId` with yours:
+    
+    ```
+    link-me-to:agentId
+    ```
+    
+    **Example:**
+    ```
+    link-me-to:agent_abc123xyz456
+    ```
+  </Step>
+  
+  <Step title="Open Messenger">
+    Click to open the Lua Facebook page:
+    
+    <Card 
+      title="💬 Open Facebook Messenger" 
+      icon="facebook"
+      href="https://m.me/61569665392939"
+    >
+      Click to start conversation with Lua on Messenger
+    </Card>
+  </Step>
+  
+  <Step title="Send Link Command">
+    Paste and send the exact message you copied in Step 1
+  </Step>
+  
+  <Step title="Confirmation">
+    You'll receive confirmation that your agent is linked
+  </Step>
+  
+  <Step title="Start Testing">
+    Now chat with your agent through Facebook Messenger!
+  </Step>
+</Steps>
+
+---
+
+## Instagram Testing
+
+<Steps>
+  <Step title="Copy Link Command">
+    Copy this text and replace `agentId` with yours:
+    
+    ```
+    link-me-to:agentId
+    ```
+    
+    **Example:**
+    ```
+    link-me-to:agent_abc123xyz456
+    ```
+  </Step>
+  
+  <Step title="Open Instagram DM">
+    Click to open the Lua Instagram account:
+    
+    <Card 
+      title="📸 Open Instagram Messages" 
+      icon="instagram"
+      href="https://ig.me/m/heylua.ai"
+    >
+      Click to message @heylua.ai on Instagram
+    </Card>
+  </Step>
+  
+  <Step title="Send Link Command">
+    Paste and send the exact message you copied in Step 1
+  </Step>
+  
+  <Step title="Start Testing">
+    Your agent is linked! Test through Instagram DMs
+  </Step>
+</Steps>
+
+---
+
+## Email Testing
+
+<Steps>
+  <Step title="Copy Link Command">
+    Copy this text and replace `agentId` with yours:
+    
+    ```
+    link-me-to:agentId
+    ```
+    
+    **Example:**
+    ```
+    link-me-to:agent_abc123xyz456
+    ```
+  </Step>
+  
+  <Step title="Compose Email">
+    Click to open your email client:
+    
+    <Card 
+      title="✉️ Send Email to chat@heylua.ai" 
+      icon="envelope"
+      href="mailto:chat@heylua.ai?subject=Link%20Agent&body=link-me-to:YOUR_AGENT_ID"
+    >
+      Click to compose email (replace YOUR_AGENT_ID in the body)
+    </Card>
+  </Step>
+  
+  <Step title="Send Link Command">
+    Replace YOUR_AGENT_ID in the email body with your actual agent ID and send
+  </Step>
+  
+  <Step title="Start Testing">
+    Reply to the confirmation email to start testing your agent via email
+  </Step>
+</Steps>
+
+---
+
+## Slack Testing
+
+<Steps>
+  <Step title="Install Lua App">
+    First, add the Lua app to your Slack workspace:
+    
+    <Card 
+      title="🔗 Install Lua on Slack" 
+      icon="slack"
+      href="https://slack.com/oauth/v2/authorize?client_id=8037381401492.9620618924578&scope=channels:history,channels:read,chat:write,commands,groups:history,groups:read,im:history,im:read,im:write,mpim:history,mpim:read,users:read,app_mentions:read,users:read.email,files:read&user_scope="
+    >
+      Click to authorize Lua app in your Slack workspace
+    </Card>
+  </Step>
+  
+  <Step title="Copy Link Command">
+    Copy this text and replace `agentId` with yours:
+    
+    ```
+    link-me-to:agentId
+    ```
+    
+    **Example:**
+    ```
+    link-me-to:agent_abc123xyz456
+    ```
+  </Step>
+  
+  <Step title="DM Lua App">
+    In Slack, find the "Lua" app in your workspace and send it a direct message with your link command
+  </Step>
+  
+  <Step title="Start Testing">
+    Your agent is linked! Continue chatting in the Slack DM to test
+  </Step>
+</Steps>
+
+---
+
+## Finding Your Agent ID
+
+Your agent ID is in your `lua.skill.yaml` file:
+
+```yaml
+agent:
+  agentId: agent_abc123xyz456  # ← Copy this
+  orgId: org_xyz789
+```
+
+Or run this command in your project directory:
+
+```bash
+# View your agent configuration
+lua production
+
+# Or check the YAML file
+cat lua.skill.yaml | grep agentId
+```
+
+---
+
+## Testing Workflow
+
+<Steps>
+  <Step title="Link Agent">
+    Use one of the methods above to link your agent to a test channel
+  </Step>
+  
+  <Step title="Make Changes">
+    Edit your tools, skills, or persona locally
+  </Step>
+  
+  <Step title="Push Changes">
+    ```bash
+    lua push
+    ```
+  </Step>
+  
+  <Step title="Test on Channel">
+    Chat with your agent on the linked channel to test changes
+  </Step>
+  
+  <Step title="Iterate">
+    Repeat steps 2-4 until satisfied
+  </Step>
+</Steps>
+
+---
+
+## Unlinking Your Agent
+
+To stop testing on a channel, send:
+
+```
+unlink-me
+```
+
+This removes the agent link from that channel.
+
+---
+
+## When to Use Test Channels vs Your Own
+
+<Tabs>
+  <Tab title="Use Test Channels For">
+    ✅ **Quick development testing**
+    - Testing during active development
+    - Validating changes before production
+    - Trying new features
+    - Debugging issues
+    
+    ✅ **When you don't have channels yet**
+    - Early development phase
+    - Proof of concept
+    - Learning the platform
+  </Tab>
+
+  <Tab title="Use Your Own Channels For">
+    ✅ **Production deployment**
+    - Customer-facing agents
+    - Official business communications
+    - Branded experience
+    
+    ✅ **Professional testing**
+    - User acceptance testing
+    - Team demonstrations
+    - Client demos
+    
+    ✅ **Full control**
+    - Custom branding
+    - Analytics integration
+    - Compliance requirements
+  </Tab>
+</Tabs>
+
+---
+
+## Setting Up Your Own Channels
+
+When ready for production, set up your own channels:
+
+<CardGroup cols={2}>
+  <Card
+    title="WhatsApp Setup"
+    icon="whatsapp"
+    href="/channels/whatsapp"
+  >
+    Connect your own WhatsApp Business account
+  </Card>
+  <Card
+    title="Facebook Setup"
+    icon="facebook"
+    href="/channels/facebook-messenger"
+  >
+    Connect your Facebook page
+  </Card>
+  <Card
+    title="Instagram Setup"
+    icon="instagram"
+    href="/channels/instagram"
+  >
+    Connect your Instagram business account
+  </Card>
+  <Card
+    title="Email Setup"
+    icon="envelope"
+    href="/channels/email"
+  >
+    Set up your custom email channel
+  </Card>
+  <Card
+    title="Slack Setup"
+    icon="slack"
+    href="/channels/slack"
+  >
+    Install on your Slack workspace
+  </Card>
+  <Card
+    title="Website Widget"
+    icon="comments"
+    href="/chat-widget/quick-start"
+  >
+    Add chat widget to your website
+  </Card>
+</CardGroup>
+
+---
+
+## Troubleshooting
+
+<AccordionGroup>
+  <Accordion title="Link command not working">
+    **Make sure:**
+    - You're using the exact format: `link-me-to:agentId`
+    - No spaces in the command
+    - Agent ID is correct (check `lua.skill.yaml`)
+    - You've deployed your agent with `lua push`
+  </Accordion>
+
+  <Accordion title="Agent not responding">
+    **Check:**
+    - Agent is deployed: `lua push && lua deploy`
+    - Skills are compiled: `lua compile`
+    - No errors in logs: `lua logs`
+    - Agent has at least one skill with tools
+  </Accordion>
+
+  <Accordion title="Wrong agent responding">
+    **Solution:**
+    - Send `unlink-me` to unlink current agent
+    - Send new `link-me-to:agentId` with correct ID
+  </Accordion>
+
+  <Accordion title="Changes not appearing">
+    **Make sure to:**
+    1. Save your code changes
+    2. Run `lua push` to upload
+    3. Run `lua deploy` if needed
+    4. Test may need a fresh conversation (some platforms cache)
+  </Accordion>
+</AccordionGroup>
+
+---
+
+## Quick Reference
+
+### Link Commands by Channel
+
+| Channel | Link / Instructions |
+|---------|-------------------|
+| **WhatsApp** | [Open WhatsApp](https://wa.me/13023778932?text=link-me-to:YOUR_AGENT_ID) → Replace YOUR_AGENT_ID |
+| **Facebook** | [Open Messenger](https://m.me/61569665392939) → Send `link-me-to:agentId` |
+| **Instagram** | [Open Instagram DM](https://ig.me/m/heylua.ai) → Send `link-me-to:agentId` |
+| **Email** | [Compose Email](mailto:chat@heylua.ai?subject=Link%20Agent&body=link-me-to:YOUR_AGENT_ID) → Replace YOUR_AGENT_ID |
+| **Slack** | [Install App](https://slack.com/oauth/v2/authorize?client_id=8037381401492.9620618924578&scope=channels:history,channels:read,chat:write,commands,groups:history,groups:read,im:history,im:read,im:write,mpim:history,mpim:read,users:read,app_mentions:read,users:read.email,files:read&user_scope=) → DM `link-me-to:agentId` |
+
+### Unlink
+
+Send `unlink-me` on any channel to disconnect your agent.
+
+---
+
+## All Testing Channels
+
+<CardGroup cols={2}>
+  <Card 
+    title="WhatsApp Testing" 
+    icon="whatsapp"
+    href="https://wa.me/13023778932?text=link-me-to:YOUR_AGENT_ID"
+  >
+    Click to open (replace YOUR_AGENT_ID in URL)
+  </Card>
+  <Card 
+    title="Facebook Messenger" 
+    icon="facebook"
+    href="https://m.me/61569665392939"
+  >
+    Click to open, then send link command
+  </Card>
+  <Card 
+    title="Instagram DM" 
+    icon="instagram"
+    href="https://ig.me/m/heylua.ai"
+  >
+    Click to open, then send link command
+  </Card>
+  <Card 
+    title="Email Channel" 
+    icon="envelope"
+    href="mailto:chat@heylua.ai?subject=Link%20Agent&body=link-me-to:YOUR_AGENT_ID"
+  >
+    Click to compose (replace YOUR_AGENT_ID)
+  </Card>
+  <Card 
+    title="Slack Installation" 
+    icon="slack"
+    href="https://slack.com/oauth/v2/authorize?client_id=8037381401492.9620618924578&scope=channels:history,channels:read,chat:write,commands,groups:history,groups:read,im:history,im:read,im:write,mpim:history,mpim:read,users:read,app_mentions:read,users:read.email,files:read&user_scope="
+  >
+    Click to install Lua app on Slack
+  </Card>
+  <Card 
+    title="Terminal Testing" 
+    icon="terminal"
+    href="/cli/chat-command"
+  >
+    Use `lua chat` for command-line testing
+  </Card>
+</CardGroup>
+
+---
+
+## Next Steps
+
+<CardGroup cols={2}>
+  <Card
+    title="Test Your Agent"
+    icon="vial"
+    href="/cli/chat-command"
+  >
+    Use `lua chat` for local testing first
+  </Card>
+  <Card
+    title="Set Up Your Channels"
+    icon="plug"
+    href="/channels/introduction"
+  >
+    Connect your own channels for production
+  </Card>
+  <Card
+    title="Deploy to Production"
+    icon="rocket"
+    href="/cli/skill-management"
+  >
+    Learn the deployment process
+  </Card>
+  <Card
+    title="Monitor Your Agent"
+    icon="chart-line"
+    href="/cli/logs-command"
+  >
+    View logs and performance
+  </Card>
+</CardGroup>
+

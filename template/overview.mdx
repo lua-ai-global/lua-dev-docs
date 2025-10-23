@@ -27,22 +27,32 @@ When you run `lua init`, you get a complete example project with:
 ```
 your-skill/
 ├── src/
-│   ├── index.ts                    # ⭐ YOUR STARTING POINT
-│   └── tools/                      # Tool implementations
-│       ├── GetWeatherTool.ts       # External API example
-│       ├── UserDataTool.ts         # User API (2 tools)
-│       ├── ProductsTool.ts         # Products API (6 tools)
-│       ├── BasketTool.ts           # Baskets API (9 tools)
-│       ├── OrderTool.ts            # Orders API (4 tools)
-│       ├── CustomDataTool.ts       # Data API (6 tools)
-│       ├── PaymentTool.ts          # Payment integration
-│       └── CreatePostTool.ts       # Simple example
+│   ├── index.ts                    # ⭐ Agent configuration (LuaAgent)
+│   ├── skills/                     # Skill definitions
+│   │   └── *.ts
+│   ├── tools/                      # Tool implementations
+│   │   ├── GetWeatherTool.ts       # External API example
+│   │   ├── UserDataTool.ts         # User API (2 tools)
+│   │   ├── ProductsTool.ts         # Products API (6 tools)
+│   │   ├── BasketTool.ts           # Baskets API (9 tools)
+│   │   ├── OrderTool.ts            # Orders API (4 tools)
+│   │   ├── CustomDataTool.ts       # Data API (6 tools)
+│   │   ├── PaymentTool.ts          # Payment integration
+│   │   └── CreatePostTool.ts       # Simple example
+│   ├── webhooks/                   # Webhook handlers (v3.0.0)
+│   ├── jobs/                       # Scheduled jobs (v3.0.0)
+│   ├── preprocessors/              # Message filters (v3.0.0)
+│   └── postprocessors/             # Response formatters (v3.0.0)
 ├── lua.skill.yaml                  # Configuration (auto-managed)
 ├── package.json                    # Dependencies
 ├── tsconfig.json                   # TypeScript config
 ├── .env.example                    # Environment template
 └── README.md                       # Documentation
 ```
+
+<Note>
+**v3.0.0 Structure:** The template now uses `LuaAgent` in `src/index.ts` for unified configuration. Optional folders for webhooks, jobs, and processors are created as needed.
+</Note>
 
 ## The 7 Example Skills
 

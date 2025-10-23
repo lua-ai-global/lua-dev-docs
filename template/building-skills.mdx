@@ -114,18 +114,19 @@ export class CompleteTaskTool implements LuaTool {
 }
 ```
 
-### Step 3: Define Skill
+### Step 3: Configure Agent with Skill
 
-Update `src/index.ts`:
+Update `src/index.ts` to use the **v3.0.0 LuaAgent pattern**:
 
 ```typescript
-import { LuaSkill } from "lua-cli";
+import { LuaAgent, LuaSkill } from "lua-cli";
 import {
   CreateTaskTool,
   ListTasksTool,
   CompleteTaskTool
 } from "./tools/TaskTools";
 
+// Create skill
 const taskSkill = new LuaSkill({
   name: "task-management-skill",
   version: "1.0.0",
@@ -146,7 +147,32 @@ const taskSkill = new LuaSkill({
     new CompleteTaskTool()
   ]
 });
+
+// Configure agent (v3.0.0)
+export const agent = new LuaAgent({
+  name: "task-assistant",
+  
+  persona: `You are a helpful task management assistant.
+  
+Your role:
+- Help users create and organize tasks
+- Keep track of todos and deadlines
+- Help users stay productive
+
+Communication style:
+- Friendly and encouraging
+- Clear and concise
+- Confirm before creating tasks`,
+
+  welcomeMessage: "Hi! I can help you manage your tasks. What would you like to do?",
+  
+  skills: [taskSkill]
+});
 ```
+
+<Note>
+**New in v3.0.0:** Use `LuaAgent` to configure your agent's persona, welcome message, and skills together. This is now the recommended pattern.
+</Note>
 
 ### Step 4: Test
 

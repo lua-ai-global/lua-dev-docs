@@ -5,13 +5,18 @@ description: "Understanding the template project organization"
 
 ## Overview
 
-The template creates a well-organized project structure designed for building AI skills efficiently.
+The template creates a well-organized project structure designed for building AI agents efficiently.
 
 ```
 your-skill/
 ├── src/
-│   ├── index.ts           # Skill definitions
+│   ├── index.ts           # Agent configuration (LuaAgent)
+│   ├── skills/            # Skill definitions (optional)
 │   ├── tools/             # Tool implementations
+│   ├── webhooks/          # Webhook handlers (v3.0.0)
+│   ├── jobs/              # Scheduled jobs (v3.0.0)
+│   ├── preprocessors/     # Message filters (v3.0.0)
+│   ├── postprocessors/    # Response formatters (v3.0.0)
 │   └── services/          # Helper services (optional)
 ├── dist/                  # Compiled output
 ├── .lua/                  # CLI cache
@@ -25,6 +30,10 @@ your-skill/
 └── README.md              # Documentation
 ```
 
+<Note>
+**v3.0.0 Structure:** Projects now use `LuaAgent` in `src/index.ts` for unified configuration. Optional folders for webhooks, jobs, and processors are created as needed.
+</Note>
+
 ## Core Directories
 
 ### src/
@@ -33,10 +42,10 @@ Contains all your TypeScript source code.
 
 <Tabs>
   <Tab title="index.ts">
-    **Main entry point - Define your skills here**
+    **Agent configuration - Define your agent here (v3.0.0)**
     
     ```typescript
-    import { LuaSkill } from "lua-cli";
+    import { LuaAgent, LuaSkill } from "lua-cli";
     import GetWeatherTool from "./tools/GetWeatherTool";
     
     const skill = new LuaSkill({
@@ -45,12 +54,20 @@ Contains all your TypeScript source code.
       context: "...",
       tools: [new GetWeatherTool()]
     });
+    
+    export const agent = new LuaAgent({
+      name: "my-agent",
+      persona: "You are a helpful assistant...",
+      welcomeMessage: "Hi! How can I help?",
+      skills: [skill]
+    });
     ```
     
     This is where you:
     - Import tool classes
-    - Create LuaSkill instances
-    - Configure skill properties
+    - Create LuaSkill instances  
+    - Configure your agent with LuaAgent
+    - Export the agent
   </Tab>
 
   <Tab title="tools/">

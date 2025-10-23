@@ -130,10 +130,12 @@ export class SearchTasksTool implements LuaTool {
 }
 ```
 
-## Step 4: Update `src/index.ts`
+## Step 4: Create Agent with Skill
+
+Update `src/index.ts` to use the **v3.0.0 LuaAgent pattern**:
 
 ```typescript
-import { LuaSkill } from "lua-cli";
+import { LuaAgent, LuaSkill } from "lua-cli";
 import {
   CreateTaskTool,
   ListTasksTool,
@@ -141,6 +143,7 @@ import {
   SearchTasksTool
 } from "./tools/TaskTool";
 
+// Create the task management skill
 const taskSkill = new LuaSkill({
   name: "task-management-skill",
   version: "1.0.0",
@@ -163,7 +166,42 @@ const taskSkill = new LuaSkill({
     new SearchTasksTool()
   ]
 });
+
+// Create agent (v3.0.0 pattern)
+export const agent = new LuaAgent({
+  name: "task-assistant",
+  
+  persona: `You are a helpful task management assistant.
+  
+Your role:
+- Help users create and organize their tasks
+- Keep track of todos and deadlines
+- Search for tasks when needed
+- Mark tasks as complete
+
+Communication style:
+- Friendly and encouraging
+- Clear and concise
+- Confirm actions before executing
+- Provide helpful summaries
+
+Capabilities:
+- Create new tasks with title, description, priority, and due date
+- List all tasks or filter by status
+- Search tasks semantically
+- Mark tasks as completed
+
+Always confirm task details with users before creating them.`,
+
+  welcomeMessage: "Hi! I'm your task management assistant. I can help you create, organize, and track your tasks. What would you like to do?",
+  
+  skills: [taskSkill]
+});
 ```
+
+<Note>
+**New in v3.0.0:** Use `LuaAgent` to configure your agent with persona, welcome message, and skills in one place.
+</Note>
 
 ## Step 5: Test Your Tools
 
@@ -206,6 +244,26 @@ lua push
 # Deploy to production
 lua deploy
 ```
+
+## Step 7: Test on Real Channels (Optional)
+
+Want to test your agent on WhatsApp, Facebook, Instagram, or other platforms?
+
+<Card
+  title="Quick Testing Channels"
+  icon="mobile"
+  href="/channels/quick-testing"
+  horizontal
+>
+  Link your agent to existing Lua channels for instant testing without channel setup
+</Card>
+
+**Example for WhatsApp:**
+```
+https://wa.me/13023778932?text=link-me-to:YOUR_AGENT_ID
+```
+
+Replace `YOUR_AGENT_ID` with your agent ID from `lua.skill.yaml`
 
 ## What You Built
 

@@ -268,6 +268,128 @@ lua push
 
 Each push creates a new version that can be deployed independently.
 
+## Advanced Agent Features (v3.0.0)
+
+Beyond skills and tools, v3.0.0 adds support for webhooks, jobs, and message processing:
+
+### LuaAgent Configuration
+
+```typescript
+import { LuaAgent, LuaSkill, LuaWebhook, LuaJob, PreProcessor, PostProcessor } from 'lua-cli';
+
+export const agent = new LuaAgent({
+  name: "my-agent",
+  persona: "You are a helpful assistant...",
+  welcomeMessage: "Hello! How can I help?",
+  
+  // Skills with tools
+  skills: [skill1, skill2],
+  
+  // HTTP endpoints for external events
+  webhooks: [stripeWebhook, shopifyWebhook],
+  
+  // Scheduled tasks
+  jobs: [dailyReportJob, cleanupJob],
+  
+  // Message filtering before agent
+  preProcessors: [profanityFilter, rateLimiter],
+  
+  // Response formatting after agent
+  postProcessors: [addDisclaimer, addBranding]
+});
+```
+
+### Webhooks
+
+Receive events from external services:
+
+```typescript
+import { LuaWebhook } from 'lua-cli';
+
+const paymentWebhook = new LuaWebhook({
+  name: 'payment-webhook',
+  execute: async (event) => {
+    if (event.type === 'payment.succeeded') {
+      // Handle payment confirmation
+    }
+  }
+});
+```
+
+**Test webhooks:**
+```bash
+lua test
+# Select: Webhook → payment-webhook
+```
+
+### Jobs
+
+Schedule automated tasks:
+
+```typescript
+import { LuaJob } from 'lua-cli';
+
+const dailyReportJob = new LuaJob({
+  name: 'daily-report',
+  schedule: {
+    type: 'cron',
+    pattern: '0 9 * * *'  // Every day at 9 AM
+  },
+  execute: async (jobInstance) => {
+    const user = await jobInstance.user();
+    await user.send([{
+      type: 'text',
+      text: 'Your daily report is ready!'
+    }]);
+  }
+});
+```
+
+### PreProcessors
+
+Filter messages before they reach your agent:
+
+```typescript
+import { PreProcessor } from 'lua-cli';
+
+const profanityFilter = new PreProcessor({
+  name: 'profanity-filter',
+  execute: async (message, user) => {
+    if (containsProfanity(message.content)) {
+      return {
+        block: true,
+        response: "Please keep the conversation respectful."
+      };
+    }
+    return { block: false };
+  }
+});
+```
+
+### PostProcessors
+
+Format responses after agent generation:
+
+```typescript
+import { PostProcessor } from 'lua-cli';
+
+const addDisclaimer = new PostProcessor({
+  name: 'add-disclaimer',
+  execute: async (response, user) => {
+    return {
+      modifiedResponse: response + "\n\n_This is AI-generated content._"
+    };
+  }
+});
+```
+
+**Learn more:**
+- [LuaAgent API](/api/luaagent)
+- [LuaWebhook API](/api/luawebhook)
+- [LuaJob API](/api/luajob)
+- [PreProcessor API](/api/preprocessor)
+- [PostProcessor API](/api/postprocessor)
+
 ## Deployment Workflow
 
 ### Sandbox Testing

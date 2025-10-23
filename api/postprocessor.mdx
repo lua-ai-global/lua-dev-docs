@@ -1,0 +1,585 @@
+---
+title: "PostProcessor"
+description: "Transform and format AI responses before sending to users"
+---
+
+## Overview
+
+`PostProcessor` allows you to modify or enhance AI-generated responses before they're sent to users. Use postprocessors to add disclaimers, format output, inject dynamic content, or apply branding.
+
+```typescript
+import { PostProcessor } from 'lua-cli';
+
+const addDisclaimer = new PostProcessor({
+  name: 'add-disclaimer',
+  description: 'Add legal disclaimer to responses',
+  execute: async (response, user) => {
+    return {
+      modifiedResponse: response + "\n\n_Disclaimer: This is AI-generated content for informational purposes only._"
+    };
+  }
+});
+
+export default addDisclaimer;
+```
+
+<Note>
+**New in v3.0.0:** Response postprocessing for formatting, branding, and enhancement. Use with LuaAgent.
+</Note>
+
+## Use Cases
+
+<CardGroup cols={2}>
+  <Card title="Disclaimers" icon="triangle-exclamation">
+    Add legal or informational disclaimers
+  </Card>
+  <Card title="Formatting" icon="paintbrush">
+    Apply consistent formatting and styling
+  </Card>
+  <Card title="Branding" icon="palette">
+    Add company branding or signatures
+  </Card>
+  <Card title="Dynamic Content" icon="bolt">
+    Inject user-specific information
+  </Card>
+</CardGroup>
+
+## Constructor
+
+### new PostProcessor(config)
+
+Creates a new response postprocessor.
+
+<ParamField path="config" type="PostProcessorConfig" required>
+  Postprocessor configuration object
+</ParamField>
+
+## Configuration Parameters
+
+### Required Fields
+
+<ParamField path="name" type="string" required>
+  Unique postprocessor name
+  
+  **Examples**: `'add-disclaimer'`, `'format-response'`
+</ParamField>
+
+<ParamField path="execute" type="function" required>
+  Function that processes AI responses
+  
+  **Signature:** `(response: string, user: UserDataInstance, context?: any) => Promise<PostProcessorResult>`
+</ParamField>
+
+### Optional Fields
+
+<ParamField path="description" type="string">
+  Postprocessor description for documentation
+</ParamField>
+
+<ParamField path="priority" type="number">
+  Execution order (lower numbers run first)
+  
+  **Default:** 100
+</ParamField>
+
+## PostProcessorResult
+
+Your execute function must return:
+
+```typescript
+interface PostProcessorResult {
+  // Modified response text
+  modifiedResponse: string;
+  
+  // Optional metadata to attach
+  metadata?: Record<string, any>;
+}
+```
+
+## Complete Examples
+
+### Add Legal Disclaimer
+
+```typescript
+import { PostProcessor } from 'lua-cli';
+
+const legalDisclaimer = new PostProcessor({
+  name: 'legal-disclaimer',
+  description: 'Add legal disclaimer to medical advice',
+  priority: 100,  // Run last
+  
+  execute: async (response, user) => {
+    // Check if response contains medical information
+    const medicalKeywords = ['symptom', 'diagnosis', 'treatment', 'medication', 'doctor'];
+    const hasMedicalContent = medicalKeywords.some(keyword => 
+      response.toLowerCase().includes(keyword)
+    );
+    
+    if (hasMedicalContent) {
+      return {
+        modifiedResponse: response + 
+          "\n\n⚠️ **Medical Disclaimer:** This information is for educational purposes only and should not be considered medical advice. Please consult with a qualified healthcare professional for medical concerns."
+      };
+    }
+    
+    return { modifiedResponse: response };
+  }
+});
+
+export default legalDisclaimer;
+```
+
+### Add Company Branding
+
+```typescript
+import { PostProcessor, env } from 'lua-cli';
+
+const brandingFooter = new PostProcessor({
+  name: 'branding-footer',
+  description: 'Add company branding to responses',
+  priority: 90,
+  
+  execute: async (response, user) => {
+    const companyName = env('COMPANY_NAME') || 'Our Company';
+    const supportEmail = env('SUPPORT_EMAIL') || 'support@example.com';
+    
+    const footer = `\n\n---\n` +
+      `_Powered by ${companyName}_\n` +
+      `Need help? Contact us at ${supportEmail}`;
+    
+    return {
+      modifiedResponse: response + footer,
+      metadata: {
+        brandingApplied: true,
+        timestamp: new Date().toISOString()
+      }
+    };
+  }
+});
+
+export default brandingFooter;
+```
+
+### Format Response
+
+```typescript
+import { PostProcessor } from 'lua-cli';
+
+const responseFormatter = new PostProcessor({
+  name: 'response-formatter',
+  description: 'Apply consistent formatting to responses',
+  priority: 10,  // Run early
+  
+  execute: async (response, user) => {
+    let formatted = response;
+    
+    // Capitalize first letter of sentences
+    formatted = formatted.replace(/(^|\. )(\w)/g, (match, p1, p2) => {
+      return p1 + p2.toUpperCase();
+    });
+    
+    // Add proper spacing after punctuation
+    formatted = formatted.replace(/([.!?])(\w)/g, '$1 $2');
+    
+    // Format numbers with commas
+    formatted = formatted.replace(/\b(\d{1,3}(?:,?\d{3})*)\b/g, (match) => {
+      return match.replace(/,/g, '').replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+    });
+    
+    // Highlight important terms (example)
+    const importantTerms = ['important', 'urgent', 'required', 'deadline'];
+    importantTerms.forEach(term => {
+      const regex = new RegExp(`\\b(${term})\\b`, 'gi');
+      formatted = formatted.replace(regex, '**$1**');
+    });
+    
+    return {
+      modifiedResponse: formatted,
+      metadata: {
+        formattingApplied: true
+      }
+    };
+  }
+});
+
+export default responseFormatter;
+```
+
+### Add User-Specific Context
+
+```typescript
+import { PostProcessor } from 'lua-cli';
+
+const personalizer = new PostProcessor({
+  name: 'personalizer',
+  description: 'Add personalized greeting and context',
+  priority: 5,  // Run very early
+  
+  execute: async (response, user) => {
+    const userName = user.name || 'there';
+    const isVIP = user.data.vipStatus === true;
+    
+    // Add personalized greeting
+    let personalized = `Hi ${userName}! ${response}`;
+    
+    // Add VIP note if applicable
+    if (isVIP) {
+      personalized += `\n\n✨ As a VIP member, you have priority support and exclusive benefits.`;
+    }
+    
+    return {
+      modifiedResponse: personalized,
+      metadata: {
+        personalized: true,
+        userName,
+        isVIP
+      }
+    };
+  }
+});
+
+export default personalizer;
+```
+
+### Add Call-to-Action
+
+```typescript
+import { PostProcessor } from 'lua-cli';
+
+const ctaInjector = new PostProcessor({
+  name: 'cta-injector',
+  description: 'Add contextual call-to-action based on response content',
+  priority: 80,
+  
+  execute: async (response, user) => {
+    let cta = '';
+    
+    // Product-related response
+    if (response.toLowerCase().includes('product') || response.toLowerCase().includes('price')) {
+      cta = '\n\n📦 [View Our Products](https://example.com/products)';
+    }
+    
+    // Support-related response
+    else if (response.toLowerCase().includes('issue') || response.toLowerCase().includes('problem')) {
+      cta = '\n\n🎫 [Create Support Ticket](https://example.com/support)';
+    }
+    
+    // General information
+    else {
+      cta = '\n\n💬 Have more questions? Just ask!';
+    }
+    
+    return {
+      modifiedResponse: response + cta,
+      metadata: {
+        ctaType: cta ? 'contextual' : 'none'
+      }
+    };
+  }
+});
+
+export default ctaInjector;
+```
+
+### Translation Wrapper
+
+```typescript
+import { PostProcessor } from 'lua-cli';
+
+const translator = new PostProcessor({
+  name: 'translator',
+  description: 'Translate responses based on user language preference',
+  priority: 1,  // Run first
+  
+  execute: async (response, user) => {
+    const userLanguage = user.data.language || 'en';
+    
+    // Skip if already in user's language
+    if (userLanguage === 'en') {
+      return { modifiedResponse: response };
+    }
+    
+    // Translate response (using external translation API)
+    try {
+      const translated = await translateText(response, userLanguage);
+      
+      return {
+        modifiedResponse: translated,
+        metadata: {
+          originalLanguage: 'en',
+          translatedTo: userLanguage,
+          translationService: 'external-api'
+        }
+      };
+    } catch (error) {
+      console.error('Translation failed:', error);
+      
+      // Fall back to original
+      return {
+        modifiedResponse: response,
+        metadata: {
+          translationFailed: true,
+          error: error.message
+        }
+      };
+    }
+  }
+});
+
+async function translateText(text: string, targetLanguage: string): Promise<string> {
+  // Implementation using translation API (Google Translate, DeepL, etc.)
+  // This is a placeholder
+  return text;
+}
+
+export default translator;
+```
+
+### Sentiment Adjuster
+
+```typescript
+import { PostProcessor } from 'lua-cli';
+
+const sentimentAdjuster = new PostProcessor({
+  name: 'sentiment-adjuster',
+  description: 'Adjust tone based on conversation context',
+  priority: 20,
+  
+  execute: async (response, user, context) => {
+    const conversationHistory = context?.chatHistory || [];
+    
+    // Check if user seems frustrated (multiple recent messages)
+    const recentMessages = conversationHistory.slice(-5);
+    const isFrustrated = recentMessages.length > 3;
+    
+    if (isFrustrated) {
+      // Add empathetic phrasing
+      const empathetic = "I understand this can be frustrating. " + response;
+      
+      return {
+        modifiedResponse: empathetic,
+        metadata: {
+          sentimentAdjusted: true,
+          reason: 'user-frustration'
+        }
+      };
+    }
+    
+    return { modifiedResponse: response };
+  }
+});
+
+export default sentimentAdjuster;
+```
+
+### Link Enricher
+
+```typescript
+import { PostProcessor } from 'lua-cli';
+
+const linkEnricher = new PostProcessor({
+  name: 'link-enricher',
+  description: 'Convert plain URLs to formatted links',
+  priority: 50,
+  
+  execute: async (response, user) => {
+    // Convert URLs to markdown links
+    const urlRegex = /(https?:\/\/[^\s]+)/g;
+    const enriched = response.replace(urlRegex, (url) => {
+      const domain = new URL(url).hostname.replace('www.', '');
+      return `[${domain}](${url})`;
+    });
+    
+    // Add tracking parameters to links
+    const trackedLinks = enriched.replace(/\((https?:\/\/[^\)]+)\)/g, (match, url) => {
+      const tracked = `${url}${url.includes('?') ? '&' : '?'}utm_source=ai_agent&utm_medium=chat`;
+      return `(${tracked})`;
+    });
+    
+    return {
+      modifiedResponse: trackedLinks,
+      metadata: {
+        linksProcessed: (response.match(urlRegex) || []).length
+      }
+    };
+  }
+});
+
+export default linkEnricher;
+```
+
+## Using with LuaAgent
+
+Postprocessors are added to your agent configuration:
+
+```typescript
+import { LuaAgent } from 'lua-cli';
+import translator from './postprocessors/translator';
+import responseFormatter from './postprocessors/formatter';
+import legalDisclaimer from './postprocessors/disclaimer';
+import brandingFooter from './postprocessors/branding';
+
+export const agent = new LuaAgent({
+  name: 'my-agent',
+  persona: '...',
+  skills: [...],
+  
+  postProcessors: [
+    translator,         // priority: 1  (runs first)
+    responseFormatter,  // priority: 10
+    legalDisclaimer,    // priority: 100 (runs last)
+    brandingFooter      // priority: 90
+  ]
+});
+```
+
+<Note>
+Postprocessors execute in order of their `priority` value (lowest first). If not specified, default priority is 100.
+</Note>
+
+## Execution Flow
+
+```
+AI Agent Response
+    ↓
+PostProcessor 1 (priority: 1)
+    ↓
+PostProcessor 2 (priority: 10)
+    ↓
+PostProcessor 3 (priority: 90)
+    ↓
+PostProcessor 4 (priority: 100)
+    ↓
+Final Response to User
+```
+
+Each postprocessor receives the output of the previous one in the chain.
+
+## Best Practices
+
+<AccordionGroup>
+  <Accordion title="✅ Chain Postprocessors Thoughtfully">
+    Order matters - structure flows logically
+    
+    ```typescript
+    priority: 1,   // Translation (first)
+    priority: 10,  // Formatting
+    priority: 50,  // Content injection
+    priority: 100, // Disclaimer/branding (last)
+    ```
+  </Accordion>
+
+  <Accordion title="✅ Preserve Original Meaning">
+    Don't alter the core message
+    
+    ```typescript
+    // ✅ Add to response
+    return {
+      modifiedResponse: response + "\n\nAdditional info..."
+    };
+    
+    // ❌ Don't completely replace
+    return {
+      modifiedResponse: "Something completely different"
+    };
+    ```
+  </Accordion>
+
+  <Accordion title="✅ Handle Errors Gracefully">
+    Fall back to original response on errors
+    
+    ```typescript
+    execute: async (response, user) => {
+      try {
+        return { modifiedResponse: processResponse(response) };
+      } catch (error) {
+        console.error('Postprocessor error:', error);
+        return { modifiedResponse: response };  // Return original
+      }
+    }
+    ```
+  </Accordion>
+
+  <Accordion title="✅ Keep Processing Fast">
+    Postprocessors should be quick (< 50ms)
+    
+    Avoid heavy computations or external API calls when possible.
+  </Accordion>
+</AccordionGroup>
+
+## Testing Postprocessors
+
+```bash
+lua test
+# Select: PostProcessor → your-postprocessor-name
+# Provide test response
+```
+
+## Common Patterns
+
+### Conditional Processing
+
+```typescript
+execute: async (response, user) => {
+  // Only apply to certain user types
+  if (user.data.accountType === 'enterprise') {
+    return {
+      modifiedResponse: response + "\n\n*Enterprise Support Available 24/7*"
+    };
+  }
+  
+  return { modifiedResponse: response };
+}
+```
+
+### Regex Replacements
+
+```typescript
+execute: async (response, user) => {
+  // Replace placeholders
+  let modified = response
+    .replace(/{{user_name}}/g, user.name || 'User')
+    .replace(/{{company}}/g, env('COMPANY_NAME'))
+    .replace(/{{date}}/g, new Date().toLocaleDateString());
+  
+  return { modifiedResponse: modified };
+}
+```
+
+### Markdown Formatting
+
+```typescript
+execute: async (response, user) => {
+  // Add markdown formatting
+  let formatted = response
+    .replace(/\*\*([^*]+)\*\*/g, '**$1**')  // Bold
+    .replace(/_([^_]+)_/g, '_$1_')          // Italic
+    .replace(/`([^`]+)`/g, '`$1`');         // Code
+  
+  return { modifiedResponse: formatted };
+}
+```
+
+## Related APIs
+
+<CardGroup cols={2}>
+  <Card title="PreProcessor" href="/api/preprocessor" icon="filter">
+    Process messages before agent
+  </Card>
+  <Card title="LuaAgent" href="/api/luaagent" icon="robot">
+    Agent configuration
+  </Card>
+  <Card title="User API" href="/api/user" icon="user">
+    Access user data
+  </Card>
+  <Card title="Data API" href="/api/data" icon="database">
+    Store and retrieve data
+  </Card>
+</CardGroup>
+
+## See Also
+
+- [PreProcessor](/api/preprocessor) - Processing incoming messages
+- [LuaAgent](/api/luaagent) - Adding postprocessors to your agent
+- [Workflows Concept](/concepts/workflows)
+

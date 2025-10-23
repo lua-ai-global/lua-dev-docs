@@ -5,13 +5,22 @@ description: "Organizing tools into multiple skills"
 
 ## Overview
 
-You can define multiple skills in one project to organize tools logically.
+You can define multiple skills in one project to organize tools logically, then add them all to your agent.
 
 ```typescript
+import { LuaAgent, LuaSkill } from 'lua-cli';
+
 // Single project, multiple skills
 const catalogSkill = new LuaSkill({...});
 const cartSkill = new LuaSkill({...});
 const orderSkill = new LuaSkill({...});
+
+// Configure agent with all skills (v3.0.0)
+export const agent = new LuaAgent({
+  name: "ecommerce-agent",
+  persona: "You are a helpful shopping assistant...",
+  skills: [catalogSkill, cartSkill, orderSkill]
+});
 ```
 
 ## When to Use Multiple Skills
@@ -41,7 +50,7 @@ const orderSkill = new LuaSkill({...});
 ## Example: E-commerce Platform
 
 ```typescript
-import { LuaSkill } from "lua-cli";
+import { LuaAgent, LuaSkill } from "lua-cli";
 import {
   SearchProductsTool,
   GetProductTool
@@ -99,6 +108,27 @@ const orderSkill = new LuaSkill({
     new TrackOrderTool()
   ]
 });
+
+// Configure agent with all skills (v3.0.0)
+export const agent = new LuaAgent({
+  name: "ecommerce-assistant",
+  
+  persona: `You are a helpful e-commerce shopping assistant.
+  
+Your role:
+- Help customers find products
+- Assist with shopping cart management
+- Process orders and track deliveries
+
+Communication style:
+- Friendly and professional
+- Proactive with suggestions
+- Clear about pricing and availability`,
+
+  welcomeMessage: "Welcome! I can help you find products, manage your cart, and track orders. What are you looking for?",
+  
+  skills: [catalogSkill, cartSkill, orderSkill]
+});
 ```
 
 ## Benefits
@@ -155,6 +185,8 @@ lua deploy  # Deploys all 3 skills
 ### Customer Service Platform
 
 ```typescript
+import { LuaAgent, LuaSkill } from 'lua-cli';
+
 // FAQ & Knowledge Base
 const knowledgeSkill = new LuaSkill({
   name: "knowledge-skill",
@@ -183,11 +215,20 @@ const accountSkill = new LuaSkill({
     new ResetPasswordTool()
   ]
 });
+
+// Configure support agent (v3.0.0)
+export const agent = new LuaAgent({
+  name: "support-agent",
+  persona: "You are a customer support specialist. Help users with their questions, create tickets when needed, and manage accounts.",
+  skills: [knowledgeSkill, ticketSkill, accountSkill]
+});
 ```
 
 ### Restaurant Management
 
 ```typescript
+import { LuaAgent, LuaSkill } from 'lua-cli';
+
 // Menu & Orders
 const menuSkill = new LuaSkill({
   name: "menu-skill",
@@ -214,6 +255,13 @@ const loyaltySkill = new LuaSkill({
     new CheckPointsTool(),
     new RedeemRewardTool()
   ]
+});
+
+// Configure restaurant agent (v3.0.0)
+export const agent = new LuaAgent({
+  name: "restaurant-assistant",
+  persona: "You are a friendly restaurant assistant. Help with menu questions, take orders, manage reservations, and handle loyalty rewards.",
+  skills: [menuSkill, reservationSkill, loyaltySkill]
 });
 ```
 
@@ -310,8 +358,10 @@ const allInOne = new LuaSkill({
 });
 ```
 
-**After (Multiple Skills):**
+**After (Multiple Skills with v3.0.0):**
 ```typescript
+import { LuaAgent, LuaSkill } from 'lua-cli';
+
 const productsSkill = new LuaSkill({
   name: "products",
   tools: [new SearchProductsTool(), ...]
@@ -325,6 +375,13 @@ const cartSkill = new LuaSkill({
 const orderSkill = new LuaSkill({
   name: "orders",
   tools: [new CreateOrderTool(), ...]
+});
+
+// Configure agent with organized skills
+export const agent = new LuaAgent({
+  name: "ecommerce-agent",
+  persona: "You are a helpful shopping assistant...",
+  skills: [productsSkill, cartSkill, orderSkill]
 });
 ```
 

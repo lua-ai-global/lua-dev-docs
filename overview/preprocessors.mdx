@@ -1,0 +1,245 @@
+---
+title: "PreProcessors"
+description: "Filter and validate messages before they reach your agent"
+---
+
+## What are PreProcessors?
+
+**PreProcessors** intercept user messages before they reach your AI agent. They allow you to filter spam, validate inputs, route messages, or modify content before the agent processes it.
+
+<Card title="Think of it as:" icon="filter">
+  A security checkpoint - messages pass through preprocessors before reaching your agent
+</Card>
+
+<Note>
+**New in v3.0.0:** Message preprocessing for content filtering, routing, and validation.
+</Note>
+
+## Why PreProcessors?
+
+<CardGroup cols={2}>
+  <Card title="Content Filtering" icon="shield">
+    Block spam, profanity, or inappropriate content before processing
+  </Card>
+  <Card title="Input Validation" icon="check-circle">
+    Ensure messages meet requirements before agent sees them
+  </Card>
+  <Card title="Message Routing" icon="route">
+    Route specific messages to different handlers or agents
+  </Card>
+  <Card title="Rate Limiting" icon="gauge">
+    Prevent abuse by limiting message frequency
+  </Card>
+</CardGroup>
+
+## How PreProcessors Work
+
+<Steps>
+  <Step title="User Sends Message">
+    User types a message and sends it
+  </Step>
+  
+  <Step title="PreProcessors Run">
+    Each preprocessor examines the message in priority order
+  </Step>
+  
+  <Step title="Decision Point">
+    PreProcessor can:
+    - ✅ Allow message through (block: false)
+    - ❌ Block message (block: true, with response)
+    - ✏️ Modify message (modifiedMessage)
+  </Step>
+  
+  <Step title="Outcome">
+    If allowed: Message reaches AI agent
+    
+    If blocked: Response sent immediately to user
+  </Step>
+</Steps>
+
+## Simple Example
+
+```typescript
+import { PreProcessor } from 'lua-cli';
+
+const profanityFilter = new PreProcessor({
+  name: 'profanity-filter',
+  description: 'Block inappropriate content',
+  
+  execute: async (message, user) => {
+    const text = message.content.toLowerCase();
+    
+    if (containsProfanity(text)) {
+      // Block the message
+      return {
+        block: true,
+        response: "Please keep the conversation respectful."
+      };
+    }
+    
+    // Allow message through
+    return { block: false };
+  }
+});
+```
+
+## Common Use Cases
+
+<Tabs>
+  <Tab title="Content Filtering">
+    **Block unwanted content**
+    
+    ```typescript
+    execute: async (message, user) => {
+      if (isSpam(message) || hasProfanity(message)) {
+        return {
+          block: true,
+          response: "This message violates our guidelines."
+        };
+      }
+      return { block: false };
+    }
+    ```
+  </Tab>
+
+  <Tab title="Business Hours">
+    **Only respond during business hours**
+    
+    ```typescript
+    execute: async (message, user) => {
+      const hour = new Date().getHours();
+      
+      if (hour < 9 || hour >= 17) {
+        return {
+          block: true,
+          response: "Our business hours are 9 AM - 5 PM. We'll respond during business hours."
+        };
+      }
+      return { block: false };
+    }
+    ```
+  </Tab>
+
+  <Tab title="Rate Limiting">
+    **Prevent message spam**
+    
+    ```typescript
+    execute: async (message, user) => {
+      const messageCount = await getRecentMessageCount(user.id);
+      
+      if (messageCount > 10) {
+        return {
+          block: true,
+          response: "You're sending messages too quickly. Please wait a moment."
+        };
+      }
+      return { block: false };
+    }
+    ```
+  </Tab>
+
+  <Tab title="Required Info">
+    **Ensure user provides needed information**
+    
+    ```typescript
+    execute: async (message, user) => {
+      if (!user.email) {
+        return {
+          block: true,
+          response: "Please provide your email address to continue."
+        };
+      }
+      return { block: false };
+    }
+    ```
+  </Tab>
+</Tabs>
+
+## Execution Order
+
+PreProcessors run in order of their **priority** value (lowest first):
+
+```typescript
+const rateLimiter = new PreProcessor({
+  name: 'rate-limiter',
+  priority: 5,  // Runs first
+  execute: async (message, user) => { ... }
+});
+
+const profanityFilter = new PreProcessor({
+  name: 'profanity-filter',
+  priority: 10,  // Runs second
+  execute: async (message, user) => { ... }
+});
+
+const messageRouter = new PreProcessor({
+  name: 'router',
+  priority: 20,  // Runs third
+  execute: async (message, user) => { ... }
+});
+```
+
+**Default priority:** 100 (if not specified)
+
+## Adding to Your Agent
+
+```typescript
+import { LuaAgent } from 'lua-cli';
+import profanityFilter from './preprocessors/profanity-filter';
+import rateLimiter from './preprocessors/rate-limiter';
+
+export const agent = new LuaAgent({
+  name: "my-agent",
+  persona: "...",
+  skills: [...],
+  
+  // Add preprocessors
+  preProcessors: [
+    rateLimiter,      // priority: 5
+    profanityFilter   // priority: 10
+  ]
+});
+```
+
+## Testing PreProcessors
+
+```bash
+lua test
+# Select: PreProcessor → profanity-filter
+# Provide test message
+# See if it's blocked or allowed
+```
+
+## Next Steps
+
+<CardGroup cols={2}>
+  <Card
+    title="PreProcessor API"
+    icon="book"
+    href="/api/preprocessor"
+  >
+    Complete API documentation
+  </Card>
+  <Card
+    title="PostProcessor Concept"
+    icon="paper-plane"
+    href="/overview/postprocessors"
+  >
+    Learn about response formatting
+  </Card>
+  <Card
+    title="Agent Concept"
+    icon="robot"
+    href="/overview/agent"
+  >
+    Learn about LuaAgent
+  </Card>
+  <Card
+    title="Workflows Guide"
+    icon="diagram-project"
+    href="/concepts/workflows"
+  >
+    Development best practices
+  </Card>
+</CardGroup>
+

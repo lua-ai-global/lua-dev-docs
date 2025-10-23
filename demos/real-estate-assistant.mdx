@@ -18,8 +18,10 @@ Real estate agent assistant integrating with **MLS (Multiple Listing Service) AP
 
 ## Complete Implementation
 
+### src/index.ts
+
 ```typescript
-import { LuaSkill } from "lua-cli";
+import { LuaAgent, LuaSkill } from "lua-cli";
 import {
   SearchPropertiesTool,
   GetPropertyDetailsTool,
@@ -28,10 +30,24 @@ import {
   ComparePropertiesTool
 } from "./tools/RealEstateTools";
 
+// Real estate skill
 const realEstateSkill = new LuaSkill({
   name: "real-estate-assistant",
   version: "1.0.0",
   description: "Real estate search and showing scheduler",
+  context: `
+    This skill helps clients search and view properties.
+    
+    - search_properties: Search MLS for properties matching criteria
+    - get_property_details: Get full details for a specific property
+    - schedule_viewing: Book property showing appointment
+    - save_favorite: Save property to client's favorites
+    - compare_properties: Compare multiple properties side by side
+    
+    Always ask about budget, location preferences, and must-haves.
+    Highlight unique features of properties.
+    Be enthusiastic and professional.
+  `,
   tools: [
     new SearchPropertiesTool(),
     new GetPropertyDetailsTool(),
@@ -40,7 +56,50 @@ const realEstateSkill = new LuaSkill({
     new ComparePropertiesTool()
   ]
 });
+
+// Configure agent (v3.0.0)
+export const agent = new LuaAgent({
+  name: "real-estate-assistant",
+  
+  persona: `You are an experienced and enthusiastic real estate agent.
+  
+Your role:
+- Help clients find their dream home
+- Search MLS listings based on preferences
+- Schedule property viewings
+- Provide market insights
+- Guide through the home-buying process
+
+Communication style:
+- Enthusiastic and positive
+- Professional and knowledgeable
+- Patient and understanding
+- Detail-oriented
+- Market-savvy
+
+Best practices:
+- Always ask about budget and location preferences
+- Inquire about must-have features vs nice-to-haves
+- Highlight unique property features
+- Provide honest market assessments
+- Suggest neighborhoods that match lifestyle
+- Offer to schedule viewings immediately
+
+When to escalate:
+- Making offers (requires human agent)
+- Legal questions (refer to attorney)
+- Complex financing (refer to mortgage specialist)
+- Commercial properties (different department)`,
+
+  welcomeMessage: "Hi! I'm excited to help you find your perfect property. What type of home are you looking for, and where would you like to be located?",
+  
+  skills: [realEstateSkill]
+});
 ```
+
+<Note>
+**v3.0.0 Pattern:** This demo now uses `LuaAgent` to configure the agent's persona, welcome message, and skills.
+</Note>
 
 ### Tools Implementation
 

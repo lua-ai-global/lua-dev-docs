@@ -1,0 +1,400 @@
+---
+title: "LuaAgent"
+description: "Unified agent configuration combining skills, webhooks, jobs, and processors"
+---
+
+## Overview
+
+`LuaAgent` is the recommended way to configure your AI agent in v3.0.0+. It provides a single, intuitive configuration object that combines skills, webhooks, jobs, and message processors.
+
+```typescript
+import { LuaAgent } from 'lua-cli';
+
+export const agent = new LuaAgent({
+  name: 'my-agent',
+  persona: 'You are a helpful assistant...',
+  skills: [skill1, skill2]
+});
+```
+
+<Note>
+**New in v3.0.0:** LuaAgent replaces the need to export individual skills, webhooks, and jobs separately.
+</Note>
+
+## Why LuaAgent?
+
+<CardGroup cols={2}>
+  <Card title="Single Source of Truth" icon="bullseye">
+    All agent components in one configuration object
+  </Card>
+  <Card title="Auto-Sync" icon="arrows-rotate">
+    Automatically syncs with `lua.skill.yaml`
+  </Card>
+  <Card title="Better IDE Support" icon="code">
+    Improved autocomplete and type safety
+  </Card>
+  <Card title="Clear Organization" icon="layer-group">
+    Organized, readable agent configuration
+  </Card>
+</CardGroup>
+
+## Constructor
+
+### new LuaAgent(config)
+
+Creates a new agent configuration.
+
+<ParamField path="config" type="LuaAgentConfig" required>
+  Agent configuration object
+</ParamField>
+
+## Configuration Parameters
+
+### Required Fields
+
+<ParamField path="name" type="string" required>
+  Agent identifier used for organization and logging
+  
+  **Examples**: `'customer-support-agent'`, `'sales-assistant'`
+</ParamField>
+
+<ParamField path="persona" type="string" required>
+  Defines the agent's personality, behavior, tone, and capabilities
+  
+  **Should include:**
+  - Who the agent is
+  - What role they play
+  - How they should communicate
+  - What they can and cannot do
+  - Any specific behaviors or rules
+</ParamField>
+
+### Optional Fields
+
+<ParamField path="welcomeMessage" type="string">
+  First message users see when starting a conversation
+  
+  **Best Practice**: Keep it friendly, clear, and action-oriented
+</ParamField>
+
+<ParamField path="skills" type="LuaSkill[]">
+  Array of skills (tool collections) the agent can use
+  
+  **Default**: `[]`
+</ParamField>
+
+<ParamField path="webhooks" type="LuaWebhook[]">
+  HTTP endpoints that can receive external events
+  
+  **Default**: `[]`
+</ParamField>
+
+<ParamField path="jobs" type="LuaJob[]">
+  Scheduled tasks that run automatically
+  
+  **Default**: `[]`
+</ParamField>
+
+<ParamField path="preProcessors" type="PreProcessor[]">
+  Functions that process messages before they reach the agent
+  
+  **Default**: `[]`
+</ParamField>
+
+<ParamField path="postProcessors" type="PostProcessor[]">
+  Functions that process agent responses before sending to users
+  
+  **Default**: `[]`
+</ParamField>
+
+## Basic Example
+
+```typescript
+import { LuaAgent, LuaSkill } from 'lua-cli';
+import GetWeatherTool from './tools/GetWeatherTool';
+
+const weatherSkill = new LuaSkill({
+  name: 'weather-skill',
+  description: 'Weather information',
+  context: 'Use these tools to get weather data',
+  tools: [new GetWeatherTool()]
+});
+
+export const agent = new LuaAgent({
+  name: 'weather-assistant',
+  persona: 'You are a friendly weather assistant. Provide weather information when asked.',
+  welcomeMessage: 'Hello! Ask me about the weather anywhere in the world.',
+  skills: [weatherSkill]
+});
+```
+
+## Complete Example
+
+```typescript
+import { 
+  LuaAgent, 
+  LuaSkill, 
+  LuaWebhook, 
+  LuaJob,
+  PreProcessor,
+  PostProcessor
+} from 'lua-cli';
+
+// Import your components
+import { customerSupportSkill } from './skills/customer-support';
+import { productSkill } from './skills/products';
+import { orderSkill } from './skills/orders';
+import paymentWebhook from './webhooks/payment';
+import orderWebhook from './webhooks/order';
+import dailyReportJob from './jobs/daily-report';
+import cleanupJob from './jobs/cleanup';
+import profanityFilter from './preprocessors/profanity-filter';
+import addDisclaimer from './postprocessors/disclaimer';
+
+export const agent = new LuaAgent({
+  name: 'ecommerce-assistant',
+  
+  persona: `You are Emma, a helpful e-commerce assistant for Acme Store.
+  
+Your role:
+- Help customers find products
+- Assist with orders and cart management
+- Answer product questions
+- Process returns and exchanges
+
+Communication style:
+- Friendly and professional
+- Patient and understanding
+- Proactive with suggestions
+- Clear and concise
+
+Capabilities:
+- Search product catalog
+- Manage shopping carts
+- Track orders
+- Process payments
+- Answer product questions
+
+Limitations:
+- Cannot ship orders manually
+- Cannot modify pricing (suggest contacting manager)
+- Cannot issue refunds over $100 (requires manager approval)
+`,
+
+  welcomeMessage: `Hi! I'm Emma from Acme Store. I can help you find products, manage your cart, and track orders. How can I assist you today?`,
+
+  skills: [
+    customerSupportSkill,
+    productSkill,
+    orderSkill
+  ],
+
+  webhooks: [
+    paymentWebhook,
+    orderWebhook
+  ],
+
+  jobs: [
+    dailyReportJob,
+    cleanupJob
+  ],
+
+  preProcessors: [
+    profanityFilter
+  ],
+
+  postProcessors: [
+    addDisclaimer
+  ]
+});
+```
+
+## Persona Best Practices
+
+### ✅ Good Persona
+
+```typescript
+persona: `You are Dr. Smith, a medical information assistant.
+
+Role: Provide general health information and wellness tips.
+
+Guidelines:
+- Always clarify you're not a licensed doctor
+- Recommend seeing professionals for serious concerns
+- Use clear, non-technical language
+- Be empathetic and supportive
+
+Tone: Professional, caring, informative`
+```
+
+### ❌ Bad Persona
+
+```typescript
+// Too vague
+persona: `You are helpful`
+
+// Too robotic
+persona: `I am an AI assistant that answers questions.`
+
+// Missing boundaries
+persona: `You can do anything the user asks.`
+```
+
+## Auto-Sync with YAML
+
+When you run `lua compile`, the agent's persona and welcome message automatically sync to `lua.skill.yaml`:
+
+```yaml
+# lua.skill.yaml (auto-updated)
+agent:
+  agentId: your-agent-id
+  persona: |
+    You are Emma, a helpful e-commerce assistant...
+  welcomeMessage: Hi! I'm Emma from Acme Store...
+```
+
+When you run `lua init`, the YAML values sync to your `LuaAgent` in code.
+
+## Multiple Skills Example
+
+```typescript
+import { LuaAgent, LuaSkill } from 'lua-cli';
+
+// Organize tools by domain
+const weatherSkill = new LuaSkill({
+  name: 'weather-skill',
+  description: 'Weather tools',
+  context: 'Use for weather queries',
+  tools: [getWeatherTool, getForecastTool]
+});
+
+const calculatorSkill = new LuaSkill({
+  name: 'calculator-skill',
+  description: 'Math tools',
+  context: 'Use for calculations',
+  tools: [addTool, multiplyTool, advancedMathTool]
+});
+
+const dataSkill = new LuaSkill({
+  name: 'data-skill',
+  description: 'Data management',
+  context: 'Use for storing and retrieving user data',
+  tools: [saveDataTool, queryDataTool]
+});
+
+export const agent = new LuaAgent({
+  name: 'multi-purpose-assistant',
+  persona: 'You are a versatile assistant that helps with weather, calculations, and data management.',
+  skills: [weatherSkill, calculatorSkill, dataSkill]
+});
+```
+
+## With All Components
+
+```typescript
+import { LuaAgent } from 'lua-cli';
+import { skills } from './skills';
+import { webhooks } from './webhooks';
+import { jobs } from './jobs';
+import { preProcessors } from './preprocessors';
+import { postProcessors } from './postprocessors';
+
+export const agent = new LuaAgent({
+  name: 'enterprise-assistant',
+  
+  persona: `You are an enterprise-grade AI assistant.
+  - Professional and efficient
+  - Data-driven and accurate
+  - Proactive with insights
+  - Security and privacy conscious`,
+  
+  welcomeMessage: 'Welcome to Enterprise AI. How may I assist you?',
+  
+  skills: skills,
+  webhooks: webhooks,
+  jobs: jobs,
+  preProcessors: preProcessors,
+  postProcessors: postProcessors
+});
+```
+
+## Dynamic Configuration
+
+```typescript
+import { LuaAgent } from 'lua-cli';
+import { env } from 'lua-cli';
+
+// Load configuration from environment
+const agentName = env('AGENT_NAME') || 'default-agent';
+const customPersona = env('AGENT_PERSONA') || 'You are a helpful assistant';
+
+// Conditionally add components
+const skills = [coreSkill];
+if (env('ENABLE_ANALYTICS') === 'true') {
+  skills.push(analyticsSkill);
+}
+
+export const agent = new LuaAgent({
+  name: agentName,
+  persona: customPersona,
+  skills: skills,
+  // Add webhooks only in production
+  webhooks: env('NODE_ENV') === 'production' ? productionWebhooks : []
+});
+```
+
+## Validation
+
+The LuaAgent automatically validates:
+- ✅ Name is provided and non-empty
+- ✅ Persona is provided and non-empty
+- ✅ All skills are valid LuaSkill instances
+- ✅ All webhooks are valid LuaWebhook instances
+- ✅ All jobs are valid LuaJob instances
+- ✅ Tool names are unique across all skills
+- ✅ Component names follow naming conventions
+
+## Migration from v2.x
+
+**Before (v2.x):**
+```typescript
+// Multiple exports
+export const skill1 = new LuaSkill({...});
+export const skill2 = new LuaSkill({...});
+export const webhook1 = new LuaWebhook({...});
+```
+
+**After (v3.0.0):**
+```typescript
+// Single export with LuaAgent
+export const agent = new LuaAgent({
+  name: 'my-agent',
+  persona: '...',
+  skills: [skill1, skill2],
+  webhooks: [webhook1]
+});
+```
+
+## Related APIs
+
+<CardGroup cols={2}>
+  <Card title="LuaSkill" href="/api/luaskill" icon="puzzle-piece">
+    Tool collections
+  </Card>
+  <Card title="LuaTool" href="/api/luatool" icon="wrench">
+    Individual tools
+  </Card>
+  <Card title="LuaWebhook" href="/api/luawebhook" icon="webhook">
+    HTTP endpoints
+  </Card>
+  <Card title="LuaJob" href="/api/luajob" icon="clock">
+    Scheduled tasks
+  </Card>
+</CardGroup>
+
+## See Also
+
+- [Quick Start Guide](/getting-started/quick-start)
+- [First Skill Tutorial](/getting-started/first-skill)
+- [Skills and Tools Concept](/concepts/skills-and-tools)
+

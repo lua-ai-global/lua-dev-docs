@@ -1,0 +1,287 @@
+---
+title: "PostProcessors"
+description: "Transform and enhance AI responses before sending to users"
+---
+
+## What are PostProcessors?
+
+**PostProcessors** modify or enhance AI-generated responses before they're sent to users. They allow you to add disclaimers, apply formatting, inject dynamic content, or transform the output in any way.
+
+<Card title="Think of it as:" icon="paper-plane">
+  A final editor - reviews and enhances responses before they go to users
+</Card>
+
+<Note>
+**New in v3.0.0:** Response postprocessing for consistent formatting, branding, and enhancement.
+</Note>
+
+## Why PostProcessors?
+
+<CardGroup cols={2}>
+  <Card title="Consistency" icon="check-double">
+    Apply consistent formatting and style to all responses
+  </Card>
+  <Card title="Branding" icon="palette">
+    Add company branding, signatures, or footers automatically
+  </Card>
+  <Card title="Legal Protection" icon="gavel">
+    Add disclaimers to medical, financial, or legal advice
+  </Card>
+  <Card title="Personalization" icon="user">
+    Inject user-specific information or context
+  </Card>
+</CardGroup>
+
+## How PostProcessors Work
+
+<Steps>
+  <Step title="AI Generates Response">
+    Your agent creates a response using its tools and knowledge
+  </Step>
+  
+  <Step title="PostProcessors Run">
+    Each postprocessor modifies the response in priority order
+  </Step>
+  
+  <Step title="Transformation">
+    PostProcessors can:
+    - Add content (disclaimers, footers)
+    - Format text (markdown, styling)
+    - Replace placeholders
+    - Translate or enhance
+  </Step>
+  
+  <Step title="Final Response">
+    Modified response is sent to the user
+  </Step>
+</Steps>
+
+## Simple Example
+
+```typescript
+import { PostProcessor } from 'lua-cli';
+
+const addDisclaimer = new PostProcessor({
+  name: 'add-disclaimer',
+  description: 'Add legal disclaimer to responses',
+  
+  execute: async (response, user) => {
+    return {
+      modifiedResponse: response + 
+        "\n\n_Disclaimer: This is AI-generated content for informational purposes only._"
+    };
+  }
+});
+```
+
+## Common Use Cases
+
+<Tabs>
+  <Tab title="Disclaimers">
+    **Add legal or informational disclaimers**
+    
+    ```typescript
+    execute: async (response, user) => {
+      if (containsMedicalAdvice(response)) {
+        return {
+          modifiedResponse: response + 
+            "\n\n⚠️ **Medical Disclaimer:** Please consult a healthcare professional."
+        };
+      }
+      return { modifiedResponse: response };
+    }
+    ```
+  </Tab>
+
+  <Tab title="Branding">
+    **Add company branding and signatures**
+    
+    ```typescript
+    execute: async (response, user) => {
+      const footer = "\n\n---\n" +
+        "_Powered by Acme Corp_\n" +
+        "Need help? support@acme.com";
+      
+      return {
+        modifiedResponse: response + footer
+      };
+    }
+    ```
+  </Tab>
+
+  <Tab title="Formatting">
+    **Apply consistent text formatting**
+    
+    ```typescript
+    execute: async (response, user) => {
+      // Capitalize sentences
+      let formatted = capitalizeFirst(response);
+      
+      // Add spacing
+      formatted = addProperSpacing(formatted);
+      
+      // Highlight important terms
+      formatted = highlightKeywords(formatted);
+      
+      return { modifiedResponse: formatted };
+    }
+    ```
+  </Tab>
+
+  <Tab title="Personalization">
+    **Add user-specific context**
+    
+    ```typescript
+    execute: async (response, user) => {
+      const greeting = `Hi ${user.name}! `;
+      
+      if (user.data.vipStatus) {
+        return {
+          modifiedResponse: greeting + response + 
+            "\n\n✨ VIP members get priority support!"
+        };
+      }
+      
+      return {
+        modifiedResponse: greeting + response
+      };
+    }
+    ```
+  </Tab>
+</Tabs>
+
+## Execution Order
+
+PostProcessors run in order of their **priority** value (lowest first):
+
+```typescript
+const translator = new PostProcessor({
+  name: 'translator',
+  priority: 1,  // Runs first
+  execute: async (response, user) => { ... }
+});
+
+const formatter = new PostProcessor({
+  name: 'formatter',
+  priority: 10,  // Runs second
+  execute: async (response, user) => { ... }
+});
+
+const disclaimer = new PostProcessor({
+  name: 'disclaimer',
+  priority: 100,  // Runs last
+  execute: async (response, user) => { ... }
+});
+```
+
+**Default priority:** 100 (if not specified)
+
+Each postprocessor receives the output of the previous one in the chain.
+
+## Adding to Your Agent
+
+```typescript
+import { LuaAgent } from 'lua-cli';
+import addDisclaimer from './postprocessors/disclaimer';
+import addBranding from './postprocessors/branding';
+
+export const agent = new LuaAgent({
+  name: "my-agent",
+  persona: "...",
+  skills: [...],
+  
+  // Add postprocessors
+  postProcessors: [
+    addDisclaimer,  // Runs first
+    addBranding     // Runs second
+  ]
+});
+```
+
+## Best Practices
+
+<AccordionGroup>
+  <Accordion title="✅ Preserve Original Meaning">
+    Don't alter the core message
+    
+    ```typescript
+    // ✅ Add to response
+    modifiedResponse: response + "\n\nAdditional info..."
+    
+    // ❌ Don't completely replace
+    modifiedResponse: "Something different"
+    ```
+  </Accordion>
+
+  <Accordion title="✅ Chain Thoughtfully">
+    Order matters - structure flows logically
+    
+    ```typescript
+    priority: 1   // Translation (first)
+    priority: 10  // Formatting
+    priority: 50  // Content injection
+    priority: 100 // Disclaimer (last)
+    ```
+  </Accordion>
+
+  <Accordion title="✅ Handle Errors Gracefully">
+    Fall back to original response on errors
+    
+    ```typescript
+    try {
+      return { modifiedResponse: process(response) };
+    } catch (error) {
+      return { modifiedResponse: response };
+    }
+    ```
+  </Accordion>
+
+  <Accordion title="✅ Keep It Fast">
+    PostProcessors should be quick (< 50ms)
+    
+    Avoid heavy computations or external API calls
+  </Accordion>
+</AccordionGroup>
+
+## Testing PostProcessors
+
+```bash
+lua test
+# Select: PostProcessor → add-disclaimer
+# Provide test response
+# See transformed output
+```
+
+## Next Steps
+
+<CardGroup cols={2}>
+  <Card
+    title="PostProcessor API"
+    icon="book"
+    href="/api/postprocessor"
+  >
+    Complete API documentation
+  </Card>
+  <Card
+    title="PreProcessor Concept"
+    icon="filter"
+    href="/overview/preprocessors"
+  >
+    Learn about message filtering
+  </Card>
+  <Card
+    title="Agent Concept"
+    icon="robot"
+    href="/overview/agent"
+  >
+    Learn about LuaAgent
+  </Card>
+  <Card
+    title="Workflows Guide"
+    icon="diagram-project"
+    href="/concepts/workflows"
+  >
+    Development best practices
+  </Card>
+</CardGroup>
+

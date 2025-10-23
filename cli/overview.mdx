@@ -1,9 +1,9 @@
 ---
 title: "CLI Overview"
-description: "Command-line interface for building and deploying AI skills"
+description: "Command-line interface for building and deploying AI agents"
 ---
 
-## Lua AI CLI v2.6.0
+## Lua AI CLI v3.0.0
 
 Build and deploy AI agents with superpowers
 
@@ -12,7 +12,17 @@ lua [options] [command]
 ```
 
 <Note>
-**New in v2.6.0:**
+**New in v3.0.0 (lua-cli package):**
+- 🤖 **LuaAgent** - Unified agent configuration with persona, skills, webhooks, jobs, and processors
+- 🪝 **LuaWebhook** - HTTP endpoints for external integrations (Stripe, Shopify, etc.)
+- ⏰ **LuaJob** - Scheduled tasks with cron patterns
+- 📥 **PreProcessor** - Filter and route messages before they reach your agent
+- 📤 **PostProcessor** - Transform and format agent responses
+- 🔄 **Jobs API** - Dynamically create scheduled tasks from tools
+</Note>
+
+<Note>
+**New in v2.6.0 (CLI commands):**
 - 🎯 Direct environment access for all commands
 - ⌨️ Shell autocomplete support (Bash, Zsh, Fish)
 - 🚀 New `lua skills` command for production skill management
@@ -574,6 +584,75 @@ All commands include:
 
 <Card title="More Troubleshooting" href="/cli/troubleshooting" />
 
+## v3.0.0 Agent Structure
+
+### Project Code Pattern
+
+The v3.0.0 pattern uses `LuaAgent` for unified configuration:
+
+```typescript
+// src/index.ts
+import { LuaAgent, LuaSkill, LuaWebhook, LuaJob } from 'lua-cli';
+import { mySkill } from './skills/my-skill';
+import paymentWebhook from './webhooks/payment';
+import dailyReportJob from './jobs/daily-report';
+
+// Export agent (v3.0.0 pattern)
+export const agent = new LuaAgent({
+  name: "my-agent",
+  
+  // Define personality and behavior
+  persona: `You are a helpful assistant for Acme Corp.
+  
+Your role:
+- Help customers with orders and support
+- Answer product questions
+- Process payments
+
+Communication style:
+- Professional yet friendly
+- Clear and concise
+- Patient and understanding`,
+
+  // Welcome message
+  welcomeMessage: "Hi! I'm here to help. What can I do for you?",
+  
+  // Skills with tools
+  skills: [mySkill],
+  
+  // HTTP endpoints (optional)
+  webhooks: [paymentWebhook],
+  
+  // Scheduled tasks (optional)
+  jobs: [dailyReportJob]
+});
+```
+
+### Project Structure
+
+```
+my-agent/
+├── src/
+│   ├── index.ts              # Agent configuration (LuaAgent)
+│   ├── skills/               # Skill definitions
+│   │   └── my-skill.ts
+│   ├── tools/                # Tool implementations
+│   │   ├── OrderLookupTool.ts
+│   │   └── CreateTicketTool.ts
+│   ├── webhooks/             # Webhook handlers (v3.0.0)
+│   │   └── payment.ts
+│   ├── jobs/                 # Scheduled jobs (v3.0.0)
+│   │   └── daily-report.ts
+│   ├── preprocessors/        # Message filters (v3.0.0)
+│   │   └── profanity-filter.ts
+│   └── postprocessors/       # Response formatters (v3.0.0)
+│       └── add-disclaimer.ts
+├── lua.skill.yaml            # Auto-synced configuration
+├── package.json
+├── tsconfig.json
+└── .env                      # Local environment variables
+```
+
 ## Configuration File
 
 ### lua.skill.yaml
@@ -585,14 +664,24 @@ Auto-managed configuration file:
 agent:
   agentId: agent_abc123
   orgId: org_xyz789
-  persona: "..."
-  welcomeMessage: "..."
+  persona: "..."              # Synced from LuaAgent
+  welcomeMessage: "..."       # Synced from LuaAgent
 
 # Multi-skill support
 skills:
   - name: my-skill
     version: 1.0.0
-    skillId: skill_abc123  # Auto-created
+    skillId: skill_abc123     # Auto-created
+
+# Webhooks (v3.0.0)
+webhooks:
+  - name: payment-webhook
+    webhookId: webhook_abc123 # Auto-created
+
+# Jobs (v3.0.0)
+jobs:
+  - name: daily-report
+    jobId: job_abc123         # Auto-created
 
 # Environment variables
 skill:
@@ -602,7 +691,10 @@ skill:
 
 **Auto-managed fields:**
 - `skillId` - Created during compilation
-- `skills` array - Populated from code
+- `webhookId` - Created during compilation
+- `jobId` - Created during compilation
+- `skills`, `webhooks`, `jobs` arrays - Populated from code
+- `persona`, `welcomeMessage` - Synced from LuaAgent
 
 **Manual fields:**
 - `agentId` - Set during `lua init`

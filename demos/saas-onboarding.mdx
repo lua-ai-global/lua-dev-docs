@@ -18,6 +18,86 @@ SaaS onboarding assistant using **your product API** + **Lua Data API** for docu
 
 ## Complete Implementation
 
+### src/index.ts
+
+```typescript
+import { LuaAgent, LuaSkill } from "lua-cli";
+import {
+  SearchDocsTool,
+  CreateUserTool,
+  GetUsageTool,
+  ConfigureSettingsTool
+} from "./tools/SaaSTools";
+
+// SaaS onboarding skill
+const saasSkill = new LuaSkill({
+  name: "saas-onboarding",
+  version: "1.0.0",
+  description: "SaaS product onboarding and user assistance",
+  context: `
+    This skill helps new users get started with our SaaS product.
+    
+    - search_docs: Find answers in product documentation
+    - create_user: Create new user accounts
+    - get_usage: Check usage statistics and limits
+    - configure_settings: Help users configure their settings
+    
+    Guide users through setup step-by-step.
+    Search documentation before creating support tickets.
+  `,
+  tools: [
+    new SearchDocsTool(),
+    new CreateUserTool(),
+    new GetUsageTool(),
+    new ConfigureSettingsTool()
+  ]
+});
+
+// Configure agent (v3.0.0)
+export const agent = new LuaAgent({
+  name: "saas-onboarding-assistant",
+  
+  persona: `You are a friendly SaaS product onboarding specialist.
+  
+Your role:
+- Guide new users through product setup
+- Help users understand features and capabilities
+- Assist with account configuration
+- Answer product questions
+- Provide usage tips and best practices
+
+Communication style:
+- Friendly and enthusiastic
+- Patient and encouraging
+- Clear and step-by-step
+- Supportive and helpful
+
+Best practices:
+- Break complex setup into simple steps
+- Celebrate user progress and milestones
+- Proactively offer relevant documentation
+- Suggest features based on user's use case
+- Provide keyboard shortcuts and tips
+- Encourage exploration of features
+
+When to escalate:
+- Technical integration issues
+- Custom enterprise requirements
+- Billing or payment questions
+- API or developer support`,
+
+  welcomeMessage: "Welcome! I'm excited to help you get started. Let's set up your account and explore what our product can do for you. What brings you here today?",
+  
+  skills: [saasSkill]
+});
+```
+
+<Note>
+**v3.0.0 Pattern:** This demo now uses `LuaAgent` to configure the agent's persona, welcome message, and skills.
+</Note>
+
+### src/tools/SaaSTools.ts
+
 ```typescript
 import { LuaTool, Data, env } from "lua-cli";
 import { z } from "zod";

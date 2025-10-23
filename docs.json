@@ -24,9 +24,14 @@
           {
             "group": "Key Concepts",
             "pages": [
+              "overview/agent",
               "overview/persona",
               "overview/skill",
               "overview/tools",
+              "overview/webhooks",
+              "overview/jobs",
+              "overview/preprocessors",
+              "overview/postprocessors",
               "overview/resources",
               "overview/channels"
             ]
@@ -86,14 +91,35 @@
             "group": "API Reference",
             "pages": [
               "api/overview",
-              "api/luaskill",
-              "api/luatool",
-              "api/user",
-              "api/data",
-              "api/products",
-              "api/baskets",
-              "api/orders",
-              "api/environment"
+              {
+                "group": "Core Classes",
+                "pages": [
+                  "api/luaagent",
+                  "api/luaskill",
+                  "api/luatool",
+                  "api/luawebhook",
+                  "api/luajob",
+                  "api/preprocessor",
+                  "api/postprocessor"
+                ]
+              },
+              {
+                "group": "Runtime APIs",
+                "pages": [
+                  "api/user",
+                  "api/data",
+                  "api/products",
+                  "api/baskets",
+                  "api/orders",
+                  "api/jobs"
+                ]
+              },
+              {
+                "group": "Utilities",
+                "pages": [
+                  "api/environment"
+                ]
+              }
             ]
           },
           {
@@ -162,6 +188,10 @@
           {
             "group": "Overview",
             "pages": ["channels/introduction"]
+          },
+          {
+            "group": "Quick Testing",
+            "pages": ["channels/quick-testing"]
           },
           {
             "group": "Messaging Platforms",

@@ -1,0 +1,582 @@
+---
+title: "LuaJob"
+description: "Pre-defined scheduled tasks that run automatically"
+---
+
+## Overview
+
+`LuaJob` allows you to define scheduled tasks that run automatically without user interaction. Unlike the Jobs API which creates jobs dynamically, LuaJob is for pre-defined jobs that are part of your agent configuration.
+
+```typescript
+import { LuaJob } from 'lua-cli';
+
+const dailyReport = new LuaJob({
+  name: 'daily-sales-report',
+  description: 'Generate daily sales summary',
+  schedule: {
+    type: 'cron',
+    pattern: '0 9 * * *'  // Every day at 9 AM
+  },
+  execute: async (jobInstance) => {
+    // Generate and send report
+    const report = await generateSalesReport();
+    const user = await jobInstance.user();
+    await user.send([{
+      type: 'text',
+      text: report
+    }]);
+  }
+});
+```
+
+<Note>
+**New in v3.0.0:** Pre-defined jobs that are part of your agent configuration. Use with LuaAgent.
+</Note>
+
+## When to Use
+
+<CardGroup cols={2}>
+  <Card title="LuaJob (Pre-defined)" icon="calendar">
+    For scheduled tasks defined at agent setup
+    
+    - Daily reports
+    - Weekly summaries
+    - Cleanup tasks
+    - Monitoring jobs
+  </Card>
+  <Card title="Jobs API (Dynamic)" icon="plus">
+    For tasks created on-demand from tools
+    
+    - User reminders
+    - Follow-ups
+    - One-time notifications
+    - Context-specific tasks
+  </Card>
+</CardGroup>
+
+## Constructor
+
+### new LuaJob(config)
+
+Creates a new pre-defined job.
+
+<ParamField path="config" type="LuaJobConfig" required>
+  Job configuration object
+</ParamField>
+
+## Configuration Parameters
+
+### Required Fields
+
+<ParamField path="name" type="string" required>
+  Unique job name
+  
+  **Format**: lowercase, hyphens, underscores
+  
+  **Examples**: `'daily-report'`, `'weekly-cleanup'`
+</ParamField>
+
+<ParamField path="schedule" type="JobSchedule" required>
+  When and how often the job runs
+</ParamField>
+
+<ParamField path="execute" type="function" required>
+  Function that runs when the job triggers
+  
+  **Signature:** `(job: JobInstance) => Promise<any>`
+</ParamField>
+
+### Optional Fields
+
+<ParamField path="description" type="string">
+  Job description for documentation
+</ParamField>
+
+<ParamField path="metadata" type="object">
+  Static metadata available to execute function
+</ParamField>
+
+<ParamField path="timeout" type="number">
+  Maximum execution time in milliseconds
+  
+  **Default:** 60000 (1 minute)
+</ParamField>
+
+<ParamField path="retry" type="object">
+  Retry configuration
+  
+  ```typescript
+  retry: {
+    maxRetries: number;
+    backoffSeconds: number;
+  }
+  ```
+</ParamField>
+
+<ParamField path="activate" type="boolean">
+  Whether job is active
+  
+  **Default:** true
+</ParamField>
+
+## Schedule Types
+
+### Interval (Fixed intervals)
+
+```typescript
+schedule: {
+  type: 'interval',
+  intervalSeconds: number
+}
+```
+
+**Examples:**
+```typescript
+// Every 5 minutes
+schedule: {
+  type: 'interval',
+  intervalSeconds: 300
+}
+
+// Every hour
+schedule: {
+  type: 'interval',
+  intervalSeconds: 3600
+}
+
+// Every day (86400 seconds)
+schedule: {
+  type: 'interval',
+  intervalSeconds: 86400
+}
+```
+
+### Cron (Cron patterns)
+
+```typescript
+schedule: {
+  type: 'cron',
+  pattern: string  // Standard cron pattern
+}
+```
+
+**Examples:**
+```typescript
+// Every day at 9 AM
+schedule: {
+  type: 'cron',
+  pattern: '0 9 * * *'
+}
+
+// Every Monday at 8 AM
+schedule: {
+  type: 'cron',
+  pattern: '0 8 * * 1'
+}
+
+// Every hour on the hour
+schedule: {
+  type: 'cron',
+  pattern: '0 * * * *'
+}
+
+// First day of every month at midnight
+schedule: {
+  type: 'cron',
+  pattern: '0 0 1 * *'
+}
+```
+
+## Complete Examples
+
+### Daily Sales Report
+
+```typescript
+import { LuaJob, Products } from 'lua-cli';
+
+const dailySalesReport = new LuaJob({
+  name: 'daily-sales-report',
+  description: 'Daily sales summary sent every morning',
+  
+  metadata: {
+    reportTime: '09:00',
+    timezone: 'America/New_York'
+  },
+  
+  schedule: {
+    type: 'cron',
+    pattern: '0 9 * * *'  // Every day at 9 AM
+  },
+  
+  execute: async (jobInstance) => {
+    // Fetch sales data
+    const products = await Products.get(1, 100);
+    const totalValue = products.reduce((sum, p) => sum + (p.price || 0), 0);
+    const topProducts = products.sort((a, b) => b.price - a.price).slice(0, 5);
+    
+    // Build report
+    const report = `📊 Daily Sales Report\n\n` +
+      `Date: ${new Date().toLocaleDateString()}\n` +
+      `Total Products: ${products.length}\n` +
+      `Catalog Value: $${totalValue.toFixed(2)}\n\n` +
+      `Top 5 Products:\n` +
+      topProducts.map(p => `- ${p.name}: $${p.price}`).join('\n');
+    
+    // Send to user
+    const user = await jobInstance.user();
+    await user.send([{
+      type: 'text',
+      text: report
+    }]);
+    
+    return {
+      success: true,
+      productCount: products.length,
+      totalValue,
+      timestamp: new Date().toISOString()
+    };
+  }
+});
+
+export default dailySalesReport;
+```
+
+### Weekly Cleanup Job
+
+```typescript
+import { LuaJob, Data } from 'lua-cli';
+
+const weeklyCleanup = new LuaJob({
+  name: 'weekly-cleanup',
+  description: 'Clean up old data every Sunday',
+  
+  schedule: {
+    type: 'cron',
+    pattern: '0 0 * * 0'  // Every Sunday at midnight
+  },
+  
+  execute: async (jobInstance) => {
+    // Delete old entries (older than 30 days)
+    const thirtyDaysAgo = new Date();
+    thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+    
+    const oldEntries = await Data.get('temp-data', 1000);
+    let deletedCount = 0;
+    
+    for (const entry of oldEntries) {
+      const createdAt = new Date(entry.createdAt);
+      if (createdAt < thirtyDaysAgo) {
+        await Data.delete('temp-data', entry.id);
+        deletedCount++;
+      }
+    }
+    
+    // Send summary
+    const user = await jobInstance.user();
+    await user.send([{
+      type: 'text',
+      text: `🧹 Weekly cleanup complete. Deleted ${deletedCount} old entries.`
+    }]);
+    
+    return {
+      success: true,
+      deletedCount,
+      timestamp: new Date().toISOString()
+    };
+  }
+});
+
+export default weeklyCleanup;
+```
+
+### Hourly Monitoring
+
+```typescript
+import { LuaJob, env } from 'lua-cli';
+
+const systemMonitor = new LuaJob({
+  name: 'system-monitor',
+  description: 'Monitor system health every hour',
+  
+  metadata: {
+    alertThreshold: 90,
+    checkInterval: 'hourly'
+  },
+  
+  schedule: {
+    type: 'interval',
+    intervalSeconds: 3600  // Every hour
+  },
+  
+  execute: async (jobInstance) => {
+    // Check external API health
+    try {
+      const response = await fetch(`${env('API_URL')}/health`);
+      const health = await response.json();
+      
+      // Alert if threshold exceeded
+      if (health.cpuUsage > jobInstance.metadata.alertThreshold) {
+        const user = await jobInstance.user();
+        await user.send([{
+          type: 'text',
+          text: `⚠️ Alert: CPU usage is ${health.cpuUsage}%`
+        }]);
+      }
+      
+      return {
+        success: true,
+        cpuUsage: health.cpuUsage,
+        memoryUsage: health.memoryUsage,
+        timestamp: new Date().toISOString()
+      };
+    } catch (error) {
+      // Alert on failure
+      const user = await jobInstance.user();
+      await user.send([{
+        type: 'text',
+        text: `🚨 System monitor failed: ${error.message}`
+      }]);
+      
+      return {
+        success: false,
+        error: error.message,
+        timestamp: new Date().toISOString()
+      };
+    }
+  },
+  
+  retry: {
+    maxRetries: 3,
+    backoffSeconds: 60
+  }
+});
+
+export default systemMonitor;
+```
+
+### Reminders with Metadata
+
+```typescript
+import { LuaJob, Data } from 'lua-cli';
+
+const userReminders = new LuaJob({
+  name: 'check-reminders',
+  description: 'Check and send due reminders every 5 minutes',
+  
+  schedule: {
+    type: 'interval',
+    intervalSeconds: 300  // Every 5 minutes
+  },
+  
+  execute: async (jobInstance) => {
+    // Get reminders due now
+    const now = new Date();
+    const reminders = await Data.get('reminders', 100);
+    let sentCount = 0;
+    
+    for (const reminder of reminders) {
+      const dueTime = new Date(reminder.data.dueAt);
+      
+      if (dueTime <= now && !reminder.data.sent) {
+        // Send reminder
+        const user = await jobInstance.user();
+        await user.send([{
+          type: 'text',
+          text: `⏰ Reminder: ${reminder.data.message}`
+        }]);
+        
+        // Mark as sent
+        await Data.update('reminders', reminder.id, {
+          ...reminder.data,
+          sent: true,
+          sentAt: now.toISOString()
+        });
+        
+        sentCount++;
+      }
+    }
+    
+    return {
+      success: true,
+      checked: reminders.length,
+      sent: sentCount,
+      timestamp: now.toISOString()
+    };
+  }
+});
+
+export default userReminders;
+```
+
+## Using with LuaAgent
+
+Jobs are added to your agent configuration:
+
+```typescript
+import { LuaAgent } from 'lua-cli';
+import dailySalesReport from './jobs/daily-sales-report';
+import weeklyCleanup from './jobs/weekly-cleanup';
+import systemMonitor from './jobs/system-monitor';
+
+export const agent = new LuaAgent({
+  name: 'my-agent',
+  persona: '...',
+  skills: [...],
+  
+  jobs: [
+    dailySalesReport,
+    weeklyCleanup,
+    systemMonitor
+  ]
+});
+```
+
+## JobInstance API
+
+The execute function receives a `JobInstance` with these methods:
+
+### jobInstance.user()
+
+Get the user associated with the job.
+
+**Returns:** `Promise<UserDataInstance>`
+
+```typescript
+const user = await jobInstance.user();
+await user.send([{ type: 'text', text: 'Message' }]);
+```
+
+### jobInstance.metadata
+
+Access job metadata.
+
+```typescript
+const threshold = jobInstance.metadata.alertThreshold;
+```
+
+### jobInstance.updateMetadata(data)
+
+Update job metadata dynamically.
+
+```typescript
+await jobInstance.updateMetadata({
+  lastRun: new Date().toISOString(),
+  runCount: (jobInstance.metadata.runCount || 0) + 1
+});
+```
+
+### jobInstance.delete()
+
+Delete the job (stops future executions).
+
+```typescript
+// Self-terminate after condition met
+if (conditionMet) {
+  await jobInstance.delete();
+}
+```
+
+## Best Practices
+
+<AccordionGroup>
+  <Accordion title="Choose Appropriate Schedule">
+    Use cron for specific times, interval for regular checks
+    
+    ```typescript
+    // ✅ Cron for specific times
+    schedule: { type: 'cron', pattern: '0 9 * * *' }  // 9 AM daily
+    
+    // ✅ Interval for regular polling
+    schedule: { type: 'interval', intervalSeconds: 300 }  // Every 5 min
+    ```
+  </Accordion>
+
+  <Accordion title="Handle Errors Gracefully">
+    Jobs should not throw - return error status instead
+    
+    ```typescript
+    execute: async (job) => {
+      try {
+        await doWork();
+        return { success: true };
+      } catch (error) {
+        console.error('Job failed:', error);
+        return { success: false, error: error.message };
+      }
+    }
+    ```
+  </Accordion>
+
+  <Accordion title="Use Retry for Critical Jobs">
+    Configure retries for important operations
+    
+    ```typescript
+    retry: {
+      maxRetries: 3,
+      backoffSeconds: 60  // Retry after 1 minute
+    }
+    ```
+  </Accordion>
+
+  <Accordion title="Keep Jobs Fast">
+    Set appropriate timeouts and avoid long-running operations
+    
+    ```typescript
+    timeout: 120000,  // 2 minutes max
+    ```
+  </Accordion>
+</AccordionGroup>
+
+## Cron Pattern Reference
+
+```
+┌───────────── minute (0 - 59)
+│ ┌───────────── hour (0 - 23)
+│ │ ┌───────────── day of month (1 - 31)
+│ │ │ ┌───────────── month (1 - 12)
+│ │ │ │ ┌───────────── day of week (0 - 6) (0 = Sunday)
+│ │ │ │ │
+* * * * *
+```
+
+**Common Patterns:**
+- `0 * * * *` - Every hour on the hour
+- `0 9 * * *` - Every day at 9 AM
+- `0 9 * * 1` - Every Monday at 9 AM
+- `0 0 1 * *` - First day of every month at midnight
+- `*/15 * * * *` - Every 15 minutes
+- `0 9-17 * * 1-5` - 9 AM to 5 PM, Monday to Friday
+
+## Comparison: LuaJob vs Jobs API
+
+| Feature | LuaJob (Pre-defined) | Jobs API (Dynamic) |
+|---------|---------------------|-------------------|
+| **When Defined** | At agent setup | Runtime, from tools |
+| **Use Case** | Regular scheduled tasks | On-demand, user-triggered |
+| **Schedule** | Interval or Cron | Once, Interval, or Cron |
+| **Examples** | Daily reports, cleanup | Reminders, follow-ups |
+| **Configuration** | Static in code | Dynamic with tool input |
+
+## Related APIs
+
+<CardGroup cols={2}>
+  <Card title="Jobs API" href="/api/jobs" icon="plus">
+    Dynamic job creation
+  </Card>
+  <Card title="LuaAgent" href="/api/luaagent" icon="robot">
+    Agent configuration
+  </Card>
+  <Card title="User API" href="/api/user" icon="user">
+    Send messages
+  </Card>
+  <Card title="Data API" href="/api/data" icon="database">
+    Store and retrieve data
+  </Card>
+</CardGroup>
+
+## See Also
+
+- [Jobs API](/api/jobs) - Dynamic job creation
+- [Workflows Concept](/concepts/workflows)
+- [Tool Examples](/examples/overview)
+

@@ -5,20 +5,32 @@ description: "Complete API reference for building Lua AI skills"
 
 ## Available APIs
 
-Lua CLI provides a comprehensive set of APIs for building AI skills:
+Lua CLI v3.0.0 provides a comprehensive set of APIs for building AI agents:
 
 <CardGroup cols={2}>
   <Card
     title="Core Classes"
     icon="puzzle-piece"
   >
-    **LuaSkill** and **LuaTool** - Core building blocks
+    **LuaAgent, LuaSkill, LuaTool** - Agent configuration and building blocks
+  </Card>
+  <Card
+    title="Automation"
+    icon="clock"
+  >
+    **LuaJob, LuaWebhook** - Scheduled tasks and HTTP endpoints
+  </Card>
+  <Card
+    title="Message Processing"
+    icon="filter"
+  >
+    **PreProcessor, PostProcessor** - Filter and format messages
   </Card>
   <Card
     title="Platform APIs"
     icon="server"
   >
-    **User, Data, Products, Baskets, Orders** - Built-in services
+    **User, Data, Products, Baskets, Orders, Jobs** - Built-in services
   </Card>
   <Card
     title="Environment"
@@ -33,6 +45,10 @@ Lua CLI provides a comprehensive set of APIs for building AI skills:
     Full TypeScript support with autocomplete
   </Card>
 </CardGroup>
+
+<Note>
+**New in v3.0.0:** LuaAgent, LuaJob, LuaWebhook, PreProcessor, PostProcessor, and Jobs API for comprehensive agent development.
+</Note>
 
 ## Installation
 
@@ -61,11 +77,19 @@ pnpm add lua-cli zod
 ### Import APIs
 
 ```typescript
-// Core classes
-import { LuaSkill, LuaTool } from 'lua-cli';
+// Core classes (v3.0.0)
+import { 
+  LuaAgent, 
+  LuaSkill, 
+  LuaTool, 
+  LuaWebhook, 
+  LuaJob,
+  PreProcessor,
+  PostProcessor
+} from 'lua-cli';
 
 // Platform APIs
-import { User, Data, Products, Baskets, Orders } from 'lua-cli';
+import { User, Data, Products, Baskets, Orders, Jobs } from 'lua-cli';
 
 // Utilities
 import { env } from 'lua-cli';
@@ -77,10 +101,10 @@ import { BasketStatus, OrderStatus } from 'lua-cli';
 import { z } from 'zod';
 ```
 
-### Create a Skill
+### Create an Agent (v3.0.0 Pattern)
 
 ```typescript
-import { LuaSkill, LuaTool } from 'lua-cli';
+import { LuaAgent, LuaSkill, LuaTool } from 'lua-cli';
 import { z } from 'zod';
 
 // Define a tool
@@ -104,9 +128,40 @@ const skill = new LuaSkill({
   context: "When to use this skill and its tools",
   tools: [new MyTool()]
 });
+
+// Create agent (v3.0.0)
+export const agent = new LuaAgent({
+  name: "my-agent",
+  persona: "You are a helpful assistant...",
+  skills: [skill]
+});
 ```
 
 ## Core Classes
+
+### Agent Configuration
+
+<CardGroup cols={2}>
+  <Card
+    title="LuaAgent"
+    icon="robot"
+    href="/api/luaagent"
+  >
+    **New in v3.0.0** - Unified agent configuration
+    
+    ```typescript
+    new LuaAgent({
+      name: "my-agent",
+      persona: "...",
+      skills: [...],
+      webhooks: [...],
+      jobs: [...]
+    })
+    ```
+  </Card>
+</CardGroup>
+
+### Building Blocks
 
 <CardGroup cols={2}>
   <Card
@@ -135,6 +190,73 @@ const skill = new LuaSkill({
       name = "tool_name"
       execute(input) { ... }
     }
+    ```
+  </Card>
+</CardGroup>
+
+### Automation
+
+<CardGroup cols={2}>
+  <Card
+    title="LuaWebhook"
+    icon="webhook"
+    href="/api/luawebhook"
+  >
+    **New in v3.0.0** - HTTP endpoints for external events
+    
+    ```typescript
+    new LuaWebhook({
+      name: "payment-webhook",
+      execute: async (event) => { ... }
+    })
+    ```
+  </Card>
+  <Card
+    title="LuaJob"
+    icon="clock"
+    href="/api/luajob"
+  >
+    **New in v3.0.0** - Scheduled tasks
+    
+    ```typescript
+    new LuaJob({
+      name: "daily-report",
+      schedule: { type: "cron", pattern: "0 9 * * *" },
+      execute: async (job) => { ... }
+    })
+    ```
+  </Card>
+</CardGroup>
+
+### Message Processing
+
+<CardGroup cols={2}>
+  <Card
+    title="PreProcessor"
+    icon="filter"
+    href="/api/preprocessor"
+  >
+    **New in v3.0.0** - Filter messages before agent
+    
+    ```typescript
+    new PreProcessor({
+      name: "profanity-filter",
+      execute: async (message, user) => { ... }
+    })
+    ```
+  </Card>
+  <Card
+    title="PostProcessor"
+    icon="paper-plane"
+    href="/api/postprocessor"
+  >
+    **New in v3.0.0** - Format responses after agent
+    
+    ```typescript
+    new PostProcessor({
+      name: "add-disclaimer",
+      execute: async (response, user) => { ... }
+    })
     ```
   </Card>
 </CardGroup>
@@ -235,6 +357,33 @@ await Orders.updateStatus(OrderStatus.FULFILLED, orderId);
 ```
 
 <Card title="Full Documentation" href="/api/orders" />
+
+### Jobs API
+
+**New in v3.0.0** - Dynamically create scheduled tasks from tools:
+
+```typescript
+import { Jobs } from 'lua-cli';
+
+// Create a reminder job
+const job = await Jobs.create({
+  name: 'user-reminder',
+  metadata: { message: 'Meeting in 10 minutes' },
+  schedule: {
+    type: 'once',
+    executeAt: new Date(Date.now() + 600000)
+  },
+  execute: async (jobInstance) => {
+    const user = await jobInstance.user();
+    await user.send([{
+      type: 'text',
+      text: jobInstance.metadata.message
+    }]);
+  }
+});
+```
+
+<Card title="Full Documentation" href="/api/jobs" />
 
 ## Environment Variables
 
@@ -340,13 +489,35 @@ export class SearchNotesTool implements LuaTool {
 
 ## API Reference Pages
 
+### Core Classes
+
 <CardGroup cols={3}>
+  <Card title="LuaAgent" href="/api/luaagent" icon="robot">
+    **v3.0.0** Agent configuration
+  </Card>
   <Card title="LuaSkill" href="/api/luaskill" icon="puzzle-piece">
     Skill class API
   </Card>
   <Card title="LuaTool" href="/api/luatool" icon="wrench">
     Tool interface
   </Card>
+  <Card title="LuaWebhook" href="/api/luawebhook" icon="webhook">
+    **v3.0.0** HTTP webhooks
+  </Card>
+  <Card title="LuaJob" href="/api/luajob" icon="clock">
+    **v3.0.0** Scheduled tasks
+  </Card>
+  <Card title="PreProcessor" href="/api/preprocessor" icon="filter">
+    **v3.0.0** Message filtering
+  </Card>
+  <Card title="PostProcessor" href="/api/postprocessor" icon="paper-plane">
+    **v3.0.0** Response formatting
+  </Card>
+</CardGroup>
+
+### Runtime APIs
+
+<CardGroup cols={3}>
   <Card title="User" href="/api/user" icon="user">
     User data API
   </Card>
@@ -362,6 +533,14 @@ export class SearchNotesTool implements LuaTool {
   <Card title="Orders" href="/api/orders" icon="receipt">
     Orders API
   </Card>
+  <Card title="Jobs" href="/api/jobs" icon="plus">
+    **v3.0.0** Jobs API
+  </Card>
+</CardGroup>
+
+### Utilities
+
+<CardGroup cols={3}>
   <Card title="Environment" href="/api/environment" icon="key">
     Environment utilities
   </Card>

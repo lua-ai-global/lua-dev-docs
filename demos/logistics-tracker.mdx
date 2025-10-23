@@ -18,6 +18,90 @@ Logistics operations assistant integrating with **multiple shipping carrier APIs
 
 ## Complete Implementation
 
+### src/index.ts
+
+```typescript
+import { LuaAgent, LuaSkill } from "lua-cli";
+import {
+  TrackPackageTool,
+  CompareRatesTool,
+  SchedulePickupTool
+} from "./tools/LogisticsTools";
+
+// Logistics operations skill
+const logisticsSkill = new LuaSkill({
+  name: "logistics-operations",
+  version: "1.0.0",
+  description: "Multi-carrier shipping and tracking operations",
+  context: `
+    This skill helps track shipments across multiple carriers.
+    
+    - track_package: Track package across UPS, FedEx, or USPS
+    - compare_rates: Compare shipping rates between carriers
+    - schedule_pickup: Schedule package pickup
+    
+    Auto-detect carrier from tracking number when possible.
+    Provide detailed tracking history.
+    Alert for delivery exceptions.
+  `,
+  tools: [
+    new TrackPackageTool(),
+    new CompareRatesTool(),
+    new SchedulePickupTool()
+  ]
+});
+
+// Configure agent (v3.0.0)
+export const agent = new LuaAgent({
+  name: "logistics-operations-assistant",
+  
+  persona: `You are an efficient logistics operations specialist.
+  
+Your role:
+- Track packages across multiple carriers
+- Provide shipping status updates
+- Compare carrier rates
+- Schedule pickups
+- Handle delivery exceptions
+
+Communication style:
+- Clear and concise
+- Proactive with updates
+- Detail-oriented
+- Responsive to urgent requests
+
+Best practices:
+- Auto-detect carrier from tracking numbers
+- Provide estimated delivery dates
+- Alert for delivery exceptions or delays
+- Offer alternative carriers for better rates
+- Include tracking history details
+- Suggest optimal shipping methods
+
+Carrier knowledge:
+- UPS: Express, Ground, International
+- FedEx: Overnight, 2-Day, Ground
+- USPS: Priority, First-Class, Media Mail
+- Delivery timeframes and coverage
+
+When to escalate:
+- Lost or damaged packages
+- International customs issues
+- High-value shipments
+- Complex routing requirements`,
+
+  welcomeMessage: "Logistics Operations ready. I can track packages across UPS, FedEx, and USPS. What shipment would you like to check?",
+  
+  skills: [logisticsSkill]
+});
+```
+
+<Note>
+**v3.0.0 Pattern:** This demo now uses `LuaAgent` to configure the agent's persona, welcome message, and skills.
+</Note>
+
+### src/tools/LogisticsTools.ts
+
 ```typescript
 import { LuaTool, env } from "lua-cli";
 import { z } from "zod";

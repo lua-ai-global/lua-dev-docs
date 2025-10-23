@@ -1,0 +1,231 @@
+---
+title: "Jobs"
+description: "Scheduled tasks that run automatically"
+---
+
+## What are Jobs?
+
+**Jobs** are scheduled tasks that run automatically at specified times or intervals, without requiring user interaction. They enable your agent to perform automated operations like sending reports, cleaning up data, or monitoring systems.
+
+<Card title="Think of it as:" icon="clock">
+  A scheduled assistant - tasks that run on their own schedule, like daily reports or weekly cleanup
+</Card>
+
+<Note>
+**New in v3.0.0:** Two ways to create jobs - pre-defined with LuaJob or dynamically with Jobs API.
+</Note>
+
+## Why Jobs?
+
+<CardGroup cols={2}>
+  <Card title="Automation" icon="gears">
+    Run tasks automatically without user requests
+  </Card>
+  <Card title="Proactive Engagement" icon="bullhorn">
+    Send reminders, reports, and updates at the right time
+  </Card>
+  <Card title="Maintenance" icon="broom">
+    Clean up old data, monitor health, maintain systems
+  </Card>
+  <Card title="Scheduled Communication" icon="calendar">
+    Send daily summaries, weekly reports, monthly newsletters
+  </Card>
+</CardGroup>
+
+## Two Types of Jobs
+
+<Tabs>
+  <Tab title="LuaJob (Pre-defined)">
+    **Static jobs defined at agent setup**
+    
+    ```typescript
+    import { LuaJob } from 'lua-cli';
+    
+    const dailyReport = new LuaJob({
+      name: 'daily-sales-report',
+      schedule: {
+        type: 'cron',
+        pattern: '0 9 * * *'  // Every day at 9 AM
+      },
+      execute: async (job) => {
+        const user = await job.user();
+        await user.send([{
+          type: 'text',
+          text: 'Your daily report is ready!'
+        }]);
+      }
+    });
+    ```
+    
+    **Best for:**
+    - Daily/weekly reports
+    - Cleanup tasks
+    - System monitoring
+    - Recurring notifications
+  </Tab>
+
+  <Tab title="Jobs API (Dynamic)">
+    **Jobs created on-demand from tools**
+    
+    ```typescript
+    import { Jobs } from 'lua-cli';
+    
+    // Inside a tool's execute function
+    const job = await Jobs.create({
+      name: 'user-reminder',
+      metadata: { message: 'Meeting in 10 minutes' },
+      schedule: {
+        type: 'once',
+        executeAt: new Date(Date.now() + 600000)
+      },
+      execute: async (job) => {
+        const user = await job.user();
+        await user.send([{
+          type: 'text',
+          text: job.metadata.message
+        }]);
+      }
+    });
+    ```
+    
+    **Best for:**
+    - User-requested reminders
+    - Follow-up messages
+    - One-time notifications
+    - Context-specific tasks
+  </Tab>
+</Tabs>
+
+## Schedule Types
+
+### Cron (Specific Times)
+
+```typescript
+schedule: {
+  type: 'cron',
+  pattern: '0 9 * * *'  // Every day at 9 AM
+}
+```
+
+**Common patterns:**
+- `'0 9 * * *'` - Every day at 9 AM
+- `'0 9 * * 1'` - Every Monday at 9 AM
+- `'0 0 1 * *'` - First of every month at midnight
+- `'*/15 * * * *'` - Every 15 minutes
+
+### Interval (Regular Periods)
+
+```typescript
+schedule: {
+  type: 'interval',
+  intervalSeconds: 3600  // Every hour
+}
+```
+
+**Common intervals:**
+- `300` - Every 5 minutes
+- `3600` - Every hour
+- `86400` - Every day
+
+### Once (One-time)
+
+```typescript
+schedule: {
+  type: 'once',
+  executeAt: new Date('2025-12-25T09:00:00Z')
+}
+```
+
+**Use for:**
+- Specific future date/time
+- User-requested reminders
+- Follow-up messages
+
+## Example Use Cases
+
+<CardGroup cols={2}>
+  <Card title="Daily Reports" icon="chart-line">
+    Send sales summaries, analytics, or metrics every day
+  </Card>
+  <Card title="Cleanup Tasks" icon="broom">
+    Delete old data, archive records, maintain database
+  </Card>
+  <Card title="User Reminders" icon="bell">
+    Remind users about appointments, tasks, or deadlines
+  </Card>
+  <Card title="Monitoring" icon="gauge">
+    Check system health, API status, or thresholds
+  </Card>
+  <Card title="Follow-ups" icon="envelope">
+    Send follow-up messages after support tickets
+  </Card>
+  <Card title="Notifications" icon="megaphone">
+    Proactive updates about orders, shipments, or events
+  </Card>
+</CardGroup>
+
+## Adding Jobs to Your Agent
+
+Pre-defined jobs are added to your LuaAgent:
+
+```typescript
+import { LuaAgent } from 'lua-cli';
+import dailyReport from './jobs/daily-report';
+import weeklyCleanup from './jobs/weekly-cleanup';
+
+export const agent = new LuaAgent({
+  name: "my-agent",
+  persona: "...",
+  skills: [...],
+  
+  // Add scheduled jobs
+  jobs: [
+    dailyReport,
+    weeklyCleanup
+  ]
+});
+```
+
+Dynamic jobs are created from within tools using the Jobs API.
+
+## Testing Jobs
+
+```bash
+lua test
+# Select: Job → daily-report
+# Job executes immediately for testing
+```
+
+## Next Steps
+
+<CardGroup cols={2}>
+  <Card
+    title="LuaJob API Reference"
+    icon="book"
+    href="/api/luajob"
+  >
+    Pre-defined jobs documentation
+  </Card>
+  <Card
+    title="Jobs API Reference"
+    icon="plus"
+    href="/api/jobs"
+  >
+    Dynamic job creation documentation
+  </Card>
+  <Card
+    title="Agent Concept"
+    icon="robot"
+    href="/overview/agent"
+  >
+    Learn about LuaAgent configuration
+  </Card>
+  <Card
+    title="Webhooks Concept"
+    icon="webhook"
+    href="/overview/webhooks"
+  >
+    Understand HTTP endpoints
+  </Card>
+</CardGroup>
+

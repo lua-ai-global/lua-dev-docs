@@ -242,11 +242,63 @@ export default class GetWeatherTool implements LuaTool {
   </Card>
 </CardGroup>
 
-## Multiple Skills in One Project
+## Creating Your Agent (v3.0.0)
 
-You can organize tools into multiple skills:
+In v3.0.0, you configure your entire agent using `LuaAgent`:
 
 ```typescript
+import { LuaAgent, LuaSkill } from 'lua-cli';
+
+// Create your skill
+const coffeeSkill = new LuaSkill({
+  name: "coffee-shop-skill",
+  description: "Coffee shop assistant",
+  tools: [/* your tools */]
+});
+
+// Create agent (v3.0.0 pattern)
+export const agent = new LuaAgent({
+  name: "coffee-assistant",
+  
+  persona: `You are a friendly barista at Java Junction Coffee Shop.
+  
+Your role:
+- Help customers browse the menu
+- Take and confirm orders
+- Suggest popular items
+- Answer questions about ingredients
+
+Communication style:
+- Warm and welcoming
+- Enthusiastic about coffee
+- Patient and helpful
+- Always mention daily specials`,
+
+  welcomeMessage: "Welcome to Java Junction! What can I brew for you today?",
+  
+  skills: [coffeeSkill]
+});
+```
+
+<Note>
+**New in v3.0.0:** Use `LuaAgent` to configure persona, welcome message, and skills together in one unified configuration.
+</Note>
+
+### Why LuaAgent?
+
+The new LuaAgent pattern provides:
+- ✅ **Single source of truth** - All agent config in one place
+- ✅ **Better organization** - Clear separation of persona, skills, webhooks, jobs
+- ✅ **Auto-sync** - Automatically syncs with `lua.skill.yaml`
+- ✅ **More features** - Support for webhooks, jobs, preprocessors, postprocessors
+
+## Multiple Skills in One Project
+
+You can organize tools into multiple skills and add them all to your agent:
+
+```typescript
+import { LuaAgent, LuaSkill } from 'lua-cli';
+
 // Product browsing skill
 const catalogSkill = new LuaSkill({
   name: "product-catalog-skill",
@@ -275,6 +327,13 @@ const orderSkill = new LuaSkill({
     new CreateOrderTool(),
     new TrackOrderTool()
   ]
+});
+
+// Create agent with all skills (v3.0.0)
+export const agent = new LuaAgent({
+  name: "ecommerce-assistant",
+  persona: "You are a helpful e-commerce shopping assistant...",
+  skills: [catalogSkill, shoppingSkill, orderSkill]
 });
 ```
 
