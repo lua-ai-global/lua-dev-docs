@@ -52,14 +52,18 @@ await product.delete();
 
 ### search()
 
-Search products by name or description.
+Search products by name or description using semantic search.
 
 ```typescript
-Products.search(query: string): Promise<ProductSearchInstance>
+Products.search(query: string, limit?: number): Promise<ProductSearchInstance>
 ```
 
 <ParamField path="query" type="string" required>
   Search query to match against product names and descriptions
+</ParamField>
+
+<ParamField path="limit" type="number" default={5}>
+  Maximum number of products to return
 </ParamField>
 
 **Returns:** `ProductSearchInstance` - Array-like collection with direct access to products
@@ -67,7 +71,11 @@ Products.search(query: string): Promise<ProductSearchInstance>
 **Example:**
 
 ```typescript
+// Search with default limit (5)
 const results = await Products.search('laptop');
+
+// Search with custom limit
+const moreResults = await Products.search('laptop', 10);
 
 // Direct array methods
 results.forEach(product => {

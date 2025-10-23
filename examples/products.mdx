@@ -130,8 +130,11 @@ export class UpdateProductTool implements LuaTool {
 // Browse products
 const products = await Products.get(20, 1);
 
-// Search for specific items
+// Search for specific items (default limit: 5)
 const laptops = await Products.search('laptop');
+
+// Search with custom limit
+const moreLaptops = await Products.search('laptop', 10);
 
 // Get product details
 const product = await Products.getById(laptops.data[0].id);
