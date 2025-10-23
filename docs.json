@@ -290,7 +290,8 @@
             "pages": [
               "demos/iot-smart-light",
               "demos/iot-greenhouse",
-              "demos/iot-camera"
+              "demos/iot-camera",
+              "demos/iot-door-assistant"
             ]
           }
         ]

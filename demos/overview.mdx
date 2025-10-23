@@ -1,11 +1,11 @@
 ---
 title: "Demo Gallery"
-description: "14 production-ready solutions showcasing Lua's flexibility across business and IoT"
+description: "15 production-ready solutions showcasing Lua's flexibility across business and IoT"
 ---
 
 ## Overview
 
-Explore 14 complete, production-ready AI agent implementations across different industries and IoT use cases. Each demo shows full TypeScript code using the **v3.0.0 LuaAgent pattern** with external APIs, Lua Platform APIs, and edge computing.
+Explore 15 complete, production-ready AI agent implementations across different industries and IoT use cases. Each demo shows full TypeScript code using the **v3.0.0 LuaAgent pattern** with external APIs, Lua Platform APIs, and edge computing.
 
 <Note>
 **All demos updated for v3.0.0:** Every demo now uses `LuaAgent` for unified configuration, showing how to combine skills, webhooks, jobs, and processors in real-world applications.
@@ -19,7 +19,7 @@ Explore 14 complete, production-ready AI agent implementations across different 
     5 demos for business operations
   </Card>
   <Card title="IoT & Edge Computing" icon="microchip">
-    3 demos for Raspberry Pi and hardware control
+    4 demos for Raspberry Pi and hardware control
   </Card>
   <Card title="v3.0.0 Features" icon="sparkles">
     All demos use LuaAgent pattern with webhooks, jobs, and processors where applicable
@@ -272,6 +272,18 @@ Control physical hardware and sensors on **Raspberry Pi** through natural langua
   **Use case:** Security monitoring, time-lapse, remote observation
 </Card>
 
+### 16. Door Access Control
+
+<Card title="Door Assistant" icon="door-open" href="/demos/iot-door-assistant">
+  **WhatsApp-controlled door locks for hotels and apartments**
+  
+  **Features:** Guest access verification, time-window control, audit logging, WhatsApp integration
+  
+  **Hardware:** Raspberry Pi + relay + 12V electric strike/maglock
+  
+  **Use case:** Hotels, apartments, coworking spaces, vacation rentals
+</Card>
+
 ## API Integration Breakdown
 
 ### External APIs Used
@@ -288,6 +300,7 @@ Control physical hardware and sensors on **Raspberry Pi** through natural langua
 | Smart Light | Edge API (Flask) | GPIO relay control |
 | Greenhouse | Edge API (Flask) | BME280 sensor readings |
 | Camera | Edge API (Flask) | Photo capture (rpicam-still) |
+| Door Assistant | Edge API (Flask) | GPIO relay + access control |
 
 ### Lua Platform APIs Used
 
@@ -303,6 +316,7 @@ Control physical hardware and sensors on **Raspberry Pi** through natural langua
 | Healthcare | Data | Health information |
 | Greenhouse | Data | Climate history tracking |
 | Camera | Data | Photo metadata logging |
+| Door Assistant | Data | Guest access control + audit logs |
 
 ### Edge APIs Used
 
@@ -311,6 +325,7 @@ Control physical hardware and sensors on **Raspberry Pi** through natural langua
 | Smart Light | Flask + gpiozero | Raspberry Pi + relay module |
 | Greenhouse | Flask + BME280 library | Raspberry Pi + BME280 (I²C) |
 | Camera | Flask + rpicam-still | Raspberry Pi + Camera Module 3/HQ |
+| Door Assistant | Flask + gpiozero | Raspberry Pi + relay + electric strike |
 
 ## Integration Patterns Demonstrated
 
@@ -347,14 +362,15 @@ Control physical hardware and sensors on **Raspberry Pi** through natural langua
   </Tab>
   
   <Tab title="Edge Computing">
-    **IoT Smart Light, Greenhouse, Camera**
+    **IoT Smart Light, Greenhouse, Camera, Door Assistant**
     
     Custom Edge APIs on Raspberry Pi
-    - Flask APIs for GPIO, sensors, camera
+    - Flask APIs for GPIO, sensors, camera, access control
     - Local network communication
-    - Hardware control via chat
+    - Hardware control via chat and WhatsApp
+    - Security and audit logging
     
-    Shows: Physical world integration with AI agents
+    Shows: Physical world integration with AI agents and secure access control
   </Tab>
 </Tabs>
 
@@ -404,8 +420,9 @@ Choose demos based on what v3.0.0 features you want to learn:
     - **Healthcare Portal** - Patient consent verification
     - **Financial Onboarding** - Information validation
     - **Customer Support** - Business hours filtering
+    - **Door Assistant (IoT)** - Rate limiting for security
     
-    **Learn:** Content filtering, routing, validation, rate limiting
+    **Learn:** Content filtering, routing, validation, rate limiting, security patterns
   </Accordion>
 
   <Accordion title="✨ Learn PostProcessors">
@@ -424,8 +441,9 @@ Choose demos based on what v3.0.0 features you want to learn:
     - **Smart Light** - GPIO control with relays and LEDs
     - **Greenhouse** - I²C sensor reading (BME280)
     - **Camera** - Photo capture with rpicam-still
+    - **Door Assistant** - WhatsApp access control with time-window validation
     
-    **Learn:** Edge APIs, Flask on Pi, gpiozero, hardware control via chat, scheduled automation
+    **Learn:** Edge APIs, Flask on Pi, gpiozero, hardware control via chat, WhatsApp integration, access control, security patterns
   </Accordion>
 </AccordionGroup>
 
@@ -440,7 +458,7 @@ Choose demos based on what v3.0.0 features you want to learn:
     Great for learning Platform APIs and basic LuaAgent configuration
   </Accordion>
 
-  <Accordion title="⭐⭐ Intermediate (7 demos)">
+  <Accordion title="⭐⭐ Intermediate (8 demos)">
     - **Customer Support**: Zendesk + vector search + webhooks + jobs
     - **Real Estate**: MLS + Lua Data
     - **HR Assistant**: BambooHR + Lua Data + jobs
@@ -448,6 +466,7 @@ Choose demos based on what v3.0.0 features you want to learn:
     - **Smart Light (IoT)**: Edge API + GPIO control + jobs
     - **Greenhouse (IoT)**: Edge API + I²C sensors + jobs
     - **Camera (IoT)**: Edge API + rpicam-still + jobs + webhooks
+    - **Door Assistant (IoT)**: Edge API + WhatsApp + access control + preprocessors
     
     Shows hybrid integration patterns with v3.0.0 features and hardware control
   </Accordion>
@@ -547,6 +566,7 @@ Choose demos based on what v3.0.0 features you want to learn:
 | Smart Light | IoT | Edge API (Flask) | None | ⭐⭐ |
 | Greenhouse | IoT | Edge API (Flask) | Data | ⭐⭐ |
 | Camera | IoT | Edge API (Flask) | Data | ⭐⭐ |
+| Door Assistant | IoT | Edge API (Flask) + WhatsApp | Data | ⭐⭐ |
 
 ## Learn Concepts Through Demos
 

@@ -1,0 +1,981 @@
+---
+title: "IoT Door Access Control"
+description: "WhatsApp-controlled door locks with Raspberry Pi for hotels and apartments"
+---
+
+## Overview
+
+Production-ready door access control system where **guests WhatsApp your agent to open doors**. Perfect for hotels, apartments, coworking spaces, or any building requiring secure access control.
+
+**What it does:**
+- Guests WhatsApp to unlock doors
+- Verify guest access permissions
+- Time-window access control
+- Audit logging of all unlocks
+- Staff tools for guest registration
+
+**Hardware:** Raspberry Pi 4/5, relay module, 12V electric strike or maglock
+
+**APIs used:** Lua WhatsApp channel + Edge API (Flask) + Lua Data API (guest management)
+
+---
+
+## Architecture
+
+```
+WhatsApp Message → Lua Agent → Check Access → Unlock Door Tool → Pi Edge API → Relay → Door Strike
+                                      ↓
+                               Lua Data (Guests)
+```
+
+<Warning>
+**Security-First Design:** Always verify guest access before unlocking. This demo includes time-window validation, rate limiting, and audit logging.
+</Warning>
+
+---
+
+## Hardware Setup
+
+### Components
+
+<CardGroup cols={2}>
+  <Card title="Raspberry Pi 4/5" icon="microchip">
+    Main controller running Edge API
+  </Card>
+  <Card title="Relay Module" icon="bolt">
+    3.3V-compatible, optocoupled (active-low)
+  </Card>
+  <Card title="Electric Strike" icon="door-open">
+    12V fail-secure strike or maglock
+  </Card>
+  <Card title="Power Supply" icon="plug">
+    Separate 12V PSU for the lock
+  </Card>
+</CardGroup>
+
+### Wiring
+
+```
+Raspberry Pi          Relay Module         Electric Strike
+-----------          -------------         ---------------
+3.3V        ────────> VCC                
+GND         ────────> GND                 
+GPIO 17     ────────> IN (Signal)         
+                      COM ───────────────> 12V+ (from PSU)
+                      NO ────────────────> Strike +
+                      
+                      Strike - ──────────> 12V- (from PSU)
+```
+
+<Warning>
+**Safety Critical:**
+- Use optocoupled relay module for isolation
+- NEVER power lock from Pi (use separate 12V PSU)
+- Add flyback diode across lock coil
+- Use fail-secure locks (locked when de-energized)
+- Keep unlock pulses short (2-5 seconds)
+</Warning>
+
+---
+
+## Complete Implementation
+
+### 1. Raspberry Pi Edge API
+
+#### Setup
+
+```bash
+# Install dependencies (Raspberry Pi OS Bookworm)
+sudo apt update
+sudo apt install -y python3-pip python3-venv python3-libgpiod
+
+# Add user to gpio group (allows GPIO without sudo)
+sudo adduser $USER gpio
+# Log out and back in for this to take effect
+
+# Create project
+mkdir -p ~/door-edge && cd ~/door-edge
+python3 -m venv .venv
+source .venv/bin/activate
+pip install flask gpiozero
+```
+
+#### Edge API Code
+
+Create `edge_api.py`:
+
+```python
+from flask import Flask, request, jsonify
+import os, time
+from gpiozero import OutputDevice
+
+API_KEY = os.environ.get("EDGE_API_KEY", "changeme")
+DEFAULT_PIN = int(os.environ.get("DOOR_PIN", "17"))   # BCM numbering
+ACTIVE_LOW = os.environ.get("ACTIVE_LOW", "true").lower() == "true"
+DEFAULT_UNLOCK_MS = int(os.environ.get("UNLOCK_MS", "3000"))
+
+app = Flask(__name__)
+_last_unlock = 0
+
+def authorized(req):
+    return req.headers.get("X-API-Key") == API_KEY
+
+@app.get("/health")
+def health():
+    return {"ok": True, "ts": int(time.time())}
+
+@app.post("/door/unlock")
+def door_unlock():
+    if not authorized(request):
+        return jsonify({"error": "unauthorized"}), 401
+
+    global _last_unlock
+    now = time.time()
+    
+    # Rate limiting: prevent unlocks within 2 seconds
+    if now - _last_unlock < 2:
+        return {"ok": False, "rate_limited": True}, 429
+
+    data = request.get_json(force=True, silent=True) or {}
+    pin = int(data.get("pin", DEFAULT_PIN))
+    ms = int(data.get("ms", DEFAULT_UNLOCK_MS))
+    active_low = bool(data.get("active_low", ACTIVE_LOW))
+
+    # Validate unlock duration (safety)
+    if ms < 500 or ms > 10000:
+        return {"error": "Invalid unlock duration (500-10000ms)"}, 400
+
+    dev = OutputDevice(pin, active_high=not active_low, initial_value=False)
+    try:
+        dev.on()                    # Energize relay → unlock
+        time.sleep(ms / 1000.0)
+        dev.off()                   # De-energize → relock
+        _last_unlock = time.time()
+        
+        return {
+            "ok": True, 
+            "pin": pin, 
+            "ms": ms, 
+            "active_low": active_low,
+            "timestamp": int(time.time())
+        }
+    finally:
+        dev.close()
+
+if __name__ == "__main__":
+    app.run(host="0.0.0.0", port=5001)
+```
+
+#### Run Edge API
+
+```bash
+export EDGE_API_KEY="supersecret"
+export DOOR_PIN=17
+export ACTIVE_LOW=true
+export UNLOCK_MS=3000
+
+python edge_api.py
+```
+
+#### Test Edge API
+
+```bash
+# Health check
+curl http://raspberrypi.local:5001/health
+
+# Test unlock
+curl -X POST http://raspberrypi.local:5001/door/unlock \
+  -H "X-API-Key: supersecret" \
+  -H "Content-Type: application/json" \
+  -d '{"pin":17,"ms":3000,"active_low":true}'
+```
+
+---
+
+### 2. Lua Agent Implementation
+
+#### Environment Variables
+
+```bash
+# .env
+PI_BASE_URL=http://raspberrypi.local:5001
+PI_API_KEY=supersecret
+DOOR_MAP_JSON={"front":17,"garage":27}
+DEFAULT_UNLOCK_MS=3000
+ACTIVE_LOW=true
+BUILDING_ID=hotel-abc
+```
+
+Or set via CLI:
+
+```bash
+lua env sandbox
+# Add all the above variables
+```
+
+#### src/tools/CheckAccessTool.ts
+
+```typescript
+import { LuaTool, Data, env } from 'lua-cli';
+import { z } from 'zod';
+
+export default class CheckAccessTool implements LuaTool {
+  name = "check_access";
+  description = "Verify if a phone number has active access to a given door";
+  
+  inputSchema = z.object({
+    phone: z.string().describe("WhatsApp phone number (E.164 format)"),
+    door: z.string().default("front").describe("Door name (front, garage, etc.)")
+  });
+
+  async execute(input: z.infer<typeof this.inputSchema>) {
+    const now = Date.now();
+    const buildingId = env('BUILDING_ID') || 'default';
+
+    // Query guests with valid access
+    const result = await Data.get('guests', {
+      phone: input.phone,
+      buildingId,
+      status: 'ACTIVE',
+      startAt: { $lte: now },
+      endAt: { $gte: now },
+      doors: { $in: [input.door] }
+    });
+    
+    const allowed = result.data.length > 0;
+    const guest = allowed ? result.data[0] : undefined;
+
+    return {
+      allowed,
+      guestId: guest?.id,
+      name: guest?.data?.name,
+      door: input.door,
+      validUntil: guest?.data?.endAt 
+        ? new Date(guest.data.endAt).toLocaleString()
+        : null
+    };
+  }
+}
+```
+
+#### src/tools/UnlockDoorTool.ts
+
+```typescript
+import { LuaTool, Data, env } from 'lua-cli';
+import { z } from 'zod';
+
+export default class UnlockDoorTool implements LuaTool {
+  name = "unlock_door";
+  description = "Pulse the relay to unlock a door for a few seconds";
+  
+  inputSchema = z.object({
+    door: z.string().default("front").describe("Door name to unlock"),
+    ms: z.number().int().min(500).max(10000)
+      .default(parseInt(env('DEFAULT_UNLOCK_MS') || '3000'))
+      .describe("Unlock duration in milliseconds")
+  });
+
+  async execute(input: z.infer<typeof this.inputSchema>) {
+    const base = env('PI_BASE_URL');
+    const key = env('PI_API_KEY');
+    
+    if (!base || !key) {
+      throw new Error('PI_BASE_URL or PI_API_KEY not configured');
+    }
+
+    // Map door name to GPIO pin
+    const doorMap = JSON.parse(env('DOOR_MAP_JSON') || '{"front":17}');
+    const pin = doorMap[input.door];
+    
+    if (pin === undefined) {
+      throw new Error(`Unknown door: ${input.door}`);
+    }
+
+    // Call Pi Edge API
+    const res = await fetch(`${base}/door/unlock`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-API-Key': key
+      },
+      body: JSON.stringify({
+        pin,
+        ms: input.ms,
+        active_low: env('ACTIVE_LOW') === 'true'
+      })
+    });
+    
+    if (!res.ok) {
+      const error = await res.text();
+      throw new Error(`Edge API error: ${res.status} ${error}`);
+    }
+    
+    const result = await res.json();
+    
+    // Log the unlock event
+    await Data.create('door_logs', {
+      door: input.door,
+      pin: result.pin,
+      timestamp: new Date().toISOString(),
+      duration_ms: result.ms,
+      success: result.ok
+    }, `door unlock ${input.door}`);
+    
+    return {
+      success: true,
+      door: input.door,
+      duration: `${input.ms}ms`,
+      message: `Door unlocked. It will re-lock in ~${Math.round(input.ms/1000)}s.`
+    };
+  }
+}
+```
+
+#### src/tools/RegisterGuestTool.ts
+
+```typescript
+import { LuaTool, Data, env } from 'lua-cli';
+import { z } from 'zod';
+
+export default class RegisterGuestTool implements LuaTool {
+  name = "register_guest";
+  description = "Create or extend a guest's access window (staff only)";
+  
+  inputSchema = z.object({
+    phone: z.string().describe("Guest phone number (E.164)"),
+    name: z.string().optional().describe("Guest name"),
+    buildingId: z.string().default(env('BUILDING_ID') || 'default'),
+    doors: z.array(z.string()).describe("Doors guest can access"),
+    startAt: z.number().describe("Access start time (epoch ms)"),
+    endAt: z.number().describe("Access end time (epoch ms)"),
+    status: z.enum(['ACTIVE', 'REVOKED']).default('ACTIVE')
+  });
+
+  async execute(input: z.infer<typeof this.inputSchema>) {
+    // Validate time window
+    if (input.startAt >= input.endAt) {
+      throw new Error('Start time must be before end time');
+    }
+    
+    const entry = await Data.create('guests', {
+      phone: input.phone,
+      name: input.name,
+      buildingId: input.buildingId,
+      doors: input.doors,
+      startAt: input.startAt,
+      endAt: input.endAt,
+      status: input.status,
+      registeredAt: new Date().toISOString()
+    }, `${input.name || input.phone} ${input.buildingId} ${input.doors.join(',')}`);
+    
+    return {
+      success: true,
+      guestId: entry.id,
+      name: input.name,
+      phone: input.phone,
+      doors: input.doors,
+      validFrom: new Date(input.startAt).toLocaleString(),
+      validUntil: new Date(input.endAt).toLocaleString(),
+      message: `Guest access registered for ${input.doors.join(', ')}`
+    };
+  }
+}
+```
+
+#### src/index.ts
+
+```typescript
+import { LuaAgent, LuaSkill, PreProcessor } from 'lua-cli';
+import CheckAccessTool from './tools/CheckAccessTool';
+import UnlockDoorTool from './tools/UnlockDoorTool';
+import RegisterGuestTool from './tools/RegisterGuestTool';
+
+// Door control skill
+const doorSkill = new LuaSkill({
+  name: "door-control",
+  version: "1.0.0",
+  description: "Secure door access control via Raspberry Pi",
+  context: `
+    This skill controls building door access with strict security.
+    
+    Access Control Flow:
+    1. check_access: ALWAYS check first - verify phone has valid access
+    2. unlock_door: Only if check_access returns allowed=true
+    3. register_guest: Staff only - add or extend guest access
+    
+    Security Rules:
+    - NEVER unlock without verifying access first
+    - Check time windows (startAt/endAt)
+    - Rate-limit repeated unlock attempts
+    - Log all unlock events
+    - Confirm which door before unlocking
+    
+    User Experience:
+    - Ask which door if unclear ("front" or "garage")
+    - Report unlock duration in response
+    - Provide helpful error messages for denied access
+    - Suggest contacting staff if no valid booking
+  `,
+  tools: [
+    new CheckAccessTool(),
+    new UnlockDoorTool(),
+    new RegisterGuestTool()
+  ]
+});
+
+// Security preprocessor: Rate limiting
+const rateLimitPreProcessor = new PreProcessor({
+  name: 'unlock-rate-limit',
+  description: 'Prevent rapid repeated unlock attempts',
+  priority: 1,
+  execute: async (message, user) => {
+    const text = message.content.toLowerCase();
+    
+    // Check if message is about unlocking
+    if (text.includes('unlock') || text.includes('open door')) {
+      // Check recent unlock requests
+      const recentUnlocks = await Data.search('door_logs', user.id, 10);
+      const lastMinute = recentUnlocks.data.filter(log => {
+        const logTime = new Date(log.data.timestamp).getTime();
+        return Date.now() - logTime < 60000; // Last minute
+      });
+      
+      if (lastMinute.length >= 3) {
+        return {
+          block: true,
+          response: "You've made multiple unlock requests recently. Please wait a moment before trying again."
+        };
+      }
+    }
+    
+    return { block: false };
+  }
+});
+
+// Configure agent (v3.0.0)
+export const agent = new LuaAgent({
+  name: "door-assistant",
+  
+  persona: `You are a concise, security-focused door access assistant.
+
+Your role:
+- Verify guest access permissions before unlocking
+- Control door locks securely and safely
+- Maintain audit logs of all access
+- Provide clear feedback on access status
+
+Security Protocol:
+1. Identify user by WhatsApp phone number
+2. If user asks to unlock/open door, ask which door if unclear
+3. ALWAYS call check_access first to verify permissions
+4. If allowed: call unlock_door and confirm success
+5. If denied: politely explain and suggest contacting staff
+6. Log every unlock attempt
+
+Communication style:
+- Concise and professional
+- Security-conscious
+- Clear about access status
+- Helpful with denied requests
+
+Safety rules:
+- NEVER unlock without valid access check
+- NEVER reveal GPIO pin numbers or internal config
+- Rate-limit rapid repeated requests
+- Confirm door name before unlocking
+- Report unlock duration in confirmation
+
+Typical responses:
+- Allowed: "✅ Front door unlocked. It will re-lock in 3 seconds."
+- Denied: "I don't have an active booking for your number. Please contact the front desk or provide your booking details."
+- Unclear: "Which door would you like to open? Front or garage?"
+
+When to escalate:
+- Guest has no valid booking
+- Access outside time window
+- Technical errors with lock
+- Multiple failed attempts`,
+
+  welcomeMessage: "Welcome! I can help you unlock doors if you have an active booking. Which door do you need to access?",
+  
+  skills: [doorSkill],
+  preProcessors: [rateLimitPreProcessor]
+});
+```
+
+<Note>
+**v3.0.0 Features:** Uses LuaAgent with preprocessors for rate limiting and security validation.
+</Note>
+
+---
+
+### 2. WhatsApp Channel Setup
+
+<Steps>
+  <Step title="Deploy Your Agent">
+    ```bash
+    lua push && lua deploy
+    ```
+  </Step>
+  
+  <Step title="Connect WhatsApp">
+    ```bash
+    lua channels
+    ```
+    
+    Select WhatsApp and provide:
+    - Phone Number ID (from Meta Business Suite)
+    - WhatsApp Business Account ID
+    - Access Token
+  </Step>
+  
+  <Step title="Configure Webhook">
+    Copy the webhook URL provided by Lua CLI
+    
+    In Meta Business Suite → WhatsApp → Configuration:
+    - Add webhook URL
+    - Subscribe to `messages` events
+    - Verify webhook
+  </Step>
+  
+  <Step title="Test">
+    Send a WhatsApp message to your business number:
+    - "Open front door"
+  </Step>
+</Steps>
+
+<Card 
+  title="WhatsApp Setup Guide" 
+  icon="whatsapp" 
+  href="/channels/whatsapp"
+>
+  Complete WhatsApp channel setup instructions
+</Card>
+
+---
+
+## Guest Management
+
+### Register a Guest (Staff Operation)
+
+Use `lua test` to register guests:
+
+```bash
+lua test
+# Select: register_guest
+```
+
+**Example inputs:**
+- Phone: +14155551234
+- Name: John Doe
+- Building ID: hotel-abc
+- Doors: ["front", "garage"]
+- Start: 1735660800000 (epoch ms for check-in)
+- End: 1735833600000 (epoch ms for check-out)
+- Status: ACTIVE
+
+Or create via Data API directly:
+
+```typescript
+await Data.create('guests', {
+  phone: '+14155551234',
+  name: 'John Doe',
+  buildingId: 'hotel-abc',
+  doors: ['front', 'garage'],
+  startAt: Date.now(),
+  endAt: Date.now() + (48 * 3600000), // 48 hours
+  status: 'ACTIVE'
+}, 'John Doe hotel-abc front,garage');
+```
+
+---
+
+## Security Best Practices
+
+<AccordionGroup>
+  <Accordion title="✅ Always Verify Access">
+    **Never unlock without checking permissions**
+    
+    ```typescript
+    // ALWAYS do this:
+    const access = await checkAccess(phone, door);
+    if (!access.allowed) {
+      return { error: 'Access denied' };
+    }
+    await unlockDoor(door);
+    ```
+  </Accordion>
+
+  <Accordion title="✅ Time Window Validation">
+    **Check current time is within access window**
+    
+    Guests table includes `startAt` and `endAt` epoch timestamps.
+    Query ensures current time is within window.
+  </Accordion>
+
+  <Accordion title="✅ Rate Limiting">
+    **Prevent abuse with rate limits**
+    
+    - Server-side: 2-second minimum between unlocks
+    - PreProcessor: Max 3 unlock requests per minute
+    - Audit log: Track all attempts
+  </Accordion>
+
+  <Accordion title="✅ Audit Logging">
+    **Log every unlock attempt**
+    
+    ```typescript
+    await Data.create('door_logs', {
+      door: input.door,
+      phone: user.phone,
+      timestamp: new Date().toISOString(),
+      success: true,
+      guestId: access.guestId
+    });
+    ```
+  </Accordion>
+
+  <Accordion title="✅ Hardware Safety">
+    **Electrical safety is critical**
+    
+    - Use separate 12V PSU for lock (never from Pi)
+    - Optocoupled relay for isolation
+    - Flyback diode across lock coil
+    - Keep unlock pulses short (2-5s)
+    - Fail-secure locks (locked when unpowered)
+  </Accordion>
+</AccordionGroup>
+
+---
+
+## Alternative: Twilio WhatsApp Webhook
+
+If using Twilio instead of Meta's WhatsApp Business API:
+
+### src/webhooks/twilio-whatsapp.ts
+
+```typescript
+import { LuaWebhook, env } from 'lua-cli';
+import crypto from 'crypto';
+
+function validateTwilioSignature(url: string, params: Record<string, string>, signature: string, authToken: string): boolean {
+  const data = Object.keys(params).sort().reduce((acc, k) => acc + k + params[k], url);
+  const digest = crypto.createHmac('sha1', authToken).update(data).digest('base64');
+  return crypto.timingSafeEqual(Buffer.from(digest), Buffer.from(signature));
+}
+
+const twilioWebhook = new LuaWebhook({
+  name: 'twilio-whatsapp',
+  description: 'Handle Twilio WhatsApp inbound messages',
+  verifySignature: false, // Custom validation below
+  
+  execute: async (event) => {
+    const authToken = env('TWILIO_AUTH_TOKEN');
+    const sig = event.headers['x-twilio-signature'];
+    const webhookUrl = env('TWILIO_WEBHOOK_PUBLIC_URL');
+    
+    if (!authToken || !sig || !webhookUrl) {
+      return { ok: false, reason: 'missing-config' };
+    }
+    
+    const params = Object.fromEntries(new URLSearchParams(event.body));
+    
+    if (!validateTwilioSignature(webhookUrl, params, sig, authToken)) {
+      return { ok: false, reason: 'invalid-signature' };
+    }
+
+    const from = params.WaId || params.From || '';
+    const text = params.Body?.trim() || '';
+    
+    // Route to agent for processing
+    // Lua handles message routing automatically
+    
+    return { ok: true, from, text };
+  }
+});
+
+export default twilioWebhook;
+```
+
+Add to your agent:
+
+```typescript
+import twilioWebhook from './webhooks/twilio-whatsapp';
+
+export const agent = new LuaAgent({
+  // ... other config
+  webhooks: [twilioWebhook]
+});
+```
+
+---
+
+## Conversation Flows
+
+### Guest with Valid Access
+
+```
+Guest via WhatsApp: "Open front door"
+Agent: Checking access...
+Agent: ✅ Front door unlocked. It will re-lock in 3 seconds.
+```
+
+### Guest without Access
+
+```
+Guest via WhatsApp: "Open door"
+Agent: I don't have an active booking for your number. 
+       Please contact the front desk with your booking 
+       confirmation, or provide your booking name and dates.
+```
+
+### Staff Registering Guest
+
+```
+Staff via lua test: register_guest
+→ Phone: +14155551234
+→ Name: John Doe
+→ Doors: ["front", "garage"]
+→ Start: [check-in timestamp]
+→ End: [check-out timestamp]
+
+Agent: ✅ Guest access registered for front, garage
+```
+
+---
+
+## Production Deployment
+
+### Run Edge API on Boot
+
+Create `/etc/systemd/system/door-edge.service`:
+
+```ini
+[Unit]
+Description=Door Control Edge API
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+User=pi
+WorkingDirectory=/home/pi/door-edge
+Environment=EDGE_API_KEY=supersecret
+Environment=DOOR_PIN=17
+Environment=ACTIVE_LOW=true
+Environment=UNLOCK_MS=3000
+ExecStart=/home/pi/door-edge/.venv/bin/python edge_api.py
+Restart=always
+RestartSec=10
+
+[Install]
+WantedBy=multi-user.target
+```
+
+Enable:
+
+```bash
+sudo systemctl daemon-reload
+sudo systemctl enable --now door-edge
+```
+
+### Set Static IP for Pi
+
+```bash
+# Edit /etc/dhcpcd.conf
+sudo nano /etc/dhcpcd.conf
+
+# Add:
+interface eth0
+static ip_address=192.168.1.100/24
+static routers=192.168.1.1
+static domain_name_servers=192.168.1.1
+```
+
+Update `PI_BASE_URL` to use the static IP.
+
+---
+
+## Monitoring & Audit
+
+### View Unlock Logs
+
+```typescript
+// Query recent unlocks
+const logs = await Data.get('door_logs', {}, 1, 100);
+
+logs.data.forEach(log => {
+  console.log(`${log.data.timestamp}: ${log.data.door} - ${log.data.success ? 'Success' : 'Failed'}`);
+});
+```
+
+### View Active Guests
+
+```typescript
+const now = Date.now();
+const activeGuests = await Data.get('guests', {
+  status: 'ACTIVE',
+  startAt: { $lte: now },
+  endAt: { $gte: now }
+});
+
+console.log(`${activeGuests.data.length} active guests`);
+```
+
+---
+
+## Key Features
+
+<CardGroup cols={2}>
+  <Card title="WhatsApp Control" icon="whatsapp">
+    Guests unlock doors via WhatsApp messages
+  </Card>
+  <Card title="Time-Window Access" icon="calendar">
+    Check-in/check-out time validation
+  </Card>
+  <Card title="Multi-Door Support" icon="door-open">
+    Control multiple doors with different pins
+  </Card>
+  <Card title="Audit Trail" icon="list">
+    Complete logs of all unlock attempts
+  </Card>
+  <Card title="Rate Limiting" icon="shield">
+    Prevent abuse with preprocessor filtering
+  </Card>
+  <Card title="Staff Tools" icon="user-gear">
+    Register and manage guest access
+  </Card>
+</CardGroup>
+
+---
+
+## WhatsApp Best Practices
+
+<Warning>
+**WhatsApp Rules:**
+- Users must message you first (opt-in required)
+- 24-hour conversation window applies
+- Use message templates for notifications outside window
+- Respect Meta's Business messaging policies
+</Warning>
+
+See complete WhatsApp guidelines: [WhatsApp Channel Guide](/channels/whatsapp)
+
+---
+
+## Use Cases
+
+<Tabs>
+  <Tab title="Hotels">
+    **Guest Room Access**
+    
+    - Check-in: Register guest with room access
+    - Guest WhatsApps: "Open room 305"
+    - Check-out: Access automatically expires
+    
+    **Multi-property:** Use different `buildingId` per location
+  </Tab>
+
+  <Tab title="Apartments">
+    **Tenant Access**
+    
+    - Move-in: Register tenant with building access
+    - Tenant WhatsApps: "Open front door"
+    - Guest access: Temporary access for visitors
+    
+    **Multiple doors:** Front entrance, garage, amenities
+  </Tab>
+
+  <Tab title="Coworking">
+    **Member Access**
+    
+    - Membership: Register with access times (9 AM - 6 PM)
+    - Member WhatsApps: "Open office"
+    - After-hours: Denied with message about hours
+    
+    **Tiered access:** Different doors for different plans
+  </Tab>
+
+  <Tab title="Vacation Rentals">
+    **Guest Booking**
+    
+    - Booking confirmed: Register guest with dates
+    - Guest arrives: WhatsApp to unlock
+    - Check-out: Access expires automatically
+    
+    **Contactless:** Fully automated check-in
+  </Tab>
+</Tabs>
+
+---
+
+## Troubleshooting
+
+<AccordionGroup>
+  <Accordion title="Door doesn't unlock">
+    **Check:**
+    - Edge API is running: `curl http://raspberrypi.local:5001/health`
+    - GPIO permissions: User in gpio group, logged back in
+    - Relay wiring: Correct pins, proper power supply
+    - Active-low setting: Try toggling `ACTIVE_LOW`
+  </Accordion>
+
+  <Accordion title="Access denied for valid guest">
+    **Check:**
+    - Guest is in database: `Data.get('guests')`
+    - Time window is current: startAt < now < endAt
+    - Status is ACTIVE
+    - Building ID matches
+    - Phone number format matches (E.164)
+  </Accordion>
+
+  <Accordion title="WhatsApp not responding">
+    **Check:**
+    - Agent deployed: `lua deploy`
+    - WhatsApp channel connected: `lua channels`
+    - Webhook verified in Meta Business Suite
+    - Check logs: `lua logs`
+  </Accordion>
+
+  <Accordion title="Rate limiting too aggressive">
+    **Adjust:**
+    - Increase time window in PreProcessor (60000ms → 120000ms)
+    - Increase max attempts (3 → 5)
+    - Adjust server-side throttle in edge_api.py (2s → 5s)
+  </Accordion>
+</AccordionGroup>
+
+---
+
+## Next Steps
+
+<CardGroup cols={2}>
+  <Card
+    title="View All IoT Demos"
+    icon="microchip"
+    href="/demos/overview#iot-automation"
+  >
+    See all Raspberry Pi examples
+  </Card>
+  <Card
+    title="WhatsApp Setup"
+    icon="whatsapp"
+    href="/channels/whatsapp"
+  >
+    Complete WhatsApp channel guide
+  </Card>
+  <Card
+    title="Data API"
+    icon="database"
+    href="/api/data"
+  >
+    Learn about guest data management
+  </Card>
+  <Card
+    title="PreProcessor API"
+    icon="filter"
+    href="/api/preprocessor"
+  >
+    Learn about rate limiting and filtering
+  </Card>
+</CardGroup>
+
