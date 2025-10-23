@@ -3,24 +3,153 @@ title: "Lua - Build AI Agents That Do Anything"
 description: "Create AI agents with custom capabilities by connecting to any API using TypeScript"
 ---
 
+## Get started in 5 minutes
 
-Lua is a **general-purpose platform** for building AI agents with custom capabilities. Write TypeScript functions (tools) that connect to **any API** - yours or third-party - and your AI agent can use them in conversations.
+**Lua is the Agent OS that abstracts the technical complexities and helps engineers focus on business logic.** Ship your first agent without touching infra—just write TypeScript tools and go live.
+
+---
+
+### 1. Install the CLI
+
+<CodeGroup>
+
+```bash npm
+npm install -g lua-cli
+```
+
+```bash yarn
+yarn global add lua-cli
+```
+
+```bash pnpm
+pnpm add -g lua-cli
+```
+
+</CodeGroup>
+
+*Node 16+ recommended.* [Installation Guide →](/getting-started/installation)
+
+---
+
+### 2. Authenticate (one-time)
+
+```bash
+lua auth configure
+```
+
+Enter your email, confirm the 6-digit code, and we'll securely store your API key for you. [Auth Guide →](/cli/authentication)
+
+---
+
+### 3. Create your project
+
+```bash
+mkdir my-agent && cd my-agent
+lua init
+```
+
+Pick **Create new agent** and follow the prompts. The template includes ready-to-run examples. [Quick Start Guide →](/getting-started/quick-start)
+
+---
+
+### 4. Run it locally
+
+```bash
+lua test
+```
+
+Select a tool and try different inputs. The starter includes **30+ working tools** (e.g., a no-API-key weather tool) so you can see the pattern right away. [Template Overview →](/template/overview)
+
+---
+
+### 5. Deploy & chat
+
+```bash
+lua push && lua deploy   # ship to production
+lua chat                 # chat in sandbox or production
+```
+
+Use `lua chat` for an interactive CLI session; sandbox chat auto-bundles your local skills after a quick push. [Chat Command →](/cli/chat-command)
 
 <Card
-  title="Get Started in 5 Minutes"
-  icon="rocket"
-  href="/getting-started/quick-start"
+  title="✨ Test on Real Channels Instantly"
+  icon="mobile"
+  href="/channels/quick-testing"
   horizontal
 >
-  Build and deploy your first AI agent
+  Test your agent on WhatsApp, Facebook, Instagram, Email, or Slack without setting up channels
 </Card>
+
+---
+
+## Add your first business-logic tool
+
+Here's all the code you need to add a custom capability:
+
+<CodeGroup>
+
+```typescript src/tools/SayHello.ts
+import { LuaTool } from 'lua-cli';
+import { z } from 'zod';
+
+export class SayHello implements LuaTool {
+  name = 'say_hello';
+  description = 'Greets a user by name';
+  inputSchema = z.object({ name: z.string() });
+  
+  async execute(input: { name: string }) {
+    return { message: `Hello, ${input.name}!` };
+  }
+}
+```
+
+```typescript src/index.ts
+import { LuaAgent, LuaSkill } from 'lua-cli';
+import { SayHello } from './tools/SayHello';
+
+const helloSkill = new LuaSkill({
+  name: 'hello-skill',
+  description: 'Greeting capabilities',
+  context: 'Use say_hello to greet users by name',
+  tools: [new SayHello()]
+});
+
+export const agent = new LuaAgent({
+  name: 'hello-agent',
+  persona: 'You are a friendly assistant. Be warm and concise.',
+  welcomeMessage: 'Hi! How can I help you today?',
+  skills: [helloSkill]
+});
+```
+
+</CodeGroup>
+
+**That's it.** This mirrors the agent/skill/tool pattern—focus purely on your domain logic. [Build Your First Skill →](/getting-started/first-skill)
+
+---
+
+## Add chat to your website (1 line)
+
+```html
+<script src="https://lua-ai-global.github.io/lua-pop/lua-pop.umd.js"></script>
+<script>
+  window.LuaPop.init({ 
+    agentId: "your-agent-id", 
+    position: "bottom-right"
+  });
+</script>
+```
+
+Drop this on any page to embed AI chat instantly. [LuaPop Widget Guide →](/chat-widget/quick-start)
+
+---
 
 ## Focus on Business Logic, Not Infrastructure
 
-Lua abstracts away all the complexity of building production AI agents so engineers, builders, and businesses can focus entirely on what matters: **your business logic and integrations**.
+Lua abstracts away all the complexity so you can ship faster:
 
 <CardGroup cols={2}>
-  <Card title="Infrastructure Management" icon="server">
+  <Card title="Infrastructure" icon="server">
     **We handle:** Hosting, auto-scaling, load balancing, CDN delivery, uptime monitoring
     
     **You focus on:** Writing functions that solve business problems
@@ -31,7 +160,7 @@ Lua abstracts away all the complexity of building production AI agents so engine
     **You focus on:** What your agent should do, not how AI models work
   </Card>
   <Card title="Multi-Channel Orchestration" icon="layer-group">
-    **We handle:** Web, mobile, WhatsApp, Slack, Instagram, Facebook Messenger - all channels managed
+    **We handle:** Web, mobile, WhatsApp, Slack, Instagram, Facebook Messenger—all channels managed
     
     **You focus on:** Building capabilities once, deploy everywhere instantly
   </Card>
@@ -46,97 +175,18 @@ Lua abstracts away all the complexity of building production AI agents so engine
 **Build in hours, not months.** Skip the months of infrastructure work, LLM integration complexity, and channel management. Just write TypeScript functions that connect to your APIs, and we handle everything else.
 </Note>
 
-## What Makes Lua Different
+---
 
-<CardGroup cols={2}>
-  <Card
-    title="Integrate With ANY API"
-    icon="plug"
-  >
-    **Your APIs** - Connect to your existing backend services
-    
-    **External APIs** - Stripe, SendGrid, weather, maps, any REST/GraphQL API
-    
-    **Platform APIs (Optional)** - Use our helpers for common tasks like e-commerce or data storage
-  </Card>
-  <Card
-    title="Your Code, Your Logic"
-    icon="code"
-  >
-    Write TypeScript functions that do **exactly what you need**
-    
-    Full control over authentication, business logic, data transformation, and error handling
-    
-    No constraints - build any capability you can imagine
-  </Card>
-</CardGroup>
+## Integrate With ANY API
 
-## How It Works
-
-<Steps>
-  <Step title="Write Tools (TypeScript Functions)">
-    Create functions that integrate with your APIs or external services
-    
-    ```typescript
-    class OrderLookupTool implements LuaTool {
-      async execute(input) {
-        // Call YOUR API
-        const response = await fetch('https://your-api.com/orders/' + input.orderId);
-        return await response.json();
-      }
-    }
-    ```
-  </Step>
-  
-  <Step title="Bundle Tools Into Skills">
-    Group related tools together
-    
-    ```typescript
-    const customerServiceSkill = new LuaSkill({
-      name: "customer-service",
-      tools: [new OrderLookupTool(), new CreateTicketTool()]
-    });
-    ```
-  </Step>
-  
-  <Step title="Configure Your Agent">
-    Use LuaAgent to configure everything in one place
-    
-    ```typescript
-    export const agent = new LuaAgent({
-      name: "support-agent",
-      persona: "You are a helpful customer support agent...",
-      skills: [customerServiceSkill]
-    });
-    ```
-  </Step>
-  
-  <Step title="Deploy Your Agent">
-    One command to push your agent live
-    
-    ```bash
-    lua push && lua deploy
-    ```
-  </Step>
-  
-  <Step title="Users Chat, AI Takes Actions">
-    Users chat naturally, AI calls your tools to take real actions
-    
-    **User**: "What's the status of my order #12345?"
-    
-    **AI**: *Calls your OrderLookupTool* → Returns real order status
-  </Step>
-</Steps>
-
-## Three Ways to Integrate
+Connect to your existing systems or any third-party service:
 
 <Tabs>
-  <Tab title="Your APIs Only">
+  <Tab title="Your APIs">
     **100% Custom Integration**
     
     ```typescript
-    // Connect to YOUR systems
-    class YourTool implements LuaTool {
+    class YourCustomTool implements LuaTool {
       async execute(input) {
         const response = await fetch('https://your-backend.com/api/endpoint', {
           headers: { 'X-API-Key': env('YOUR_API_KEY') }
@@ -155,7 +205,6 @@ Lua abstracts away all the complexity of building production AI agents so engine
     ```typescript
     import { Products, Baskets, Data } from 'lua-cli';
     
-    // Quick e-commerce or data storage
     const products = await Products.search('laptop');
     const basket = await Baskets.create({ currency: 'USD' });
     const results = await Data.search('docs', 'query');
@@ -164,32 +213,25 @@ Lua abstracts away all the complexity of building production AI agents so engine
     Great for rapid prototyping, e-commerce MVPs, or when you don't have a backend yet
   </Tab>
 
-  <Tab title="Mix Both">
-    **Best of Both Worlds**
+  <Tab title="External Services">
+    **Third-Party Integrations**
     
     ```typescript
-    import { Data } from 'lua-cli';
-    
-    class HybridTool implements LuaTool {
-      async execute(input) {
-        // YOUR Shopify store
-        const products = await fetch('https://your-store.myshopify.com/api/...');
-        
-        // Platform vector search for FAQs
-        const faqs = await Data.search('help', input.query);
-        
-        return { products, faqs };
-      }
-    }
+    // Stripe, SendGrid, Shopify, Zendesk, etc.
+    const stripe = await fetch('https://api.stripe.com/v1/charges', {
+      headers: { 'Authorization': `Bearer ${env('STRIPE_KEY')}` }
+    });
     ```
     
-    Most flexible approach - use the best tool for each job
+    Connect to any REST/GraphQL API—Stripe, SendGrid, weather, maps, anything
   </Tab>
 </Tabs>
 
 <Note>
 **Platform APIs are completely optional!** They're convenience helpers for common e-commerce and data tasks. You can build agents that integrate with ANY system using standard HTTP/REST/GraphQL calls.
 </Note>
+
+---
 
 ## What You Can Build
 
@@ -210,7 +252,7 @@ Lua abstracts away all the complexity of building production AI agents so engine
     AI-powered operations connecting to your ERP, CRM, and databases
   </Card>
   
-  <Card title="Finance" icon="building-columns">
+  <Card title="Finance & Banking" icon="building-columns">
     Account management, transactions, and reporting with your banking systems
   </Card>
   
@@ -219,207 +261,48 @@ Lua abstracts away all the complexity of building production AI agents so engine
   </Card>
 </CardGroup>
 
-## Core Features
+---
+
+## Advanced Features (v3.0.0)
+
+Beyond basic tools and skills, Lua provides enterprise-grade automation:
 
 <CardGroup cols={2}>
-  <Card title="Any API Integration" icon="link">
-    REST, GraphQL, WebSockets - if you can call it from TypeScript, you can use it
+  <Card title="Webhooks" icon="webhook">
+    **HTTP endpoints** for external events
+    
+    Stripe payments, Shopify orders, GitHub deployments—react to events in real-time
+    
+    [Learn More →](/overview/webhooks)
   </Card>
-  <Card title="TypeScript-First" icon="code">
-    Full type safety with autocomplete and validation using Zod schemas
+  <Card title="Scheduled Jobs" icon="clock">
+    **Automated tasks** with cron patterns
+    
+    Daily reports, cleanup tasks, monitoring—automate recurring operations
+    
+    [Learn More →](/overview/jobs)
   </Card>
-  <Card title="Live Development" icon="arrows-rotate">
-    Development mode with instant recompilation and testing
+  <Card title="PreProcessors" icon="filter">
+    **Message filtering** before your agent
+    
+    Spam detection, profanity filters, routing, validation—control what reaches your agent
+    
+    [Learn More →](/overview/preprocessors)
   </Card>
-  <Card title="Optional Platform APIs" icon="database">
-    Built-in helpers for e-commerce, data storage, and vector search
-  </Card>
-  <Card title="30+ Examples" icon="book">
-    Working examples for external APIs, Platform APIs, and hybrid approaches
-  </Card>
-  <Card title="Production Ready" icon="rocket">
-    Version management, sandbox testing, and one-command deployment
+  <Card title="PostProcessors" icon="paper-plane">
+    **Response formatting** after generation
+    
+    Disclaimers, branding, translation—enhance every response automatically
+    
+    [Learn More →](/overview/postprocessors)
   </Card>
 </CardGroup>
 
-## Two Powerful Products
+---
 
-<Tabs>
-  <Tab title="🛠️ Lua CLI">
-    **Build AI agents with custom capabilities using TypeScript**
-    
-    The development framework for creating AI skills that connect to your APIs.
-    
-    ### Quick Start
-    
-    <CodeGroup>
-    
-    ```bash npm
-    npm install -g lua-cli
-    lua auth configure
-    lua init
-    lua chat
-    ```
-    
-    ```bash yarn
-    yarn global add lua-cli
-    lua auth configure
-    lua init
-    lua chat
-    ```
-    
-    ```bash pnpm
-    pnpm add -g lua-cli
-    lua auth configure
-    lua init
-    lua chat
-    ```
-    
-    </CodeGroup>
-    
-    <Card title="Build Your First Agent" icon="terminal" href="/getting-started/quick-start">
-      Complete tutorial in 5 minutes
-    </Card>
-  </Tab>
+## Production-Ready Examples
 
-  <Tab title="💬 LuaPop Widget">
-    **Embeddable AI chat widget for your website**
-    
-    Add your AI agent to any website with a single script tag.
-    
-    ### Quick Start
-    ```html
-    <script src="https://lua-ai-global.github.io/lua-pop/lua-pop.umd.js"></script>
-    <script>
-      window.LuaPop.init({
-        agentId: "your-agent-id",
-        position: "bottom-right"
-      });
-    </script>
-    ```
-    
-    <Card title="Add Chat to Your Website" icon="comments" href="/chat-widget/quick-start">
-      Setup in 2 minutes
-    </Card>
-  </Tab>
-</Tabs>
-
-## Simple Example
-
-```typescript
-import { LuaAgent, LuaSkill, LuaTool } from 'lua-cli';
-import { z } from 'zod';
-
-// 1. Create a tool that calls ANY external API
-class GetWeatherTool implements LuaTool {
-  name = "get_weather";
-  description = "Get current weather for a city";
-  
-  inputSchema = z.object({
-    city: z.string()
-  });
-
-  async execute(input: { city: string }) {
-    const response = await fetch(
-      `https://api.openweathermap.org/data/2.5/weather?q=${input.city}`
-    );
-    
-    const data = await response.json();
-    
-    return {
-      temperature: data.main.temp,
-      condition: data.weather[0].description,
-      city: input.city
-    };
-  }
-}
-
-// 2. Bundle into a skill
-const weatherSkill = new LuaSkill({
-  name: "weather-skill",
-  description: "Provides weather information",
-  tools: [new GetWeatherTool()]
-});
-
-// 3. Configure your agent (v3.0.0)
-export const agent = new LuaAgent({
-  name: "weather-assistant",
-  persona: "You are a friendly weather assistant. Provide accurate weather information for any city.",
-  welcomeMessage: "Hi! Ask me about the weather anywhere in the world.",
-  skills: [weatherSkill]
-});
-```
-
-Deploy with: `lua push && lua deploy`
-
-## Why Developers Choose Lua
-
-<AccordionGroup>
-  <Accordion title="🔓 No Vendor Lock-In">
-    Integrate with any API you choose. Your infrastructure, your choice. Not tied to our Platform APIs.
-  </Accordion>
-
-  <Accordion title="⚡ Fast Development">
-    Live reload, TypeScript autocomplete, instant testing. Build and iterate in minutes, not days.
-  </Accordion>
-
-  <Accordion title="🎯 Full Control">
-    Your code, your logic, your data. Complete control over authentication, business rules, and integrations.
-  </Accordion>
-
-  <Accordion title="🚀 Production Ready">
-    Version management, staging environments, one-command deployment. Enterprise-ready from day one.
-  </Accordion>
-</AccordionGroup>
-
-## Popular Guides
-
-<CardGroup cols={2}>
-  <Card
-    title="Quick Start"
-    icon="rocket"
-    href="/getting-started/quick-start"
-  >
-    Build your first agent in 5 minutes
-  </Card>
-  <Card
-    title="Complete Overview"
-    icon="book"
-    href="/overview"
-  >
-    Deep dive into platform capabilities and architecture
-  </Card>
-  <Card
-    title="API Integration"
-    icon="plug"
-    href="/concepts/platform-apis"
-  >
-    Learn about Platform APIs and external integrations
-  </Card>
-  <Card
-    title="30+ Examples"
-    icon="layer-group"
-    href="/examples/overview"
-  >
-    Working code for common use cases
-  </Card>
-  <Card
-    title="CLI Commands"
-    icon="terminal"
-    href="/cli/overview"
-  >
-    Complete command reference
-  </Card>
-  <Card
-    title="Chat Widget"
-    icon="comments"
-    href="/chat-widget/introduction"
-  >
-    Embed AI chat on your website
-  </Card>
-</CardGroup>
-
-## Featured Demos
+See complete implementations across 11 different industries:
 
 <CardGroup cols={3}>
   <Card
@@ -435,7 +318,7 @@ Deploy with: `lua push && lua deploy`
     icon="headset"
     href="/demos/customer-support"
   >
-    Zendesk integration with AI knowledge base
+    Zendesk integration with AI knowledge base + webhooks + jobs
   </Card>
   
   <Card
@@ -443,7 +326,7 @@ Deploy with: `lua push && lua deploy`
     icon="building-columns"
     href="/demos/financial-onboarding"
   >
-    KYC verification with Stripe Identity
+    KYC verification with Stripe Identity + webhooks + processors
   </Card>
   
   <Card
@@ -451,7 +334,7 @@ Deploy with: `lua push && lua deploy`
     icon="user-tie"
     href="/demos/hr-assistant"
   >
-    Employee management with BambooHR
+    Employee management with BambooHR + scheduled reports
   </Card>
   
   <Card
@@ -459,7 +342,7 @@ Deploy with: `lua push && lua deploy`
     icon="truck"
     href="/demos/logistics-tracker"
   >
-    Multi-carrier shipping tracking
+    Multi-carrier shipping tracking (UPS, FedEx, USPS)
   </Card>
   
   <Card
@@ -471,35 +354,78 @@ Deploy with: `lua push && lua deploy`
   </Card>
 </CardGroup>
 
-## Get Started Now
+---
 
-<Steps>
-  <Step title="Install CLI">
-    ```bash
-    npm install -g lua-cli
-    lua auth configure
-    ```
-  </Step>
-  <Step title="Create Project">
-    ```bash
-    mkdir my-agent && cd my-agent
-    lua init
-    ```
-  </Step>
-  <Step title="Build & Deploy">
-    ```bash
-    lua chat    # Test locally
-    lua push && lua deploy
-    ```
-  </Step>
-  <Step title="Test on Real Channels">
-    Test your agent on WhatsApp, Facebook, Instagram, and more - no channel setup needed!
-    
-    <Card title="Quick Testing" icon="bolt" href="/channels/quick-testing">
-      Link to existing Lua channels instantly
-    </Card>
-  </Step>
-</Steps>
+## Why Developers Choose Lua
+
+<AccordionGroup>
+  <Accordion title="🔓 No Vendor Lock-In">
+    Integrate with any API you choose. Your infrastructure, your choice. Not tied to our Platform APIs—they're completely optional. Your data stays with your systems.
+  </Accordion>
+
+  <Accordion title="⚡ Ship in Hours, Not Months">
+    Live reload during development means instant feedback. TypeScript autocomplete guides you. Test with `lua chat` immediately. Deploy with one command. Skip months of infrastructure work.
+  </Accordion>
+
+  <Accordion title="🎯 Full Control">
+    Your code, your logic, your data. Complete control over authentication, business rules, error handling, and integrations. Not limited by platform constraints.
+  </Accordion>
+
+  <Accordion title="🚀 Production Ready from Day One">
+    Version management built-in. Sandbox for testing. Environment variables for secrets. One-command deployment. Monitoring and logs. Everything you need for enterprise production use.
+  </Accordion>
+</AccordionGroup>
+
+---
+
+## Helpful Resources
+
+<CardGroup cols={2}>
+  <Card
+    title="Quick Start Guide"
+    icon="rocket"
+    href="/getting-started/quick-start"
+  >
+    Complete tutorial—install to deploy in 5 minutes
+  </Card>
+  <Card
+    title="Key Concepts"
+    icon="book"
+    href="/overview/agent"
+  >
+    Understand agents, skills, tools, webhooks, and jobs
+  </Card>
+  <Card
+    title="API Reference"
+    icon="code"
+    href="/api/overview"
+  >
+    Complete API documentation with examples
+  </Card>
+  <Card
+    title="30+ Examples"
+    icon="layer-group"
+    href="/examples/overview"
+  >
+    Working code for external APIs, Platform APIs, and hybrid
+  </Card>
+  <Card
+    title="CLI Commands"
+    icon="terminal"
+    href="/cli/overview"
+  >
+    Complete command reference
+  </Card>
+  <Card
+    title="Chat Widget"
+    icon="comments"
+    href="/chat-widget/quick-start"
+  >
+    Add AI chat to your website
+  </Card>
+</CardGroup>
+
+---
 
 <Card
   title="Ready to Build Your First Agent?"
