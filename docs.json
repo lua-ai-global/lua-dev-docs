@@ -43,7 +43,8 @@
               "demos/customer-support",
               "demos/financial-onboarding",
               "demos/hr-assistant",
-              "demos/logistics-tracker"
+              "demos/logistics-tracker",
+              "demos/iot-smart-light"
             ]
           }
         ]
@@ -282,6 +283,14 @@
               "demos/saas-onboarding",
               "demos/healthcare-portal",
               "demos/logistics-tracker"
+            ]
+          },
+          {
+            "group": "IoT & Edge Computing",
+            "pages": [
+              "demos/iot-smart-light",
+              "demos/iot-greenhouse",
+              "demos/iot-camera"
             ]
           }
         ]

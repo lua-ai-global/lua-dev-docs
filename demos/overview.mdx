@@ -1,11 +1,11 @@
 ---
 title: "Demo Gallery"
-description: "10 production-ready business solutions showcasing Lua's flexibility"
+description: "14 production-ready solutions showcasing Lua's flexibility across business and IoT"
 ---
 
 ## Overview
 
-Explore 11 complete, production-ready AI agent implementations across different industries. Each demo shows full TypeScript code using the **v3.0.0 LuaAgent pattern** with external APIs and Lua Platform APIs.
+Explore 14 complete, production-ready AI agent implementations across different industries and IoT use cases. Each demo shows full TypeScript code using the **v3.0.0 LuaAgent pattern** with external APIs, Lua Platform APIs, and edge computing.
 
 <Note>
 **All demos updated for v3.0.0:** Every demo now uses `LuaAgent` for unified configuration, showing how to combine skills, webhooks, jobs, and processors in real-world applications.
@@ -18,6 +18,9 @@ Explore 11 complete, production-ready AI agent implementations across different 
   <Card title="Internal Operations" icon="building">
     5 demos for business operations
   </Card>
+  <Card title="IoT & Edge Computing" icon="microchip">
+    3 demos for Raspberry Pi and hardware control
+  </Card>
   <Card title="v3.0.0 Features" icon="sparkles">
     All demos use LuaAgent pattern with webhooks, jobs, and processors where applicable
   </Card>
@@ -26,6 +29,9 @@ Explore 11 complete, production-ready AI agent implementations across different 
   </Card>
   <Card title="Platform APIs" icon="database">
     Products, Baskets, Orders, Data (vector search), Jobs
+  </Card>
+  <Card title="Edge APIs" icon="server">
+    Custom Flask APIs on Raspberry Pi for GPIO, sensors, and camera
   </Card>
   <Card title="Production-Ready" icon="rocket">
     Complete code with error handling, validation, and best practices
@@ -226,6 +232,46 @@ See real-world usage of v3.0.0 features across different demos:
   **Use case:** Logistics, shipping, warehouse operations
 </Card>
 
+## IoT & Edge Computing Agents
+
+Control physical hardware and sensors on **Raspberry Pi** through natural language. All demos use a lightweight Flask Edge API running on the Pi.
+
+### 13. Smart Light / GPIO Control
+
+<Card title="Smart Light Control" icon="lightbulb" href="/demos/iot-smart-light">
+  **Control GPIO relays and LEDs via chat**
+  
+  **Features:** Turn devices on/off, scheduled automation, safe GPIO control
+  
+  **Hardware:** Raspberry Pi + relay module + gpiozero
+  
+  **Use case:** Home automation, smart lighting, device control
+</Card>
+
+### 14. Greenhouse Climate Monitor
+
+<Card title="Greenhouse Climate" icon="cloud" href="/demos/iot-greenhouse">
+  **Monitor temperature, humidity, and pressure with BME280**
+  
+  **Features:** Real-time readings, automated alerts, historical tracking
+  
+  **Hardware:** Raspberry Pi + BME280 sensor (I²C)
+  
+  **Use case:** Greenhouses, server rooms, environmental monitoring
+</Card>
+
+### 15. Security Camera Snapshot
+
+<Card title="Security Camera" icon="camera" href="/demos/iot-camera">
+  **Capture photos on-demand with Pi Camera**
+  
+  **Features:** On-demand capture, scheduled snapshots, motion-triggered photos
+  
+  **Hardware:** Raspberry Pi + Camera Module 3/HQ + rpicam-still
+  
+  **Use case:** Security monitoring, time-lapse, remote observation
+</Card>
+
 ## API Integration Breakdown
 
 ### External APIs Used
@@ -239,6 +285,9 @@ See real-world usage of v3.0.0 features across different demos:
 | SaaS Onboarding | Your API | Product integration |
 | Healthcare | EMR/FHIR | Medical records |
 | Logistics | UPS/FedEx/USPS | Shipping tracking |
+| Smart Light | Edge API (Flask) | GPIO relay control |
+| Greenhouse | Edge API (Flask) | BME280 sensor readings |
+| Camera | Edge API (Flask) | Photo capture (rpicam-still) |
 
 ### Lua Platform APIs Used
 
@@ -252,6 +301,16 @@ See real-world usage of v3.0.0 features across different demos:
 | HR Assistant | Data | Policy search |
 | SaaS Onboarding | Data | Documentation search |
 | Healthcare | Data | Health information |
+| Greenhouse | Data | Climate history tracking |
+| Camera | Data | Photo metadata logging |
+
+### Edge APIs Used
+
+|| Demo | Edge Technology | Hardware |
+|------|-----------------|----------|
+| Smart Light | Flask + gpiozero | Raspberry Pi + relay module |
+| Greenhouse | Flask + BME280 library | Raspberry Pi + BME280 (I²C) |
+| Camera | Flask + rpicam-still | Raspberry Pi + Camera Module 3/HQ |
 
 ## Integration Patterns Demonstrated
 
@@ -286,6 +345,17 @@ See real-world usage of v3.0.0 features across different demos:
     
     Shows: Best of both worlds
   </Tab>
+  
+  <Tab title="Edge Computing">
+    **IoT Smart Light, Greenhouse, Camera**
+    
+    Custom Edge APIs on Raspberry Pi
+    - Flask APIs for GPIO, sensors, camera
+    - Local network communication
+    - Hardware control via chat
+    
+    Shows: Physical world integration with AI agents
+  </Tab>
 </Tabs>
 
 ## Learning Paths by Feature
@@ -310,8 +380,9 @@ Choose demos based on what v3.0.0 features you want to learn:
     - **E-commerce Assistant** - Stripe payment webhooks
     - **Customer Support** - Zendesk ticket webhooks
     - **Financial Onboarding** - Identity verification webhooks
+    - **Camera (IoT)** - Motion-triggered captures
     
-    **Learn:** HTTP event handling, signature verification, real-time updates
+    **Learn:** HTTP event handling, signature verification, real-time updates, hardware triggers
   </Accordion>
 
   <Accordion title="⏰ Learn Jobs & Automation">
@@ -320,9 +391,11 @@ Choose demos based on what v3.0.0 features you want to learn:
     - **HR Assistant** - Daily attendance reports
     - **Finance Operations** - Weekly reconciliation
     - **Customer Support** - Follow-up reminders
-    - **E-commerce** - Abandoned cart notifications
+    - **Smart Light (IoT)** - Automated on/off schedules
+    - **Greenhouse (IoT)** - Hourly climate monitoring
+    - **Camera (IoT)** - Daily snapshots
     
-    **Learn:** Cron patterns, scheduled notifications, automated reports
+    **Learn:** Cron patterns, scheduled notifications, automated reports, hardware automation
   </Accordion>
 
   <Accordion title="🔍 Learn PreProcessors">
@@ -344,6 +417,16 @@ Choose demos based on what v3.0.0 features you want to learn:
     
     **Learn:** Adding disclaimers, branding, formatting, personalization
   </Accordion>
+  
+  <Accordion title="🔌 Learn Edge Computing & IoT">
+    **Demos with hardware integration:**
+    
+    - **Smart Light** - GPIO control with relays and LEDs
+    - **Greenhouse** - I²C sensor reading (BME280)
+    - **Camera** - Photo capture with rpicam-still
+    
+    **Learn:** Edge APIs, Flask on Pi, gpiozero, hardware control via chat, scheduled automation
+  </Accordion>
 </AccordionGroup>
 
 ## Code Complexity Levels
@@ -357,13 +440,16 @@ Choose demos based on what v3.0.0 features you want to learn:
     Great for learning Platform APIs and basic LuaAgent configuration
   </Accordion>
 
-  <Accordion title="⭐⭐ Intermediate (4 demos)">
+  <Accordion title="⭐⭐ Intermediate (7 demos)">
     - **Customer Support**: Zendesk + vector search + webhooks + jobs
     - **Real Estate**: MLS + Lua Data
     - **HR Assistant**: BambooHR + Lua Data + jobs
     - **SaaS Onboarding**: Your API + Lua Data
+    - **Smart Light (IoT)**: Edge API + GPIO control + jobs
+    - **Greenhouse (IoT)**: Edge API + I²C sensors + jobs
+    - **Camera (IoT)**: Edge API + rpicam-still + jobs + webhooks
     
-    Shows hybrid integration patterns with v3.0.0 features
+    Shows hybrid integration patterns with v3.0.0 features and hardware control
   </Accordion>
 
   <Accordion title="⭐⭐⭐ Advanced (4 demos)">
@@ -458,6 +544,9 @@ Choose demos based on what v3.0.0 features you want to learn:
 | SaaS | Internal | Your API | Data | ⭐⭐ |
 | Healthcare | Internal | EMR/FHIR | Data | ⭐⭐⭐ |
 | Logistics | Internal | UPS/FedEx/USPS | None | ⭐⭐⭐ |
+| Smart Light | IoT | Edge API (Flask) | None | ⭐⭐ |
+| Greenhouse | IoT | Edge API (Flask) | Data | ⭐⭐ |
+| Camera | IoT | Edge API (Flask) | Data | ⭐⭐ |
 
 ## Learn Concepts Through Demos
 

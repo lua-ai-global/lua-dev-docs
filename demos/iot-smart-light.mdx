@@ -1,0 +1,382 @@
+---
+title: "IoT Smart Light Control"
+description: "Control GPIO relay/LED on Raspberry Pi via chat"
+---
+
+## Overview
+
+Control lights, relays, or any GPIO-connected devices on a **Raspberry Pi** through natural language conversation. Turn devices on/off, check status, and automate with scheduled jobs.
+
+**What it does:**
+- Toggle relay or LED on/off via chat
+- Control GPIO pins remotely
+- Schedule automated on/off times
+- Safe, authenticated edge API
+
+**Hardware:** Raspberry Pi 4/5, relay module (optocoupled recommended), jumper wires
+
+**APIs used:** Custom Edge API on Raspberry Pi
+
+---
+
+## Architecture
+
+```
+User Chat → Lua Agent → SetRelayTool → Edge API (Flask) → GPIO → Relay → Physical Device
+```
+
+---
+
+## Complete Implementation
+
+### Edge API on Raspberry Pi
+
+#### Setup (one-time)
+
+```bash
+# Install OS packages
+sudo apt update
+sudo apt install -y python3-pip python3-venv python3-libgpiod
+
+# Add user to gpio group (required for GPIO access without sudo)
+sudo adduser $USER gpio
+# Log out and back in (or reboot) for this to take effect
+
+# Create project folder
+mkdir -p ~/iot-edge && cd ~/iot-edge
+python3 -m venv .venv
+source .venv/bin/activate
+
+# Install dependencies
+pip install flask gpiozero
+```
+
+<Warning>
+**Important:** After adding your user to the gpio group, you must log out and back in (or reboot) for permissions to take effect.
+</Warning>
+
+#### Edge API Code
+
+Create `edge_api.py`:
+
+```python
+from flask import Flask, request, jsonify
+from functools import wraps
+from gpiozero import OutputDevice
+import os, time
+
+app = Flask(__name__)
+API_KEY = os.environ.get("EDGE_API_KEY", "changeme")
+
+def require_key(fn):
+    @wraps(fn)
+    def wrapper(*args, **kwargs):
+        if request.headers.get("X-API-Key") != API_KEY:
+            return jsonify({"error": "unauthorized"}), 401
+        return fn(*args, **kwargs)
+    return wrapper
+
+@app.get("/health")
+def health():
+    return {"ok": True, "ts": int(time.time())}
+
+@app.post("/gpio/relay")
+@require_key
+def gpio_relay():
+    data = request.get_json(force=True)
+    pin = int(data.get("pin", 17))               # BCM pin number
+    state = str(data.get("state", "off")).lower()
+    active_low = bool(data.get("active_low", True))  # many relay boards are active-low
+
+    dev = OutputDevice(pin, active_high=not active_low, initial_value=False)
+    if state == "on":
+        dev.on()
+    else:
+        dev.off()
+    
+    return {"pin": pin, "state": state, "active_low": active_low}
+
+if __name__ == "__main__":
+    app.run(host="0.0.0.0", port=5001)
+```
+
+#### Run the Edge API
+
+```bash
+export EDGE_API_KEY="supersecret"
+python edge_api.py
+```
+
+#### Test Edge API
+
+```bash
+# Health check
+curl http://raspberrypi.local:5001/health
+
+# Turn relay on
+curl -X POST http://raspberrypi.local:5001/gpio/relay \
+  -H "X-API-Key: supersecret" \
+  -H "Content-Type: application/json" \
+  -d '{"pin":17,"state":"on","active_low":true}'
+```
+
+---
+
+### Lua Agent Implementation
+
+#### src/tools/SetRelayTool.ts
+
+```typescript
+import { LuaTool, env } from 'lua-cli';
+import { z } from 'zod';
+
+export default class SetRelayTool implements LuaTool {
+  name = "set_relay";
+  description = "Turn a GPIO relay or LED on/off on the Raspberry Pi";
+  
+  inputSchema = z.object({
+    pin: z.number().int().default(17).describe("BCM GPIO pin number"),
+    state: z.enum(["on","off"]).describe("Turn device on or off"),
+    active_low: z.boolean().default(true).describe("Many relay boards are active-low")
+  });
+
+  async execute(input: z.infer<typeof this.inputSchema>) {
+    const base = env('PI_BASE_URL');
+    const key = env('PI_API_KEY');
+    
+    if (!base || !key) {
+      throw new Error('PI_BASE_URL or PI_API_KEY not configured');
+    }
+
+    const res = await fetch(`${base}/gpio/relay`, {
+      method: 'POST',
+      headers: { 
+        'Content-Type': 'application/json', 
+        'X-API-Key': key 
+      },
+      body: JSON.stringify(input)
+    });
+    
+    if (!res.ok) {
+      throw new Error(`Edge API error: ${res.status} ${await res.text()}`);
+    }
+    
+    const result = await res.json();
+    
+    return {
+      success: true,
+      pin: result.pin,
+      state: result.state,
+      message: `GPIO pin ${result.pin} turned ${result.state}`
+    };
+  }
+}
+```
+
+#### src/index.ts
+
+```typescript
+import { LuaAgent, LuaSkill, LuaJob } from 'lua-cli';
+import SetRelayTool from './tools/SetRelayTool';
+
+// IoT control skill
+const iotSkill = new LuaSkill({
+  name: "raspberry-pi-gpio",
+  version: "1.0.0",
+  description: "Control GPIO devices on Raspberry Pi",
+  context: `
+    This skill controls physical devices on a Raspberry Pi.
+    
+    - set_relay: Turn GPIO relay or LED on/off
+      Use when user asks to control lights, fans, or any GPIO device
+      
+    Safety:
+    - Always confirm which device a pin controls before toggling
+    - Never rapidly toggle relays without user intent
+    - Mention current state after changing
+  `,
+  tools: [new SetRelayTool()]
+});
+
+// Scheduled job: Turn off grow light at night
+const nighttimeOffJob = new LuaJob({
+  name: 'nighttime-off',
+  description: 'Turn off grow light at 10 PM',
+  schedule: {
+    type: 'cron',
+    pattern: '0 22 * * *'  // 10 PM daily
+  },
+  execute: async (job) => {
+    const tool = new SetRelayTool();
+    await tool.execute({ pin: 17, state: 'off', active_low: true });
+    
+    const user = await job.user();
+    await user.send([{
+      type: 'text',
+      text: '🌙 Grow light turned off for the night.'
+    }]);
+  }
+});
+
+// Configure agent (v3.0.0)
+export const agent = new LuaAgent({
+  name: "smart-home-agent",
+  
+  persona: `You are a smart home automation assistant controlling Raspberry Pi devices.
+  
+Your role:
+- Control lights, fans, and GPIO devices
+- Confirm actions before making physical changes
+- Report current device states
+- Provide clear feedback on actions
+
+Communication style:
+- Clear and confirmatory
+- Safety-conscious
+- Brief and actionable
+
+Safety practices:
+- Always confirm which device you're controlling
+- Mention current state after changes
+- Don't rapidly toggle devices
+- Warn if unsure about pin assignments
+
+Device knowledge:
+- Pin 17: Grow light (active-low relay)
+- Pin 18: Ventilation fan
+- Pin 27: LED indicator`,
+
+  welcomeMessage: "Smart Home Control ready. I can turn devices on/off via GPIO. What would you like to control?",
+  
+  skills: [iotSkill],
+  jobs: [nighttimeOffJob]
+});
+```
+
+<Note>
+**v3.0.0 Features:** Uses LuaAgent with scheduled jobs for automated device control (e.g., turn off lights at night).
+</Note>
+
+---
+
+## Environment Setup
+
+```bash
+# .env
+PI_BASE_URL=http://raspberrypi.local:5001
+PI_API_KEY=supersecret
+```
+
+Or set via CLI:
+
+```bash
+lua env sandbox
+# Add: PI_BASE_URL and PI_API_KEY
+```
+
+---
+
+## Testing
+
+### Test Edge API Directly
+
+```bash
+# Turn relay on
+curl -X POST http://raspberrypi.local:5001/gpio/relay \
+  -H "X-API-Key: supersecret" \
+  -H "Content-Type: application/json" \
+  -d '{"pin":17,"state":"on","active_low":true}'
+```
+
+### Test with Lua
+
+```bash
+# Test tool directly
+lua test
+# Select: set_relay
+# Input: pin=17, state=on
+
+# Test conversationally
+lua chat
+# You: "Turn on the grow light"
+# You: "Turn off pin 17"
+```
+
+---
+
+## Wiring
+
+**Relay Module (Active-Low):**
+
+```
+Raspberry Pi          Relay Module
+-----------          -------------
+3.3V        ────────> VCC
+GND         ────────> GND
+GPIO 17     ────────> IN (Signal)
+                       
+Relay Output ─────> Your Device (Light/Fan)
+```
+
+<Warning>
+**Safety:** Use optocoupled relay modules for AC loads. Never exceed the relay's rated voltage/current. Always verify correct wiring before powering on.
+</Warning>
+
+---
+
+## Production Deployment
+
+### Run Edge API on Boot
+
+Create systemd service `/etc/systemd/system/iot-edge.service`:
+
+```ini
+[Unit]
+Description=IoT Edge API
+After=network-online.target
+
+[Service]
+User=pi
+WorkingDirectory=/home/pi/iot-edge
+Environment=EDGE_API_KEY=supersecret
+ExecStart=/home/pi/iot-edge/.venv/bin/flask --app edge_api run --host=0.0.0.0 --port=5001
+Restart=always
+
+[Install]
+WantedBy=multi-user.target
+```
+
+Enable and start:
+
+```bash
+sudo systemctl daemon-reload
+sudo systemctl enable --now iot-edge
+```
+
+---
+
+## Key Features
+
+<CardGroup cols={2}>
+  <Card title="Remote Control" icon="wifi">
+    Control GPIO devices from anywhere via chat
+  </Card>
+  <Card title="Secure API" icon="lock">
+    API key authentication protects your edge API
+  </Card>
+  <Card title="Scheduled Automation" icon="clock">
+    Jobs for automated on/off schedules
+  </Card>
+  <Card title="Safety First" icon="shield">
+    Confirmation before physical state changes
+  </Card>
+</CardGroup>
+
+---
+
+## Next IoT Demo
+
+<Card title="Greenhouse Climate Monitor" icon="cloud" href="/demos/iot-greenhouse">
+  Read temperature, humidity, and pressure from BME280 sensor
+</Card>
+

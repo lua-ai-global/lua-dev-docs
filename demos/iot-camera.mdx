@@ -1,0 +1,411 @@
+---
+title: "IoT Security Camera"
+description: "Capture photos on-demand with Raspberry Pi Camera via chat"
+---
+
+## Overview
+
+Capture still images from a **Raspberry Pi Camera Module** through natural language commands. Take photos on-demand, schedule periodic snapshots, or trigger captures from webhooks.
+
+**What it does:**
+- Capture photos via chat commands
+- Save images with timestamps
+- Schedule periodic snapshots
+- Webhook-triggered captures (motion detection, etc.)
+
+**Hardware:** Raspberry Pi 4/5, Camera Module 3/HQ (CSI connection)
+
+**APIs used:** Custom Edge API using rpicam-still
+
+---
+
+## Architecture
+
+```
+User Chat → Lua Agent → TakePhotoTool → Edge API → rpicam-still → Image File
+```
+
+---
+
+## Complete Implementation
+
+### Edge API on Raspberry Pi
+
+#### Setup (one-time)
+
+```bash
+# Install OS packages (rpicam-* apps are included in Raspberry Pi OS Bookworm)
+sudo apt update
+sudo apt install -y python3-pip python3-venv
+
+# Create project folder
+mkdir -p ~/iot-edge && cd ~/iot-edge
+python3 -m venv .venv
+source .venv/bin/activate
+
+# Install Flask
+pip install flask
+
+# Create output directory for photos
+mkdir -p ~/camera-snapshots
+```
+
+<Note>
+**Camera on Bookworm:** The modern `rpicam-still` command is included by default. Old `libcamera-still` is now a symlink to `rpicam-still`.
+</Note>
+
+#### Edge API Code
+
+Update `edge_api.py` (or add to existing):
+
+```python
+from flask import Flask, request, jsonify
+from functools import wraps
+import os, time, subprocess
+
+app = Flask(__name__)
+API_KEY = os.environ.get("EDGE_API_KEY", "changeme")
+
+def require_key(fn):
+    @wraps(fn)
+    def wrapper(*args, **kwargs):
+        if request.headers.get("X-API-Key") != API_KEY:
+            return jsonify({"error": "unauthorized"}), 401
+        return fn(*args, **kwargs)
+    return wrapper
+
+@app.get("/health")
+def health():
+    return {"ok": True, "ts": int(time.time())}
+
+@app.post("/camera/snap")
+@require_key
+def camera_snap():
+    data = request.get_json(force=True, silent=True) or {}
+    outdir = data.get("outdir", "/home/pi/camera-snapshots")
+    os.makedirs(outdir, exist_ok=True)
+    
+    filename = time.strftime("snap_%Y%m%d_%H%M%S.jpg")
+    path = os.path.join(outdir, filename)
+
+    # Use rpicam-still (modern camera CLI on Bookworm)
+    timeout_ms = int(data.get("timeout_ms", 1000))
+    width = int(data.get("width", 1920))
+    height = int(data.get("height", 1080))
+    
+    try:
+        subprocess.run([
+            "rpicam-still",
+            "-t", str(timeout_ms),
+            "-o", path,
+            "--width", str(width),
+            "--height", str(height)
+        ], check=True, capture_output=True)
+        
+        return {
+            "success": True,
+            "path": path,
+            "filename": filename,
+            "size_bytes": os.path.getsize(path)
+        }
+    except subprocess.CalledProcessError as e:
+        return jsonify({
+            "error": "Camera capture failed",
+            "details": e.stderr.decode()
+        }), 500
+
+if __name__ == "__main__":
+    app.run(host="0.0.0.0", port=5001)
+```
+
+#### Run Edge API
+
+```bash
+export EDGE_API_KEY="supersecret"
+python edge_api.py
+```
+
+#### Test Edge API
+
+```bash
+curl -X POST http://raspberrypi.local:5001/camera/snap \
+  -H "X-API-Key: supersecret" \
+  -H "Content-Type: application/json" \
+  -d '{"timeout_ms":2000,"width":1920,"height":1080}'
+```
+
+---
+
+### Lua Agent Implementation
+
+#### src/tools/TakePhotoTool.ts
+
+```typescript
+import { LuaTool, Data, env } from 'lua-cli';
+import { z } from 'zod';
+
+export default class TakePhotoTool implements LuaTool {
+  name = "take_photo";
+  description = "Capture a still image with the Raspberry Pi camera";
+  
+  inputSchema = z.object({
+    timeout_ms: z.number().int().default(1000).describe("Preview time before capture (ms)"),
+    width: z.number().int().default(1920).describe("Image width"),
+    height: z.number().int().default(1080).describe("Image height"),
+    outdir: z.string().default("/home/pi/camera-snapshots").describe("Output directory")
+  });
+
+  async execute(input: z.infer<typeof this.inputSchema>) {
+    const base = env('PI_BASE_URL');
+    const key = env('PI_API_KEY');
+    
+    if (!base || !key) {
+      throw new Error('PI_BASE_URL or PI_API_KEY not configured');
+    }
+
+    const res = await fetch(`${base}/camera/snap`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-API-Key': key
+      },
+      body: JSON.stringify(input)
+    });
+    
+    if (!res.ok) {
+      throw new Error(`Camera error: ${res.status} ${await res.text()}`);
+    }
+    
+    const result = await res.json();
+    
+    // Log photo in Lua Data
+    await Data.create('camera_snapshots', {
+      filename: result.filename,
+      path: result.path,
+      size_bytes: result.size_bytes,
+      width: input.width,
+      height: input.height,
+      capturedAt: new Date().toISOString()
+    }, `camera photo ${result.filename}`);
+    
+    return {
+      success: true,
+      filename: result.filename,
+      path: result.path,
+      size: `${Math.round(result.size_bytes / 1024)} KB`,
+      resolution: `${input.width}×${input.height}`,
+      message: `Photo captured: ${result.filename}`
+    };
+  }
+}
+```
+
+#### src/index.ts
+
+```typescript
+import { LuaAgent, LuaSkill, LuaJob, LuaWebhook } from 'lua-cli';
+import TakePhotoTool from './tools/TakePhotoTool';
+
+// Camera control skill
+const cameraSkill = new LuaSkill({
+  name: "pi-camera",
+  version: "1.0.0",
+  description: "Raspberry Pi camera control and snapshot capture",
+  context: `
+    This skill controls a Raspberry Pi camera.
+    
+    - take_photo: Capture a still image
+      Use when user asks for a photo, snapshot, or image
+      
+    Always confirm photo was captured successfully.
+    Mention filename and size in response.
+  `,
+  tools: [new TakePhotoTool()]
+});
+
+// Scheduled job: Daily snapshot at noon
+const dailySnapshotJob = new LuaJob({
+  name: 'daily-snapshot',
+  description: 'Capture daily photo at noon',
+  schedule: {
+    type: 'cron',
+    pattern: '0 12 * * *'  // Every day at 12 PM
+  },
+  execute: async (job) => {
+    const tool = new TakePhotoTool();
+    const result = await tool.execute({
+      timeout_ms: 2000,
+      width: 1920,
+      height: 1080,
+      outdir: '/home/pi/camera-snapshots'
+    });
+    
+    const user = await job.user();
+    await user.send([{
+      type: 'text',
+      text: `📷 Daily snapshot captured: ${result.filename} (${result.size})`
+    }]);
+  }
+});
+
+// Webhook: Motion-triggered capture
+const motionWebhook = new LuaWebhook({
+  name: 'motion-triggered-capture',
+  description: 'Capture photo when motion is detected',
+  execute: async (event) => {
+    if (event.type === 'motion.detected') {
+      const tool = new TakePhotoTool();
+      const result = await tool.execute({ timeout_ms: 500 });
+      
+      const user = await User.get();
+      await user.send([{
+        type: 'text',
+        text: `🚨 Motion detected! Photo captured: ${result.filename}`
+      }]);
+    }
+    return { received: true };
+  }
+});
+
+// Configure agent (v3.0.0)
+export const agent = new LuaAgent({
+  name: "camera-monitor",
+  
+  persona: `You are a security camera monitoring assistant.
+  
+Your role:
+- Capture photos on demand
+- Monitor for motion events
+- Provide photo confirmations
+- Track snapshot history
+
+Communication style:
+- Quick and confirmatory
+- Security-focused
+- Clear about photo details
+
+Best practices:
+- Confirm photo capture immediately
+- Mention filename and size
+- Alert on motion detection
+- Provide photo timestamps
+
+Camera knowledge:
+- Resolution: 1920×1080 (Full HD)
+- Format: JPEG
+- Storage: Local Pi storage
+- Retention: Configurable
+
+When to alert:
+- Motion detected
+- Storage running low
+- Camera errors`,
+
+  welcomeMessage: "Camera Monitor ready. I can capture photos on demand or alert you when motion is detected. What do you need?",
+  
+  skills: [cameraSkill],
+  jobs: [dailySnapshotJob],
+  webhooks: [motionWebhook]
+});
+```
+
+<Note>
+**v3.0.0 Features:** Uses LuaAgent with scheduled jobs for daily snapshots and webhooks for motion-triggered captures.
+</Note>
+
+---
+
+## Environment Setup
+
+```bash
+# .env
+PI_BASE_URL=http://raspberrypi.local:5001
+PI_API_KEY=supersecret
+```
+
+---
+
+## Camera Setup
+
+### Physical Connection
+
+Connect Camera Module 3 or HQ to the CSI port on Raspberry Pi. Ensure ribbon cable is firmly seated.
+
+### Verify Camera
+
+```bash
+# Test camera (Bookworm uses rpicam-still)
+rpicam-still -t 2000 -o test.jpg
+
+# Check image
+ls -lh test.jpg
+```
+
+<Warning>
+**Troubleshooting:** If camera is not detected, check ribbon cable connection and run `vcgencmd get_camera` to verify detection.
+</Warning>
+
+---
+
+## Testing
+
+```bash
+# Test tool
+lua test
+# Select: take_photo
+
+# Test conversationally
+lua chat
+# You: "Take a photo of the front door"
+# You: "Capture an image now"
+# You: "Take a high-res snapshot"
+```
+
+---
+
+## Key Features
+
+<CardGroup cols={2}>
+  <Card title="On-Demand Capture" icon="camera">
+    Take photos via natural language commands
+  </Card>
+  <Card title="Scheduled Snapshots" icon="clock">
+    Daily photos at specified times
+  </Card>
+  <Card title="Motion-Triggered" icon="radar">
+    Webhook integration for motion sensors
+  </Card>
+  <Card title="Photo History" icon="database">
+    Track all captures in Lua Data
+  </Card>
+</CardGroup>
+
+---
+
+## Advanced: Motion Detection Integration
+
+If you add a PIR motion sensor, you can trigger the webhook:
+
+```python
+# In edge_api.py, add motion detection endpoint
+from gpiozero import MotionSensor
+
+@app.post("/motion/trigger-webhook")
+@require_key
+def motion_trigger():
+    webhook_url = os.environ.get("MOTION_WEBHOOK_URL")
+    if webhook_url:
+        requests.post(webhook_url, json={"type": "motion.detected", "timestamp": time.time()})
+    return {"triggered": True}
+```
+
+Your Lua webhook will receive the event and capture a photo automatically.
+
+---
+
+## Next Steps
+
+<Card title="View All IoT Demos" icon="microchip" href="/demos/overview#iot-automation">
+  See all 3 Raspberry Pi examples
+</Card>
+

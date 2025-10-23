@@ -1,0 +1,397 @@
+---
+title: "IoT Greenhouse Climate Monitor"
+description: "Read temperature, humidity, and pressure from BME280 sensor on Raspberry Pi"
+---
+
+## Overview
+
+Monitor environmental conditions in your greenhouse, grow room, or any space using a **BME280 sensor** connected to a Raspberry Pi. Get real-time readings via chat and set up automated alerts for out-of-range conditions.
+
+**What it does:**
+- Read temperature, humidity, and pressure
+- Get climate updates via chat
+- Automated alerts for threshold violations
+- Historical data tracking
+
+**Hardware:** Raspberry Pi 4/5, BME280 sensor (I²C)
+
+**APIs used:** Custom Edge API + Lua Data API (for history)
+
+---
+
+## Architecture
+
+```
+User Chat → Lua Agent → ReadClimateTool → Edge API → BME280 → Environmental Data
+```
+
+---
+
+## Complete Implementation
+
+### Edge API on Raspberry Pi
+
+#### Setup (one-time)
+
+```bash
+# Install OS packages
+sudo apt update
+sudo apt install -y python3-pip python3-venv i2c-tools
+
+# Enable I2C interface
+sudo raspi-config nonint do_i2c 0
+# Or use raspi-config TUI: Interface Options → I2C → Enable
+
+# Create project folder
+mkdir -p ~/iot-edge && cd ~/iot-edge
+python3 -m venv .venv
+source .venv/bin/activate
+
+# Install dependencies
+pip install flask adafruit-blinka adafruit-circuitpython-bme280
+```
+
+#### Verify I2C Connection
+
+```bash
+# Check if BME280 is detected (should show 0x76 or 0x77)
+i2cdetect -y 1
+```
+
+#### Edge API Code
+
+Update `edge_api.py` (or add to existing):
+
+```python
+from flask import Flask, request, jsonify
+from functools import wraps
+import os, time
+
+try:
+    import board, busio
+    from adafruit_bme280 import basic as adafruit_bme280
+    
+    _i2c = busio.I2C(board.SCL, board.SDA)
+    _bme280 = adafruit_bme280.Adafruit_BME280_I2C(_i2c)
+except Exception as e:
+    _bme280 = None
+    print(f"BME280 not available: {e}")
+
+app = Flask(__name__)
+API_KEY = os.environ.get("EDGE_API_KEY", "changeme")
+
+def require_key(fn):
+    @wraps(fn)
+    def wrapper(*args, **kwargs):
+        if request.headers.get("X-API-Key") != API_KEY:
+            return jsonify({"error": "unauthorized"}), 401
+        return fn(*args, **kwargs)
+    return wrapper
+
+@app.get("/health")
+def health():
+    return {"ok": True, "ts": int(time.time())}
+
+@app.get("/sensors/env")
+@require_key
+def sensors_env():
+    if not _bme280:
+        return jsonify({"error": "BME280 not available"}), 400
+    
+    return {
+        "temperature_c": round(_bme280.temperature, 2),
+        "temperature_f": round(_bme280.temperature * 9/5 + 32, 2),
+        "humidity": round(_bme280.humidity, 1),
+        "pressure_hpa": round(_bme280.pressure, 1),
+        "timestamp": int(time.time())
+    }
+
+if __name__ == "__main__":
+    app.run(host="0.0.0.0", port=5001)
+```
+
+#### Run Edge API
+
+```bash
+export EDGE_API_KEY="supersecret"
+python edge_api.py
+```
+
+#### Test Edge API
+
+```bash
+curl -H "X-API-Key: supersecret" http://raspberrypi.local:5001/sensors/env
+```
+
+---
+
+### Lua Agent Implementation
+
+#### src/tools/ReadClimateTool.ts
+
+```typescript
+import { LuaTool, Data, env } from 'lua-cli';
+import { z } from 'zod';
+
+export default class ReadClimateTool implements LuaTool {
+  name = "read_climate";
+  description = "Read temperature, humidity, and pressure from BME280 sensor";
+  
+  inputSchema = z.object({
+    storeHistory: z.boolean().default(true).describe("Save reading to history")
+  });
+
+  async execute(input: z.infer<typeof this.inputSchema>) {
+    const base = env('PI_BASE_URL');
+    const key = env('PI_API_KEY');
+    
+    if (!base || !key) {
+      throw new Error('PI_BASE_URL or PI_API_KEY not configured');
+    }
+
+    const res = await fetch(`${base}/sensors/env`, {
+      headers: { 'X-API-Key': key }
+    });
+    
+    if (!res.ok) {
+      throw new Error(`Edge API error: ${res.status} ${await res.text()}`);
+    }
+    
+    const data = await res.json();
+    
+    // Store in history if requested
+    if (input.storeHistory) {
+      await Data.create('climate_readings', {
+        temperature_c: data.temperature_c,
+        temperature_f: data.temperature_f,
+        humidity: data.humidity,
+        pressure_hpa: data.pressure_hpa,
+        timestamp: new Date().toISOString()
+      }, `climate ${data.temperature_c}C ${data.humidity}% ${data.pressure_hpa}hPa`);
+    }
+    
+    return {
+      temperature: `${data.temperature_c}°C (${data.temperature_f}°F)`,
+      humidity: `${data.humidity}%`,
+      pressure: `${data.pressure_hpa} hPa`,
+      timestamp: new Date(data.timestamp * 1000).toLocaleString(),
+      status: this.evaluateConditions(data)
+    };
+  }
+  
+  private evaluateConditions(data: any): string {
+    const alerts = [];
+    
+    if (data.temperature_c > 30) alerts.push("⚠️ High temperature");
+    if (data.temperature_c < 15) alerts.push("❄️ Low temperature");
+    if (data.humidity > 80) alerts.push("💧 High humidity");
+    if (data.humidity < 30) alerts.push("🏜️ Low humidity");
+    
+    return alerts.length > 0 
+      ? alerts.join(', ')
+      : '✅ All conditions normal';
+  }
+}
+```
+
+#### src/index.ts
+
+```typescript
+import { LuaAgent, LuaSkill, LuaJob } from 'lua-cli';
+import ReadClimateTool from './tools/ReadClimateTool';
+
+// Climate monitoring skill
+const climateSkill = new LuaSkill({
+  name: "greenhouse-climate",
+  version: "1.0.0",
+  description: "Monitor greenhouse environmental conditions",
+  context: `
+    This skill monitors temperature, humidity, and pressure via BME280 sensor.
+    
+    - read_climate: Get current environmental readings
+      Use when user asks about temperature, humidity, pressure, or conditions
+      
+    Always mention if conditions are outside normal range.
+    Suggest actions for out-of-range conditions.
+  `,
+  tools: [new ReadClimateTool()]
+});
+
+// Hourly climate check job
+const hourlyClimateCheckJob = new LuaJob({
+  name: 'hourly-climate-check',
+  description: 'Check climate conditions every hour and alert if out of range',
+  schedule: {
+    type: 'interval',
+    intervalSeconds: 3600  // Every hour
+  },
+  execute: async (job) => {
+    const tool = new ReadClimateTool();
+    const reading = await tool.execute({ storeHistory: true });
+    
+    // Alert if conditions are abnormal
+    if (reading.status !== '✅ All conditions normal') {
+      const user = await job.user();
+      await user.send([{
+        type: 'text',
+        text: `🌡️ Climate Alert:\n\n${reading.temperature}\n${reading.humidity}\n${reading.pressure}\n\n${reading.status}`
+      }]);
+    }
+  }
+});
+
+// Configure agent (v3.0.0)
+export const agent = new LuaAgent({
+  name: "greenhouse-monitor",
+  
+  persona: `You are a greenhouse climate monitoring assistant.
+  
+Your role:
+- Monitor temperature, humidity, and pressure
+- Alert when conditions are out of range
+- Provide climate recommendations
+- Track environmental history
+
+Communication style:
+- Clear and data-driven
+- Proactive with alerts
+- Helpful with recommendations
+
+Climate knowledge:
+- Ideal temp: 18-28°C (64-82°F)
+- Ideal humidity: 50-70%
+- Normal pressure: 980-1020 hPa
+
+Recommendations:
+- High temp: Increase ventilation
+- Low temp: Close vents, add heat
+- High humidity: Increase air circulation
+- Low humidity: Add water trays or misting
+
+When to alert:
+- Temperature outside 15-30°C
+- Humidity outside 30-80%
+- Rapid changes (>5°C/hour)`,
+
+  welcomeMessage: "Greenhouse Monitor ready. I can check temperature, humidity, and pressure. What would you like to know?",
+  
+  skills: [climateSkill],
+  jobs: [hourlyClimateCheckJob]
+});
+```
+
+<Note>
+**v3.0.0 Features:** Uses LuaAgent with scheduled jobs for hourly climate monitoring and automated alerts.
+</Note>
+
+---
+
+## Environment Setup
+
+```bash
+# .env
+PI_BASE_URL=http://raspberrypi.local:5001
+PI_API_KEY=supersecret
+```
+
+---
+
+## Wiring BME280
+
+**I²C Connection:**
+
+```
+Raspberry Pi          BME280
+-----------          -------
+3.3V        ────────> VIN
+GND         ────────> GND
+GPIO 2 (SDA)────────> SDA
+GPIO 3 (SCL)────────> SCL
+```
+
+<Note>
+**I²C Address:** BME280 typically uses 0x76 or 0x77. The Adafruit library auto-detects the address.
+</Note>
+
+---
+
+## Testing
+
+```bash
+# Test tool directly
+lua test
+# Select: read_climate
+
+# Test conversationally
+lua chat
+# You: "What's the temperature and humidity?"
+# You: "Check the greenhouse conditions"
+# You: "Is it too hot in there?"
+```
+
+---
+
+## Key Features
+
+<CardGroup cols={2}>
+  <Card title="Real-Time Monitoring" icon="gauge">
+    Instant environmental readings via chat
+  </Card>
+  <Card title="Automated Alerts" icon="bell">
+    Hourly checks with out-of-range notifications
+  </Card>
+  <Card title="Historical Data" icon="chart-line">
+    Store readings in Lua Data for trend analysis
+  </Card>
+  <Card title="Smart Recommendations" icon="brain">
+    AI suggests actions based on conditions
+  </Card>
+</CardGroup>
+
+---
+
+## Customization Ideas
+
+### Add Alert Thresholds
+
+```typescript
+inputSchema = z.object({
+  storeHistory: z.boolean().default(true),
+  alertIfTempAbove: z.number().optional(),
+  alertIfHumidityAbove: z.number().optional()
+});
+```
+
+### Daily Summary Report
+
+```typescript
+const dailySummaryJob = new LuaJob({
+  name: 'daily-climate-summary',
+  schedule: {
+    type: 'cron',
+    pattern: '0 8 * * *'  // 8 AM daily
+  },
+  execute: async (job) => {
+    // Get last 24 hours of readings
+    const readings = await Data.get('climate_readings', 24);
+    
+    const avgTemp = readings.reduce((sum, r) => sum + r.data.temperature_c, 0) / readings.length;
+    const avgHumidity = readings.reduce((sum, r) => sum + r.data.humidity, 0) / readings.length;
+    
+    const user = await job.user();
+    await user.send([{
+      type: 'text',
+      text: `📊 24-Hour Climate Summary:\n\nAvg Temp: ${avgTemp.toFixed(1)}°C\nAvg Humidity: ${avgHumidity.toFixed(1)}%\nReadings: ${readings.length}`
+    }]);
+  }
+});
+```
+
+---
+
+## Next IoT Demo
+
+<Card title="Security Camera Snapshot" icon="camera" href="/demos/iot-camera">
+  Capture photos on-demand with Raspberry Pi Camera
+</Card>
+
