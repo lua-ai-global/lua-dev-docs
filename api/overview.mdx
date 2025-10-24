@@ -30,7 +30,7 @@ Lua CLI v3.0.0 provides a comprehensive set of APIs for building AI agents:
     title="Platform APIs"
     icon="server"
   >
-    **User, Data, Products, Baskets, Orders, Jobs** - Built-in services
+    **AI, User, Data, Products, Baskets, Orders, Jobs** - Built-in services
   </Card>
   <Card
     title="Environment"
@@ -89,7 +89,7 @@ import {
 } from 'lua-cli';
 
 // Platform APIs
-import { User, Data, Products, Baskets, Orders, Jobs } from 'lua-cli';
+import { AI, User, Data, Products, Baskets, Orders, Jobs } from 'lua-cli';
 
 // Utilities
 import { env } from 'lua-cli';
@@ -262,6 +262,29 @@ export const agent = new LuaAgent({
 </CardGroup>
 
 ## Platform APIs
+
+### AI API
+
+**New!** Generate AI responses with custom context in your tools:
+
+```typescript
+import { AI } from 'lua-cli';
+
+const response = await AI.generate(
+  'You are a helpful sales assistant.',
+  [{ type: 'text', text: 'What products do you recommend?' }]
+);
+```
+
+**Use cases:**
+- Product descriptions
+- Image analysis
+- Content summarization
+- Translation
+- Recommendations
+- Document Q&A
+
+<Card title="Full Documentation" href="/api/ai" />
 
 ### User API
 
@@ -518,6 +541,9 @@ export class SearchNotesTool implements LuaTool {
 ### Runtime APIs
 
 <CardGroup cols={3}>
+  <Card title="AI" href="/api/ai" icon="brain">
+    **NEW** AI generation API
+  </Card>
   <Card title="User" href="/api/user" icon="user">
     User data API
   </Card>

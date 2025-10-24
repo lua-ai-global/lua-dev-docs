@@ -1,0 +1,953 @@
+---
+title: "AI API"
+description: "Generate AI responses with custom context in your tools"
+---
+
+## Overview
+
+The AI API allows your tools to generate AI responses with custom context. Use this to add AI capabilities to your tools, such as text generation, content analysis, recommendations, and more.
+
+```typescript
+import { AI } from 'lua-cli';
+
+const response = await AI.generate(
+  'You are a helpful sales assistant.',
+  [{ type: 'text', text: 'What products do you recommend?' }]
+);
+```
+
+<Note>
+**Powerful Tool Enhancement:** The AI API lets you embed AI generation directly in your tools with custom personas and multi-modal inputs.
+</Note>
+
+## Import
+
+```typescript
+import { AI } from 'lua-cli';
+// or
+import { AI } from 'lua-cli/skill';
+```
+
+## Capabilities
+
+<CardGroup cols={2}>
+  <Card title="Text Generation" icon="file-lines">
+    Generate content with custom prompts and personas
+  </Card>
+  <Card title="Image Analysis" icon="image">
+    Analyze images with AI vision capabilities
+  </Card>
+  <Card title="Document Processing" icon="file-pdf">
+    Process and analyze documents with AI
+  </Card>
+  <Card title="Multi-Modal" icon="layer-group">
+    Combine text, images, and files in one request
+  </Card>
+</CardGroup>
+
+## Methods
+
+### AI.generate(context, messages, agentId?)
+
+Generates an AI response with custom runtime context.
+
+<ParamField path="context" type="string" required>
+  Runtime context/instructions for the AI
+  
+  This defines the AI's role, personality, and task for this specific generation
+</ParamField>
+
+<ParamField path="messages" type="ChatMessage[]" required>
+  Array of messages to process (text, images, files)
+</ParamField>
+
+<ParamField path="agentId" type="string">
+  Agent ID to use (defaults to current agent)
+  
+  Use different agent IDs for specialized tasks
+</ParamField>
+
+**Returns:** `Promise<string>` - AI-generated text response
+
+**Example:**
+```typescript
+const response = await AI.generate(
+  'You are a helpful sales assistant.',
+  [{ type: 'text', text: 'What products do you recommend?' }]
+);
+```
+
+## Message Types
+
+### Text Message
+
+```typescript
+{
+  type: 'text',
+  text: string
+}
+```
+
+**Example:**
+```typescript
+[{ 
+  type: 'text', 
+  text: 'Summarize this article...' 
+}]
+```
+
+### Image Message
+
+```typescript
+{
+  type: 'image',
+  url: string
+}
+```
+
+**Example:**
+```typescript
+[
+  { type: 'text', text: 'What do you see in this image?' },
+  { type: 'image', url: 'https://example.com/photo.jpg' }
+]
+```
+
+### File Message
+
+```typescript
+{
+  type: 'file',
+  url: string,
+  mimeType?: string
+}
+```
+
+**Example:**
+```typescript
+[
+  { type: 'text', text: 'Summarize this document' },
+  { type: 'file', url: 'https://example.com/doc.pdf', mimeType: 'application/pdf' }
+]
+```
+
+## Complete Examples
+
+### Product Description Generator
+
+```typescript
+import { LuaTool, AI, Products } from 'lua-cli/skill';
+import { z } from 'zod';
+
+export default class GenerateDescriptionTool implements LuaTool {
+  name = 'generate_product_description';
+  description = 'Generate compelling product descriptions using AI';
+  
+  inputSchema = z.object({
+    productId: z.string(),
+    style: z.enum(['casual', 'professional', 'luxury']).optional()
+  });
+  
+  async execute(input: z.infer<typeof this.inputSchema>) {
+    // Get product details
+    const product = await Products.getById(input.productId);
+    
+    if (!product) {
+      return { success: false, error: 'Product not found' };
+    }
+    
+    // Generate description with AI
+    const style = input.style || 'professional';
+    const context = `You are a ${style} copywriter for an e-commerce store.
+    Create an engaging product description that highlights benefits and features.
+    Keep it concise but compelling (2-3 sentences).`;
+    
+    const description = await AI.generate(
+      context,
+      [{
+        type: 'text',
+        text: `Write a product description for: ${product.name}, Price: $${product.price}`
+      }]
+    );
+    
+    // Update product with new description
+    await product.update({ description });
+    
+    return {
+      success: true,
+      productId: input.productId,
+      description
+    };
+  }
+}
+```
+
+### Image Analysis Tool
+
+```typescript
+import { LuaTool, AI } from 'lua-cli/skill';
+import { z } from 'zod';
+
+export default class AnalyzeImageTool implements LuaTool {
+  name = 'analyze_image';
+  description = 'Analyze images using AI vision';
+  
+  inputSchema = z.object({
+    imageUrl: z.string().url(),
+    question: z.string().optional()
+  });
+  
+  async execute(input: z.infer<typeof this.inputSchema>) {
+    const context = `You are an image analysis expert.
+    Describe what you see in detail, including:
+    - Main subjects and objects
+    - Colors and composition
+    - Mood and atmosphere
+    - Any text or branding visible`;
+    
+    const messages = [
+      { 
+        type: 'text' as const, 
+        text: input.question || 'Describe this image in detail' 
+      },
+      { 
+        type: 'image' as const, 
+        url: input.imageUrl 
+      }
+    ];
+    
+    const analysis = await AI.generate(context, messages);
+    
+    return {
+      success: true,
+      imageUrl: input.imageUrl,
+      analysis
+    };
+  }
+}
+```
+
+### Content Summarizer
+
+```typescript
+import { LuaTool, AI } from 'lua-cli/skill';
+import { z } from 'zod';
+
+export default class SummarizeTool implements LuaTool {
+  name = 'summarize_content';
+  description = 'Summarize long text content';
+  
+  inputSchema = z.object({
+    content: z.string(),
+    maxLength: z.enum(['brief', 'medium', 'detailed']).optional()
+  });
+  
+  async execute(input: z.infer<typeof this.inputSchema>) {
+    const lengthInstructions = {
+      brief: 'in 1-2 sentences',
+      medium: 'in 1 paragraph',
+      detailed: 'in 2-3 paragraphs with key points'
+    };
+    
+    const length = input.maxLength || 'medium';
+    
+    const context = `You are a professional content summarizer.
+    Create a clear, accurate summary ${lengthInstructions[length]}.
+    Focus on main ideas and key takeaways.`;
+    
+    const summary = await AI.generate(
+      context,
+      [{
+        type: 'text',
+        text: `Summarize this content:\n\n${input.content}`
+      }]
+    );
+    
+    return {
+      success: true,
+      originalLength: input.content.length,
+      summary,
+      summaryLength: summary.length
+    };
+  }
+}
+```
+
+### Smart Recommendation Engine
+
+```typescript
+import { LuaTool, AI, User, Products } from 'lua-cli/skill';
+import { z } from 'zod';
+
+export default class RecommendProductsTool implements LuaTool {
+  name = 'get_ai_recommendations';
+  description = 'Get AI-powered product recommendations based on user preferences';
+  
+  inputSchema = z.object({
+    userQuery: z.string().optional()
+  });
+  
+  async execute(input: z.infer<typeof this.inputSchema>) {
+    // Get user data and product catalog
+    const user = await User.get();
+    const products = await Products.get(1, 50);
+    
+    // Build context with product data
+    const productList = products.map(p => 
+      `- ${p.name}: $${p.price} (${p.category})`
+    ).join('\n');
+    
+    const context = `You are a personal shopping assistant.
+    
+Available products:
+${productList}
+
+User preferences: ${JSON.stringify(user.data.preferences || {})}
+
+Task: Recommend 3-5 products that best match the user's needs.
+Format: Return product names with brief explanations.`;
+
+    const query = input.userQuery || 'What products would you recommend for me?';
+    
+    const recommendations = await AI.generate(
+      context,
+      [{ type: 'text', text: query }]
+    );
+    
+    return {
+      success: true,
+      recommendations,
+      basedOn: {
+        userPreferences: user.data.preferences,
+        availableProducts: products.length,
+        query
+      }
+    };
+  }
+}
+```
+
+### Translation Tool
+
+```typescript
+import { LuaTool, AI } from 'lua-cli/skill';
+import { z } from 'zod';
+
+export default class TranslateTool implements LuaTool {
+  name = 'translate_text';
+  description = 'Translate text to different languages';
+  
+  inputSchema = z.object({
+    text: z.string(),
+    targetLanguage: z.string(),
+    sourceLanguage: z.string().optional()
+  });
+  
+  async execute(input: z.infer<typeof this.inputSchema>) {
+    const sourceLang = input.sourceLanguage || 'auto-detect';
+    
+    const context = `You are a professional translator.
+    Translate the text accurately while preserving:
+    - Tone and style
+    - Cultural context
+    - Idiomatic expressions (adapt appropriately)
+    
+Source language: ${sourceLang}
+Target language: ${input.targetLanguage}
+
+Return ONLY the translated text, nothing else.`;
+
+    const translation = await AI.generate(
+      context,
+      [{
+        type: 'text',
+        text: input.text
+      }]
+    );
+    
+    return {
+      success: true,
+      original: input.text,
+      translation,
+      from: sourceLang,
+      to: input.targetLanguage
+    };
+  }
+}
+```
+
+### Sentiment Analysis
+
+```typescript
+import { LuaTool, AI } from 'lua-cli/skill';
+import { z } from 'zod';
+
+export default class SentimentAnalysisTool implements LuaTool {
+  name = 'analyze_sentiment';
+  description = 'Analyze the sentiment of text';
+  
+  inputSchema = z.object({
+    text: z.string()
+  });
+  
+  async execute(input: z.infer<typeof this.inputSchema>) {
+    const context = `You are a sentiment analysis expert.
+    
+Analyze the sentiment of the text and respond with JSON:
+{
+  "sentiment": "positive|negative|neutral",
+  "score": 0.0 to 1.0,
+  "emotions": ["happy", "excited", "satisfied"],
+  "summary": "brief explanation"
+}`;
+
+    const analysis = await AI.generate(
+      context,
+      [{
+        type: 'text',
+        text: `Analyze the sentiment:\n\n"${input.text}"`
+      }]
+    );
+    
+    try {
+      const result = JSON.parse(analysis);
+      return {
+        success: true,
+        ...result,
+        originalText: input.text
+      };
+    } catch {
+      return {
+        success: false,
+        error: 'Failed to parse AI response',
+        rawResponse: analysis
+      };
+    }
+  }
+}
+```
+
+### Document Q&A Tool
+
+```typescript
+import { LuaTool, AI } from 'lua-cli/skill';
+import { z } from 'zod';
+
+export default class DocumentQATool implements LuaTool {
+  name = 'ask_about_document';
+  description = 'Ask questions about a document using AI';
+  
+  inputSchema = z.object({
+    documentUrl: z.string().url(),
+    question: z.string()
+  });
+  
+  async execute(input: z.infer<typeof this.inputSchema>) {
+    const context = `You are a document analysis assistant.
+    
+Read the document carefully and answer the user's question based on the content.
+    
+Guidelines:
+- Only use information from the document
+- If the answer isn't in the document, say so
+- Cite specific parts when possible
+- Be accurate and precise`;
+
+    const answer = await AI.generate(
+      context,
+      [
+        { type: 'file', url: input.documentUrl },
+        { type: 'text', text: input.question }
+      ]
+    );
+    
+    return {
+      success: true,
+      question: input.question,
+      answer,
+      documentUrl: input.documentUrl
+    };
+  }
+}
+```
+
+### Email Draft Generator
+
+```typescript
+import { LuaTool, AI, User } from 'lua-cli/skill';
+import { z } from 'zod';
+
+export default class DraftEmailTool implements LuaTool {
+  name = 'draft_email';
+  description = 'Generate professional email drafts';
+  
+  inputSchema = z.object({
+    purpose: z.string().describe('What the email is about'),
+    recipient: z.string().describe('Who it\'s addressed to'),
+    tone: z.enum(['formal', 'friendly', 'urgent']).optional(),
+    includeSignature: z.boolean().optional()
+  });
+  
+  async execute(input: z.infer<typeof this.inputSchema>) {
+    const tone = input.tone || 'friendly';
+    const user = await User.get();
+    
+    const context = `You are a professional email writer.
+    
+Write a ${tone} email for the following purpose: ${input.purpose}
+
+Recipient: ${input.recipient}
+Sender: ${user.data.name || 'User'}
+
+Format:
+- Subject line
+- Greeting
+- Body (2-4 paragraphs)
+- Closing${input.includeSignature ? '\n- Signature' : ''}
+
+Be clear, concise, and ${tone}.`;
+
+    const email = await AI.generate(
+      context,
+      [{
+        type: 'text',
+        text: 'Generate the email'
+      }]
+    );
+    
+    return {
+      success: true,
+      email,
+      metadata: {
+        tone,
+        recipient: input.recipient,
+        purpose: input.purpose
+      }
+    };
+  }
+}
+```
+
+### Content Moderator
+
+```typescript
+import { LuaTool, AI } from 'lua-cli/skill';
+import { z } from 'zod';
+
+export default class ModerateContentTool implements LuaTool {
+  name = 'moderate_content';
+  description = 'Check if content is appropriate and safe';
+  
+  inputSchema = z.object({
+    content: z.string()
+  });
+  
+  async execute(input: z.infer<typeof this.inputSchema>) {
+    const context = `You are a content moderation expert.
+    
+Analyze the following content for:
+- Inappropriate language
+- Harmful content
+- Spam or advertising
+- Personal information exposure
+
+Respond with JSON in this exact format:
+{
+  "safe": true/false,
+  "reason": "explanation",
+  "category": "appropriate/profanity/spam/harmful/pii",
+  "confidence": 0.95
+}`;
+
+    const analysis = await AI.generate(
+      context,
+      [{
+        type: 'text',
+        text: `Analyze this content:\n\n"${input.content}"`
+      }]
+    );
+    
+    try {
+      const result = JSON.parse(analysis);
+      return {
+        success: true,
+        ...result,
+        originalContent: input.content
+      };
+    } catch {
+      // If AI didn't return valid JSON, parse manually
+      const safe = !analysis.toLowerCase().includes('inappropriate');
+      return {
+        success: true,
+        safe,
+        reason: analysis,
+        category: 'unknown',
+        confidence: 0.5
+      };
+    }
+  }
+}
+```
+
+### Code Explainer
+
+```typescript
+import { LuaTool, AI } from 'lua-cli/skill';
+import { z } from 'zod';
+
+export default class ExplainCodeTool implements LuaTool {
+  name = 'explain_code';
+  description = 'Explain code snippets in plain language';
+  
+  inputSchema = z.object({
+    code: z.string(),
+    language: z.string().optional(),
+    level: z.enum(['beginner', 'intermediate', 'expert']).optional()
+  });
+  
+  async execute(input: z.infer<typeof this.inputSchema>) {
+    const level = input.level || 'intermediate';
+    const language = input.language || 'auto-detect';
+    
+    const context = `You are a programming instructor explaining code to ${level}-level developers.
+    
+Language: ${language}
+
+Explain:
+1. What the code does (high-level)
+2. How it works (step-by-step)
+3. Key concepts used
+4. Potential improvements or issues
+
+Use clear, simple language. Include examples if helpful.`;
+
+    const explanation = await AI.generate(
+      context,
+      [{
+        type: 'text',
+        text: `Explain this code:\n\n\`\`\`${language}\n${input.code}\n\`\`\``
+      }]
+    );
+    
+    return {
+      success: true,
+      code: input.code,
+      explanation,
+      level,
+      language
+    };
+  }
+}
+```
+
+### Creative Writing Assistant
+
+```typescript
+import { LuaTool, AI } from 'lua-cli/skill';
+import { z } from 'zod';
+
+export default class CreativeWritingTool implements LuaTool {
+  name = 'write_creative_content';
+  description = 'Generate creative content (stories, poems, descriptions)';
+  
+  inputSchema = z.object({
+    type: z.enum(['story', 'poem', 'description', 'dialogue']),
+    prompt: z.string(),
+    style: z.string().optional(),
+    length: z.enum(['short', 'medium', 'long']).optional()
+  });
+  
+  async execute(input: z.infer<typeof this.inputSchema>) {
+    const lengthGuide = {
+      short: '1-2 paragraphs',
+      medium: '3-5 paragraphs',
+      long: '6-10 paragraphs'
+    };
+    
+    const length = lengthGuide[input.length || 'medium'];
+    const style = input.style || 'engaging and creative';
+    
+    const contexts = {
+      story: `You are a creative fiction writer. Write ${length} of an ${style} story based on the prompt.`,
+      poem: `You are a poet. Write a ${style} poem based on the theme.`,
+      description: `You are a descriptive writer. Create a vivid ${length} description.`,
+      dialogue: `You are a screenwriter. Write ${length} of natural, ${style} dialogue.`
+    };
+    
+    const content = await AI.generate(
+      contexts[input.type],
+      [{
+        type: 'text',
+        text: input.prompt
+      }]
+    );
+    
+    return {
+      success: true,
+      type: input.type,
+      content,
+      wordCount: content.split(/\s+/).length
+    };
+  }
+}
+```
+
+### Conversational Context Builder
+
+```typescript
+import { LuaTool, AI, User } from 'lua-cli/skill';
+import { z } from 'zod';
+
+export default class ChatWithContextTool implements LuaTool {
+  name = 'chat_with_history';
+  description = 'Generate AI response with conversation history';
+  
+  inputSchema = z.object({
+    newMessage: z.string()
+  });
+  
+  async execute(input: z.infer<typeof this.inputSchema>) {
+    // Get chat history
+    const history = await User.getChatHistory();
+    
+    // Build conversation context
+    const conversationContext = history
+      .slice(-10) // Last 10 messages
+      .map(msg => `${msg.role}: ${msg.content[0]?.text}`)
+      .join('\n');
+    
+    const context = `You are continuing a conversation.
+    
+Previous conversation:
+${conversationContext}
+
+Maintain conversation continuity and reference previous topics when relevant.`;
+
+    const response = await AI.generate(
+      context,
+      [{
+        type: 'text',
+        text: input.newMessage
+      }]
+    );
+    
+    return {
+      success: true,
+      response,
+      contextUsed: history.length
+    };
+  }
+}
+```
+
+## Using Different Agents
+
+You can use specialized agents for different tasks:
+
+```typescript
+// Technical support specialist
+const technicalResponse = await AI.generate(
+  'You are a technical support specialist.',
+  [{ type: 'text', text: 'How do I fix error code 500?' }],
+  'technical-support-agent-id'
+);
+
+// Sales expert
+const salesResponse = await AI.generate(
+  'You are a sales expert.',
+  [{ type: 'text', text: 'What are the benefits of product X?' }],
+  'sales-agent-id'
+);
+```
+
+## Best Practices
+
+<AccordionGroup>
+  <Accordion title="✅ Provide Clear, Specific Context">
+    Good context leads to better results
+    
+    ```typescript
+    // ✅ Good - Specific and clear
+    const context = `You are a product reviewer.
+    Rate products on:
+    1. Quality (1-10)
+    2. Value (1-10)
+    3. Features (1-10)
+    
+    Return ONLY a JSON object with these ratings.`;
+    
+    // ❌ Bad - Vague
+    const context = `Review this product`;
+    ```
+  </Accordion>
+
+  <Accordion title="✅ Request Structured Output">
+    Ask for specific formats when needed
+    
+    ```typescript
+    const context = `Analyze the text and return JSON:
+    {
+      "summary": "brief summary",
+      "keyPoints": ["point 1", "point 2"],
+      "sentiment": "positive|negative|neutral"
+    }`;
+    ```
+  </Accordion>
+
+  <Accordion title="✅ Include Examples in Context">
+    Examples help AI understand the pattern
+    
+    ```typescript
+    const context = `Extract product names from text.
+    
+    Examples:
+    "I want to buy an iPhone" → ["iPhone"]
+    "Looking for Nike shoes and Adidas jacket" → ["Nike shoes", "Adidas jacket"]
+    
+    Return array of product names only.`;
+    ```
+  </Accordion>
+
+  <Accordion title="✅ Handle Variable Responses">
+    AI responses may vary - always validate
+    
+    ```typescript
+    try {
+      const response = await AI.generate(context, messages);
+      
+      if (!response || response.trim().length === 0) {
+        return { success: false, error: 'Empty response' };
+      }
+      
+      return { success: true, response };
+    } catch (error) {
+      return { success: false, error: error.message };
+    }
+    ```
+  </Accordion>
+
+  <Accordion title="❌ Don't Use AI for Simple Logic">
+    Use regular code for deterministic tasks
+    
+    ```typescript
+    // ❌ Bad - Waste of AI for simple math
+    await AI.generate('Calculate', [{ type: 'text', text: '2 + 2' }]);
+    
+    // ✅ Good - Use regular code
+    const result = 2 + 2;
+    ```
+  </Accordion>
+</AccordionGroup>
+
+## Common Use Cases
+
+| Use Case | Example Tool |
+|----------|--------------|
+| **Content generation** | Product descriptions, email drafts, social media posts |
+| **Analysis** | Sentiment analysis, image recognition, document review |
+| **Translation** | Multi-language support |
+| **Summarization** | Long documents, articles, conversations |
+| **Recommendations** | Product suggestions, content curation |
+| **Moderation** | Content filtering, safety checks |
+| **Q&A** | Document queries, knowledge retrieval |
+| **Creative tasks** | Story writing, poetry, creative descriptions |
+
+## Performance Considerations
+
+<CardGroup cols={2}>
+  <Card title="Response Time" icon="clock">
+    AI generation typically takes 1-5 seconds
+    
+    Longer/more complex requests take more time
+  </Card>
+  <Card title="Context Length" icon="file">
+    Maximum context length varies by model
+    
+    Keep contexts focused and relevant
+  </Card>
+  <Card title="Image Processing" icon="image">
+    Image analysis is slower than text
+    
+    Optimize image sizes when possible
+  </Card>
+  <Card title="Caching" icon="database">
+    Cache common AI responses
+    
+    Store frequently requested generations
+  </Card>
+</CardGroup>
+
+## Limitations
+
+- Maximum context length varies by model
+- Image size limits apply (optimize before sending)
+- File types supported: PDF, images, text files
+- Response may vary between calls (non-deterministic)
+- Some content may be filtered for safety
+- Processing time increases with input complexity
+
+## Error Handling
+
+```typescript
+async execute(input: any) {
+  try {
+    const response = await AI.generate(context, messages);
+    
+    // Validate response
+    if (!response || response.trim().length === 0) {
+      return {
+        success: false,
+        error: 'AI returned empty response'
+      };
+    }
+    
+    // Parse if expecting JSON
+    if (expectingJSON) {
+      try {
+        const parsed = JSON.parse(response);
+        return { success: true, data: parsed };
+      } catch {
+        return {
+          success: false,
+          error: 'AI did not return valid JSON',
+          rawResponse: response
+        };
+      }
+    }
+    
+    return {
+      success: true,
+      response
+    };
+  } catch (error) {
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : 'AI generation failed'
+    };
+  }
+}
+```
+
+## Related APIs
+
+<CardGroup cols={2}>
+  <Card title="User API" href="/api/user" icon="user">
+    Get user context for personalization
+  </Card>
+  <Card title="Data API" href="/api/data" icon="database">
+    Store AI-generated content
+  </Card>
+  <Card title="Products API" href="/api/products" icon="box">
+    Enhance products with AI descriptions
+  </Card>
+  <Card title="Jobs API" href="/api/jobs" icon="clock">
+    Schedule AI generation tasks
+  </Card>
+</CardGroup>
+
+## See Also
+
+- [LuaTool](/api/luatool) - Creating tools
+- [Tool Examples](/examples/overview) - More tool patterns
+- [User API](/api/user) - Accessing user data
+
