@@ -127,8 +127,8 @@ export class UpdateProductTool implements LuaTool {
 ### E-commerce Catalog
 
 ```typescript
-// Browse products
-const products = await Products.get(20, 1);
+// Browse products (page 1, limit 20)
+const products = await Products.get(1, 20);
 
 // Search for specific items (default limit: 5)
 const laptops = await Products.search('laptop');
@@ -149,8 +149,8 @@ await Products.update({ inStock: false }, productId);
 // Update price
 await Products.update({ price: 899.99 }, productId);
 
-// Bulk update
-const products = await Products.get(100);
+// Bulk update (page 1, limit 100)
+const products = await Products.get(1, 100);
 for (const product of products.data) {
   if (product.category === 'Electronics') {
     await Products.update({ onSale: true }, product.id);
@@ -161,8 +161,8 @@ for (const product of products.data) {
 ### Admin Dashboard
 
 ```typescript
-// Get all products
-const all = await Products.get(1000);
+// Get all products (page 1, limit 1000)
+const all = await Products.get(1, 1000);
 
 // Statistics
 const totalValue = all.data.reduce((sum, p) => sum + p.price, 0);
@@ -201,7 +201,7 @@ export class BulkDiscountTool implements LuaTool {
   });
 
   async execute(input: z.infer<typeof this.inputSchema>) {
-    const products = await Products.get(1000);
+    const products = await Products.get(1, 1000);
     
     for (const product of products.data) {
       if (product.category === input.category) {

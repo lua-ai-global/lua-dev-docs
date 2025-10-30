@@ -106,15 +106,15 @@ for (const product of results) {
 Retrieve all products with pagination.
 
 ```typescript
-Products.get(limit?: number, page?: number): Promise<ProductPaginationInstance>
+Products.get(page?: number, limit?: number): Promise<ProductPaginationInstance>
 ```
-
-<ParamField path="limit" type="number" default={10}>
-  Number of products per page
-</ParamField>
 
 <ParamField path="page" type="number" default={1}>
   Page number (1-indexed)
+</ParamField>
+
+<ParamField path="limit" type="number" default={10}>
+  Number of products per page
 </ParamField>
 
 **Returns:** `ProductPaginationInstance` - Array-like collection with pagination support
@@ -122,8 +122,8 @@ Products.get(limit?: number, page?: number): Promise<ProductPaginationInstance>
 **Example:**
 
 ```typescript
-// Get first 20 products
-const page = await Products.get(20, 1);
+// Get first 20 products (page 1, limit 20)
+const page = await Products.get(1, 20);
 
 // Direct array methods
 page.forEach(product => {
@@ -431,8 +431,8 @@ export class UpdateStockTool implements LuaTool {
 ### E-commerce Catalog
 
 ```typescript
-// Browse products
-const products = await Products.get(20);
+// Browse products (page 1, limit 20)
+const products = await Products.get(1, 20);
 
 // Search specific items
 const laptops = await Products.search('laptop');

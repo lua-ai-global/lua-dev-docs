@@ -124,8 +124,8 @@ export class BrowseMenuTool implements LuaTool {
   });
 
   async execute(input: z.infer<typeof this.inputSchema>) {
-    // Use Products API for menu items
-    const allItems = await Products.get(100);
+    // Use Products API for menu items (page 1, limit 100)
+    const allItems = await Products.get(1, 100);
     
     let items = allItems.data;
     if (input.category !== 'all') {
