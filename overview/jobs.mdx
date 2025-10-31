@@ -39,7 +39,7 @@ description: "Scheduled tasks that run automatically"
     **Static jobs defined at agent setup**
     
     ```typescript
-    import { LuaJob } from 'lua-cli';
+    import { LuaJob, User } from 'lua-cli';
     
     const dailyReport = new LuaJob({
       name: 'daily-sales-report',
@@ -47,8 +47,13 @@ description: "Scheduled tasks that run automatically"
         type: 'cron',
         pattern: '0 9 * * *'  // Every day at 9 AM
       },
+      metadata: {
+        userId: 'user_abc123'  // Store user ID in metadata
+      },
       execute: async (job) => {
-        const user = await job.user();
+        // ⚠️ Pre-defined jobs have NO conversational context
+        // Get user by ID from metadata
+        const user = await User.get(job.metadata.userId);
         await user.send([{
           type: 'text',
           text: 'Your daily report is ready!'
@@ -62,10 +67,14 @@ description: "Scheduled tasks that run automatically"
     - Cleanup tasks
     - System monitoring
     - Recurring notifications
+    
+    <Warning>
+    **No Context:** LuaJob executes outside conversations. Use `User.get(userId)` with ID from metadata.
+    </Warning>
   </Tab>
 
   <Tab title="Jobs API (Dynamic)">
-    **Jobs created on-demand from tools**
+    **Jobs created on-demand from tools (has user context!)**
     
     ```typescript
     import { Jobs } from 'lua-cli';
@@ -78,11 +87,12 @@ description: "Scheduled tasks that run automatically"
         type: 'once',
         executeAt: new Date(Date.now() + 600000)
       },
-      execute: async (job) => {
-        const user = await job.user();
+      execute: async (jobInstance) => {
+        // ✅ Dynamic jobs automatically have user context
+        const user = await jobInstance.user();  // No userId needed!
         await user.send([{
           type: 'text',
-          text: job.metadata.message
+          text: jobInstance.metadata.message
         }]);
       }
     });
@@ -93,6 +103,10 @@ description: "Scheduled tasks that run automatically"
     - Follow-up messages
     - One-time notifications
     - Context-specific tasks
+    
+    <Note>
+    **Has Context:** Dynamic jobs created in tools automatically know which user triggered them. Use `jobInstance.user()` - no userId needed!
+    </Note>
   </Tab>
 </Tabs>
 

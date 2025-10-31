@@ -19,7 +19,8 @@ const job = await Jobs.create({
     executeAt: new Date(Date.now() + 600000)
   },
   execute: async (jobInstance) => {
-    const user = await jobInstance.user();
+    // ✅ Dynamic jobs automatically have user context!
+    const user = await jobInstance.user();  // No userId needed
     await user.send([{
       type: 'text',
       text: jobInstance.metadata.message
@@ -27,6 +28,10 @@ const job = await Jobs.create({
   }
 });
 ```
+
+<Note>
+**Automatic User Context:** Dynamic jobs created from tools automatically know which user triggered them. Use `jobInstance.user()` to get the user - no userId required! This is different from pre-defined LuaJob which requires `User.get(userId)`.
+</Note>
 
 <Note>
 **New in v3.0.0:** Dynamically create jobs at runtime from within your tools. Pairs with the LuaJob class for pre-defined jobs.
@@ -52,10 +57,26 @@ import { Jobs } from 'lua-cli/skill';
   <Card title="Recurring Jobs" icon="rotate">
     Set up intervals or cron patterns
   </Card>
-  <Card title="User-Scoped" icon="user">
-    Jobs execute in user context
+  <Card title="Automatic User Context" icon="user">
+    Jobs automatically know which user triggered them - use `jobInstance.user()`
   </Card>
 </CardGroup>
+
+## Jobs API vs LuaJob
+
+Understanding user access in different job types:
+
+| Feature | Jobs API (Dynamic) | LuaJob (Pre-defined) |
+|---------|-------------------|---------------------|
+| **When Created** | Runtime, from tools | At agent setup |
+| **User Context** | ✅ Automatic | ❌ None |
+| **Get User** | `jobInstance.user()` | `User.get(userId)` |
+| **userId Needed?** | ❌ No (automatic) | ✅ Yes (from metadata) |
+| **Best For** | User-triggered tasks | Regular scheduled tasks |
+
+<Note>
+**Why the difference?** Dynamic jobs are created during a user conversation, so they automatically capture that user's context. Pre-defined jobs run on a schedule with no specific user, so you must explicitly provide a userId if you want to notify someone.
+</Note>
 
 ## Methods
 
@@ -470,18 +491,44 @@ async execute(input: any) {
 
 The `JobInstance` passed to execute functions provides:
 
-### job.user()
+### jobInstance.user()
 
 Gets the user who triggered the job.
 
 **Returns:** `Promise<UserDataInstance>`
 
+<Note>
+**Automatic User Context:** This method is ONLY available for dynamic jobs created via `Jobs.create()`. The user context is automatically captured when the job is created from a tool. Pre-defined LuaJob must use `User.get(userId)` instead.
+</Note>
+
 **Example:**
 ```typescript
-execute: async (job) => {
-  const user = await job.user();
-  await user.send([{ type: 'text', text: 'Job complete!' }]);
-}
+// In a tool creating a dynamic job
+await Jobs.create({
+  execute: async (jobInstance) => {
+    // ✅ Works! User context automatically available
+    const user = await jobInstance.user();
+    await user.send([{ type: 'text', text: 'Job complete!' }]);
+  }
+});
+```
+
+**Comparison with LuaJob:**
+```typescript
+// ❌ This won't work in pre-defined LuaJob
+const job = new LuaJob({
+  execute: async (job) => {
+    const user = await job.user();  // ❌ No user() method!
+  }
+});
+
+// ✅ Use this for LuaJob instead
+const job = new LuaJob({
+  metadata: { userId: 'user_abc123' },
+  execute: async (job) => {
+    const user = await User.get(job.metadata.userId);  // ✅ Works!
+  }
+});
 ```
 
 ### job.metadata

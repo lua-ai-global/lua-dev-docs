@@ -38,35 +38,129 @@ await user.update({ name: "John Doe" });
   </Card>
 </CardGroup>
 
-## get()
+## get(userId?)
 
-Retrieve the current user's data as a UserDataInstance.
+Retrieve user data as a UserDataInstance.
 
 ```typescript
-User.get(): Promise<UserDataInstance>
+User.get(userId?: string): Promise<UserDataInstance>
 ```
+
+<ParamField path="userId" type="string">
+  User ID to retrieve a specific user
+  
+  **Required in:** Webhooks, pre-defined LuaJob (no conversational context)
+  
+  **Optional in:** Tools, dynamic jobs (has conversational context)
+  
+  If not provided, retrieves the current user from the conversation context
+</ParamField>
 
 **Returns:** `UserDataInstance` with proxy-based property access
 
-**Example:**
+## When to Use userId Parameter
 
-```typescript
-import { User } from 'lua-cli';
+Understanding when userId is required vs optional:
 
-// In your tool
-async execute(input: any, context: ToolContext) {
-  const user = await User.get();
-  // or
-  const user = context.user;  // Available through context
+| Context | Method | userId Required? | Why |
+|---------|--------|------------------|-----|
+| **Tools** | `User.get()` | ❌ Optional | Has conversational context |
+| **Webhooks** | `User.get(userId)` | ✅ **REQUIRED** | No conversational context |
+| **LuaJob** | `User.get(userId)` | ✅ **REQUIRED** | No conversational context |
+| **Jobs API** | `jobInstance.user()` | ❌ N/A | Automatic user context |
+
+<Warning>
+**Context Matters:**
+- **Tools:** userId is optional - defaults to current user in conversation
+- **Webhooks:** userId is REQUIRED - webhooks execute outside conversations
+- **LuaJob (pre-defined):** userId is REQUIRED - jobs execute outside conversations  
+- **Jobs API (dynamic):** Use `jobInstance.user()` instead - automatic context captured!
+</Warning>
+
+**Examples:**
+
+<Tabs>
+  <Tab title="Current User">
+    **Get the current user from conversation context:**
+    
+    ```typescript
+    import { User } from 'lua-cli';
+    
+    // In your tool
+    async execute(input: any) {
+      const user = await User.get();
+      
+      // Direct property access
+      console.log(user.name);    // "John Doe"
+      console.log(user.email);   // "john@example.com"
+      console.log(user.phone);   // "555-0123"
+      
+      return { userName: user.name };
+    }
+    ```
+  </Tab>
+
+  <Tab title="Specific User (Webhooks/LuaJob)">
+    **Get a specific user by ID (REQUIRED in webhooks and pre-defined jobs):**
+    
+    ```typescript
+    import { User } from 'lua-cli';
+    
+    // In a webhook (NO conversational context)
+    execute: async (event) => {
+      // ⚠️ MUST provide userId in webhooks
+      const customerId = event.data.object.metadata?.customerId;
+      
+      if (!customerId) {
+        return { error: 'No customer ID provided' };
+      }
+      
+      const user = await User.get(customerId);
+      
+      // Send message to that specific user
+      await user.send([{
+        type: 'text',
+        text: `✅ Payment received: $${event.data.object.amount/100}`
+      }]);
+      
+      return { notified: true };
+    }
+    ```
+    
+    **Required in:**
+    - ✅ **Webhooks** - No conversational context
+    - ✅ **LuaJob (pre-defined)** - No conversational context
+    - ✅ **Admin tools** - Managing other users
+    
+    **NOT needed in:**
+    - ❌ **Tools** - Use `User.get()` without userId
+    - ❌ **Jobs API (dynamic)** - Use `jobInstance.user()` instead
+  </Tab>
   
-  // Direct property access
-  console.log(user.name);    // "John Doe"
-  console.log(user.email);   // "john@example.com"
-  console.log(user.phone);   // "555-0123"
-  
-  return { userName: user.name };
-}
-```
+  <Tab title="Dynamic Jobs (Special Case)">
+    **Dynamic jobs have automatic user context:**
+    
+    ```typescript
+    import { Jobs } from 'lua-cli';
+    
+    // Creating a dynamic job from a tool
+    await Jobs.create({
+      name: 'user-reminder',
+      execute: async (jobInstance) => {
+        // ✅ Use jobInstance.user() - automatic context!
+        const user = await jobInstance.user();
+        
+        await user.send([{
+          type: 'text',
+          text: 'Reminder: Your meeting starts in 5 minutes!'
+        }]);
+      }
+    });
+    ```
+    
+    **Why it works:** Dynamic jobs created from tools automatically capture the user context, so you don't need to provide a userId.
+  </Tab>
+</Tabs>
 
 ## UserDataInstance API
 

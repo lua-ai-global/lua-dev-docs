@@ -58,13 +58,19 @@ const supportSkill = new LuaSkill({
 const zendeskWebhook = new LuaWebhook({
   name: 'zendesk-webhook',
   description: 'Handle Zendesk ticket update events',
+  secret: env('ZENDESK_WEBHOOK_SECRET'),
   execute: async (event) => {
     if (event.type === 'ticket.solved') {
-      const user = await User.get();
-      await user.send([{
-        type: 'text',
-        text: `✅ Your support ticket #${event.data.id} has been resolved!`
-      }]);
+      // Get user ID from ticket metadata
+      const userId = event.data.custom_fields?.lua_user_id;
+      
+      if (userId) {
+        const user = await User.get(userId);
+        await user.send([{
+          type: 'text',
+          text: `✅ Your support ticket #${event.data.id} has been resolved! We hope we were able to help.`
+        }]);
+      }
     }
     return { received: true };
   }

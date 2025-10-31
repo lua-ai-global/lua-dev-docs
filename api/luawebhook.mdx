@@ -8,16 +8,24 @@ description: "HTTP endpoints for receiving external events and integrations"
 `LuaWebhook` allows you to create HTTP endpoints that can receive events from external services like Stripe, Shopify, GitHub, or any other webhook-enabled platform.
 
 ```typescript
-import { LuaWebhook } from 'lua-cli';
+import { LuaWebhook, User } from 'lua-cli';
 
 const paymentWebhook = new LuaWebhook({
   name: 'payment-webhook',
   description: 'Handle Stripe payment events',
   execute: async (event) => {
     if (event.type === 'payment_intent.succeeded') {
-      // Handle successful payment
-      const paymentIntent = event.data.object;
-      // Process order, send confirmation, etc.
+      // ⚠️ Webhooks have NO conversational context
+      // MUST provide userId to notify users
+      
+      const customerId = event.data.object.metadata?.customerId;
+      if (customerId) {
+        const user = await User.get(customerId);
+        await user.send([{
+          type: 'text',
+          text: '✅ Payment confirmed!'
+        }]);
+      }
     }
     return { received: true };
   }
@@ -25,6 +33,10 @@ const paymentWebhook = new LuaWebhook({
 
 export default paymentWebhook;
 ```
+
+<Warning>
+**No Conversational Context:** Webhooks execute outside of user conversations. You MUST use `User.get(userId)` with an explicit userId. Always store the user ID in your payment/order metadata.
+</Warning>
 
 <Note>
 **New in v3.0.0:** HTTP webhooks for external integrations. Use with LuaAgent.
@@ -46,6 +58,19 @@ export default paymentWebhook;
     Any service that sends HTTP webhooks
   </Card>
 </CardGroup>
+
+## User Access in Webhooks
+
+| Context | How to Get User | userId Required? |
+|---------|----------------|------------------|
+| **Webhooks** | `User.get(userId)` | ✅ **YES** - Store in metadata |
+| **Tools** | `User.get()` | ❌ No - automatic context |
+| **LuaJob** | `User.get(userId)` | ✅ **YES** - Store in metadata |
+| **Jobs API** | `jobInstance.user()` | ❌ No - automatic context |
+
+<Warning>
+**Webhooks are context-less:** They're triggered by external systems, not user conversations. Always store the Lua user ID in your payment/order metadata so you can notify the right user.
+</Warning>
 
 ## Constructor
 
@@ -148,11 +173,14 @@ const stripeWebhook = new LuaWebhook({
         if (order) {
           await order.updateStatus('CONFIRMED');
           
-          // Notify user
-          const user = await User.get();
+          // Get user by ID from payment metadata
+          const customerId = paymentIntent.metadata.customerId;
+          const user = await User.get(customerId);
+          
+          // Notify the specific user
           await user.send([{
             type: 'text',
-            text: `✅ Payment confirmed! Order #${order.id} is being processed.`
+            text: `✅ Payment confirmed! Order #${order.id} is being processed. Amount: $${paymentIntent.amount/100}`
           }]);
         }
         
@@ -161,6 +189,16 @@ const stripeWebhook = new LuaWebhook({
       case 'payment_intent.payment_failed':
         const failed = event.data.object;
         console.error('Payment failed:', failed);
+        
+        // Notify user of failure
+        const failedCustomerId = failed.metadata.customerId;
+        if (failedCustomerId) {
+          const user = await User.get(failedCustomerId);
+          await user.send([{
+            type: 'text',
+            text: `❌ Payment failed: ${failed.last_payment_error?.message}. Please try again.`
+          }]);
+        }
         
         return { success: false, reason: failed.last_payment_error?.message };
         
@@ -173,6 +211,10 @@ const stripeWebhook = new LuaWebhook({
 
 export default stripeWebhook;
 ```
+
+<Note>
+**Important:** Always store the user ID (customerId) in your payment metadata so webhooks can notify the correct user. Example: `metadata: { customerId: user.id, orderId: order.id }`
+</Note>
 
 ### Shopify Order Webhook
 
@@ -196,26 +238,32 @@ const shopifyOrderWebhook = new LuaWebhook({
       total: order.total_price,
       items: order.line_items,
       status: order.financial_status,
+      customerId: order.customer.id,  // Store customer ID
       createdAt: order.created_at
     }, `Order #${order.order_number} ${order.customer.email} ${order.total_price}`);
     
-    // Notify customer
-    const user = await User.get();
+    // Notify specific customer using their ID
+    const user = await User.get(order.customer.id);
     await user.send([{
       type: 'text',
-      text: `🛍️ New order #${order.order_number} received!\n\nTotal: $${order.total_price}\nItems: ${order.line_items.length}`
+      text: `🛍️ Order #${order.order_number} confirmed!\n\nTotal: $${order.total_price}\nItems: ${order.line_items.length}\n\nWe'll send shipping updates soon!`
     }]);
     
     return {
       success: true,
       orderId: order.id,
-      orderNumber: order.order_number
+      orderNumber: order.order_number,
+      customerId: order.customer.id
     };
   }
 });
 
 export default shopifyOrderWebhook;
 ```
+
+<Note>
+**Customer Identification:** Map external customer IDs (Shopify, Stripe) to Lua user IDs. Store this mapping in your order/payment metadata for webhook notifications.
+</Note>
 
 ### GitHub Deployment Webhook
 

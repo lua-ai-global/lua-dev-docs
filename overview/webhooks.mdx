@@ -11,6 +11,10 @@ description: "HTTP endpoints for receiving external events"
   A phone number for your agent - external services can "call" it when events happen
 </Card>
 
+<Warning>
+**No Conversational Context:** Webhooks execute outside of user conversations. You MUST provide a userId when calling `User.get(userId)` to notify specific users. Store user IDs in your payment/order metadata.
+</Warning>
+
 <Note>
 **New in v3.0.0:** Built-in webhook support for seamless external integrations.
 </Note>
@@ -67,11 +71,24 @@ const paymentWebhook = new LuaWebhook({
   
   execute: async (event) => {
     if (event.type === 'payment_intent.succeeded') {
-      // Payment completed!
-      const user = await User.get();
+      // ⚠️ Webhooks have NO conversational context
+      // You MUST provide userId to User.get()
+      
+      // Get user ID from payment metadata
+      const customerId = event.data.object.metadata?.customerId;
+      
+      if (!customerId) {
+        console.error('No customerId in payment metadata');
+        return { received: true, error: 'No customer ID' };
+      }
+      
+      // Retrieve specific user by ID
+      const user = await User.get(customerId);
+      
+      // Send payment confirmation to that user
       await user.send([{
         type: 'text',
-        text: '✅ Payment confirmed! Your order is being processed.'
+        text: `✅ Payment confirmed! Amount: ${event.data.object.amount} ${event.data.object.currency.toUpperCase()}`
       }]);
     }
     
@@ -79,6 +96,10 @@ const paymentWebhook = new LuaWebhook({
   }
 });
 ```
+
+<Warning>
+**Critical:** Webhooks execute outside conversational context. `User.get()` REQUIRES a userId parameter. Always store the user ID in your payment/order metadata when creating transactions.
+</Warning>
 
 ## Common Use Cases
 
@@ -174,23 +195,91 @@ https://api.heylua.ai/webhooks/{agent-id}/{webhook-name}
 
 Configure this URL in your external service's webhook settings.
 
-## Security
+## Best Practices
 
-<Warning>
-**Always verify webhook signatures!** This prevents unauthorized requests.
-</Warning>
+<AccordionGroup>
+  <Accordion title="✅ Store User IDs in Metadata">
+    **Always include user ID in payment/order metadata**
+    
+    When creating payments or orders, store the Lua user ID:
+    
+    ```typescript
+    // When creating Stripe payment
+    const paymentIntent = await stripe.paymentIntents.create({
+      amount: 2000,
+      currency: 'usd',
+      metadata: {
+        customerId: user.id,  // ← Lua user ID
+        orderId: order.id
+      }
+    });
+    ```
+    
+    Then in your webhook, retrieve the specific user:
+    
+    ```typescript
+    execute: async (event) => {
+      const customerId = event.data.object.metadata.customerId;
+      const user = await User.get(customerId);
+      await user.send([{ type: 'text', text: 'Payment confirmed!' }]);
+    }
+    ```
+  </Accordion>
 
-```typescript
-const secureWebhook = new LuaWebhook({
-  name: 'secure-webhook',
-  secret: env('WEBHOOK_SECRET'),
-  verifySignature: true,  // ← Important!
-  
-  execute: async (event) => {
-    // Only processes verified requests
-  }
-});
-```
+  <Accordion title="✅ Verify Signatures">
+    **Always verify webhook signatures to prevent unauthorized requests**
+    
+    ```typescript
+    const secureWebhook = new LuaWebhook({
+      name: 'secure-webhook',
+      secret: env('WEBHOOK_SECRET'),
+      verifySignature: true,  // ← Important!
+      
+      execute: async (event) => {
+        // Only processes verified requests
+      }
+    });
+    ```
+  </Accordion>
+
+  <Accordion title="✅ Handle Errors Gracefully">
+    **Don't throw errors - return error status**
+    
+    ```typescript
+    execute: async (event) => {
+      try {
+        // Process event
+        return { success: true };
+      } catch (error) {
+        console.error('Webhook error:', error);
+        return { success: false, error: error.message };
+      }
+    }
+    ```
+  </Accordion>
+
+  <Accordion title="✅ Return Quickly">
+    **Webhooks should respond within 5 seconds**
+    
+    For long-running work, queue a job:
+    
+    ```typescript
+    execute: async (event) => {
+      // Quick validation
+      if (!isValid(event)) return { error: 'Invalid' };
+      
+      // Queue long-running work
+      await Jobs.create({
+        execute: async () => {
+          // Process here
+        }
+      });
+      
+      return { received: true };
+    }
+    ```
+  </Accordion>
+</AccordionGroup>
 
 ## Next Steps
 

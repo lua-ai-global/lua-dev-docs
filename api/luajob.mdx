@@ -8,19 +8,25 @@ description: "Pre-defined scheduled tasks that run automatically"
 `LuaJob` allows you to define scheduled tasks that run automatically without user interaction. Unlike the Jobs API which creates jobs dynamically, LuaJob is for pre-defined jobs that are part of your agent configuration.
 
 ```typescript
-import { LuaJob } from 'lua-cli';
+import { LuaJob, User } from 'lua-cli';
 
 const dailyReport = new LuaJob({
   name: 'daily-sales-report',
   description: 'Generate daily sales summary',
+  metadata: {
+    userId: 'user_abc123'  // Store user ID to notify
+  },
   schedule: {
     type: 'cron',
     pattern: '0 9 * * *'  // Every day at 9 AM
   },
-  execute: async (jobInstance) => {
-    // Generate and send report
+  execute: async (job) => {
+    // Generate report
     const report = await generateSalesReport();
-    const user = await jobInstance.user();
+    
+    // ⚠️ Pre-defined jobs have NO conversational context
+    // Get user by ID from metadata
+    const user = await User.get(job.metadata.userId);
     await user.send([{
       type: 'text',
       text: report
@@ -28,6 +34,10 @@ const dailyReport = new LuaJob({
   }
 });
 ```
+
+<Warning>
+**No Conversational Context:** LuaJob executes outside of user conversations. You MUST use `User.get(userId)` with a userId from metadata. The job does NOT have `jobInstance.user()` - that's only for dynamic jobs.
+</Warning>
 
 <Note>
 **New in v3.0.0:** Pre-defined jobs that are part of your agent configuration. Use with LuaAgent.
@@ -43,6 +53,8 @@ const dailyReport = new LuaJob({
     - Weekly summaries
     - Cleanup tasks
     - Monitoring jobs
+    
+    **User access:** `User.get(userId)` from metadata
   </Card>
   <Card title="Jobs API (Dynamic)" icon="plus">
     For tasks created on-demand from tools
@@ -51,8 +63,45 @@ const dailyReport = new LuaJob({
     - Follow-ups
     - One-time notifications
     - Context-specific tasks
+    
+    **User access:** `jobInstance.user()` (automatic!)
   </Card>
 </CardGroup>
+
+<Warning>
+**Key Difference:** Pre-defined LuaJob has NO user context. Use `User.get(userId)` with ID from metadata. Dynamic jobs (Jobs API) automatically have user context via `jobInstance.user()`.
+</Warning>
+
+## Comparison: LuaJob vs Jobs API
+
+Understanding user access in different job types:
+
+| Feature | LuaJob (Pre-defined) | Jobs API (Dynamic) |
+|---------|---------------------|-------------------|
+| **When Defined** | At agent setup | Runtime, from tools |
+| **User Context** | ❌ None | ✅ Automatic |
+| **Get User** | `User.get(userId)` | `jobInstance.user()` |
+| **userId Required?** | ✅ Yes (from metadata) | ❌ No (automatic) |
+| **Use Case** | Regular scheduled tasks | User-triggered tasks |
+
+**Example - Pre-defined LuaJob:**
+```typescript
+const job = new LuaJob({
+  metadata: { userId: 'user_abc123' },  // ← Store userId
+  execute: async (job) => {
+    const user = await User.get(job.metadata.userId);  // ← Required
+  }
+});
+```
+
+**Example - Dynamic Job (Jobs API):**
+```typescript
+await Jobs.create({
+  execute: async (jobInstance) => {
+    const user = await jobInstance.user();  // ← Automatic!
+  }
+});
+```
 
 ## Constructor
 

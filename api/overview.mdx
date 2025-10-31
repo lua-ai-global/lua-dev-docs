@@ -288,14 +288,27 @@ const response = await AI.generate(
 
 ### User API
 
-Access current user's information:
+Access user information:
 
 ```typescript
 import { User } from 'lua-cli';
 
+// Get current user (from conversation context)
 const user = await User.get();
-// { id, email, name, ... }
+
+// Get specific user by ID (useful in webhooks/jobs)
+const specificUser = await User.get(userId);
+
+// Direct property access
+console.log(user.name);
+console.log(user.email);
 ```
+
+**Use cases:**
+- Get current user in tools
+- Get specific user in webhooks (payment notifications)
+- Send messages to specific users in jobs
+- Update user profiles
 
 <Card title="Full Documentation" href="/api/user" />
 
