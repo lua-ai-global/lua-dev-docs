@@ -5,24 +5,24 @@ description: "View and debug agent execution logs"
 
 ## Overview
 
-The `lua logs` command provides an interactive interface for viewing and navigating agent and skill logs with real-time pagination.
+The `lua logs` command provides an interactive interface for viewing and navigating your agent's execution logs with powerful filtering capabilities.
 
 ```bash
 lua logs
 ```
 
 <CardGroup cols={2}>
-  <Card title="View All Logs" icon="list">
-    See logs across all skills
+  <Card title="Filter by Type" icon="filter">
+    Filter logs by Skills, Jobs, Webhooks, Preprocessors, or Postprocessors
   </Card>
-  <Card title="Filter by Skill" icon="filter">
-    Focus on specific skill
+  <Card title="See All Your Components" icon="cloud">
+    View logs for all your components, including dynamically created jobs
+  </Card>
+  <Card title="Detailed Information" icon="list">
+    See which component generated each log, including names and IDs
   </Card>
   <Card title="Color-Coded" icon="palette">
-    Error, warn, debug, info, metrics
-  </Card>
-  <Card title="Interactive" icon="arrows-rotate">
-    Navigate, refresh, jump to page
+    Easily spot errors, warnings, and different log types
   </Card>
 </CardGroup>
 
@@ -84,14 +84,44 @@ lua logs
 ## Interactive Flow
 
 <Steps>
-  <Step title="Select Log Source">
+  <Step title="Choose What to View">
     ```
     📊 Viewing logs for agent: myAgent
     
     ? What logs do you want to view?
     ❯ 📋 All agent logs
-      🎯 Specific skill logs
+      🔎 Filter logs
     ```
+  </Step>
+  
+  <Step title="Choose What to Filter (if filtering)">
+    ```
+    ? Filter by:
+    ❯ Skills
+      Jobs
+      Webhooks
+      Preprocessors
+      Postprocessors
+      ──────────────────────
+      📋 All logs
+      ← Back
+    ```
+  </Step>
+  
+  <Step title="Select Specific Component (if filtering)">
+    ```
+    ? Select a job:
+    ❯ All Jobs
+      ──────────────────────
+      Nightly User Report
+      Daily Cleanup Task
+      ──────────────────────
+      ← Back
+    ```
+    
+    <Note>
+    **All Jobs Visible**: All your jobs appear in the list, including ones created dynamically in your code.
+    </Note>
   </Step>
   
   <Step title="View Logs">
@@ -101,13 +131,14 @@ lua logs
     Page 1 of 88 (872 total logs)
     
     ❌ [2/3/2025, 4:40:55 PM] ERROR
-       Skill: payment-skill
-       Tool: create_payment_link
+       Job Name: Nightly User Report
+       Job ID:   job_abc123
        Error executing function: Invalid API Key
     ──────────────────────────────────────────────────
     ✅ [2/3/2025, 4:40:55 PM] COMPLETE
-       Skill: customer-service
-       Tool: search_products
+       Skill Name: customer-service
+       Skill ID:   skill_def456
+       Tool Name:  search_products
        Duration: 125ms
        Execute function completed
     ──────────────────────────────────────────────────
@@ -132,9 +163,9 @@ lua logs
 
 ```bash
 $ lua logs
-→ All agent logs
+→ Filter logs → Skills → Select your skill
 → Look for ❌ ERROR entries
-→ Review error messages and stack traces
+→ Review error messages
 → Fix issues in your code
 ```
 
@@ -142,7 +173,7 @@ $ lua logs
 
 ```bash
 $ lua logs
-→ All agent logs  
+→ Filter logs → Select component type
 → Find ✅ COMPLETE entries
 → Check duration metrics
 → Identify slow operations
@@ -152,20 +183,28 @@ $ lua logs
 
 ```bash
 $ lua logs
-→ Specific skill logs
-→ Select your skill
+→ Filter logs → Skills → Select your skill
 → Look for 🔍 DEBUG entries
 → Verify tool inputs/outputs
 ```
 
-### Track API Calls
+### Track Webhook Activity
 
 ```bash
 $ lua logs
-→ All agent logs
-→ Review API interaction logs
-→ Check response times
+→ Filter logs → Webhooks → Select your webhook
+→ Review webhook execution logs
+→ Check request/response data
 → Debug external integrations
+```
+
+### Monitor Job Execution
+
+```bash
+$ lua logs
+→ Filter logs → Jobs → Select your job
+→ View scheduled job execution logs
+→ Check for errors or performance issues
 ```
 
 ## Example Session
@@ -175,30 +214,28 @@ $ lua logs
 ✅ Authenticated
 📊 Viewing logs for agent: myAgent
 
-? What logs do you want to view? 📋 All agent logs
+? What logs do you want to view? 🔎 Filter logs
+
+? Filter by: Jobs
+
+? Select a job: Nightly User Report
 
 All Agent Logs
 ────────────────────────────────────────────────────────────────────────────────
-Page 1 of 45 (450 total logs)
+Page 1 of 12 (120 total logs)
 
-❌ [2/3/2025, 4:40:55 PM] ERROR
-   Skill: payment-skill
-   Tool: create_payment_link
-   Error: Stripe API key invalid
-   Duration: 245ms
+▶️ [11/7/2025, 10:30:00 AM] START
+   Job Name: Nightly User Report
+   Job ID:   job_abc123
+   Duration: 150ms
+   Starting job execution...
 ──────────────────────────────────────────────────────────────────────────────
 
-✅ [2/3/2025, 4:39:22 PM] COMPLETE
-   Skill: product-skill
-   Tool: search_products
-   Duration: 89ms
-   Found 15 products matching "laptop"
-──────────────────────────────────────────────────────────────────────────────
-
-🔍 [2/3/2025, 4:38:10 PM] DEBUG
-   Skill: user-data-skill
-   Tool: update_user_preferences
-   Input: { theme: "dark", notifications: true }
+✅ [11/7/2025, 10:30:05 AM] COMPLETE
+   Job Name: Nightly User Report
+   Job ID:   job_abc123
+   Duration: 5234ms
+   Job execution completed successfully
 ──────────────────────────────────────────────────────────────────────────────
 
 ? Navigation: Next Page →
@@ -206,16 +243,66 @@ Page 1 of 45 (450 total logs)
 [Shows page 2...]
 ```
 
+### Filtering by Skill
+
+```bash
+$ lua logs
+? What logs do you want to view? 🔎 Filter logs
+? Filter by: Skills
+? Select a skill: customer-service
+
+All Agent Logs
+────────────────────────────────────────────────────────────────────────────────
+Page 1 of 25 (250 total logs)
+
+ℹ️ [11/7/2025, 10:31:15 AM] INFO
+   Skill Name: customer-service
+   Skill ID:   skill_def456
+   Tool Name:  search_products
+   Fetching products matching query...
+──────────────────────────────────────────────────────────────────────────────
+
+✅ [11/7/2025, 10:31:16 AM] COMPLETE
+   Skill Name: customer-service
+   Skill ID:   skill_def456
+   Tool Name:  search_products
+   Duration: 89ms
+   Found 15 products matching "laptop"
+──────────────────────────────────────────────────────────────────────────────
+```
+
 ## Log Entry Details
 
-Each log shows:
+Each log entry shows you:
+
+### For Skill Logs
+- **Skill Name** - Which skill generated the log
+- **Skill ID** - Unique identifier for the skill
+- **Tool Name** - Which tool was running (if applicable)
 - **Timestamp** - When the log was created
-- **Type** - Error, debug, info, warn, metric
-- **Skill** - Which skill generated the log
-- **Tool** - Which tool was executing
-- **Message** - Log content
-- **Duration** - Time taken (for metrics)
-- **Metadata** - User ID, agent ID, etc.
+- **Log Type** - Error, debug, info, warn, start, or complete
+- **Message** - The actual log message
+- **Duration** - How long the operation took (for completed operations)
+
+### For Job Logs
+- **Job Name** - Which job generated the log
+- **Job ID** - Unique identifier for the job
+- **Timestamp** - When the log was created
+- **Log Type** - Error, debug, info, warn, start, or complete
+- **Message** - The actual log message
+- **Duration** - How long the job took to run
+
+### For Webhook, Preprocessor, and Postprocessor Logs
+- **Name** - Which component generated the log
+- **ID** - Unique identifier
+- **Timestamp** - When the log was created
+- **Log Type** - Error, debug, info, warn, start, or complete
+- **Message** - The actual log message
+- **Duration** - How long the operation took
+
+<Note>
+**Tool Information**: Tool names are only shown for skill logs, since tools belong to skills.
+</Note>
 
 ## Navigation Options
 
@@ -314,10 +401,10 @@ Each log shows:
 
   <Accordion title="Can't find specific error">
     **Try:**
-    - Navigate through pages
-    - Filter by specific skill
-    - Look at recent pages (page 1)
-    - Check timestamp for when error occurred
+    - Navigate through pages using the navigation menu
+    - Filter by the specific component (skill, job, etc.)
+    - Check the most recent pages first (page 1)
+    - Look at the timestamp to find when the error occurred
   </Accordion>
 
   <Accordion title="Logs not updating">
@@ -361,13 +448,13 @@ lua logs
 ### Debugging Issues
 
 ```bash
-# User reports issue
+# User reports an issue
 lua logs
-# Find relevant error
-# Note: timestamp, skill, tool
-# Fix in code
-# Deploy fix
-# Monitor logs again
+# Find the relevant error in the logs
+# Note the timestamp and which component had the error
+# Fix the issue in your code
+# Deploy the fix
+# Monitor logs again to verify the fix
 ```
 
 ## Related Commands

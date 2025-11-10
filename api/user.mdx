@@ -13,12 +13,42 @@ import { User } from 'lua-cli';
 // Get user instance
 const user = await User.get();
 
-// Direct property access (NEW! ✨)
-console.log(user.name);
-console.log(user.email);
+// Access the new read-only user profile
+console.log(user._luaProfile.fullName);
+console.log(user._luaProfile.emailAddresses); // A simple array of strings
 
-// Update user data
-await user.update({ name: "John Doe" });
+// Continue to use the user object for your agent's custom data
+user.lastProductViewed = 'SKU-123';
+await user.save();
+```
+
+## Read-Only User Profile (`_luaProfile`)
+
+A new, read-only property `user._luaProfile` is now available on the user object. This provides a secure and reliable way to access core user identity information.
+
+- **`_luaProfile`** (Read-Only): Contains essential user data like `userId`, `fullName`, `mobileNumbers`, and `emailAddresses`.
+  - The `_lua` prefix indicates this is a special, system-provided property.
+  - This data is **immutable**; any attempts to change it will be silently ignored.
+- **`user.*`** (Mutable): Continue to use the main `user` object to store and manage any custom data your agent needs, such as preferences, shopping carts, or game scores.
+
+<CardGroup>
+  <Card title="Core User Identity" icon="lock">
+    Access read-only data like `user._luaProfile.userId` and `user._luaProfile.fullName`.
+  </Card>
+  <Card title="Custom Agent Data" icon="pencil">
+    Read and write your agent's data directly, like `user.cart` or `user.preferences`.
+  </Card>
+</CardGroup>
+
+### Deprecated `user.userId`
+To centralize core user information, `user.userId` is now deprecated. Please update your code to use `user._luaProfile.userId`. The old property will be removed in a future version.
+
+```typescript
+// ✅ New & Recommended
+const userId = user._luaProfile.userId;
+
+// ⚠️ Deprecated
+const oldUserId = user.userId;
 ```
 
 ## Features

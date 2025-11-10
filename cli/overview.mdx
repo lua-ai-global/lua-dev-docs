@@ -12,22 +12,21 @@ lua [options] [command]
 ```
 
 <Note>
-**New in v3.0.0 (lua-cli package):**
-- 🤖 **LuaAgent** - Unified agent configuration with persona, skills, webhooks, jobs, and processors
-- 🪝 **LuaWebhook** - HTTP endpoints for external integrations (Stripe, Shopify, etc.)
-- ⏰ **LuaJob** - Scheduled tasks with cron patterns
-- 📥 **PreProcessor** - Filter and route messages before they reach your agent
-- 📤 **PostProcessor** - Transform and format agent responses
-- 🔄 **Jobs API** - Dynamically create scheduled tasks from tools
+  **New in v3.0.0 (lua-cli package):** - 🤖 **LuaAgent** - Unified agent
+  configuration with persona, skills, webhooks, jobs, and processors - 🪝
+  **LuaWebhook** - HTTP endpoints for external integrations (Stripe, Shopify,
+  etc.) - ⏰ **LuaJob** - Scheduled tasks with cron patterns - 📥
+  **PreProcessor** - Filter and route messages before they reach your agent - 📤
+  **PostProcessor** - Transform and format agent responses - 🔄 **Jobs API** -
+  Dynamically create scheduled tasks from tools
 </Note>
 
 <Note>
-**New in v2.6.0 (CLI commands):**
-- 🎯 Direct environment access for all commands
-- ⌨️ Shell autocomplete support (Bash, Zsh, Fish)
-- 🚀 New `lua skills` command for production skill management
-- ⚡ New `lua features` command for managing agent capabilities
-- ⚡ Faster workflows with `lua push skill`, `lua env production`, etc.
+  **New in v2.6.0 (CLI commands):** - 🎯 Direct environment access for all
+  commands - ⌨️ Shell autocomplete support (Bash, Zsh, Fish) - 🚀 New `lua
+  skills` command for production skill management - ⚡ New `lua features`
+  command for managing agent capabilities - ⚡ Faster workflows with `lua push
+  skill`, `lua env production`, etc.
 </Note>
 
 ### Options
@@ -39,26 +38,26 @@ lua [options] [command]
 
 ### All Commands
 
-| Command | Category | Description |
-|---------|----------|-------------|
-| `lua auth` | 🔐 Authentication | Manage API keys and authentication |
-| `lua init` | 🚀 Project Setup | Initialize a new Lua skill project |
-| `lua env` | ⚙️ Configuration | Manage environment variables (sandbox/production) |
-| `lua persona` | 🤖 Configuration | Manage agent persona (sandbox/production) |
-| `lua features` | ⚡ Configuration | Manage agent capabilities and features |
-| `lua resources` | 📚 Configuration | Manage agent knowledge base |
-| `lua skills` | 🔧 Development | View and manage skills (sandbox/production) |
-| `lua compile` | 📦 Development | Compile skill to deployable format |
-| `lua test` | 💬 Testing | Test skill tools interactively |
-| `lua chat` | 💬 Testing | Interactive chat with your agent |
-| `lua push` | ☁️ Deployment | Push skill or persona version to server |
-| `lua deploy` | 🚀 Deployment | Deploy version to production |
-| `lua production` | 🚀 Deployment | View and manage production environment |
-| `lua channels` | 🔌 Integration | Manage communication channels |
-| `lua logs` | 🐛 Debugging | View agent and skill execution logs |
-| `lua completion` | ⌨️ Utilities | Generate shell autocomplete scripts |
-| `lua admin` | 🛠️ Utilities | Open admin dashboard in browser |
-| `lua docs` | 📖 Utilities | Open documentation in browser |
+| Command          | Category          | Description                                                                 |
+| ---------------- | ----------------- | --------------------------------------------------------------------------- |
+| `lua auth`       | 🔐 Authentication | Manage API keys and authentication                                          |
+| `lua init`       | 🚀 Project Setup  | Initialize a new Lua skill project                                          |
+| `lua env`        | ⚙️ Configuration  | Manage environment variables (sandbox/production)                           |
+| `lua persona`    | 🤖 Configuration  | Manage agent persona (sandbox/production)                                   |
+| `lua features`   | ⚡ Configuration  | Manage agent capabilities and features                                      |
+| `lua resources`  | 📚 Configuration  | Manage agent knowledge base                                                 |
+| `lua skills`     | 🔧 Development    | View and manage skills (sandbox/production)                                 |
+| `lua compile`    | 📦 Development    | Compile skill to deployable format                                          |
+| `lua test`       | 💬 Testing        | Test skill tools interactively                                              |
+| `lua chat`       | 💬 Testing        | Interactive chat with your agent                                            |
+| `lua push`       | ☁️ Deployment     | Push skill or persona version to server                                     |
+| `lua deploy`     | 🚀 Deployment     | Deploy version to production                                                |
+| `lua production` | 🚀 Deployment     | View and manage production environment                                      |
+| `lua channels`   | 🔌 Integration    | Manage communication channels                                               |
+| `lua logs`       | 🐛 Debugging      | View and filter agent logs by component type (Skills, Jobs, Webhooks, etc.) |
+| `lua completion` | ⌨️ Utilities      | Generate shell autocomplete scripts                                         |
+| `lua admin`      | 🛠️ Utilities      | Open admin dashboard in browser                                             |
+| `lua docs`       | 📖 Utilities      | Open documentation in browser                                               |
 
 ### Quick Examples
 
@@ -93,7 +92,7 @@ lua deploy             # 🚀 Deploy to production
 
 # Integration & Debugging
 lua channels           # 🔌 Manage communication channels
-lua logs               # 🐛 View execution logs
+lua logs               # 🐛 View and filter execution logs (interactive filtering)
 
 # Utilities
 lua completion bash    # ⌨️ Generate bash autocomplete
@@ -108,6 +107,7 @@ lua docs               # 📖 Open documentation
 
 **Documentation**: https://docs.heylua.ai  
 **Support**: https://heylua.ai/support
+
 </Note>
 
 ## Quick Command Reference
@@ -207,34 +207,19 @@ Skip interactive prompts by specifying your target directly:
     ```
   </Tab>
 
-  <Tab title="Environment Commands">
-    ```bash
-    # Interactive
-    lua env
-    ? Select environment:
-      › Sandbox
-        Production
-    
-    # Direct
-    lua env sandbox     # Manage .env file
-    lua env production  # Manage API env vars
-    lua env staging     # Alias for sandbox
-    ```
-  </Tab>
+{" "}
+<Tab title="Environment Commands">
+  ```bash # Interactive lua env ? Select environment: › Sandbox Production #
+  Direct lua env sandbox # Manage .env file lua env production # Manage API env
+  vars lua env staging # Alias for sandbox ```
+</Tab>
 
-  <Tab title="Persona Commands">
-    ```bash
-    # Interactive
-    lua persona
-    ? Select environment:
-      › Sandbox
-        Production
-    
-    # Direct
-    lua persona sandbox     # Edit sandbox persona
-    lua persona production  # Deploy persona version
-    ```
-  </Tab>
+{" "}
+<Tab title="Persona Commands">
+  ```bash # Interactive lua persona ? Select environment: › Sandbox Production #
+  Direct lua persona sandbox # Edit sandbox persona lua persona production #
+  Deploy persona version ```
+</Tab>
 
   <Tab title="Skills Commands">
     ```bash
@@ -269,14 +254,11 @@ Skip interactive prompts by specifying your target directly:
     <Card title="Learn More" href="/cli/authentication" />
   </Tab>
 
-  <Tab title="key">
-    Display stored API key
-    ```bash
-    lua auth key
-    ```
-    
-    Shows key after confirmation prompt
-  </Tab>
+{" "}
+<Tab title="key">
+  Display stored API key ```bash lua auth key ``` Shows key after confirmation
+  prompt
+</Tab>
 
   <Tab title="logout">
     Delete stored credentials
@@ -307,63 +289,35 @@ Skip interactive prompts by specifying your target directly:
     <Card title="Learn More" href="/cli/skill-management#init" />
   </Tab>
 
-  <Tab title="compile">
-    Compile TypeScript to JavaScript
-    ```bash
-    lua compile
-    ```
-    
-    Automatically:
-    - Detects all tools
-    - Bundles with esbuild
-    - Creates deployment artifacts
-    - Updates skill IDs
-    
-    <Card title="Learn More" href="/cli/skill-management#compile" />
-  </Tab>
+{" "}
+<Tab title="compile">
+  Compile TypeScript to JavaScript ```bash lua compile ``` Automatically: -
+  Detects all tools - Bundles with esbuild - Creates deployment artifacts -
+  Updates skill IDs
+  <Card title="Learn More" href="/cli/skill-management#compile" />
+</Tab>
 
-  <Tab title="test">
-    Test tools interactively
-    ```bash
-    lua test
-    ```
-    
-    Features:
-    - Select tool from list
-    - Dynamic input prompts
-    - Secure sandbox execution
-    - Detailed error reporting
-    
-    <Card title="Learn More" href="/cli/skill-management#test" />
-  </Tab>
+{" "}
+<Tab title="test">
+  Test tools interactively ```bash lua test ``` Features: - Select tool from
+  list - Dynamic input prompts - Secure sandbox execution - Detailed error
+  reporting
+  <Card title="Learn More" href="/cli/skill-management#test" />
+</Tab>
 
-  <Tab title="push">
-    Upload version to server
-    ```bash
-    lua push
-    ```
-    
-    - Compiles code
-    - Validates configuration
-    - Uploads to server
-    - Creates new version
-    
-    <Card title="Learn More" href="/cli/skill-management#push" />
-  </Tab>
+{" "}
+<Tab title="push">
+  Upload version to server ```bash lua push ``` - Compiles code - Validates
+  configuration - Uploads to server - Creates new version
+  <Card title="Learn More" href="/cli/skill-management#push" />
+</Tab>
 
-  <Tab title="deploy">
-    Deploy to production
-    ```bash
-    lua deploy
-    ```
-    
-    - Lists available versions
-    - Shows current version
-    - Requires confirmation
-    - Immediate deployment
-    
-    <Card title="Learn More" href="/cli/skill-management#deploy" />
-  </Tab>
+{" "}
+<Tab title="deploy">
+  Deploy to production ```bash lua deploy ``` - Lists available versions - Shows
+  current version - Requires confirmation - Immediate deployment
+  <Card title="Learn More" href="/cli/skill-management#deploy" />
+</Tab>
 
   <Tab title="chat">
     Interactive chat
@@ -386,113 +340,64 @@ Skip interactive prompts by specifying your target directly:
 ### New Project Workflow
 
 <Steps>
-  <Step title="Authenticate">
-    ```bash
-    lua auth configure
-    ```
-  </Step>
-  
+  <Step title="Authenticate">```bash lua auth configure ```</Step>
+
   <Step title="Initialize">
-    ```bash
-    mkdir my-skill && cd my-skill
-    lua init
-    ```
+    ```bash mkdir my-skill && cd my-skill lua init ```
   </Step>
-  
+
   <Step title="Configure Environment">
-    ```bash
-    lua env sandbox
-    ```
-    
-    Add API keys and configuration to .env file
+    ```bash lua env sandbox ``` Add API keys and configuration to .env file
   </Step>
-  
+
   <Step title="Configure Persona">
-    ```bash
-    lua persona sandbox
-    ```
-    
-    Define your agent's personality in local file
+    ```bash lua persona sandbox ``` Define your agent's personality in local
+    file
   </Step>
-  
+
   <Step title="Test Your Agent">
-    ```bash
-    lua chat
-    ```
-    
-    Interactive chat in sandbox mode
-    
+    ```bash lua chat ``` Interactive chat in sandbox mode
     <Note>
-    **Optional**: Use `lua test` to test individual tools with specific inputs
+      **Optional**: Use `lua test` to test individual tools with specific inputs
     </Note>
   </Step>
-  
-  <Step title="Deploy">
-    ```bash
-    lua push
-    lua deploy
-    ```
-  </Step>
+
+  <Step title="Deploy">```bash lua push lua deploy ```</Step>
 </Steps>
 
 ### Development Workflow
 
 <Steps>
   <Step title="Configure Environment (if needed)">
-    ```bash
-    lua env sandbox        # Update local .env
-    lua env production     # Update production env vars
-    ```
-    
-    Add any new API keys or configuration needed
+    ```bash lua env sandbox # Update local .env lua env production # Update
+    production env vars ``` Add any new API keys or configuration needed
   </Step>
-  
+
   <Step title="Update Persona (if needed)">
-    ```bash
-    lua persona sandbox    # Edit and test locally
-    ```
-    
-    Refine agent personality based on feedback
+    ```bash lua persona sandbox # Edit and test locally ``` Refine agent
+    personality based on feedback
   </Step>
-  
-  <Step title="Make Changes">
-    Edit your tools in `src/tools/*.ts`
-  </Step>
-  
+
+  <Step title="Make Changes">Edit your tools in `src/tools/*.ts`</Step>
+
   <Step title="Test Your Agent">
-    ```bash
-    lua chat
-    ```
-    
-    Select sandbox mode to test with local changes
-    
+    ```bash lua chat ``` Select sandbox mode to test with local changes
     <Note>
-    **Pro tip**: Use `lua test` to debug specific tool logic if needed
+      **Pro tip**: Use `lua test` to debug specific tool logic if needed
     </Note>
   </Step>
-  
+
   <Step title="Push Persona to Production (if changed)">
-    ```bash
-    lua persona production # Deploy persona version
-    ```
-    
-    Or use: `lua push persona`
+    ```bash lua persona production # Deploy persona version ``` Or use: `lua
+    push persona`
   </Step>
-  
+
   <Step title="Push Skill When Ready">
-    ```bash
-    lua push skill
-    ```
-    
-    Upload new skill version
+    ```bash lua push skill ``` Upload new skill version
   </Step>
-  
+
   <Step title="Deploy to Production">
-    ```bash
-    lua deploy
-    ```
-    
-    Make available to all users
+    ```bash lua deploy ``` Make available to all users
   </Step>
 </Steps>
 
@@ -526,15 +431,9 @@ All commands support:
 Commands automatically load environment variables from:
 
 <Steps>
-  <Step title="System Environment">
-    Variables from your shell
-  </Step>
-  <Step title=".env File">
-    Variables from project `.env`
-  </Step>
-  <Step title="lua.skill.yaml">
-    Variables from skill config
-  </Step>
+  <Step title="System Environment">Variables from your shell</Step>
+  <Step title=".env File">Variables from project `.env`</Step>
+  <Step title="lua.skill.yaml">Variables from skill config</Step>
 </Steps>
 
 <Card title="Learn More" href="/concepts/environment-variables" />
@@ -542,6 +441,7 @@ Commands automatically load environment variables from:
 ## Error Handling
 
 All commands include:
+
 - ✅ Descriptive error messages
 - ✅ Exit codes (0 = success, 1 = error)
 - ✅ Troubleshooting hints
@@ -557,21 +457,18 @@ All commands include:
     **Solution**: Run `lua auth configure`
   </Accordion>
 
-  <Accordion title="No lua.skill.yaml found">
-    ```
-    ❌ No lua.skill.yaml found. Please run this command from a skill directory.
-    ```
-    
-    **Solution**: Run command from skill directory or run `lua init` first
-  </Accordion>
+{" "}
+<Accordion title="No lua.skill.yaml found">
+  ``` ❌ No lua.skill.yaml found. Please run this command from a skill
+  directory. ``` **Solution**: Run command from skill directory or run `lua
+  init` first
+</Accordion>
 
-  <Accordion title="Version already exists">
-    ```
-    ❌ Version 1.0.0 already exists on the server
-    ```
-    
-    **Solution**: Increment version in `lua.skill.yaml`
-  </Accordion>
+{" "}
+<Accordion title="Version already exists">
+  ``` ❌ Version 1.0.0 already exists on the server ``` **Solution**: Increment
+  version in `lua.skill.yaml`
+</Accordion>
 
   <Accordion title="Compilation failed">
     ```
@@ -592,15 +489,15 @@ The v3.0.0 pattern uses `LuaAgent` for unified configuration:
 
 ```typescript
 // src/index.ts
-import { LuaAgent, LuaSkill, LuaWebhook, LuaJob } from 'lua-cli';
-import { mySkill } from './skills/my-skill';
-import paymentWebhook from './webhooks/payment';
-import dailyReportJob from './jobs/daily-report';
+import { LuaAgent, LuaSkill, LuaWebhook, LuaJob } from "lua-cli";
+import { mySkill } from "./skills/my-skill";
+import paymentWebhook from "./webhooks/payment";
+import dailyReportJob from "./jobs/daily-report";
 
 // Export agent (v3.0.0 pattern)
 export const agent = new LuaAgent({
   name: "my-agent",
-  
+
   // Define personality and behavior
   persona: `You are a helpful assistant for Acme Corp.
   
@@ -616,15 +513,15 @@ Communication style:
 
   // Welcome message
   welcomeMessage: "Hi! I'm here to help. What can I do for you?",
-  
+
   // Skills with tools
   skills: [mySkill],
-  
+
   // HTTP endpoints (optional)
   webhooks: [paymentWebhook],
-  
+
   // Scheduled tasks (optional)
-  jobs: [dailyReportJob]
+  jobs: [dailyReportJob],
 });
 ```
 
@@ -664,14 +561,14 @@ Auto-managed configuration file:
 agent:
   agentId: agent_abc123
   orgId: org_xyz789
-  persona: "..."              # Synced from LuaAgent
-  welcomeMessage: "..."       # Synced from LuaAgent
+  persona: "..." # Synced from LuaAgent
+  welcomeMessage: "..." # Synced from LuaAgent
 
 # Multi-skill support
 skills:
   - name: my-skill
     version: 1.0.0
-    skillId: skill_abc123     # Auto-created
+    skillId: skill_abc123 # Auto-created
 
 # Webhooks (v3.0.0)
 webhooks:
@@ -681,7 +578,7 @@ webhooks:
 # Jobs (v3.0.0)
 jobs:
   - name: daily-report
-    jobId: job_abc123         # Auto-created
+    jobId: job_abc123 # Auto-created
 
 # Environment variables
 skill:
@@ -690,6 +587,7 @@ skill:
 ```
 
 **Auto-managed fields:**
+
 - `skillId` - Created during compilation
 - `webhookId` - Created during compilation
 - `jobId` - Created during compilation
@@ -697,6 +595,7 @@ skill:
 - `persona`, `welcomeMessage` - Synced from LuaAgent
 
 **Manual fields:**
+
 - `agentId` - Set during `lua init`
 - `orgId` - Set during `lua init`
 - `version` - Update when releasing
@@ -729,17 +628,12 @@ skill:
     - Linux: libsecret
   </Tab>
 
-  <Tab title="Project Files">
-    **Your Project Directory**
-    ```
-    your-skill/
-    ├── src/          # Your code
-    ├── dist/         # Compiled output
-    ├── .lua/         # CLI cache
-    ├── node_modules/ # Dependencies
-    └── lua.skill.yaml
-    ```
-  </Tab>
+{" "}
+<Tab title="Project Files">
+  **Your Project Directory** ``` your-skill/ ├── src/ # Your code ├── dist/ #
+  Compiled output ├── .lua/ # CLI cache ├── node_modules/ # Dependencies └──
+  lua.skill.yaml ```
+</Tab>
 
   <Tab title="Temporary">
     **Build Artifacts**
@@ -753,54 +647,25 @@ skill:
 ## Next Steps
 
 <CardGroup cols={2}>
-  <Card
-    title="Authentication"
-    icon="key"
-    href="/cli/authentication"
-  >
+  <Card title="Authentication" icon="key" href="/cli/authentication">
     Set up API key authentication
   </Card>
-  <Card
-    title="Skill Management"
-    icon="wrench"
-    href="/cli/skill-management"
-  >
+  <Card title="Skill Management" icon="wrench" href="/cli/skill-management">
     Learn all skill management commands
   </Card>
-  <Card
-    title="Environment Command"
-    icon="gear"
-    href="/cli/env-command"
-  >
+  <Card title="Environment Command" icon="gear" href="/cli/env-command">
     Manage sandbox and production variables
   </Card>
-  <Card
-    title="Persona Command"
-    icon="user"
-    href="/cli/persona-command"
-  >
+  <Card title="Persona Command" icon="user" href="/cli/persona-command">
     Configure agent personality
   </Card>
-  <Card
-    title="Features Command"
-    icon="sliders"
-    href="/cli/features-command"
-  >
+  <Card title="Features Command" icon="sliders" href="/cli/features-command">
     Manage agent capabilities
   </Card>
-  <Card
-    title="Chat Command"
-    icon="comments"
-    href="/cli/chat-command"
-  >
+  <Card title="Chat Command" icon="comments" href="/cli/chat-command">
     Interactive chat with your agent
   </Card>
-  <Card
-    title="Utility Commands"
-    icon="terminal"
-    href="/cli/utility-commands"
-  >
+  <Card title="Utility Commands" icon="terminal" href="/cli/utility-commands">
     Shell autocomplete and more
   </Card>
 </CardGroup>
-
