@@ -18,7 +18,7 @@ const dailyReport = new LuaJob({
   },
   schedule: {
     type: 'cron',
-    pattern: '0 9 * * *'  // Every day at 9 AM
+    expression: '0 9 * * *'  // Every day at 9 AM
   },
   execute: async (job) => {
     // Generate report
@@ -146,9 +146,9 @@ Creates a new pre-defined job.
 </ParamField>
 
 <ParamField path="timeout" type="number">
-  Maximum execution time in milliseconds
+  Maximum execution time in seconds
   
-  **Default:** 60000 (1 minute)
+  **Default:** 300 (5 minutes)
 </ParamField>
 
 <ParamField path="retry" type="object">
@@ -156,8 +156,8 @@ Creates a new pre-defined job.
   
   ```typescript
   retry: {
-    maxRetries: number;
-    backoffSeconds: number;
+    maxAttempts: number;
+    backoffSeconds?: number;
   }
   ```
 </ParamField>
@@ -175,7 +175,7 @@ Creates a new pre-defined job.
 ```typescript
 schedule: {
   type: 'interval',
-  intervalSeconds: number
+  seconds: number
 }
 ```
 
@@ -184,19 +184,19 @@ schedule: {
 // Every 5 minutes
 schedule: {
   type: 'interval',
-  intervalSeconds: 300
+  seconds: 300
 }
 
 // Every hour
 schedule: {
   type: 'interval',
-  intervalSeconds: 3600
+  seconds: 3600
 }
 
 // Every day (86400 seconds)
 schedule: {
   type: 'interval',
-  intervalSeconds: 86400
+  seconds: 86400
 }
 ```
 
@@ -205,7 +205,8 @@ schedule: {
 ```typescript
 schedule: {
   type: 'cron',
-  pattern: string  // Standard cron pattern
+  expression: string  // Standard cron expression
+  timezone?: string   // Optional timezone (e.g., 'America/New_York')
 }
 ```
 
@@ -214,25 +215,26 @@ schedule: {
 // Every day at 9 AM
 schedule: {
   type: 'cron',
-  pattern: '0 9 * * *'
+  expression: '0 9 * * *'
 }
 
-// Every Monday at 8 AM
+// Every Monday at 8 AM EST
 schedule: {
   type: 'cron',
-  pattern: '0 8 * * 1'
+  expression: '0 8 * * 1',
+  timezone: 'America/New_York'
 }
 
 // Every hour on the hour
 schedule: {
   type: 'cron',
-  pattern: '0 * * * *'
+  expression: '0 * * * *'
 }
 
 // First day of every month at midnight
 schedule: {
   type: 'cron',
-  pattern: '0 0 1 * *'
+  expression: '0 0 1 * *'
 }
 ```
 
@@ -241,20 +243,22 @@ schedule: {
 ### Daily Sales Report
 
 ```typescript
-import { LuaJob, Products } from 'lua-cli';
+import { LuaJob, Products, User } from 'lua-cli';
 
 const dailySalesReport = new LuaJob({
   name: 'daily-sales-report',
   description: 'Daily sales summary sent every morning',
   
   metadata: {
+    userId: 'user_abc123',  // Store userId to send report to
     reportTime: '09:00',
     timezone: 'America/New_York'
   },
   
   schedule: {
     type: 'cron',
-    pattern: '0 9 * * *'  // Every day at 9 AM
+    expression: '0 9 * * *',  // Every day at 9 AM
+    timezone: 'America/New_York'
   },
   
   execute: async (jobInstance) => {
@@ -271,8 +275,9 @@ const dailySalesReport = new LuaJob({
       `Top 5 Products:\n` +
       topProducts.map(p => `- ${p.name}: $${p.price}`).join('\n');
     
-    // Send to user
-    const user = await jobInstance.user();
+    // ⚠️ Pre-defined jobs have NO user context
+    // Get user by ID from metadata
+    const user = await User.get(jobInstance.metadata.userId);
     await user.send([{
       type: 'text',
       text: report
@@ -293,15 +298,19 @@ export default dailySalesReport;
 ### Weekly Cleanup Job
 
 ```typescript
-import { LuaJob, Data } from 'lua-cli';
+import { LuaJob, Data, User } from 'lua-cli';
 
 const weeklyCleanup = new LuaJob({
   name: 'weekly-cleanup',
   description: 'Clean up old data every Sunday',
   
+  metadata: {
+    adminUserId: 'user_admin123'  // Store admin userId to notify
+  },
+  
   schedule: {
     type: 'cron',
-    pattern: '0 0 * * 0'  // Every Sunday at midnight
+    expression: '0 0 * * 0'  // Every Sunday at midnight
   },
   
   execute: async (jobInstance) => {
@@ -320,8 +329,10 @@ const weeklyCleanup = new LuaJob({
       }
     }
     
-    // Send summary
-    const user = await jobInstance.user();
+    // Send summary to admin
+    // ⚠️ Pre-defined jobs have NO user context
+    // Get user by ID from metadata
+    const user = await User.get(jobInstance.metadata.adminUserId);
     await user.send([{
       type: 'text',
       text: `🧹 Weekly cleanup complete. Deleted ${deletedCount} old entries.`
@@ -341,7 +352,7 @@ export default weeklyCleanup;
 ### Hourly Monitoring
 
 ```typescript
-import { LuaJob, env } from 'lua-cli';
+import { LuaJob, env, User } from 'lua-cli';
 
 const systemMonitor = new LuaJob({
   name: 'system-monitor',
@@ -349,12 +360,13 @@ const systemMonitor = new LuaJob({
   
   metadata: {
     alertThreshold: 90,
-    checkInterval: 'hourly'
+    checkInterval: 'hourly',
+    adminUserId: 'user_admin123'  // Store admin userId for alerts
   },
   
   schedule: {
     type: 'interval',
-    intervalSeconds: 3600  // Every hour
+    seconds: 3600  // Every hour
   },
   
   execute: async (jobInstance) => {
@@ -365,7 +377,9 @@ const systemMonitor = new LuaJob({
       
       // Alert if threshold exceeded
       if (health.cpuUsage > jobInstance.metadata.alertThreshold) {
-        const user = await jobInstance.user();
+        // ⚠️ Pre-defined jobs have NO user context
+        // Get user by ID from metadata
+        const user = await User.get(jobInstance.metadata.adminUserId);
         await user.send([{
           type: 'text',
           text: `⚠️ Alert: CPU usage is ${health.cpuUsage}%`
@@ -380,7 +394,7 @@ const systemMonitor = new LuaJob({
       };
     } catch (error) {
       // Alert on failure
-      const user = await jobInstance.user();
+      const user = await User.get(jobInstance.metadata.adminUserId);
       await user.send([{
         type: 'text',
         text: `🚨 System monitor failed: ${error.message}`
@@ -395,7 +409,7 @@ const systemMonitor = new LuaJob({
   },
   
   retry: {
-    maxRetries: 3,
+    maxAttempts: 3,
     backoffSeconds: 60
   }
 });
@@ -406,7 +420,7 @@ export default systemMonitor;
 ### Reminders with Metadata
 
 ```typescript
-import { LuaJob, Data } from 'lua-cli';
+import { LuaJob, Data, User } from 'lua-cli';
 
 const userReminders = new LuaJob({
   name: 'check-reminders',
@@ -414,7 +428,7 @@ const userReminders = new LuaJob({
   
   schedule: {
     type: 'interval',
-    intervalSeconds: 300  // Every 5 minutes
+    seconds: 300  // Every 5 minutes
   },
   
   execute: async (jobInstance) => {
@@ -427,8 +441,9 @@ const userReminders = new LuaJob({
       const dueTime = new Date(reminder.data.dueAt);
       
       if (dueTime <= now && !reminder.data.sent) {
-        // Send reminder
-        const user = await jobInstance.user();
+        // ⚠️ Pre-defined jobs have NO user context
+        // Each reminder must store the userId to send to
+        const user = await User.get(reminder.data.userId);
         await user.send([{
           type: 'text',
           text: `⏰ Reminder: ${reminder.data.message}`
@@ -533,10 +548,10 @@ if (conditionMet) {
     
     ```typescript
     // ✅ Cron for specific times
-    schedule: { type: 'cron', pattern: '0 9 * * *' }  // 9 AM daily
+    schedule: { type: 'cron', expression: '0 9 * * *' }  // 9 AM daily
     
     // ✅ Interval for regular polling
-    schedule: { type: 'interval', intervalSeconds: 300 }  // Every 5 min
+    schedule: { type: 'interval', seconds: 300 }  // Every 5 min
     ```
   </Accordion>
 
@@ -561,7 +576,7 @@ if (conditionMet) {
     
     ```typescript
     retry: {
-      maxRetries: 3,
+      maxAttempts: 3,
       backoffSeconds: 60  // Retry after 1 minute
     }
     ```
@@ -571,7 +586,7 @@ if (conditionMet) {
     Set appropriate timeouts and avoid long-running operations
     
     ```typescript
-    timeout: 120000,  // 2 minutes max
+    timeout: 120,  // 2 minutes max (in seconds)
     ```
   </Accordion>
 </AccordionGroup>

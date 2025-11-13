@@ -159,9 +159,9 @@ console.log(job.schedule);
 </ParamField>
 
 <ParamField path="timeout" type="number">
-  Maximum execution time in milliseconds
+  Maximum execution time in seconds
   
-  **Default:** 60000 (1 minute)
+  **Default:** 60 (1 minute)
 </ParamField>
 
 <ParamField path="retry" type="object">
@@ -169,8 +169,8 @@ console.log(job.schedule);
   
   ```typescript
   retry: {
-    maxRetries: number;      // Max retry attempts
-    backoffSeconds: number;  // Seconds between retries
+    maxAttempts: number;     // Max retry attempts
+    backoffSeconds?: number; // Seconds between retries (optional)
   }
   ```
 </ParamField>
@@ -212,7 +212,7 @@ schedule: {
 ```typescript
 schedule: {
   type: 'interval',
-  intervalSeconds: number  // Seconds between executions
+  seconds: number  // Seconds between executions
 }
 ```
 
@@ -221,13 +221,13 @@ schedule: {
 // Run every 5 minutes
 schedule: {
   type: 'interval',
-  intervalSeconds: 300
+  seconds: 300
 }
 
 // Run every hour
 schedule: {
   type: 'interval',
-  intervalSeconds: 3600
+  seconds: 3600
 }
 ```
 
@@ -236,7 +236,8 @@ schedule: {
 ```typescript
 schedule: {
   type: 'cron',
-  pattern: string  // Cron pattern
+  expression: string  // Cron expression
+  timezone?: string   // Optional timezone (e.g., 'America/New_York')
 }
 ```
 
@@ -245,19 +246,20 @@ schedule: {
 // Every day at 9 AM
 schedule: {
   type: 'cron',
-  pattern: '0 9 * * *'
+  expression: '0 9 * * *'
 }
 
-// Every Monday at 8 AM
+// Every Monday at 8 AM EST
 schedule: {
   type: 'cron',
-  pattern: '0 8 * * 1'
+  expression: '0 8 * * 1',
+  timezone: 'America/New_York'
 }
 
 // Every 15 minutes
 schedule: {
   type: 'cron',
-  pattern: '*/15 * * * *'
+  expression: '*/15 * * * *'
 }
 ```
 
@@ -418,7 +420,7 @@ export default class DailyReportTool implements LuaTool {
       
       schedule: {
         type: 'cron',
-        pattern: `${minute} ${hour} * * *`  // Every day at specified time
+        expression: `${minute} ${hour} * * *`  // Every day at specified time
       },
       
       execute: async (jobInstance: JobInstance) => {
@@ -577,7 +579,7 @@ await Jobs.create({
   name: 'important-task',
   
   retry: {
-    maxRetries: 3,
+    maxAttempts: 3,
     backoffSeconds: 60  // Wait 60s between retries
   },
   
@@ -593,7 +595,7 @@ await Jobs.create({
 ```typescript
 await Jobs.create({
   name: 'long-running-task',
-  timeout: 300000,  // 5 minutes max
+  timeout: 300,  // 5 minutes max (in seconds)
   
   execute: async (job) => {
     // Will be terminated if exceeds 5 minutes

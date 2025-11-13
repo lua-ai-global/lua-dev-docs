@@ -45,7 +45,7 @@ description: "Scheduled tasks that run automatically"
       name: 'daily-sales-report',
       schedule: {
         type: 'cron',
-        pattern: '0 9 * * *'  // Every day at 9 AM
+        expression: '0 9 * * *'  // Every day at 9 AM
       },
       metadata: {
         userId: 'user_abc123'  // Store user ID in metadata
@@ -117,7 +117,8 @@ description: "Scheduled tasks that run automatically"
 ```typescript
 schedule: {
   type: 'cron',
-  pattern: '0 9 * * *'  // Every day at 9 AM
+  expression: '0 9 * * *'  // Every day at 9 AM
+  timezone?: 'America/New_York'  // Optional timezone
 }
 ```
 
@@ -132,7 +133,7 @@ schedule: {
 ```typescript
 schedule: {
   type: 'interval',
-  intervalSeconds: 3600  // Every hour
+  seconds: 3600  // Every hour
 }
 ```
 
