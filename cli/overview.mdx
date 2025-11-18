@@ -207,19 +207,34 @@ Skip interactive prompts by specifying your target directly:
     ```
   </Tab>
 
-{" "}
-<Tab title="Environment Commands">
-  ```bash # Interactive lua env ? Select environment: › Sandbox Production #
-  Direct lua env sandbox # Manage .env file lua env production # Manage API env
-  vars lua env staging # Alias for sandbox ```
-</Tab>
+  <Tab title="Environment Commands">
+    ```bash
+    # Interactive
+    lua env
+    ? Select environment:
+      › Sandbox
+        Production
+    
+    # Direct
+    lua env sandbox      # Manage .env file
+    lua env production   # Manage API env vars
+    lua env staging      # Alias for sandbox
+    ```
+  </Tab>
 
-{" "}
-<Tab title="Persona Commands">
-  ```bash # Interactive lua persona ? Select environment: › Sandbox Production #
-  Direct lua persona sandbox # Edit sandbox persona lua persona production #
-  Deploy persona version ```
-</Tab>
+  <Tab title="Persona Commands">
+    ```bash
+    # Interactive
+    lua persona
+    ? Select environment:
+      › Sandbox
+        Production
+    
+    # Direct
+    lua persona sandbox      # Edit sandbox persona
+    lua persona production   # Deploy persona version
+    ```
+  </Tab>
 
   <Tab title="Skills Commands">
     ```bash
@@ -254,11 +269,15 @@ Skip interactive prompts by specifying your target directly:
     <Card title="Learn More" href="/cli/authentication" />
   </Tab>
 
-{" "}
-<Tab title="key">
-  Display stored API key ```bash lua auth key ``` Shows key after confirmation
-  prompt
-</Tab>
+  <Tab title="key">
+    Display stored API key
+    
+    ```bash
+    lua auth key
+    ```
+    
+    Shows key after confirmation prompt
+  </Tab>
 
   <Tab title="logout">
     Delete stored credentials
@@ -289,35 +308,67 @@ Skip interactive prompts by specifying your target directly:
     <Card title="Learn More" href="/cli/skill-management#init" />
   </Tab>
 
-{" "}
-<Tab title="compile">
-  Compile TypeScript to JavaScript ```bash lua compile ``` Automatically: -
-  Detects all tools - Bundles with esbuild - Creates deployment artifacts -
-  Updates skill IDs
-  <Card title="Learn More" href="/cli/skill-management#compile" />
-</Tab>
+  <Tab title="compile">
+    Compile TypeScript to JavaScript
+    
+    ```bash
+    lua compile
+    ```
+    
+    Automatically:
+    - Detects all tools
+    - Bundles with esbuild
+    - Creates deployment artifacts
+    - Updates skill IDs
+    
+    <Card title="Learn More" href="/cli/skill-management#compile" />
+  </Tab>
 
-{" "}
-<Tab title="test">
-  Test tools interactively ```bash lua test ``` Features: - Select tool from
-  list - Dynamic input prompts - Secure sandbox execution - Detailed error
-  reporting
-  <Card title="Learn More" href="/cli/skill-management#test" />
-</Tab>
+  <Tab title="test">
+    Test tools interactively
+    
+    ```bash
+    lua test
+    ```
+    
+    Features:
+    - Select tool from list
+    - Dynamic input prompts
+    - Secure sandbox execution
+    - Detailed error reporting
+    
+    <Card title="Learn More" href="/cli/skill-management#test" />
+  </Tab>
 
-{" "}
-<Tab title="push">
-  Upload version to server ```bash lua push ``` - Compiles code - Validates
-  configuration - Uploads to server - Creates new version
-  <Card title="Learn More" href="/cli/skill-management#push" />
-</Tab>
+  <Tab title="push">
+    Upload version to server
+    
+    ```bash
+    lua push
+    ```
+    
+    - Compiles code
+    - Validates configuration
+    - Uploads to server
+    - Creates new version
+    
+    <Card title="Learn More" href="/cli/skill-management#push" />
+  </Tab>
 
-{" "}
-<Tab title="deploy">
-  Deploy to production ```bash lua deploy ``` - Lists available versions - Shows
-  current version - Requires confirmation - Immediate deployment
-  <Card title="Learn More" href="/cli/skill-management#deploy" />
-</Tab>
+  <Tab title="deploy">
+    Deploy to production
+    
+    ```bash
+    lua deploy
+    ```
+    
+    - Lists available versions
+    - Shows current version
+    - Requires confirmation
+    - Immediate deployment
+    
+    <Card title="Learn More" href="/cli/skill-management#deploy" />
+  </Tab>
 
   <Tab title="chat">
     Interactive chat
@@ -340,64 +391,111 @@ Skip interactive prompts by specifying your target directly:
 ### New Project Workflow
 
 <Steps>
-  <Step title="Authenticate">```bash lua auth configure ```</Step>
+  <Step title="Authenticate">
+    ```bash
+    lua auth configure
+    ```
+  </Step>
 
   <Step title="Initialize">
-    ```bash mkdir my-skill && cd my-skill lua init ```
+    ```bash
+    mkdir my-skill && cd my-skill
+    lua init
+    ```
   </Step>
 
   <Step title="Configure Environment">
-    ```bash lua env sandbox ``` Add API keys and configuration to .env file
+    ```bash
+    lua env sandbox
+    ```
+    
+    Add API keys and configuration to .env file
   </Step>
 
   <Step title="Configure Persona">
-    ```bash lua persona sandbox ``` Define your agent's personality in local
-    file
+    ```bash
+    lua persona sandbox
+    ```
+    
+    Define your agent's personality in local file
   </Step>
 
   <Step title="Test Your Agent">
-    ```bash lua chat ``` Interactive chat in sandbox mode
+    ```bash
+    lua chat
+    ```
+    
+    Interactive chat in sandbox mode
+    
     <Note>
       **Optional**: Use `lua test` to test individual tools with specific inputs
     </Note>
   </Step>
 
-  <Step title="Deploy">```bash lua push lua deploy ```</Step>
+  <Step title="Deploy">
+    ```bash
+    lua push
+    lua deploy
+    ```
+  </Step>
 </Steps>
 
 ### Development Workflow
 
 <Steps>
   <Step title="Configure Environment (if needed)">
-    ```bash lua env sandbox # Update local .env lua env production # Update
-    production env vars ``` Add any new API keys or configuration needed
+    ```bash
+    lua env sandbox      # Update local .env
+    lua env production   # Update production env vars
+    ```
+    
+    Add any new API keys or configuration needed
   </Step>
 
   <Step title="Update Persona (if needed)">
-    ```bash lua persona sandbox # Edit and test locally ``` Refine agent
-    personality based on feedback
+    ```bash
+    lua persona sandbox  # Edit and test locally
+    ```
+    
+    Refine agent personality based on feedback
   </Step>
 
   <Step title="Make Changes">Edit your tools in `src/tools/*.ts`</Step>
 
   <Step title="Test Your Agent">
-    ```bash lua chat ``` Select sandbox mode to test with local changes
+    ```bash
+    lua chat
+    ```
+    
+    Select sandbox mode to test with local changes
+    
     <Note>
       **Pro tip**: Use `lua test` to debug specific tool logic if needed
     </Note>
   </Step>
 
   <Step title="Push Persona to Production (if changed)">
-    ```bash lua persona production # Deploy persona version ``` Or use: `lua
-    push persona`
+    ```bash
+    lua persona production  # Deploy persona version
+    ```
+    
+    Or use: `lua push persona`
   </Step>
 
   <Step title="Push Skill When Ready">
-    ```bash lua push skill ``` Upload new skill version
+    ```bash
+    lua push skill
+    ```
+    
+    Upload new skill version
   </Step>
 
   <Step title="Deploy to Production">
-    ```bash lua deploy ``` Make available to all users
+    ```bash
+    lua deploy
+    ```
+    
+    Make available to all users
   </Step>
 </Steps>
 
@@ -457,18 +555,21 @@ All commands include:
     **Solution**: Run `lua auth configure`
   </Accordion>
 
-{" "}
-<Accordion title="No lua.skill.yaml found">
-  ``` ❌ No lua.skill.yaml found. Please run this command from a skill
-  directory. ``` **Solution**: Run command from skill directory or run `lua
-  init` first
-</Accordion>
+  <Accordion title="No lua.skill.yaml found">
+    ```
+    ❌ No lua.skill.yaml found. Please run this command from a skill directory.
+    ```
+    
+    **Solution**: Run command from skill directory or run `lua init` first
+  </Accordion>
 
-{" "}
-<Accordion title="Version already exists">
-  ``` ❌ Version 1.0.0 already exists on the server ``` **Solution**: Increment
-  version in `lua.skill.yaml`
-</Accordion>
+  <Accordion title="Version already exists">
+    ```
+    ❌ Version 1.0.0 already exists on the server
+    ```
+    
+    **Solution**: Increment version in `lua.skill.yaml`
+  </Accordion>
 
   <Accordion title="Compilation failed">
     ```
@@ -628,12 +729,18 @@ skill:
     - Linux: libsecret
   </Tab>
 
-{" "}
-<Tab title="Project Files">
-  **Your Project Directory** ``` your-skill/ ├── src/ # Your code ├── dist/ #
-  Compiled output ├── .lua/ # CLI cache ├── node_modules/ # Dependencies └──
-  lua.skill.yaml ```
-</Tab>
+  <Tab title="Project Files">
+    **Your Project Directory**
+    
+    ```
+    your-skill/
+    ├── src/            # Your code
+    ├── dist/           # Compiled output
+    ├── .lua/           # CLI cache
+    ├── node_modules/   # Dependencies
+    └── lua.skill.yaml
+    ```
+  </Tab>
 
   <Tab title="Temporary">
     **Build Artifacts**
