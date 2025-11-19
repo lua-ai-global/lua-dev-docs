@@ -1,0 +1,56 @@
+---
+title: "Creator Guide"
+description: "Publish and manage your skills on the marketplace"
+---
+
+## Becoming a Creator
+
+As a creator, you can share your agent skills with the entire Lua community. Whether it's a specialized tool, a complex integration, or a utility job, the marketplace handles versioning, distribution, and discovery.
+
+### Listing a Skill
+
+To list a skill, it must be defined in your project and **pushed to the server**. The marketplace verifies the skill against your agent's active skills on the server.
+
+1. **Run the creator menu**:
+   ```bash
+   lua marketplace create
+   ```
+2. Select **"List a new skill on the Marketplace"**.
+3. Choose the skill you want to publish (fetched from your agent on the server).
+4. **Metadata**: Follow the prompts to configure your skill's listing details.
+   - **Display Name**: Enter a user-friendly name (e.g., "Hotel Concierge").
+   - *Note: Additional metadata fields may be requested in future updates.*
+5. The skill is now listed!
+
+### Publishing Versions
+
+Listing a skill creates the entry, but users can't install it until you publish a **version**.
+
+1. Select **"Publish a new version of a skill"**.
+2. Choose your listed skill.
+3. Select the version to publish (e.g., `1.0.0`).
+   - The CLI detects versions that have been compiled and pushed to the server.
+4. **Configuration**:
+   - **Environment Variables**: Define any variables your skill needs (e.g., `HOTEL_API_KEY`).
+   - **Changelog**: Optionally add a note about what's new in this version.
+   - Complete any other required configuration steps.
+
+<Note>
+  **Semantic Versioning**: The marketplace uses SemVer. Always ensure your version numbers (e.g., `1.0.1`, `2.0.0`) reflect the nature of your changes.
+</Note>
+
+### Managing Listings
+
+You can manage your existing skills through the same menu:
+
+- **Update Metadata**: Change the display name of your skill.
+- **Unlist Skill**: Remove the skill from the marketplace (hides it from search).
+- **Unpublish Version**: Remove a specific version if it has issues.
+- **View Listed Skills**: See a summary of your published skills, install counts, and latest versions.
+
+### Best Practices
+
+- **Clear Documentation**: Use descriptive names and helpful descriptions for your environment variables.
+- **SemVer**: Increment patch versions for bug fixes, minor for features, and major for breaking changes.
+- **Vector Search**: Your skill's name and description are indexed. Make them relevant to what users might search for (e.g., "moderation", "payment", "weather").
+

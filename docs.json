@@ -144,6 +144,23 @@
         ]
       },
       {
+        "tab": "Marketplace",
+        "groups": [
+          {
+            "group": "Overview",
+            "pages": ["marketplace/overview"]
+          },
+          {
+            "group": "For Creators",
+            "pages": ["marketplace/creator-guide"]
+          },
+          {
+            "group": "For Installers",
+            "pages": ["marketplace/installer-guide"]
+          }
+        ]
+      },
+      {
         "tab": "Chat Widget",
         "groups": [
           {

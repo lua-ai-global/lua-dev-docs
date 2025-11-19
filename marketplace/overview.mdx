@@ -1,0 +1,49 @@
+---
+title: "Marketplace Overview"
+description: "Discover, install, and publish AI skills"
+---
+
+## Lua Skills Marketplace
+
+The Marketplace is a centralized hub where developers can publish their agent skills and users can discover and install verified capabilities for their agents.
+
+<Note>
+  **New in v3.1.0:** The Marketplace is now fully integrated into the CLI with the `lua marketplace` command.
+</Note>
+
+### Ecosystem Roles
+
+<CardGroup cols={2}>
+  <Card title="For Creators" icon="code" href="/marketplace/creator-guide">
+    Publish your skills to the world. Manage versions, environment variables, and listings.
+  </Card>
+  <Card title="For Installers" icon="download" href="/marketplace/installer-guide">
+    Browse verified skills, search by capability, and install with one command.
+  </Card>
+</CardGroup>
+
+### Key Features
+
+- 🌍 **Global Discovery**: Skills are indexed and searchable by name, description, and tags.
+- 📦 **Semantic Versioning**: Full support for `major.minor.patch` versioning ensures compatibility.
+- 🛡️ **Verified Skills**: Official and verified community skills are highlighted for trust.
+- ⚙️ **Smart Configuration**: Environment variables are defined per-version and configured interactively during installation.
+- 🔄 **Update Management**: Easily upgrade installed skills to the latest version.
+
+### Quick Start
+
+Access the main menu:
+
+```bash
+lua marketplace
+```
+
+You will be prompted to choose your role:
+
+- **Creator**: Manage your published skills.
+- **Installer**: Browse and install skills.
+
+<Note>
+  You can also jump directly to a specific mode using `lua marketplace create` or `lua marketplace install`.
+</Note>
+

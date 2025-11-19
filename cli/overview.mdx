@@ -12,6 +12,10 @@ lua [options] [command]
 ```
 
 <Note>
+  **New in v3.1.0 (Marketplace):** - 🛒 **Lua Marketplace** - Discover, install, and publish skills directly from the CLI with `lua marketplace`.
+</Note>
+
+<Note>
   **New in v3.0.0 (lua-cli package):** - 🤖 **LuaAgent** - Unified agent
   configuration with persona, skills, webhooks, jobs, and processors - 🪝
   **LuaWebhook** - HTTP endpoints for external integrations (Stripe, Shopify,
@@ -46,6 +50,7 @@ lua [options] [command]
 | `lua persona`    | 🤖 Configuration  | Manage agent persona (sandbox/production)                                   |
 | `lua features`   | ⚡ Configuration  | Manage agent capabilities and features                                      |
 | `lua resources`  | 📚 Configuration  | Manage agent knowledge base                                                 |
+| `lua marketplace`| 🛒 Ecosystem      | Discover, install, and publish skills                                       |
 | `lua skills`     | 🔧 Development    | View and manage skills (sandbox/production)                                 |
 | `lua compile`    | 📦 Development    | Compile skill to deployable format                                          |
 | `lua test`       | 💬 Testing        | Test skill tools interactively                                              |
@@ -75,6 +80,7 @@ lua persona sandbox    # 🎯 Direct: edit sandbox persona
 lua persona production # 🎯 Direct: deploy persona version
 lua features           # ⚡ Manage agent capabilities (tickets, RAG, etc.)
 lua resources          # 📚 Manage knowledge base
+lua marketplace        # 🛒 Access skills marketplace
 
 # Development
 lua skills             # 🔧 View and manage skills

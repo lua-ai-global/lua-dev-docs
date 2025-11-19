@@ -1,0 +1,52 @@
+---
+title: "Installer Guide"
+description: "Find and install skills for your agent"
+---
+
+## Finding Skills
+
+The marketplace offers a wide range of skills to enhance your agent.
+
+1. **Run the installer menu**:
+   ```bash
+   lua marketplace install
+   ```
+2. Select **"Browse & Search for skills"**.
+3. You can browse the full list or enter a search term.
+   - Search matches against skill names, descriptions, and tags.
+4. Select a skill to view details, including:
+   - Description and category
+   - Verified status
+   - Author
+   - Available versions and tools
+   - Required environment variables
+
+### Installing a Skill
+
+Once you've found a skill:
+
+1. Select **"Install"** (if viewing details) or choose **"Install a skill from the Marketplace"** from the main menu.
+2. **Version Selection**:
+   - The CLI will show available versions.
+   - By default, the latest stable version is recommended.
+3. **Configuration**:
+   - If the skill requires environment variables (e.g., API keys), you will be prompted to enter them.
+   - These values are securely stored in your agent's environment variables.
+4. **Confirmation**: Review the installation details and confirm.
+
+The skill is now installed on your agent and ready to use!
+
+### Managing Installed Skills
+
+You can manage your installed skills directly from the CLI:
+
+- **List Installed**: See all marketplace skills currently on your agent.
+- **Update**: Upgrade a skill to a newer version.
+  - The CLI checks for updates and lets you choose a new version.
+  - You can also update environment variable configuration without changing versions.
+- **Uninstall**: Remove a skill and its configuration from your agent.
+
+<Note>
+  **Safety Check**: The CLI prevents you from installing a skill that is already present on your agent to avoid conflicts. Use the **Update** command to modify existing installations.
+</Note>
+
