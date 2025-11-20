@@ -5,10 +5,10 @@ description: "Filter and validate messages before they reach your agent"
 
 ## What are PreProcessors?
 
-**PreProcessors** intercept user messages before they reach your AI agent. They allow you to filter spam, validate inputs, route messages, or modify content before the agent processes it.
+**PreProcessors** intercept user messages before they reach your AI agent. They act as a middleware layer, allowing you to filter spam, validate inputs, route messages, or modify content before the agent processes it.
 
 <Card title="Think of it as:" icon="filter">
-  A security checkpoint - messages pass through preprocessors before reaching your agent
+  A security checkpoint and enrichment station - messages pass through preprocessors before reaching your agent's brain.
 </Card>
 
 <Note>
@@ -17,47 +17,57 @@ description: "Filter and validate messages before they reach your agent"
 
 ## Why PreProcessors?
 
+PreProcessors handle "meta" tasks that shouldn't consume your agent's context window or reasoning capabilities.
+
 <CardGroup cols={2}>
   <Card title="Content Filtering" icon="shield">
-    Block spam, profanity, or inappropriate content before processing
+    Block spam, profanity, or inappropriate content before it costs you tokens.
   </Card>
   <Card title="Input Validation" icon="check-circle">
-    Ensure messages meet requirements before agent sees them
+    Ensure messages meet requirements (e.g., "must include an email") before the agent sees them.
   </Card>
-  <Card title="Message Routing" icon="route">
-    Route specific messages to different handlers or agents
+  <Card title="Context Injection" icon="syringe">
+    Fetch data from a CRM or database and append it to the user's message.
   </Card>
   <Card title="Rate Limiting" icon="gauge">
-    Prevent abuse by limiting message frequency
+    Prevent abuse by limiting message frequency per user.
   </Card>
 </CardGroup>
+
+## PreProcessors vs Skills
+
+| Feature | PreProcessor | Skill |
+| :--- | :--- | :--- |
+| **Timing** | Runs **before** the agent thinks | Runs **when** the agent decides to call it |
+| **Decision** | Deterministic (code-based) | Probabilistic (LLM-based) |
+| **Use Case** | Security, formatting, required context | Actions, data retrieval, business logic |
+| **Access** | Can block the agent completely | Cannot block, returns data to agent |
 
 ## How PreProcessors Work
 
 <Steps>
   <Step title="User Sends Message">
-    User types a message and sends it
+    User types a message (e.g., "Check my order status") via WhatsApp, Web, or API.
   </Step>
   
-  <Step title="PreProcessors Run">
-    Each preprocessor examines the message in priority order
+  <Step title="Pipeline Execution">
+    The system runs your active PreProcessors in order of **priority** (lowest first).
   </Step>
   
-  <Step title="Decision Point">
-    PreProcessor can:
-    - ✅ Allow message through (block: false)
-    - ❌ Block message (block: true, with response)
-    - ✏️ Modify message (modifiedMessage)
+  <Step title="Transformation & Decision">
+    Each preprocessor receives the output of the previous one. It can:
+    - ✅ **Proceed**: Pass the (potentially modified) message to the next step.
+    - ❌ **Block**: Stop the pipeline and return a response immediately.
   </Step>
   
-  <Step title="Outcome">
-    If allowed: Message reaches AI agent
-    
-    If blocked: Response sent immediately to user
+  <Step title="Agent Handover">
+    If no preprocessor blocks, the final message reaches the AI agent.
   </Step>
 </Steps>
 
 ## Simple Example
+
+Here is a simple profanity filter that runs early in the pipeline.
 
 ```typescript
 import { PreProcessor } from 'lua-cli';
@@ -65,123 +75,87 @@ import { PreProcessor } from 'lua-cli';
 const profanityFilter = new PreProcessor({
   name: 'profanity-filter',
   description: 'Block inappropriate content',
+  priority: 10, // Run early (low number)
   
-  execute: async (message, user) => {
-    const text = message.content.toLowerCase();
+  execute: async (user, messages, channel) => {
+    const text = messages
+      .filter(m => m.type === 'text')
+      .map(m => m.text.toLowerCase())
+      .join(' ');
     
-    if (containsProfanity(text)) {
+    if (text.includes('badword')) {
       // Block the message
       return {
-        block: true,
+        action: 'block',
         response: "Please keep the conversation respectful."
       };
     }
     
     // Allow message through
-    return { block: false };
+    return { action: 'proceed' };
   }
 });
 ```
 
-## Common Use Cases
+## Advanced Patterns
 
-<Tabs>
-  <Tab title="Content Filtering">
-    **Block unwanted content**
-    
-    ```typescript
-    execute: async (message, user) => {
-      if (isSpam(message) || hasProfanity(message)) {
-        return {
-          block: true,
-          response: "This message violates our guidelines."
-        };
-      }
-      return { block: false };
-    }
-    ```
-  </Tab>
-
-  <Tab title="Business Hours">
-    **Only respond during business hours**
-    
-    ```typescript
-    execute: async (message, user) => {
-      const hour = new Date().getHours();
-      
-      if (hour < 9 || hour >= 17) {
-        return {
-          block: true,
-          response: "Our business hours are 9 AM - 5 PM. We'll respond during business hours."
-        };
-      }
-      return { block: false };
-    }
-    ```
-  </Tab>
-
-  <Tab title="Rate Limiting">
-    **Prevent message spam**
-    
-    ```typescript
-    execute: async (message, user) => {
-      const messageCount = await getRecentMessageCount(user.id);
-      
-      if (messageCount > 10) {
-        return {
-          block: true,
-          response: "You're sending messages too quickly. Please wait a moment."
-        };
-      }
-      return { block: false };
-    }
-    ```
-  </Tab>
-
-  <Tab title="Required Info">
-    **Ensure user provides needed information**
-    
-    ```typescript
-    execute: async (message, user) => {
-      if (!user.email) {
-        return {
-          block: true,
-          response: "Please provide your email address to continue."
-        };
-      }
-      return { block: false };
-    }
-    ```
-  </Tab>
-</Tabs>
-
-## Execution Order
-
-PreProcessors run in order of their **priority** value (lowest first):
+### Context Injection (RAG Lite)
+You can use a preprocessor to fetch user data and "inject" it into the message, giving the agent context without it needing to ask tools.
 
 ```typescript
-const rateLimiter = new PreProcessor({
-  name: 'rate-limiter',
-  priority: 5,  // Runs first
-  execute: async (message, user) => { ... }
-});
-
-const profanityFilter = new PreProcessor({
-  name: 'profanity-filter',
-  priority: 10,  // Runs second
-  execute: async (message, user) => { ... }
-});
-
-const messageRouter = new PreProcessor({
-  name: 'router',
-  priority: 20,  // Runs third
-  execute: async (message, user) => { ... }
-});
+execute: async (user, messages, channel) => {
+  // Fetch recent order from your DB
+  const recentOrder = await fetchRecentOrder(user.email);
+  
+  if (recentOrder) {
+    // Append order info to the message
+    const enrichedMessages = messages.map(msg => {
+      if (msg.type === 'text') {
+        return {
+          ...msg,
+          text: `${msg.text}\n\n[System Context: Last Order #${recentOrder.id} is ${recentOrder.status}]`
+        };
+      }
+      return msg;
+    });
+    
+    return { 
+      action: 'proceed', 
+      modifiedMessage: enrichedMessages 
+    };
+  }
+  
+  return { action: 'proceed' };
+}
 ```
 
-**Default priority:** 100 (if not specified)
+### Channel-Specific Logic
+You can apply different rules based on where the user is chatting from.
+
+```typescript
+execute: async (user, messages, channel) => {
+  if (channel === 'whatsapp' && messages.some(m => m.type === 'file')) {
+    return {
+      action: 'block',
+      response: "Sorry, we don't accept file uploads on WhatsApp yet."
+    };
+  }
+  return { action: 'proceed' };
+}
+```
+
+## Execution Pipeline
+
+PreProcessors run in a **pipeline**. The output of one preprocessor becomes the input of the next.
+
+1.  **Priority 10**: `RateLimiter` checks if user is spamming.
+2.  **Priority 20**: `ProfanityFilter` checks for bad words.
+3.  **Priority 50**: `ContextInjector` adds user account info.
+4.  **Agent**: Receives a clean, verified, and context-rich message.
 
 ## Adding to Your Agent
+
+Add preprocessors to your `LuaAgent` configuration.
 
 ```typescript
 import { LuaAgent } from 'lua-cli';
@@ -193,15 +167,17 @@ export const agent = new LuaAgent({
   persona: "...",
   skills: [...],
   
-  // Add preprocessors
+  // Add preprocessors here
   preProcessors: [
-    rateLimiter,      // priority: 5
-    profanityFilter   // priority: 10
+    rateLimiter,      // Will run first (assuming priority 5)
+    profanityFilter   // Will run second (assuming priority 10)
   ]
 });
 ```
 
 ## Testing PreProcessors
+
+You can test preprocessors in isolation using the Lua CLI.
 
 ```bash
 lua test
@@ -242,4 +218,3 @@ lua test
     Development best practices
   </Card>
 </CardGroup>
-

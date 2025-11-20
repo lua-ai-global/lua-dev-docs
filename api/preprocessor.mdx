@@ -13,19 +13,22 @@ import { PreProcessor } from 'lua-cli';
 const profanityFilter = new PreProcessor({
   name: 'profanity-filter',
   description: 'Filter inappropriate content',
-  execute: async (message, user) => {
-    const hasProfanity = checkForProfanity(message.content);
+  priority: 10,
+  execute: async (user, messages, channel) => {
+    const hasProfanity = messages.some(msg => 
+      msg.type === 'text' && msg.text.includes('badword')
+    );
     
     if (hasProfanity) {
       // Block message and respond
       return {
-        block: true,
+        action: 'block',
         response: "Please keep the conversation respectful."
       };
     }
     
-    // Allow message to proceed
-    return { block: false };
+    // Allow messages to proceed
+    return { action: 'proceed' };
   }
 });
 
@@ -76,62 +79,101 @@ Creates a new message preprocessor.
 <ParamField path="execute" type="function" required>
   Function that processes incoming messages
   
-  **Signature:** `(message: Message, user: UserDataInstance) => Promise<PreProcessorResult>`
+  **Signature:** `(user: UserDataInstance, messages: ChatMessage[], channel: string) => Promise<PreProcessorBlockResponse | PreProcessorProceedResponse>`
+  
+  **Arguments:**
+  - `user`: The [UserDataInstance](#userdata-object) representing the current user.
+  - `messages`: Array of [ChatMessage](#message-structure) objects sent by the user.
+  - `channel`: The channel identifier (e.g., `'whatsapp'`, `'web'`, `'api'`).
 </ParamField>
 
 ### Optional Fields
+
+<ParamField path="version" type="string">
+  Preprocessor version. Defaults to `'1.0.0'`.
+</ParamField>
 
 <ParamField path="description" type="string">
   Preprocessor description for documentation
 </ParamField>
 
 <ParamField path="priority" type="number">
-  Execution order (lower numbers run first)
-  
-  **Default:** 100
+  Execution priority (lower runs first). Default: `100`
 </ParamField>
 
-## Message Structure
+<ParamField path="async" type="boolean">
+  Whether to run asynchronously (non-blocking). Default: `false`
+</ParamField>
 
-The message object passed to your execute function:
+## UserData Object
+
+The `user` argument passed to `execute` provides access to the current user's data and methods.
 
 ```typescript
-interface Message {
-  // Message content (text or array of content items)
-  content: string | ContentItem[];
-  
-  // Message ID
-  id: string;
-  
-  // Thread/conversation ID
-  threadId: string;
-  
-  // Timestamp
-  createdAt: string;
-  
-  // Metadata
-  metadata?: Record<string, any>;
+interface UserDataInstance {
+  // Direct access to user data properties
+  uid: string;
+  name?: string;
+  email?: string;
+  [key: string]: any;
+
+  // Helper methods
+  getChatHistory(): Promise<ChatHistoryMessage[]>;
+  // ... other user management methods
 }
 ```
 
-## PreProcessorResult
+## Message Structure
 
-Your execute function must return:
+The `messages` array passed to your execute function contains `ChatMessage` objects:
 
 ```typescript
-interface PreProcessorResult {
-  // Whether to block the message from reaching the agent
-  block: boolean;
-  
-  // Optional response to send if blocking
-  response?: string | ChatMessage[];
-  
-  // Modified message (if not blocking)
-  modifiedMessage?: Message;
-  
-  // Optional metadata to attach
-  metadata?: Record<string, any>;
+type ChatMessage = TextMessage | ImageMessage | FileMessage;
+
+interface TextMessage {
+  type: 'text';
+  text: string;
 }
+
+interface ImageMessage {
+  type: 'image';
+  image: string; // URL or base64
+}
+
+interface FileMessage {
+  type: 'file';
+  file: string; // URL
+}
+```
+
+## Return Type
+
+Your execute function must return a `PreProcessorBlockResponse` or `PreProcessorProceedResponse` object indicating whether to proceed or block.
+
+### 1. Proceed
+
+To allow the message to continue to the next preprocessor or the agent:
+
+```typescript
+// Proceed with original message
+return { action: 'proceed' };
+
+// OR proceed with a modified message
+return { 
+  action: 'proceed',
+  modifiedMessage: [{ type: 'text', text: 'Modified content' }]
+};
+```
+
+### 2. Block
+
+To stop processing immediately and respond to the user:
+
+```typescript
+return {
+  action: 'block',
+  response: "This message was blocked."
+};
 ```
 
 ## Complete Examples
@@ -146,26 +188,26 @@ const profanityWords = ['badword1', 'badword2', 'badword3'];
 const profanityFilter = new PreProcessor({
   name: 'profanity-filter',
   description: 'Block messages containing inappropriate language',
-  priority: 10,  // Run early
+  priority: 10, // Run early
   
-  execute: async (message, user) => {
-    const text = typeof message.content === 'string' 
-      ? message.content.toLowerCase()
-      : message.content.map(c => c.text).join(' ').toLowerCase();
-    
-    // Check for profanity
-    const hasProfanity = profanityWords.some(word => text.includes(word));
+  execute: async (user, messages, channel) => {
+    // Check all text messages
+    const hasProfanity = messages.some(msg => {
+      if (msg.type === 'text') {
+        return profanityWords.some(word => msg.text.toLowerCase().includes(word));
+      }
+      return false;
+    });
     
     if (hasProfanity) {
-      console.log(`Blocked profanity from user ${user.id}`);
-      
+      console.log(`Blocked profanity from user ${user.uid}`);
       return {
-        block: true,
+        action: 'block',
         response: "Please keep the conversation respectful. Inappropriate language is not allowed."
       };
     }
     
-    return { block: false };
+    return { action: 'proceed' };
   }
 });
 
@@ -181,7 +223,7 @@ const businessHoursFilter = new PreProcessor({
   name: 'business-hours-filter',
   description: 'Block messages outside business hours',
   
-  execute: async (message, user) => {
+  execute: async (user, messages, channel) => {
     const now = new Date();
     const hour = now.getHours();
     const day = now.getDay();
@@ -192,175 +234,43 @@ const businessHoursFilter = new PreProcessor({
     
     if (!isWeekday || !isBusinessHours) {
       return {
-        block: true,
+        action: 'block',
         response: "Thank you for contacting us. Our business hours are Monday-Friday, 9 AM - 5 PM. We'll respond to your message during our next business day."
       };
     }
     
-    return { block: false };
+    return { action: 'proceed' };
   }
 });
 
 export default businessHoursFilter;
 ```
 
-### Message Router
-
-```typescript
-import { PreProcessor, env } from 'lua-cli';
-
-const messageRouter = new PreProcessor({
-  name: 'message-router',
-  description: 'Route messages based on keywords',
-  priority: 20,
-  
-  execute: async (message, user) => {
-    const text = typeof message.content === 'string'
-      ? message.content.toLowerCase()
-      : message.content[0]?.text?.toLowerCase() || '';
-    
-    // Route to sales agent
-    if (text.includes('pricing') || text.includes('purchase') || text.includes('buy')) {
-      return {
-        block: true,
-        response: "I'm transferring you to our sales team...",
-        metadata: {
-          routedTo: 'sales-agent',
-          routedAt: new Date().toISOString()
-        }
-      };
-    }
-    
-    // Route to support agent
-    if (text.includes('help') || text.includes('issue') || text.includes('problem')) {
-      return {
-        block: true,
-        response: "Let me connect you with our support team...",
-        metadata: {
-          routedTo: 'support-agent',
-          routedAt: new Date().toISOString()
-        }
-      };
-    }
-    
-    // Continue to main agent
-    return { block: false };
-  }
-});
-
-export default messageRouter;
-```
-
-### Rate Limiter
-
-```typescript
-import { PreProcessor, Data } from 'lua-cli';
-
-const rateLimiter = new PreProcessor({
-  name: 'rate-limiter',
-  description: 'Limit message rate per user',
-  priority: 5,  // Run very early
-  
-  execute: async (message, user) => {
-    // Get user's message history
-    const userId = user.id;
-    const now = Date.now();
-    const oneMinuteAgo = now - 60000;
-    
-    // Check messages in last minute
-    const recentMessages = await Data.search('message-history', userId, 100);
-    const messagesLastMinute = recentMessages.data.filter(m => {
-      const timestamp = new Date(m.data.timestamp).getTime();
-      return timestamp > oneMinuteAgo;
-    });
-    
-    // Limit: 10 messages per minute
-    if (messagesLastMinute.length >= 10) {
-      return {
-        block: true,
-        response: "You're sending messages too quickly. Please wait a moment before trying again."
-      };
-    }
-    
-    // Store this message
-    await Data.create('message-history', {
-      userId,
-      messageId: message.id,
-      timestamp: new Date().toISOString()
-    });
-    
-    return { block: false };
-  }
-});
-
-export default rateLimiter;
-```
-
-### Required Information Validator
-
-```typescript
-import { PreProcessor } from 'lua-cli';
-
-const requiredInfoValidator = new PreProcessor({
-  name: 'required-info-validator',
-  description: 'Ensure user provides required information',
-  
-  execute: async (message, user) => {
-    // Check if user has provided email
-    if (!user.email) {
-      return {
-        block: true,
-        response: "Before we continue, I need your email address to assist you. Please provide your email."
-      };
-    }
-    
-    // Check if user has accepted terms
-    if (!user.data.acceptedTerms) {
-      return {
-        block: true,
-        response: "To continue, please accept our terms of service by typing 'I accept'."
-      };
-    }
-    
-    return { block: false };
-  }
-});
-
-export default requiredInfoValidator;
-```
-
 ### Message Enrichment
 
 ```typescript
-import { PreProcessor, Data } from 'lua-cli';
+import { PreProcessor } from 'lua-cli';
 
 const messageEnricher = new PreProcessor({
   name: 'message-enricher',
   description: 'Add context to messages before processing',
   priority: 50,
   
-  execute: async (message, user) => {
-    // Get user's order history
-    const orders = await Data.search('orders', user.id, 5);
-    
-    // Get user preferences
-    const preferences = user.data.preferences || {};
-    
-    // Enrich message with metadata
-    return {
-      block: false,
-      modifiedMessage: {
-        ...message,
-        metadata: {
-          ...message.metadata,
-          userContext: {
-            orderCount: orders.count,
-            lastOrderDate: orders.data[0]?.data.createdAt,
-            preferences,
-            vipStatus: user.data.vipStatus || false
-          }
-        }
+  execute: async (user, messages, channel) => {
+    // Enrich message with user info
+    const enrichedMessages = messages.map(msg => {
+      if (msg.type === 'text') {
+        return {
+          ...msg,
+          text: `${msg.text}\n\n[Context: User ID ${user.uid}]`
+        };
       }
+      return msg;
+    });
+    
+    return {
+      action: 'proceed',
+      modifiedMessage: enrichedMessages
     };
   }
 });
@@ -368,148 +278,13 @@ const messageEnricher = new PreProcessor({
 export default messageEnricher;
 ```
 
-### Spam Detector
-
-```typescript
-import { PreProcessor } from 'lua-cli';
-
-const spamDetector = new PreProcessor({
-  name: 'spam-detector',
-  description: 'Detect and block spam messages',
-  priority: 1,  // Run first
-  
-  execute: async (message, user) => {
-    const text = typeof message.content === 'string'
-      ? message.content
-      : message.content.map(c => c.text).join(' ');
-    
-    // Check for spam indicators
-    const spamIndicators = [
-      text.length > 1000,  // Very long message
-      /\b(viagra|cialis|casino|lottery|winner)\b/i.test(text),  // Spam keywords
-      /http[s]?:\/\//.test(text) && text.split('http').length > 5,  // Too many links
-      /[A-Z]{10,}/.test(text),  // Excessive caps
-    ];
-    
-    const spamScore = spamIndicators.filter(Boolean).length;
-    
-    if (spamScore >= 2) {
-      console.log(`Blocked spam from user ${user.id} (score: ${spamScore})`);
-      
-      return {
-        block: true,
-        response: "This message appears to be spam and has been blocked."
-      };
-    }
-    
-    return { block: false };
-  }
-});
-
-export default spamDetector;
-```
-
-## Using with LuaAgent
-
-Preprocessors are added to your agent configuration:
-
-```typescript
-import { LuaAgent } from 'lua-cli';
-import profanityFilter from './preprocessors/profanity-filter';
-import rateLimiter from './preprocessors/rate-limiter';
-import messageRouter from './preprocessors/message-router';
-
-export const agent = new LuaAgent({
-  name: 'my-agent',
-  persona: '...',
-  skills: [...],
-  
-  preProcessors: [
-    rateLimiter,      // priority: 5  (runs first)
-    profanityFilter,  // priority: 10
-    messageRouter     // priority: 20
-  ]
-});
-```
-
-<Note>
-Preprocessors execute in order of their `priority` value (lowest first). If not specified, default priority is 100.
-</Note>
-
 ## Execution Flow
 
-```
-User Message
-    ↓
-PreProcessor 1 (priority: 5)
-    ↓ (block: false)
-PreProcessor 2 (priority: 10)
-    ↓ (block: false)
-PreProcessor 3 (priority: 20)
-    ↓ (block: false)
-AI Agent
-    ↓
-Response to User
-```
+Preprocessors are executed in a **pipeline**:
 
-If any preprocessor returns `block: true`, the chain stops and the response is sent immediately.
-
-## Best Practices
-
-<AccordionGroup>
-  <Accordion title="✅ Use Priority Wisely">
-    Order preprocessors by importance
-    
-    ```typescript
-    priority: 1,   // Spam/security (first)
-    priority: 10,  // Content filtering
-    priority: 50,  // Enrichment (last)
-    ```
-  </Accordion>
-
-  <Accordion title="✅ Keep Processing Fast">
-    Preprocessors should be quick (< 100ms)
-    
-    ```typescript
-    // ✅ Fast validation
-    execute: async (message, user) => {
-      const text = message.content;
-      if (text.length > 1000) {
-        return { block: true, response: "Message too long" };
-      }
-      return { block: false };
-    }
-    ```
-  </Accordion>
-
-  <Accordion title="✅ Provide Clear Responses">
-    Tell users why their message was blocked
-    
-    ```typescript
-    return {
-      block: true,
-      response: "Please provide a valid email address to continue."
-    };
-    ```
-  </Accordion>
-
-  <Accordion title="❌ Don't Modify Message Unless Necessary">
-    Only use `modifiedMessage` when enriching or sanitizing
-    
-    ```typescript
-    // ✅ Only when needed
-    if (needsEnrichment) {
-      return {
-        block: false,
-        modifiedMessage: enrichedMessage
-      };
-    }
-    
-    // Usually just:
-    return { block: false };
-    ```
-  </Accordion>
-</AccordionGroup>
+1.  **Sequential Execution**: Preprocessors run one after another, sorted by `priority`.
+2.  **Modifications**: If a preprocessor modifies a message, the *next* preprocessor receives the modified version.
+3.  **Blocking**: If any preprocessor returns `action: 'block'`, execution stops immediately, and the response is sent to the user. The agent is not called.
 
 ## Testing Preprocessors
 
@@ -519,26 +294,7 @@ lua test
 # Provide test message
 ```
 
-## Related APIs
-
-<CardGroup cols={2}>
-  <Card title="PostProcessor" href="/api/postprocessor" icon="paper-plane">
-    Process responses after agent
-  </Card>
-  <Card title="LuaAgent" href="/api/luaagent" icon="robot">
-    Agent configuration
-  </Card>
-  <Card title="User API" href="/api/user" icon="user">
-    Access user data
-  </Card>
-  <Card title="Data API" href="/api/data" icon="database">
-    Store and retrieve data
-  </Card>
-</CardGroup>
-
 ## See Also
 
 - [PostProcessor](/api/postprocessor) - Processing responses
 - [LuaAgent](/api/luaagent) - Adding preprocessors to your agent
-- [Workflows Concept](/concepts/workflows)
-
