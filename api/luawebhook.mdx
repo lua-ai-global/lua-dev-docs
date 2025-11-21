@@ -14,11 +14,13 @@ const paymentWebhook = new LuaWebhook({
   name: 'payment-webhook',
   description: 'Handle Stripe payment events',
   execute: async (event) => {
-    if (event.type === 'payment_intent.succeeded') {
-      // ⚠️ Webhooks have NO conversational context
-      // MUST provide userId to notify users
-      
-      const customerId = event.data.object.metadata?.customerId;
+    const { body } = event;
+
+    // ⚠️ Webhooks have NO conversational context
+    // MUST provide userId to notify users
+    
+    if (body?.type === 'payment_intent.succeeded') {
+      const customerId = body.data?.object?.metadata?.customerId;
       if (customerId) {
         const user = await User.get(customerId);
         await user.send([{
@@ -98,6 +100,13 @@ Creates a new webhook endpoint.
   Function that handles incoming webhook events
   
   **Signature:** `(event: WebhookEvent) => Promise<any>`
+  
+  ```typescript
+  execute: async (event) => {
+    const { query, headers, body } = event;
+    // ...
+  }
+  ```
 </ParamField>
 
 ### Optional Fields
@@ -106,46 +115,21 @@ Creates a new webhook endpoint.
   Webhook description for documentation
 </ParamField>
 
-<ParamField path="verifySignature" type="boolean">
-  Whether to verify webhook signatures
-  
-  **Default:** true
-  
-  **Recommended:** Always verify signatures for security
-</ParamField>
+## WebhookEvent Shape
 
-<ParamField path="secret" type="string">
-  Webhook secret for signature verification
-  
-  **Best Practice:** Use environment variables
-  
-  ```typescript
-  secret: env('STRIPE_WEBHOOK_SECRET')
-  ```
-</ParamField>
-
-## WebhookEvent Structure
-
-The event object passed to your execute function:
+Every webhook receives a single object with request details:
 
 ```typescript
 interface WebhookEvent {
-  // Event type (e.g., "payment_intent.succeeded")
-  type: string;
-  
-  // Event data payload
-  data: any;
-  
-  // Request headers
-  headers: Record<string, string>;
-  
-  // Raw request body
-  body: string;
-  
-  // Webhook timestamp
-  timestamp: number;
+  query: Record<string, any>;
+  headers: Record<string, any>;
+  body: any;
+  timestamp: string;
 }
 ```
+
+Destructure the pieces you need inside your handler:  
+`const { query, headers, body, timestamp } = event;`
 
 ## Complete Examples
 
@@ -158,15 +142,13 @@ const stripeWebhook = new LuaWebhook({
   name: 'stripe-payment-webhook',
   description: 'Handle Stripe payment events',
   
-  secret: env('STRIPE_WEBHOOK_SECRET'),
-  verifySignature: true,
-  
   execute: async (event) => {
-    console.log('Stripe event:', event.type);
+    const { body } = event;
+    console.log('Stripe event:', body?.type);
     
-    switch (event.type) {
+    switch (body?.type) {
       case 'payment_intent.succeeded':
-        const paymentIntent = event.data.object;
+        const paymentIntent = body.data?.object;
         
         // Update order status
         const order = await Orders.getById(paymentIntent.metadata.orderId);
@@ -187,7 +169,7 @@ const stripeWebhook = new LuaWebhook({
         return { success: true, orderId: order?.id };
         
       case 'payment_intent.payment_failed':
-        const failed = event.data.object;
+        const failed = body.data?.object;
         console.error('Payment failed:', failed);
         
         // Notify user of failure
@@ -203,7 +185,7 @@ const stripeWebhook = new LuaWebhook({
         return { success: false, reason: failed.last_payment_error?.message };
         
       default:
-        console.log('Unhandled event type:', event.type);
+        console.log('Unhandled event type:', body?.type);
         return { received: true };
     }
   }
@@ -225,10 +207,9 @@ const shopifyOrderWebhook = new LuaWebhook({
   name: 'shopify-order-webhook',
   description: 'Handle Shopify order events',
   
-  secret: env('SHOPIFY_WEBHOOK_SECRET'),
-  
   execute: async (event) => {
-    const order = event.data;
+    const { body } = event;
+    const order = body;
     
     // Store order in custom data
     await Data.create('shopify-orders', {
@@ -274,28 +255,26 @@ const githubWebhook = new LuaWebhook({
   name: 'github-deployment-webhook',
   description: 'Track GitHub deployment events',
   
-  secret: env('GITHUB_WEBHOOK_SECRET'),
-  
   execute: async (event) => {
-    const payload = event.data;
+    const { body } = event;
+    const payload = body;
     
-    if (event.type === 'deployment_status') {
+    if (payload?.action === 'deployment_status') {
       const status = payload.deployment_status;
       const deployment = payload.deployment;
       
       // Notify on deployment completion
+      // Note: You need to provide userId - webhooks have no conversational context
       if (status.state === 'success') {
-        const user = await User.get();
-        await user.send([{
-          type: 'text',
-          text: `🚀 Deployment successful!\n\nEnvironment: ${deployment.environment}\nRef: ${deployment.ref}\nURL: ${status.target_url}`
-        }]);
+        // In a real scenario, you'd get userId from deployment metadata
+        // const user = await User.get(userId);
+        // await user.send([{
+        //   type: 'text',
+        //   text: `🚀 Deployment successful!\n\nEnvironment: ${deployment.environment}\nRef: ${deployment.ref}\nURL: ${status.target_url}`
+        // }]);
+        console.log('Deployment successful:', deployment.environment);
       } else if (status.state === 'failure') {
-        const user = await User.get();
-        await user.send([{
-          type: 'text',
-          text: `❌ Deployment failed!\n\nEnvironment: ${deployment.environment}\nRef: ${deployment.ref}`
-        }]);
+        console.error('Deployment failed:', deployment.environment);
       }
       
       return { success: true, state: status.state };
@@ -317,42 +296,40 @@ const genericWebhook = new LuaWebhook({
   name: 'custom-integration-webhook',
   description: 'Handle events from custom service',
   
-  secret: env('CUSTOM_WEBHOOK_SECRET'),
-  verifySignature: true,
-  
   execute: async (event) => {
+    const { query, headers, body } = event;
     try {
       // Validate event structure
-      if (!event.data || !event.type) {
+      if (!body || !body.type) {
         throw new Error('Invalid event structure');
       }
       
       // Log event for debugging
       console.log('Received webhook:', {
-        type: event.type,
-        timestamp: event.timestamp,
-        dataKeys: Object.keys(event.data)
+        type: body.type,
+        timestamp: new Date().toISOString(),
+        dataKeys: Object.keys(body.data || {})
       });
       
       // Process event based on type
-      switch (event.type) {
+      switch (body.type) {
         case 'resource.created':
-          await handleCreate(event.data);
+          await handleCreate(body.data);
           break;
           
         case 'resource.updated':
-          await handleUpdate(event.data);
+          await handleUpdate(body.data);
           break;
           
         case 'resource.deleted':
-          await handleDelete(event.data);
+          await handleDelete(body.data);
           break;
           
         default:
-          console.log('Unknown event type:', event.type);
+          console.log('Unknown event type:', body.type);
       }
       
-      return { success: true, processed: event.type };
+      return { success: true, processed: body.type };
       
     } catch (error) {
       console.error('Webhook processing error:', error);
@@ -409,13 +386,26 @@ export const agent = new LuaAgent({
 
 ## Webhook URLs
 
-After deploying, your webhooks get URLs like:
+After deploying, your webhooks can be called using either identifier:
 
 ```
-https://api.heylua.ai/webhooks/{your-agent-id}/{webhook-name}
+https://webhook.heylua.ai/{agentId}/{webhookId}    // legacy + default
+https://webhook.heylua.ai/{agentId}/{webhook-name} // friendly alias
 ```
 
-Configure this URL in your external service (Stripe, Shopify, etc.)
+**Notes:** 
+- `agentId` is your agent identifier (e.g., `agent_abc123`)
+- `webhookId` is the UUID shown when you create the webhook
+- `webhook-name` is the `name` you pass to `new LuaWebhook`
+- You can copy both URLs after pushing: `lua push webhook`
+
+**Examples:**
+```
+https://webhook.heylua.ai/agent_abc123/webhook_01JD3RZ9VX9W5
+https://webhook.heylua.ai/agent_abc123/payment-webhook
+```
+
+Configure either URL in your external service (Stripe, Shopify, etc.)
 
 ## Testing Webhooks
 
@@ -449,15 +439,6 @@ lua test
 ## Security Best Practices
 
 <AccordionGroup>
-  <Accordion title="✅ Always Verify Signatures">
-    Enable signature verification to prevent unauthorized requests
-    
-    ```typescript
-    verifySignature: true,
-    secret: env('WEBHOOK_SECRET')  // From your service
-    ```
-  </Accordion>
-
   <Accordion title="✅ Use Environment Variables">
     Never hardcode secrets
     
@@ -470,15 +451,16 @@ lua test
     ```
   </Accordion>
 
-  <Accordion title="✅ Validate Event Structure">
+  <Accordion title="✅ Validate Webhook Structure">
     Always validate incoming data
     
     ```typescript
     execute: async (event) => {
-      if (!event.data || !event.type) {
-        throw new Error('Invalid event');
+      const { body } = event;
+      if (!body || !body.type) {
+        throw new Error('Invalid webhook payload');
       }
-      // Process event...
+      // Process webhook...
     }
     ```
   </Accordion>
@@ -489,8 +471,10 @@ lua test
     ```typescript
     // ✅ Queue long-running work
     execute: async (event) => {
+      const { body } = event;
+
       // Quick validation
-      if (!isValid(event)) {
+      if (!isValid(body)) {
         return { error: 'Invalid' };
       }
       
@@ -515,8 +499,7 @@ const robustWebhook = new LuaWebhook({
   
   execute: async (event) => {
     try {
-      // Process event
-      const result = await processEvent(event);
+      const result = await processWebhook(event);
       
       return {
         success: true,
@@ -527,7 +510,6 @@ const robustWebhook = new LuaWebhook({
     } catch (error) {
       // Log error for debugging
       console.error('Webhook error:', {
-        eventType: event.type,
         error: error.message,
         stack: error.stack
       });
@@ -536,7 +518,6 @@ const robustWebhook = new LuaWebhook({
       return {
         success: false,
         error: error.message,
-        eventType: event.type,
         timestamp: new Date().toISOString()
       };
     }

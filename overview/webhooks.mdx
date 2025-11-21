@@ -70,12 +70,13 @@ const paymentWebhook = new LuaWebhook({
   description: 'Handle Stripe payment events',
   
   execute: async (event) => {
-    if (event.type === 'payment_intent.succeeded') {
+    const { body } = event;
+    if (body?.type === 'payment_intent.succeeded') {
       // ⚠️ Webhooks have NO conversational context
       // You MUST provide userId to User.get()
       
       // Get user ID from payment metadata
-      const customerId = event.data.object.metadata?.customerId;
+      const customerId = body.data?.object?.metadata?.customerId;
       
       if (!customerId) {
         console.error('No customerId in payment metadata');
@@ -88,7 +89,7 @@ const paymentWebhook = new LuaWebhook({
       // Send payment confirmation to that user
       await user.send([{
         type: 'text',
-        text: `✅ Payment confirmed! Amount: ${event.data.object.amount} ${event.data.object.currency.toUpperCase()}`
+        text: `✅ Payment confirmed! Amount: ${body.data.object.amount} ${body.data.object.currency.toUpperCase()}`
       }]);
     }
     
@@ -187,13 +188,20 @@ export const agent = new LuaAgent({
 
 ## Webhook URLs
 
-After deploying, your webhooks get URLs like:
+After deploying, you can call webhooks by ID **or** by name:
 
 ```
-https://api.heylua.ai/webhooks/{agent-id}/{webhook-name}
+https://webhook.heylua.ai/{agentId}/{webhookId}
+https://webhook.heylua.ai/{agentId}/{webhook-name}
 ```
 
-Configure this URL in your external service's webhook settings.
+**Notes:** 
+- `agentId` is your agent identifier (e.g., `agent_abc123`)
+- `webhookId` is the UUID shown when the webhook is created
+- `webhook-name` is the friendly name from your code
+- `lua push webhook` prints both links
+
+Configure either URL in your external service's webhook settings.
 
 ## Best Practices
 
@@ -219,26 +227,11 @@ Configure this URL in your external service's webhook settings.
     
     ```typescript
     execute: async (event) => {
-      const customerId = event.data.object.metadata.customerId;
+      const { body } = event;
+      const customerId = body.data.object.metadata.customerId;
       const user = await User.get(customerId);
       await user.send([{ type: 'text', text: 'Payment confirmed!' }]);
     }
-    ```
-  </Accordion>
-
-  <Accordion title="✅ Verify Signatures">
-    **Always verify webhook signatures to prevent unauthorized requests**
-    
-    ```typescript
-    const secureWebhook = new LuaWebhook({
-      name: 'secure-webhook',
-      secret: env('WEBHOOK_SECRET'),
-      verifySignature: true,  // ← Important!
-      
-      execute: async (event) => {
-        // Only processes verified requests
-      }
-    });
     ```
   </Accordion>
 
@@ -247,8 +240,9 @@ Configure this URL in your external service's webhook settings.
     
     ```typescript
     execute: async (event) => {
+      const { body } = event;
       try {
-        // Process event
+        // Process webhook
         return { success: true };
       } catch (error) {
         console.error('Webhook error:', error);
@@ -265,8 +259,9 @@ Configure this URL in your external service's webhook settings.
     
     ```typescript
     execute: async (event) => {
+      const { body } = event;
       // Quick validation
-      if (!isValid(event)) return { error: 'Invalid' };
+      if (!isValid(body)) return { error: 'Invalid' };
       
       // Queue long-running work
       await Jobs.create({
