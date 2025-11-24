@@ -71,12 +71,6 @@ Creates a new agent configuration.
 
 ### Optional Fields
 
-<ParamField path="welcomeMessage" type="string">
-  First message users see when starting a conversation
-  
-  **Best Practice**: Keep it friendly, clear, and action-oriented
-</ParamField>
-
 <ParamField path="skills" type="LuaSkill[]">
   Array of skills (tool collections) the agent can use
   
@@ -123,7 +117,6 @@ const weatherSkill = new LuaSkill({
 export const agent = new LuaAgent({
   name: 'weather-assistant',
   persona: 'You are a friendly weather assistant. Provide weather information when asked.',
-  welcomeMessage: 'Hello! Ask me about the weather anywhere in the world.',
   skills: [weatherSkill]
 });
 ```
@@ -180,8 +173,6 @@ Limitations:
 - Cannot modify pricing (suggest contacting manager)
 - Cannot issue refunds over $100 (requires manager approval)
 `,
-
-  welcomeMessage: `Hi! I'm Emma from Acme Store. I can help you find products, manage your cart, and track orders. How can I assist you today?`,
 
   skills: [
     customerSupportSkill,
@@ -250,7 +241,6 @@ agent:
   agentId: your-agent-id
   persona: |
     You are Emma, a helpful e-commerce assistant...
-  welcomeMessage: Hi! I'm Emma from Acme Store...
 ```
 
 When you run `lua init`, the YAML values sync to your `LuaAgent` in code.
@@ -307,8 +297,6 @@ export const agent = new LuaAgent({
   - Data-driven and accurate
   - Proactive with insights
   - Security and privacy conscious`,
-  
-  welcomeMessage: 'Welcome to Enterprise AI. How may I assist you?',
   
   skills: skills,
   webhooks: webhooks,

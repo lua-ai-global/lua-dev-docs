@@ -618,9 +618,6 @@ Communication style:
 - Clear and concise
 - Patient and understanding`,
 
-  // Welcome message
-  welcomeMessage: "Hi! I'm here to help. What can I do for you?",
-
   // Skills with tools
   skills: [mySkill],
 
@@ -669,7 +666,6 @@ agent:
   agentId: agent_abc123
   orgId: org_xyz789
   persona: "..." # Synced from LuaAgent
-  welcomeMessage: "..." # Synced from LuaAgent
 
 # Multi-skill support
 skills:
@@ -699,7 +695,7 @@ skill:
 - `webhookId` - Created during compilation
 - `jobId` - Created during compilation
 - `skills`, `webhooks`, `jobs` arrays - Populated from code
-- `persona`, `welcomeMessage` - Synced from LuaAgent
+- `persona` - Synced from LuaAgent
 
 **Manual fields:**
 

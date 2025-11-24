@@ -136,7 +136,6 @@ Write TypeScript functions that connect to any API - your CRM, payment processor
     export const agent = new LuaAgent({
       name: "support-assistant",
       persona: "You are a helpful customer support agent...",
-      welcomeMessage: "Hi! How can I help you today?",
       skills: [customerService]
     });
     ```
@@ -283,7 +282,6 @@ Communication:
 - Clear and accurate
 - Proactive and helpful`,
 
-  welcomeMessage: "Welcome! How can I assist you today?",
   
   skills: [customerServiceSkill, productSkill],
   webhooks: [paymentWebhook],
@@ -572,7 +570,6 @@ const shopSkill = new LuaSkill({
 export const agent = new LuaAgent({
   name: "shop-assistant",
   persona: "You are a friendly shopping assistant. Help users find products and add them to their cart.",
-  welcomeMessage: "Welcome! Let me help you find what you're looking for.",
   skills: [shopSkill]
 });
 ```
