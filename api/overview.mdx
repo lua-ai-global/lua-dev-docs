@@ -30,7 +30,7 @@ Lua CLI v3.0.0 provides a comprehensive set of APIs for building AI agents:
     title="Platform APIs"
     icon="server"
   >
-    **AI, User, Data, Products, Baskets, Orders, Jobs** - Built-in services
+    **AI, User, Data, Products, Baskets, Orders, Jobs, Templates** - Built-in services
   </Card>
   <Card
     title="Environment"
@@ -89,7 +89,7 @@ import {
 } from 'lua-cli';
 
 // Platform APIs
-import { AI, User, Data, Products, Baskets, Orders, Jobs } from 'lua-cli';
+import { AI, User, Data, Products, Baskets, Orders, Jobs, Templates } from 'lua-cli';
 
 // Utilities
 import { env } from 'lua-cli';
@@ -420,6 +420,30 @@ const job = await Jobs.create({
 
 <Card title="Full Documentation" href="/api/jobs" />
 
+### Templates API
+
+Send template messages across different channels:
+
+```typescript
+import { Templates } from 'lua-cli';
+
+// List WhatsApp templates
+const result = await Templates.whatsapp.list(channelId);
+
+// Send template message
+await Templates.whatsapp.send(channelId, templateId, {
+  phoneNumbers: ['+447551166594'],
+  values: {
+    body: { name: 'John', order_number: '12345' }
+  }
+});
+```
+
+**Supported template types:**
+- `Templates.whatsapp` - WhatsApp Business templates
+
+<Card title="Full Documentation" href="/api/templates" />
+
 ## Environment Variables
 
 Secure configuration management:
@@ -573,6 +597,9 @@ export class SearchNotesTool implements LuaTool {
   </Card>
   <Card title="Jobs" href="/api/jobs" icon="plus">
     **v3.0.0** Jobs API
+  </Card>
+  <Card title="Templates" href="/api/templates" icon="message">
+    **NEW** Template messaging
   </Card>
 </CardGroup>
 

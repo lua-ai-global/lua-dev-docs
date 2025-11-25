@@ -113,7 +113,8 @@
                   "api/products",
                   "api/baskets",
                   "api/orders",
-                  "api/jobs"
+                  "api/jobs",
+                  "api/templates"
                 ]
               },
               {

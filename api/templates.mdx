@@ -1,0 +1,651 @@
+---
+title: "Templates API"
+description: "Send template messages programmatically"
+---
+
+## Overview
+
+The Templates API allows you to list, retrieve, and send template messages programmatically. Templates are pre-approved message formats for proactive communication across different channels.
+
+## Supported Template Types
+
+<CardGroup cols={1}>
+  <Card title="WhatsApp Templates" icon="whatsapp" iconType="brands">
+    Pre-approved message formats for WhatsApp Business Accounts. Required for initiating conversations outside the 24-hour messaging window.
+  </Card>
+</CardGroup>
+
+<Note>
+Additional template types may be added in the future. The API is designed to work consistently across different template types.
+</Note>
+
+## Quick Start
+
+```typescript
+import { Templates } from 'lua-cli';
+
+// List all WhatsApp templates for a channel
+const result = await Templates.whatsapp.list(channelId);
+console.log(result.templates);  // Array of templates
+console.log(result.total);      // Total count
+
+// Get a specific template
+const template = await Templates.whatsapp.get(channelId, 'template_123');
+console.log(template.name);   // Template name
+console.log(template.status); // 'APPROVED', 'PENDING', etc.
+
+// Send a WhatsApp template message
+const response = await Templates.whatsapp.send(channelId, 'template_123', {
+  phoneNumbers: ['+447551166594'],
+  values: {
+    body: { first_name: 'John', order_number: '12345' }
+  }
+});
+```
+
+<CardGroup cols={2}>
+  <Card title="Template Listing" icon="list">
+    List and search templates with pagination
+  </Card>
+  <Card title="Template Retrieval" icon="magnifying-glass">
+    Get template details including components
+  </Card>
+  <Card title="Batch Sending" icon="paper-plane">
+    Send to multiple recipients at once
+  </Card>
+  <Card title="Dynamic Values" icon="wand-magic-sparkles">
+    Fill template parameters dynamically
+  </Card>
+</CardGroup>
+
+## WhatsApp Templates
+
+Use `Templates.whatsapp` for WhatsApp Business templates.
+
+### list()
+
+List WhatsApp templates for a channel with optional pagination and search.
+
+```typescript
+Templates.whatsapp.list(
+  channelId: string,
+  options?: ListTemplatesOptions
+): Promise<PaginatedTemplatesResponse>
+```
+
+<ParamField path="channelId" type="string" required>
+  The WhatsApp channel identifier
+</ParamField>
+
+<ParamField path="options" type="object">
+  Optional pagination and search options
+</ParamField>
+
+<ParamField path="options.page" type="number" default={1}>
+  Page number (1-indexed)
+</ParamField>
+
+<ParamField path="options.limit" type="number" default={10}>
+  Items per page
+</ParamField>
+
+<ParamField path="options.search" type="string">
+  Search query to filter templates by name
+</ParamField>
+
+**Returns:**
+
+```typescript
+{
+  templates: Template[];
+  total: number;
+  page: number;
+  limit: number;
+  totalPages: number;
+}
+```
+
+**Examples:**
+
+```typescript
+// List all templates (first page)
+const result = await Templates.whatsapp.list(channelId);
+
+// With pagination
+const page2 = await Templates.whatsapp.list(channelId, { page: 2, limit: 20 });
+
+// Search by name
+const orderTemplates = await Templates.whatsapp.list(channelId, { search: 'order' });
+
+// Combine options
+const filtered = await Templates.whatsapp.list(channelId, {
+  page: 1,
+  limit: 5,
+  search: 'welcome'
+});
+```
+
+### get()
+
+Retrieve a specific WhatsApp template by ID.
+
+```typescript
+Templates.whatsapp.get(
+  channelId: string,
+  templateId: string
+): Promise<WhatsAppTemplate>
+```
+
+<ParamField path="channelId" type="string" required>
+  The WhatsApp channel identifier
+</ParamField>
+
+<ParamField path="templateId" type="string" required>
+  The template identifier
+</ParamField>
+
+**Returns:** `WhatsAppTemplate` object
+
+**Example:**
+
+```typescript
+const template = await Templates.whatsapp.get(channelId, 'template_123');
+
+console.log(template.name);       // "order_confirmation"
+console.log(template.status);     // "APPROVED"
+console.log(template.category);   // "UTILITY"
+console.log(template.language);   // "en"
+console.log(template.components); // Array of components
+```
+
+### send()
+
+Send a WhatsApp template message to one or more phone numbers.
+
+```typescript
+Templates.whatsapp.send(
+  channelId: string,
+  templateId: string,
+  data: SendTemplateData
+): Promise<SendTemplateResponse>
+```
+
+<ParamField path="channelId" type="string" required>
+  The WhatsApp channel identifier
+</ParamField>
+
+<ParamField path="templateId" type="string" required>
+  The template identifier
+</ParamField>
+
+<ParamField path="data" type="object" required>
+  Send data including recipients and template values
+</ParamField>
+
+<ParamField path="data.phoneNumbers" type="string[]" required>
+  Array of recipients. For WhatsApp: phone numbers in E.164 format (e.g., +447551166594)
+</ParamField>
+
+<ParamField path="data.values" type="object">
+  Template parameter values
+</ParamField>
+
+<ParamField path="data.values.header" type="object">
+  Header component parameter values
+</ParamField>
+
+<ParamField path="data.values.body" type="object">
+  Body component parameter values
+</ParamField>
+
+<ParamField path="data.values.buttons" type="object">
+  Button component parameter values
+</ParamField>
+
+**Returns:**
+
+```typescript
+{
+  results: Array<{
+    phoneNumber: string;
+    success: boolean;
+    messageId?: string;
+  }>;
+  errors: Array<{
+    phoneNumber: string;
+    error: string;
+  }>;
+}
+```
+
+**Examples:**
+
+```typescript
+// Simple send to one recipient
+const result = await Templates.whatsapp.send(channelId, 'welcome_template', {
+  phoneNumbers: ['+447551166594']
+});
+
+// Send with body parameters
+const orderResult = await Templates.whatsapp.send(channelId, 'order_confirmation', {
+  phoneNumbers: ['+447551166594'],
+  values: {
+    body: {
+      first_name: 'John',
+      order_number: '12345',
+      delivery_date: 'December 25, 2025'
+    }
+  }
+});
+
+// Send to multiple recipients (batch)
+const batchResult = await Templates.whatsapp.send(channelId, 'promotion', {
+  phoneNumbers: ['+447551166594', '+447551166595', '+447551166596'],
+  values: {
+    header: { image_url: 'https://example.com/promo.jpg' },
+    body: { discount: '20%' }
+  }
+});
+
+// Handle response
+batchResult.results.forEach(r => {
+  if (r.success) {
+    console.log(`Sent to ${r.phoneNumber}: ${r.messageId}`);
+  }
+});
+
+batchResult.errors.forEach(e => {
+  console.error(`Failed for ${e.phoneNumber}: ${e.error}`);
+});
+```
+
+## Template Structure
+
+### WhatsApp Templates
+
+WhatsApp templates have the following structure:
+
+```typescript
+interface Template {
+  id: string;
+  name: string;
+  status: 'APPROVED' | 'PENDING' | 'REJECTED';
+  category: 'UTILITY' | 'MARKETING' | 'AUTHENTICATION';
+  language: string;
+  components: TemplateComponent[];
+}
+
+interface TemplateComponent {
+  type: 'HEADER' | 'BODY' | 'FOOTER' | 'BUTTONS';
+  format?: 'TEXT' | 'IMAGE' | 'VIDEO' | 'DOCUMENT';
+  text?: string;
+  buttons?: TemplateButton[];
+}
+
+interface TemplateButton {
+  type: 'QUICK_REPLY' | 'URL' | 'PHONE_NUMBER';
+  text: string;
+  url?: string;
+  phoneNumber?: string;
+}
+```
+
+<Note>
+Template structure may vary by template type. The above shows the WhatsApp template structure.
+</Note>
+
+## Template Parameters
+
+Templates use named parameters in the format `{{parameter_name}}`. When sending, provide values for each parameter:
+
+```typescript
+// Template body: "Hello {{first_name}}, your order {{order_number}} is ready!"
+
+await Templates.whatsapp.send(channelId, templateId, {
+  phoneNumbers: ['+447551166594'],
+  values: {
+    body: {
+      first_name: 'John',
+      order_number: 'ORD-12345'
+    }
+  }
+});
+```
+
+<Warning>
+All required parameters must be provided when sending a template. Missing parameters will cause the send to fail.
+</Warning>
+
+## WhatsApp Examples
+
+The following examples demonstrate using the Templates API with WhatsApp templates.
+
+### Order Confirmation Tool
+
+```typescript
+import { LuaTool, Templates } from 'lua-cli';
+import { z } from 'zod';
+
+export default class SendOrderConfirmationTool implements LuaTool {
+  name = "send_order_confirmation";
+  description = "Send order confirmation via WhatsApp template";
+  
+  inputSchema = z.object({
+    channelId: z.string().describe("WhatsApp channel ID"),
+    phoneNumber: z.string().describe("Customer phone number"),
+    orderNumber: z.string().describe("Order number"),
+    customerName: z.string().describe("Customer name"),
+    deliveryDate: z.string().describe("Expected delivery date")
+  });
+
+  async execute(input: z.infer<typeof this.inputSchema>) {
+    const result = await Templates.whatsapp.send(input.channelId, 'order_confirmation', {
+      phoneNumbers: [input.phoneNumber],
+      values: {
+        body: {
+          customer_name: input.customerName,
+          order_number: input.orderNumber,
+          delivery_date: input.deliveryDate
+        }
+      }
+    });
+    
+    if (result.errors.length > 0) {
+      return {
+        success: false,
+        error: result.errors[0].error
+      };
+    }
+    
+    return {
+      success: true,
+      messageId: result.results[0].messageId,
+      message: `Order confirmation sent to ${input.phoneNumber}`
+    };
+  }
+}
+```
+
+### Webhook: Send Welcome Template on New User
+
+```typescript
+import { LuaWebhook, LuaWebhookConfig, Templates } from 'lua-cli';
+
+const config: LuaWebhookConfig = {
+  name: 'new-user-welcome',
+  description: 'Send welcome template when a new user signs up'
+};
+
+const webhook: LuaWebhook = {
+  config,
+  execute: async (event) => {
+    const { channelId, phoneNumber, firstName } = event.data;
+    
+    // Find welcome template
+    const listResult = await Templates.whatsapp.list(channelId, { search: 'welcome' });
+    const welcomeTemplate = listResult.templates.find(t => t.name === 'welcome_message');
+    
+    if (!welcomeTemplate) {
+      return { error: 'Welcome template not found' };
+    }
+    
+    // Send welcome message
+    const sendResult = await Templates.whatsapp.send(channelId, welcomeTemplate.id, {
+      phoneNumbers: [phoneNumber],
+      values: {
+        body: { first_name: firstName }
+      }
+    });
+    
+    return {
+      sent: sendResult.results.length > 0,
+      messageId: sendResult.results[0]?.messageId
+    };
+  }
+};
+
+export default webhook;
+```
+
+### List Templates Tool
+
+```typescript
+import { LuaTool, Templates } from 'lua-cli';
+import { z } from 'zod';
+
+export default class ListTemplatesTools implements LuaTool {
+  name = "list_whatsapp_templates";
+  description = "List available WhatsApp templates";
+  
+  inputSchema = z.object({
+    channelId: z.string().describe("WhatsApp channel ID"),
+    search: z.string().optional().describe("Search query to filter templates"),
+    page: z.number().optional().describe("Page number")
+  });
+
+  async execute(input: z.infer<typeof this.inputSchema>) {
+    const result = await Templates.whatsapp.list(input.channelId, {
+      search: input.search,
+      page: input.page || 1,
+      limit: 10
+    });
+    
+    return {
+      templates: result.templates.map(t => ({
+        id: t.id,
+        name: t.name,
+        status: t.status,
+        category: t.category,
+        language: t.language
+      })),
+      total: result.total,
+      page: result.page,
+      totalPages: result.totalPages
+    };
+  }
+}
+```
+
+## Use Cases (WhatsApp)
+
+### Transactional Notifications
+
+```typescript
+// Order shipped
+await Templates.whatsapp.send(channelId, 'order_shipped', {
+  phoneNumbers: [customerPhone],
+  values: {
+    body: {
+      order_number: order.id,
+      tracking_number: shipment.trackingNumber,
+      carrier: shipment.carrier
+    }
+  }
+});
+
+// Appointment reminder
+await Templates.whatsapp.send(channelId, 'appointment_reminder', {
+  phoneNumbers: [patientPhone],
+  values: {
+    body: {
+      patient_name: patient.name,
+      appointment_date: appointment.date,
+      doctor_name: appointment.doctor
+    }
+  }
+});
+```
+
+### Marketing Campaigns
+
+```typescript
+// Get all customers who opted in
+const customers = await getOptedInCustomers();
+
+// Send promotion to all
+const result = await Templates.whatsapp.send(channelId, 'holiday_sale', {
+  phoneNumbers: customers.map(c => c.phone),
+  values: {
+    header: { image_url: 'https://example.com/sale-banner.jpg' },
+    body: { discount_code: 'HOLIDAY25' }
+  }
+});
+
+console.log(`Sent: ${result.results.length}, Failed: ${result.errors.length}`);
+```
+
+### Authentication / OTP
+
+```typescript
+// Send OTP
+const otp = generateOTP();
+await Templates.whatsapp.send(channelId, 'otp_verification', {
+  phoneNumbers: [userPhone],
+  values: {
+    body: { otp_code: otp }
+  }
+});
+```
+
+## Best Practices
+
+<AccordionGroup>
+  <Accordion title="Handle Batch Send Results">
+    When sending to multiple recipients, always check for partial failures:
+    
+    ```typescript
+    const result = await Templates.send(channelId, templateId, {
+      phoneNumbers: phoneNumbers
+    });
+    
+    // Log successes
+    result.results.forEach(r => {
+      console.log(`✓ Sent to ${r.phoneNumber}`);
+    });
+    
+    // Handle failures
+    if (result.errors.length > 0) {
+      result.errors.forEach(e => {
+        console.error(`✗ Failed for ${e.phoneNumber}: ${e.error}`);
+      });
+    }
+    ```
+  </Accordion>
+
+  <Accordion title="Validate Phone Numbers">
+    Use E.164 format for phone numbers:
+    
+    ```typescript
+    // ✅ Good
+    phoneNumbers: ['+447551166594', '+14155552671']
+    
+    // ❌ May cause issues
+    phoneNumbers: ['07551166594', '(415) 555-2671']
+    ```
+  </Accordion>
+
+  <Accordion title="Check Template Status">
+    Only send approved templates:
+    
+    ```typescript
+    const template = await Templates.whatsapp.get(channelId, templateId);
+    
+    if (template.status !== 'APPROVED') {
+      throw new Error(`Template ${template.name} is not approved (status: ${template.status})`);
+    }
+    ```
+  </Accordion>
+
+  <Accordion title="Match Parameter Names Exactly">
+    Parameter names in `values` must match template parameters exactly:
+    
+    ```typescript
+    // If template has: "Hello {{first_name}}, order {{order_id}} is ready"
+    
+    // ✅ Correct
+    values: {
+      body: {
+        first_name: 'John',
+        order_id: '12345'
+      }
+    }
+    
+    // ❌ Wrong parameter names
+    values: {
+      body: {
+        name: 'John',      // Should be 'first_name'
+        orderId: '12345'   // Should be 'order_id'
+      }
+    }
+    ```
+  </Accordion>
+</AccordionGroup>
+
+## TypeScript Types
+
+```typescript
+interface ListTemplatesOptions {
+  page?: number;
+  limit?: number;
+  search?: string;
+}
+
+interface PaginatedTemplatesResponse {
+  templates: Template[];
+  total: number;
+  page: number;
+  limit: number;
+  totalPages: number;
+}
+
+// WhatsApp template structure
+interface Template {
+  id: string;
+  name: string;
+  status: 'APPROVED' | 'PENDING' | 'REJECTED';
+  category: 'UTILITY' | 'MARKETING' | 'AUTHENTICATION';
+  language: string;
+  components: TemplateComponent[];
+}
+
+interface SendTemplateData {
+  phoneNumbers: string[];  // Recipients (phone numbers for WhatsApp)
+  values?: {
+    header?: Record<string, string>;
+    body?: Record<string, string>;
+    buttons?: Record<string, string>;
+  };
+}
+
+interface SendTemplateResponse {
+  results: Array<{
+    phoneNumber: string;
+    success: boolean;
+    messageId?: string;
+  }>;
+  errors: Array<{
+    phoneNumber: string;
+    error: string;
+  }>;
+}
+```
+
+## Next Steps
+
+<CardGroup cols={2}>
+  <Card
+    title="User API"
+    icon="user"
+    href="/api/user"
+  >
+    Send messages to users
+  </Card>
+  <Card
+    title="Jobs API"
+    icon="clock"
+    href="/api/jobs"
+  >
+    Schedule template sends
+  </Card>
+</CardGroup>
+

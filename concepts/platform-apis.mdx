@@ -8,7 +8,7 @@ description: "Built-in APIs for common operations"
 Lua CLI provides built-in APIs for common operations, so you don't have to build everything from scratch.
 
 ```typescript
-import { User, Data, Products, Baskets, Orders } from 'lua-cli';
+import { User, Data, Products, Baskets, Orders, Templates } from 'lua-cli';
 ```
 
 <CardGroup cols={3}>
@@ -26,6 +26,9 @@ import { User, Data, Products, Baskets, Orders } from 'lua-cli';
   </Card>
   <Card title="Orders" icon="receipt">
     Order processing
+  </Card>
+  <Card title="Templates" icon="message">
+    Template messaging (WhatsApp)
   </Card>
 </CardGroup>
 
@@ -257,6 +260,39 @@ const userOrders = await Orders.get(OrderStatus.PENDING);
   Complete Orders API documentation
 </Card>
 
+## Templates API
+
+Send template messages across different channels. Currently supports WhatsApp templates.
+
+```typescript
+import { Templates } from 'lua-cli';
+
+// List WhatsApp templates
+const result = await Templates.whatsapp.list(channelId, { search: 'order' });
+
+// Get specific template
+const template = await Templates.whatsapp.get(channelId, templateId);
+
+// Send template message
+await Templates.whatsapp.send(channelId, templateId, {
+  phoneNumbers: ['+447551166594'],
+  values: {
+    body: { customer_name: 'John', order_number: '12345' }
+  }
+});
+```
+
+### Use Cases
+
+- 📦 **Order notifications** - Shipping updates, delivery confirmations
+- 📅 **Appointment reminders** - Healthcare, salon, service bookings
+- 🎉 **Marketing campaigns** - Promotions, announcements
+- 🔐 **Authentication** - OTP codes, verification messages
+
+<Card title="Full API Reference" icon="book" href="/api/templates">
+  Complete Templates API documentation
+</Card>
+
 ## Combining APIs
 
 Most real-world applications combine multiple APIs:
@@ -333,6 +369,7 @@ export class CreateCustomerTool implements LuaTool {
 | **Products** | E-commerce | Pre-built catalog |
 | **Baskets** | Shopping carts | TTL & status |
 | **Orders** | Order tracking | Status workflow |
+| **Templates** | Proactive messaging | WhatsApp templates |
 
 ## Next Steps
 
