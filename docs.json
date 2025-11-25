@@ -227,6 +227,10 @@
             "pages": ["channels/email", "channels/website-widget"]
           },
           {
+            "group": "Direct Integration",
+            "pages": ["channels/http-api"]
+          },
+          {
             "group": "Management",
             "pages": ["channels/cli-management", "channels/admin-dashboard"]
           }

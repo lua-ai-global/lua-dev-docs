@@ -1,0 +1,496 @@
+---
+title: "HTTP API"
+description: "Consume your Lua agent directly via HTTP requests"
+---
+
+## Overview
+
+The HTTP API allows you to communicate with your deployed Lua AI agents directly via HTTP requests. This is useful for building custom integrations, mobile apps, backend services, or any application that needs to interact with your agent programmatically.
+
+<CardGroup cols={2}>
+  <Card title="Stream Endpoint" icon="wave-pulse">
+    Real-time streaming responses via SSE
+  </Card>
+  <Card title="Generate Endpoint" icon="bolt">
+    Single response generation
+  </Card>
+</CardGroup>
+
+## Base URL
+
+```
+https://api.heylua.ai
+```
+
+## Authentication
+
+All requests require authentication via Bearer token in the Authorization header. You can use your API key as the token:
+
+```bash
+Authorization: Bearer YOUR_API_KEY
+```
+
+<Tip>
+You can find your API key in the [Admin Dashboard](https://admin.heylua.ai) under the **API Keys** section.
+</Tip>
+
+---
+
+## Endpoints
+
+### Stream Chat Response
+
+Stream a chat response using Server-Sent Events (SSE).
+
+```
+POST /chat/stream/:agentId
+```
+
+### Generate Chat Response
+
+Generate a complete chat response (non-streaming).
+
+```
+POST /chat/generate/:agentId
+```
+
+---
+
+## Path Parameters
+
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| `agentId` | string | **Yes** | The ID of your deployed agent. |
+
+## Query Parameters
+
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| `channel` | string | No | The channel context for the conversation. Options: `web`, `whatsapp`, `email`, `slack`, `facebook`, `instagram`. Defaults to `undefined`. |
+| `identifier` | string | No | A unique identifier for the message. Can be used for tracking purposes. |
+
+---
+
+## Request Body
+
+The request body follows the AI SDK 5 `UserContent` format for messages.
+
+### Required Fields
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `messages` | `UserContent` | Array of content parts (text, image, or file). This is a single user message that can contain multiple parts. |
+
+### Optional Fields
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `systemPrompt` | string | Override the agent's default persona/prompt |
+| `runtimeContext` | string | Additional context injected into the agent's prompt |
+
+<Accordion title="Advanced Options (rarely needed)">
+  These options are for advanced use cases and typically not needed for standard integrations:
+
+  | Field | Type | Description |
+  |-------|------|-------------|
+  | `navigate` | boolean | Enable navigation responses for web widget (default: `false`) |
+  | `skillOverride` | array | Override the agent's skills with specific sandbox versions |
+  | `personaOverride` | string | Override the agent's persona |
+  | `preprocessorOverride` | array | Override preprocessors |
+  | `postprocessorOverride` | array | Override postprocessors |
+</Accordion>
+
+---
+
+## Message Content Types
+
+Messages follow the AI SDK 5 `UserContent` format:
+
+### Text Message
+
+```json
+{
+  "type": "text",
+  "text": "Hello, how can you help me today?"
+}
+```
+
+### Image Message
+
+```json
+{
+  "type": "image",
+  "image": "https://example.com/image.jpg",
+  "mediaType": "image/jpeg"
+}
+```
+
+### File Message
+
+```json
+{
+  "type": "file",
+  "data": "https://example.com/document.pdf",
+  "mediaType": "application/pdf"
+}
+```
+
+---
+
+## Examples
+
+### Basic Text Request
+
+<CodeGroup>
+
+```bash cURL
+curl -X POST "https://api.heylua.ai/chat/generate/my-agent" \
+  -H "Authorization: Bearer YOUR_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "messages": [
+      {
+        "type": "text",
+        "text": "What products do you have available?"
+      }
+    ]
+  }'
+```
+
+```typescript TypeScript
+const response = await fetch('https://api.heylua.ai/chat/generate/my-agent', {
+  method: 'POST',
+  headers: {
+    'Authorization': 'Bearer YOUR_API_KEY',
+    'Content-Type': 'application/json'
+  },
+  body: JSON.stringify({
+    messages: [
+      {
+        type: 'text',
+        text: 'What products do you have available?'
+      }
+    ]
+  })
+});
+
+const result = await response.json();
+console.log(result);
+```
+
+```python Python
+import requests
+
+response = requests.post(
+    'https://api.heylua.ai/chat/generate/my-agent',
+    headers={
+        'Authorization': 'Bearer YOUR_API_KEY',
+        'Content-Type': 'application/json'
+    },
+    json={
+        'messages': [
+            {
+                'type': 'text',
+                'text': 'What products do you have available?'
+            }
+        ]
+    }
+)
+
+print(response.json())
+```
+
+</CodeGroup>
+
+### Streaming Request
+
+<CodeGroup>
+
+```bash cURL
+curl -X POST "https://api.heylua.ai/chat/stream/my-agent" \
+  -H "Authorization: Bearer YOUR_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "messages": [
+      {
+        "type": "text",
+        "text": "Tell me about your services"
+      }
+    ]
+  }'
+```
+
+```typescript TypeScript
+const response = await fetch('https://api.heylua.ai/chat/stream/my-agent', {
+  method: 'POST',
+  headers: {
+    'Authorization': 'Bearer YOUR_API_KEY',
+    'Content-Type': 'application/json'
+  },
+  body: JSON.stringify({
+    messages: [
+      {
+        type: 'text',
+        text: 'Tell me about your services'
+      }
+    ]
+  })
+});
+
+const reader = response.body.getReader();
+const decoder = new TextDecoder();
+
+while (true) {
+  const { done, value } = await reader.read();
+  if (done) break;
+  
+  const chunk = decoder.decode(value);
+  const lines = chunk.split('\n\n').filter(line => line.trim());
+  
+  for (const line of lines) {
+    const data = JSON.parse(line);
+    console.log(data);
+  }
+}
+```
+
+```python Python
+import requests
+
+response = requests.post(
+    'https://api.heylua.ai/chat/stream/my-agent',
+    headers={
+        'Authorization': 'Bearer YOUR_API_KEY',
+        'Content-Type': 'application/json'
+    },
+    json={
+        'messages': [
+            {
+                'type': 'text',
+                'text': 'Tell me about your services'
+            }
+        ]
+    },
+    stream=True
+)
+
+for line in response.iter_lines():
+    if line:
+        print(line.decode('utf-8'))
+```
+
+</CodeGroup>
+
+### With Image Attachment
+
+```bash
+curl -X POST "https://api.heylua.ai/chat/generate/my-agent" \
+  -H "Authorization: Bearer YOUR_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "messages": [
+      {
+        "type": "text",
+        "text": "What can you tell me about this product?"
+      },
+      {
+        "type": "image",
+        "image": "https://example.com/product-photo.jpg",
+        "mediaType": "image/jpeg"
+      }
+    ]
+  }'
+```
+
+### With System Prompt Override
+
+Use `systemPrompt` to temporarily override the agent's persona for a specific request:
+
+```bash
+curl -X POST "https://api.heylua.ai/chat/generate/my-agent" \
+  -H "Authorization: Bearer YOUR_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "messages": [
+      {
+        "type": "text",
+        "text": "Help me with my order"
+      }
+    ],
+    "systemPrompt": "You are a friendly customer support agent. Be concise and helpful."
+  }'
+```
+
+### With Runtime Context
+
+Use `runtimeContext` to inject additional context into the agent's prompt:
+
+```bash
+curl -X POST "https://api.heylua.ai/chat/generate/my-agent" \
+  -H "Authorization: Bearer YOUR_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "messages": [
+      {
+        "type": "text",
+        "text": "What are my recent orders?"
+      }
+    ],
+    "runtimeContext": "Current user: John Doe (ID: 12345). VIP customer since 2020."
+  }'
+```
+
+### With Channel Context
+
+Specify the channel for channel-specific behavior:
+
+```bash
+curl -X POST "https://api.heylua.ai/chat/generate/my-agent?channel=whatsapp" \
+  -H "Authorization: Bearer YOUR_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "messages": [
+      {
+        "type": "text",
+        "text": "Send me the order confirmation"
+      }
+    ]
+  }'
+```
+
+---
+
+## Response Format
+
+### Generate Response
+
+The generate endpoint returns a complete response object:
+
+```json
+{
+  "text": "Here are the products we have available...",
+  "toolCalls": [],
+  "usage": {
+    "promptTokens": 150,
+    "completionTokens": 200,
+    "totalTokens": 350
+  }
+}
+```
+
+### Stream Response
+
+The stream endpoint returns Server-Sent Events (SSE) with JSON chunks:
+
+```
+{"type":"text-delta","textDelta":"Here "}
+
+{"type":"text-delta","textDelta":"are "}
+
+{"type":"text-delta","textDelta":"the products..."}
+
+{"type":"finish","finishReason":"stop"}
+```
+
+---
+
+## Error Responses
+
+| Status Code | Description |
+|-------------|-------------|
+| `400` | Invalid request payload |
+| `401` | Unauthorized - Invalid or missing token |
+| `423` | Agent is disabled for this user |
+| `500` | Internal server error |
+
+**Error Response Format:**
+
+```json
+{
+  "type": "error",
+  "message": "Error description",
+  "statusCode": 400
+}
+```
+
+---
+
+## Navigate Option
+
+<Note>
+The `navigate` option is specifically for web widget integrations. When enabled, it allows the agent to send navigation commands that direct users to specific pages on your website.
+</Note>
+
+```json
+{
+  "messages": [{ "type": "text", "text": "Show me pricing" }],
+  "navigate": true
+}
+```
+
+When `navigate` is `true`, the agent can include navigation components in its response that trigger the `onNavigate` callback in the LuaPop widget.
+
+<Card title="Learn More About Navigation" icon="compass" href="/formatting/navigate">
+  See the Navigate Component documentation for details on how navigation works with the web widget.
+</Card>
+
+---
+
+## Best Practices
+
+<AccordionGroup>
+  <Accordion title="Use Streaming for Better UX">
+    For user-facing applications, use the `/chat/stream` endpoint to provide real-time feedback as the response is generated.
+  </Accordion>
+
+  <Accordion title="Include Channel Context">
+    When building integrations, specify the `channel` parameter to help the agent format responses appropriately for the platform.
+  </Accordion>
+
+  <Accordion title="Use Runtime Context Wisely">
+    The `runtimeContext` field is great for injecting user-specific information or session context without modifying the agent's core persona.
+  </Accordion>
+
+  <Accordion title="Handle Streaming Properly">
+    When using the stream endpoint, ensure you properly handle the SSE format and parse each JSON chunk separately.
+  </Accordion>
+</AccordionGroup>
+
+---
+
+## Use Cases
+
+<CardGroup cols={2}>
+  <Card title="Mobile Apps" icon="mobile">
+    Build native mobile experiences with your Lua agent
+  </Card>
+  <Card title="Custom Integrations" icon="plug">
+    Integrate with internal tools and systems
+  </Card>
+  <Card title="Voice Assistants" icon="microphone">
+    Power voice interfaces with AI responses
+  </Card>
+  <Card title="Automation" icon="robot">
+    Trigger agent responses from workflows
+  </Card>
+</CardGroup>
+
+---
+
+## Related
+
+<CardGroup cols={2}>
+  <Card title="Channels" icon="comments" href="/channels/introduction">
+    Pre-built channel integrations
+  </Card>
+  <Card title="Chat Widget" icon="message" href="/chat-widget/introduction">
+    Embeddable web widget
+  </Card>
+  <Card title="Navigate Component" icon="compass" href="/formatting/navigate">
+    Web navigation feature
+  </Card>
+  <Card title="LuaAgent" icon="robot" href="/api/luaagent">
+    Agent configuration
+  </Card>
+</CardGroup>
+
