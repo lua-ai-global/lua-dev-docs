@@ -24,7 +24,6 @@ import { LuaSkill } from "lua-cli";
 
 const coffeeSkill = new LuaSkill({
   name: "coffee-shop-skill",
-  version: "1.0.0",
   description: "Coffee shop assistant with menu, ordering, and loyalty features",
   context: `
     This skill helps customers of Java Junction Coffee Shop.
@@ -50,10 +49,6 @@ const coffeeSkill = new LuaSkill({
 
 <ParamField path="name" type="string" required>
   Unique identifier for the skill (e.g., "coffee-shop-skill")
-</ParamField>
-
-<ParamField path="version" type="string" default="1.0.0">
-  Semantic version number for tracking changes
 </ParamField>
 
 <ParamField path="description" type="string" required>

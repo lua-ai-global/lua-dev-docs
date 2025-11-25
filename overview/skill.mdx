@@ -20,7 +20,6 @@ A **skill** is a collection of related tools bundled together. It defines what c
 ```typescript
 const customerServiceSkill = new LuaSkill({
   name: "customer-service",
-  version: "1.0.0",
   description: "Customer support and order management",
   context: `...`,  // ← Critical! Tells agent how to use tools
   tools: [
@@ -139,7 +138,6 @@ context: `
 ```typescript
 const ecommerceSkill = new LuaSkill({
   name: "ecommerce-assistant",
-  version: "1.0.0",
   description: "Shopping and checkout assistance",
   context: `
     This skill helps customers shop and complete purchases.
@@ -178,7 +176,6 @@ const ecommerceSkill = new LuaSkill({
 ```typescript
 const supportSkill = new LuaSkill({
   name: "customer-support",
-  version: "2.0.0",
   description: "Help desk and troubleshooting",
   context: `
     This skill provides technical support and issue resolution.
@@ -220,7 +217,6 @@ const supportSkill = new LuaSkill({
 ```typescript
 const bookingSkill = new LuaSkill({
   name: "hotel-booking",
-  version: "1.5.0",
   description: "Hotel reservations and room service",
   context: `
     This skill manages hotel bookings and guest services.

@@ -64,7 +64,6 @@ Weather and utility tools:
 ```typescript
 const generalSkill = new LuaSkill({
   name: "general-skill",
-  version: "0.0.2",
   description: "Weather and utility tools",
   tools: [
     new GetWeatherTool(),
@@ -185,7 +184,6 @@ import GetWeatherTool from "./tools/GetWeatherTool";
 
 const weatherSkill = new LuaSkill({
   name: "weather-skill",
-  version: "1.0.0",
   description: "Provides weather information",
   context: "Use get_weather when users ask about weather",
   tools: [new GetWeatherTool()]

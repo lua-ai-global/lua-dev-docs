@@ -12,7 +12,6 @@ import { LuaSkill } from 'lua-cli';
 
 const skill = new LuaSkill({
   name: "my-skill",
-  version: "1.0.0",
   description: "Brief description of the skill",
   context: "Detailed instructions for the AI",
   tools: [new MyTool1(), new MyTool2()]
@@ -37,14 +36,6 @@ Creates a new skill instance.
   **Format**: lowercase, alphanumeric, hyphens only
   
   **Examples**: `"weather-skill"`, `"product-catalog-skill"`
-</ParamField>
-
-<ParamField path="config.version" type="string" default="1.0.0">
-  Semantic version number for tracking changes
-  
-  **Format**: `MAJOR.MINOR.PATCH`
-  
-  **Example**: `"1.2.3"`
 </ParamField>
 
 <ParamField path="config.description" type="string" required>
@@ -146,7 +137,6 @@ class HelloTool implements LuaTool {
 
 const helloSkill = new LuaSkill({
   name: "hello-skill",
-  version: "1.0.0",
   description: "A simple greeting skill",
   context: "Use say_hello when users want to be greeted",
   tools: [new HelloTool()]
@@ -162,7 +152,6 @@ import GetForecastTool from './tools/GetForecastTool';
 
 const weatherSkill = new LuaSkill({
   name: "weather-skill",
-  version: "1.0.0",
   description: "Provides weather information for any city worldwide",
   context: `
     This skill provides weather information.
@@ -192,7 +181,6 @@ import {
 
 const ecommerceSkill = new LuaSkill({
   name: "ecommerce-skill",
-  version: "2.1.0",
   description: "Complete e-commerce product management",
   context: `
     This skill manages an e-commerce product catalog.
@@ -322,12 +310,6 @@ context: "A skill with tools for stuff"  // ❌ Too vague
     Think of it as training documentation for the AI.
   </Accordion>
 
-  <Accordion title="Version Appropriately">
-    Use semantic versioning:
-    - **PATCH** (1.0.1): Bug fixes
-    - **MINOR** (1.1.0): New features, backward compatible
-    - **MAJOR** (2.0.0): Breaking changes
-  </Accordion>
 
   <Accordion title="Organize Related Tools">
     Group tools that work together:
@@ -388,7 +370,6 @@ Each skill gets its own `skillId` in `lua.skill.yaml` and can be deployed indepe
 ```typescript
 interface LuaSkillConfig {
   name?: string;
-  version?: string;
   description: string;
   context: string;
   tools?: LuaTool[];

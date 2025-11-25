@@ -67,7 +67,6 @@ import {
 // Skill 1: Product Catalog
 const catalogSkill = new LuaSkill({
   name: "catalog-skill",
-  version: "1.0.0",
   description: "Product browsing and search",
   context: `
     Use search_products when users want to find items.
@@ -82,7 +81,6 @@ const catalogSkill = new LuaSkill({
 // Skill 2: Shopping Cart
 const cartSkill = new LuaSkill({
   name: "cart-skill",
-  version: "1.0.0",
   description: "Shopping cart management",
   context: `
     Use create_basket to start shopping.
@@ -97,7 +95,6 @@ const cartSkill = new LuaSkill({
 // Skill 3: Order Management
 const orderSkill = new LuaSkill({
   name: "order-skill",
-  version: "1.0.0",
   description: "Order creation and tracking",
   context: `
     Use create_order to finalize purchase.
@@ -284,17 +281,15 @@ export const agent = new LuaAgent({
   </Accordion>
 
   <Accordion title="Version Independently">
-    Each skill can have its own version:
-    ```typescript
-    const skill1 = new LuaSkill({
-      name: "skill-1",
-      version: "2.0.0"  // Major update
-    });
-    
-    const skill2 = new LuaSkill({
-      name: "skill-2",
-      version: "1.0.1"  // Bug fix only
-    });
+    Each skill is versioned independently in `lua.skill.yaml`:
+    ```yaml
+    skills:
+      - name: skill-1
+        version: "2.0.0"  # Major update
+        skillId: "..."
+      - name: skill-2
+        version: "1.0.1"  # Bug fix only
+        skillId: "..."
     ```
   </Accordion>
 
