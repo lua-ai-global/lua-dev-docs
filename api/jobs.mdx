@@ -111,7 +111,7 @@ const job = await Jobs.create({
 });
 ```
 
-### Jobs.get(jobId)
+### Jobs.getJob(jobId)
 
 Retrieves a job by ID.
 
@@ -123,9 +123,9 @@ Retrieves a job by ID.
 
 **Example:**
 ```typescript
-const job = await Jobs.get('job_123');
+const job = await Jobs.getJob('job_123');
 console.log(job.name);
-console.log(job.schedule);
+console.log(job.activeVersion?.schedule);
 ```
 
 ## Job Configuration
@@ -317,7 +317,7 @@ export default class ReminderTool implements LuaTool {
       success: true,
       message: `Reminder set for ${input.minutes} minutes from now`,
       jobId: job.id,
-      executeAt: job.schedule.executeAt
+      executeAt: job.activeVersion?.schedule?.executeAt
     };
   }
 }
@@ -493,6 +493,16 @@ async execute(input: any) {
 
 The `JobInstance` passed to execute functions provides:
 
+### Properties
+
+| Property | Type | Description |
+|----------|------|-------------|
+| `id` | `string` | Unique job identifier |
+| `name` | `string` | Job name |
+| `activeVersion` | `JobVersion` | The active version with schedule, timeout, etc. |
+| `metadata` | `object` | Job metadata |
+| `data` | `Job` | Full job data including all versions |
+
 ### jobInstance.user()
 
 Gets the user who triggered the job.
@@ -558,9 +568,29 @@ execute: async (job) => {
 }
 ```
 
+### job.trigger(versionId?)
+
+Manually triggers the job execution (ignores schedule). Uses the active version by default.
+
+**Parameters:**
+- `versionId` (optional): Specific version to execute. Defaults to `activeVersion`.
+
+**Returns:** `Promise<JobExecution>`
+
+**Example:**
+```typescript
+// Trigger with default active version
+const execution = await job.trigger();
+console.log('Execution ID:', execution.id);
+console.log('Status:', execution.status);
+
+// Trigger with specific version
+const execution = await job.trigger('version_abc123');
+```
+
 ### job.delete()
 
-Deletes the job.
+Deletes the job (or deactivates if it has versions).
 
 **Example:**
 ```typescript

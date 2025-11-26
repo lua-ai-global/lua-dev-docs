@@ -497,7 +497,17 @@ export const agent = new LuaAgent({
 
 ## JobInstance API
 
-The execute function receives a `JobInstance` with these methods:
+The execute function receives a `JobInstance` with these properties and methods:
+
+### Properties
+
+| Property | Type | Description |
+|----------|------|-------------|
+| `id` | `string` | Unique job identifier |
+| `name` | `string` | Job name |
+| `activeVersion` | `JobVersion` | The active version with schedule, timeout, etc. |
+| `metadata` | `object` | Job metadata |
+| `data` | `Job` | Full job data including all versions |
 
 ### jobInstance.user()
 
@@ -529,9 +539,27 @@ await jobInstance.updateMetadata({
 });
 ```
 
+### jobInstance.trigger(versionId?)
+
+Manually triggers the job execution (ignores schedule). Uses the active version by default.
+
+**Parameters:**
+- `versionId` (optional): Specific version to execute. Defaults to `activeVersion`.
+
+**Returns:** `Promise<JobExecution>`
+
+```typescript
+// Trigger with default active version
+const execution = await jobInstance.trigger();
+console.log('Execution ID:', execution.id);
+
+// Trigger with specific version
+const execution = await jobInstance.trigger('version_abc123');
+```
+
 ### jobInstance.delete()
 
-Delete the job (stops future executions).
+Delete the job (or deactivates if it has versions).
 
 ```typescript
 // Self-terminate after condition met
