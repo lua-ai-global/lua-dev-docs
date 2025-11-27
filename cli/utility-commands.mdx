@@ -7,12 +7,15 @@ description: "Quick access commands for admin interface and documentation"
 
 Utility commands provide quick access to the Lua Admin interface, documentation, and shell autocomplete setup.
 
-<CardGroup cols={3}>
+<CardGroup cols={4}>
   <Card title="lua completion" icon="terminal">
     Generate shell autocomplete
   </Card>
   <Card title="lua admin" icon="gauge">
     Open admin dashboard
+  </Card>
+  <Card title="lua evals" icon="chart-bar">
+    Open evaluations dashboard
   </Card>
   <Card title="lua docs" icon="book">
     Open documentation
@@ -499,6 +502,101 @@ $ lua admin
   </Accordion>
 </AccordionGroup>
 
+## lua evals
+
+Launch the Lua Evaluations Dashboard in your default browser.
+
+```bash
+lua evals
+```
+
+### What It Opens
+
+The Lua Evaluations Dashboard at https://evals.heylua.ai provides tools to test and evaluate your agent:
+
+**Evaluation Features**
+- 🧪 Test your agent with predefined scenarios
+- 📊 View evaluation results and metrics
+- 📈 Track agent performance over time
+- 🔍 Identify areas for improvement
+- ✅ Validate agent responses
+
+### Example
+
+```bash
+$ lua evals
+✓ Lua Evaluations Dashboard opened in your browser
+
+  Dashboard URL: https://evals.heylua.ai
+  Agent ID: agent-abc123
+```
+
+### Requirements
+
+- Must be authenticated (`lua auth configure`)
+- Must be in a skill directory (has `lua.skill.yaml`)
+- Configuration must contain `agent.agentId`
+
+### Use Cases
+
+<AccordionGroup>
+  <Accordion title="Test Agent Responses">
+    ```bash
+    $ lua evals
+    ```
+    
+    - Run predefined test scenarios
+    - Validate agent behavior
+    - Check response quality
+    - Ensure consistency
+  </Accordion>
+
+  <Accordion title="Track Performance">
+    ```bash
+    $ lua evals
+    ```
+    
+    - Monitor evaluation scores
+    - Compare across versions
+    - Identify regressions
+    - Measure improvements
+  </Accordion>
+
+  <Accordion title="Quality Assurance">
+    ```bash
+    $ lua evals
+    ```
+    
+    - Run evaluations before deployment
+    - Validate production readiness
+    - Document test results
+    - Share with team
+  </Accordion>
+</AccordionGroup>
+
+### Troubleshooting
+
+<AccordionGroup>
+  <Accordion title="Dashboard doesn't open">
+    **Check:**
+    1. Run `lua auth configure` to authenticate
+    2. Ensure `lua.skill.yaml` exists (`lua init`)
+    3. Verify agent ID is in config
+    
+    **Error:** "No API key found"
+    ```bash
+    $ lua auth configure
+    ```
+  </Accordion>
+
+  <Accordion title="Wrong agent displayed">
+    **Check:**
+    1. Verify you're in correct project directory
+    2. Check `agentId` in `lua.skill.yaml`
+    3. Switch to correct agent directory
+  </Accordion>
+</AccordionGroup>
+
 ## lua docs
 
 Launch this documentation in your default browser.
@@ -587,6 +685,7 @@ $ ld
 |---------|----------------|---------------|---------|
 | `lua completion` | Shell completion script | ❌ No | Tab completion, faster workflows |
 | `lua admin` | Admin dashboard | ✅ Yes | Managing agent, conversations, billing |
+| `lua evals` | Evaluations dashboard | ✅ Yes | Testing agent, tracking performance |
 | `lua docs` | Documentation | ❌ No | Reference, examples, learning |
 
 ## Integration with Workflow
