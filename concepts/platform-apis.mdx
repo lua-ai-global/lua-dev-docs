@@ -8,7 +8,7 @@ description: "Built-in APIs for common operations"
 Lua CLI provides built-in APIs for common operations, so you don't have to build everything from scratch.
 
 ```typescript
-import { User, Data, Products, Baskets, Orders, Templates } from 'lua-cli';
+import { User, Data, CDN, Products, Baskets, Orders, Templates } from 'lua-cli';
 ```
 
 <CardGroup cols={3}>
@@ -17,6 +17,9 @@ import { User, Data, Products, Baskets, Orders, Templates } from 'lua-cli';
   </Card>
   <Card title="Data" icon="database">
     Custom data with vector search
+  </Card>
+  <Card title="CDN" icon="cloud">
+    File upload and retrieval
   </Card>
   <Card title="Products" icon="box">
     E-commerce product catalog
@@ -138,6 +141,83 @@ const results = await Data.search('movies', 'mind-bending thriller', 10, 0.7);
 
 <Card title="Full API Reference" icon="book" href="/api/data">
   Complete Data API documentation
+</Card>
+
+## CDN API
+
+Upload and retrieve files from the Lua CDN.
+
+### Key Features
+
+- 📤 **Upload Files**: Store any file type
+- 📥 **Retrieve Files**: Get files by ID
+- 🖼️ **Image Optimization**: Automatic WebP compression
+- 🤖 **AI Integration**: Use with AI for image analysis
+
+### Quick Example
+
+```typescript
+import { CDN } from 'lua-cli';
+
+// Upload a file
+const file = new File([buffer], 'document.pdf', { type: 'application/pdf' });
+const fileId = await CDN.upload(file);
+
+// Retrieve by ID
+const retrievedFile = await CDN.get(fileId);
+console.log(retrievedFile.name); // 'document.pdf'
+```
+
+### Use Cases
+
+<Tabs>
+  <Tab title="Document Storage">
+    ```typescript
+    // Store a document
+    const doc = new File([content], 'report.pdf', { 
+      type: 'application/pdf' 
+    });
+    const fileId = await CDN.upload(doc);
+    
+    // Save reference
+    await Data.create('documents', {
+      title: 'Q4 Report',
+      fileId: fileId,
+      uploadedAt: new Date().toISOString()
+    });
+    ```
+  </Tab>
+
+  <Tab title="Image Analysis">
+    ```typescript
+    // Get image from CDN
+    const file = await CDN.get(imageFileId);
+    const buffer = Buffer.from(await file.arrayBuffer());
+    
+    // Analyze with AI
+    const analysis = await AI.generate(
+      'Describe this image.',
+      [{ type: 'image', image: buffer, mediaType: file.type }]
+    );
+    ```
+  </Tab>
+
+  <Tab title="User Uploads">
+    ```typescript
+    // Save user upload
+    const file = new File([userData], 'profile.jpg', { 
+      type: 'image/jpeg' 
+    });
+    const fileId = await CDN.upload(file);
+    
+    // Update user profile
+    await User.update({ avatarFileId: fileId });
+    ```
+  </Tab>
+</Tabs>
+
+<Card title="Full API Reference" icon="book" href="/api/cdn">
+  Complete CDN API documentation
 </Card>
 
 ## Products API
@@ -366,6 +446,7 @@ export class CreateCustomerTool implements LuaTool {
 |-----|----------|-------------|
 | **User** | Profile data | User authentication |
 | **Data** | Custom schemas | Vector search |
+| **CDN** | File storage | Upload/retrieve files |
 | **Products** | E-commerce | Pre-built catalog |
 | **Baskets** | Shopping carts | TTL & status |
 | **Orders** | Order tracking | Status workflow |

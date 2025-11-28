@@ -1,0 +1,330 @@
+---
+title: "CDN"
+description: "Upload and retrieve files from the Lua CDN"
+---
+
+## Overview
+
+The CDN API allows you to upload and retrieve files from the Lua CDN. Files are stored securely and can be accessed by their unique file ID.
+
+```typescript
+import { CDN } from 'lua-cli';
+
+// Upload a file
+const fileId = await CDN.upload(file);
+
+// Retrieve a file
+const file = await CDN.get(fileId);
+```
+
+## Methods
+
+### upload
+
+Uploads a file to the CDN.
+
+```typescript
+const fileId = await CDN.upload(file);
+```
+
+**Parameters:**
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `file` | `File` | The File object to upload |
+
+**Returns:** `Promise<string>` - The unique file ID
+
+**Example:**
+
+```typescript
+import { CDN } from 'lua-cli';
+import { readFileSync } from 'fs';
+
+// From a buffer
+const buffer = readFileSync('image.png');
+const file = new File([buffer], 'image.png', { type: 'image/png' });
+const fileId = await CDN.upload(file);
+
+console.log('Uploaded:', fileId);
+```
+
+### get
+
+Retrieves a file from the CDN by its ID.
+
+```typescript
+const file = await CDN.get(fileId);
+```
+
+**Parameters:**
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `fileId` | `string` | The unique identifier of the file |
+
+**Returns:** `Promise<File>` - The File object with `name`, `type`, and `size` properties
+
+**Example:**
+
+```typescript
+import { CDN } from 'lua-cli';
+
+const file = await CDN.get('abc123-def456');
+
+console.log(file.name);  // filename
+console.log(file.type);  // e.g., 'image/png'
+console.log(file.size);  // bytes
+```
+
+## Use Cases
+
+### Store User Uploads
+
+```typescript
+export class SaveDocumentTool implements LuaTool {
+  name = "save_document";
+  description = "Save a document to storage";
+  inputSchema = z.object({
+    content: z.string(),
+    filename: z.string()
+  });
+
+  async execute(input: z.infer<typeof this.inputSchema>) {
+    const file = new File(
+      [input.content], 
+      input.filename, 
+      { type: 'text/plain' }
+    );
+    
+    const fileId = await CDN.upload(file);
+    
+    return {
+      success: true,
+      fileId,
+      message: `Document saved as ${input.filename}`
+    };
+  }
+}
+```
+
+### Retrieve and Process Files
+
+```typescript
+export class ReadDocumentTool implements LuaTool {
+  name = "read_document";
+  description = "Read a document from storage";
+  inputSchema = z.object({
+    fileId: z.string()
+  });
+
+  async execute(input: z.infer<typeof this.inputSchema>) {
+    const file = await CDN.get(input.fileId);
+    const content = await file.text();
+    
+    return {
+      success: true,
+      filename: file.name,
+      content
+    };
+  }
+}
+```
+
+### Use with AI for Image Analysis
+
+```typescript
+export class AnalyzeImageTool implements LuaTool {
+  name = "analyze_image";
+  description = "Analyze an image using AI";
+  inputSchema = z.object({
+    fileId: z.string(),
+    question: z.string()
+  });
+
+  async execute(input: z.infer<typeof this.inputSchema>) {
+    const file = await CDN.get(input.fileId);
+    const buffer = Buffer.from(await file.arrayBuffer());
+    
+    const analysis = await AI.generate(
+      'You are an image analysis expert.',
+      [
+        { type: 'text', text: input.question },
+        { type: 'image', image: buffer, mediaType: file.type } as any
+      ]
+    );
+    
+    return { analysis };
+  }
+}
+```
+
+### Re-upload Files
+
+Since `CDN.get()` returns a `File` object, you can easily re-upload files:
+
+```typescript
+// Get existing file
+const file = await CDN.get(existingFileId);
+
+// Re-upload (creates a new copy)
+const newFileId = await CDN.upload(file);
+```
+
+## File Properties
+
+The `File` object returned by `CDN.get()` has these properties:
+
+| Property | Type | Description |
+|----------|------|-------------|
+| `name` | `string` | Original filename |
+| `type` | `string` | MIME type (e.g., `image/png`) |
+| `size` | `number` | File size in bytes |
+
+And these methods:
+
+| Method | Returns | Description |
+|--------|---------|-------------|
+| `text()` | `Promise<string>` | Read as text |
+| `arrayBuffer()` | `Promise<ArrayBuffer>` | Read as binary |
+| `stream()` | `ReadableStream` | Read as stream |
+
+## Supported File Types
+
+The CDN supports all file types including:
+
+- **Images**: PNG, JPEG, GIF, WebP, SVG
+- **Documents**: PDF, DOC, DOCX, TXT
+- **Data**: JSON, CSV, XML
+- **Audio/Video**: MP3, MP4, WAV
+- **Archives**: ZIP, TAR
+
+Images are automatically optimized with WebP compression while maintaining quality.
+
+## Best Practices
+
+<AccordionGroup>
+  <Accordion title="Use Descriptive Filenames">
+    Include meaningful names when creating Files:
+    ```typescript
+    // Good
+    new File([data], 'invoice-2024-001.pdf', { type: 'application/pdf' })
+    
+    // Avoid
+    new File([data], 'file.pdf', { type: 'application/pdf' })
+    ```
+  </Accordion>
+
+  <Accordion title="Set Correct MIME Types">
+    Always specify the correct MIME type:
+    ```typescript
+    // Images
+    { type: 'image/png' }
+    { type: 'image/jpeg' }
+    
+    // Documents
+    { type: 'application/pdf' }
+    { type: 'text/plain' }
+    
+    // Data
+    { type: 'application/json' }
+    ```
+  </Accordion>
+
+  <Accordion title="Store File IDs">
+    Save file IDs in your data for later retrieval:
+    ```typescript
+    const fileId = await CDN.upload(file);
+    
+    await Data.create('documents', {
+      title: 'Contract',
+      fileId: fileId,  // Store for later
+      uploadedAt: new Date().toISOString()
+    });
+    ```
+  </Accordion>
+
+  <Accordion title="Handle Errors">
+    Always handle potential errors:
+    ```typescript
+    try {
+      const file = await CDN.get(fileId);
+      return { success: true, file };
+    } catch (error) {
+      return { 
+        success: false, 
+        error: 'File not found' 
+      };
+    }
+    ```
+  </Accordion>
+</AccordionGroup>
+
+## Complete Example
+
+```typescript
+import { LuaTool, CDN, Data, AI } from 'lua-cli';
+import { z } from 'zod';
+
+export class DocumentManagerTool implements LuaTool {
+  name = "manage_document";
+  description = "Upload, retrieve, or analyze documents";
+  inputSchema = z.object({
+    action: z.enum(['upload', 'get', 'analyze']),
+    fileId: z.string().optional(),
+    content: z.string().optional(),
+    filename: z.string().optional()
+  });
+
+  async execute(input: z.infer<typeof this.inputSchema>) {
+    switch (input.action) {
+      case 'upload': {
+        if (!input.content || !input.filename) {
+          return { error: 'Content and filename required' };
+        }
+        const file = new File([input.content], input.filename, { 
+          type: 'text/plain' 
+        });
+        const fileId = await CDN.upload(file);
+        
+        // Store reference
+        await Data.create('documents', {
+          fileId,
+          filename: input.filename,
+          uploadedAt: new Date().toISOString()
+        });
+        
+        return { success: true, fileId };
+      }
+      
+      case 'get': {
+        if (!input.fileId) {
+          return { error: 'File ID required' };
+        }
+        const file = await CDN.get(input.fileId);
+        const content = await file.text();
+        return { 
+          success: true, 
+          filename: file.name,
+          content 
+        };
+      }
+      
+      case 'analyze': {
+        if (!input.fileId) {
+          return { error: 'File ID required' };
+        }
+        const file = await CDN.get(input.fileId);
+        const content = await file.text();
+        
+        const summary = await AI.generate(
+          'Summarize this document concisely.',
+          [{ type: 'text', text: content }]
+        );
+        
+        return { success: true, summary };
+      }
+    }
+  }
+}
+```

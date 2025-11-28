@@ -110,6 +110,7 @@
                   "api/ai",
                   "api/user",
                   "api/data",
+                  "api/cdn",
                   "api/products",
                   "api/baskets",
                   "api/orders",

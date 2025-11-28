@@ -30,7 +30,7 @@ Lua CLI v3.0.0 provides a comprehensive set of APIs for building AI agents:
     title="Platform APIs"
     icon="server"
   >
-    **AI, User, Data, Products, Baskets, Orders, Jobs, Templates** - Built-in services
+    **AI, User, Data, CDN, Products, Baskets, Orders, Jobs, Templates** - Built-in services
   </Card>
   <Card
     title="Environment"
@@ -89,7 +89,7 @@ import {
 } from 'lua-cli';
 
 // Platform APIs
-import { AI, User, Data, Products, Baskets, Orders, Jobs, Templates } from 'lua-cli';
+import { AI, User, Data, CDN, Products, Baskets, Orders, Jobs, Templates } from 'lua-cli';
 
 // Utilities
 import { env } from 'lua-cli';
@@ -331,6 +331,30 @@ await Data.delete('collection', id);
 ```
 
 <Card title="Full Documentation" href="/api/data" />
+
+### CDN API
+
+Upload and retrieve files from the CDN:
+
+```typescript
+import { CDN } from 'lua-cli';
+
+// Upload a file
+const file = new File([buffer], 'image.png', { type: 'image/png' });
+const fileId = await CDN.upload(file);
+
+// Get file by ID
+const retrievedFile = await CDN.get(fileId);
+console.log(retrievedFile.name, retrievedFile.type);
+```
+
+**Use cases:**
+- Store user uploads
+- Image storage for AI analysis
+- Document management
+- Asset management
+
+<Card title="Full Documentation" href="/api/cdn" />
 
 ### Products API
 
@@ -585,6 +609,9 @@ export class SearchNotesTool implements LuaTool {
   </Card>
   <Card title="Data" href="/api/data" icon="database">
     Custom data API
+  </Card>
+  <Card title="CDN" href="/api/cdn" icon="cloud">
+    File storage API
   </Card>
   <Card title="Products" href="/api/products" icon="box">
     Products API
