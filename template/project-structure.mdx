@@ -5,253 +5,204 @@ description: "Understanding the template project organization"
 
 ## Overview
 
-The template creates a well-organized project structure designed for building AI agents efficiently.
-
-```
-your-skill/
-├── src/
-│   ├── index.ts           # Agent configuration (LuaAgent)
-│   ├── skills/            # Skill definitions (optional)
-│   ├── tools/             # Tool implementations
-│   ├── webhooks/          # Webhook handlers (v3.0.0)
-│   ├── jobs/              # Scheduled jobs (v3.0.0)
-│   ├── preprocessors/     # Message filters (v3.0.0)
-│   ├── postprocessors/    # Response formatters (v3.0.0)
-│   └── services/          # Helper services (optional)
-├── dist/                  # Compiled output
-├── .lua/                  # CLI cache
-├── node_modules/          # Dependencies
-├── lua.skill.yaml         # Configuration
-├── package.json           # Project metadata
-├── tsconfig.json          # TypeScript config
-├── .env                   # Environment variables (create this)
-├── .env.example           # Environment template
-├── .gitignore             # Git ignore rules
-└── README.md              # Documentation
-```
-
-<Note>
-**v3.0.0 Structure:** Projects now use `LuaAgent` in `src/index.ts` for unified configuration. Optional folders for webhooks, jobs, and processors are created as needed.
-</Note>
-
-## Core Directories
-
-### src/
-
-Contains all your TypeScript source code.
+The Lua CLI creates a clean, minimal project structure by default. You can optionally include examples with `--with-examples`.
 
 <Tabs>
-  <Tab title="index.ts">
-    **Agent configuration - Define your agent here (v3.0.0)**
-    
-    ```typescript
-    import { LuaAgent, LuaSkill } from "lua-cli";
-    import GetWeatherTool from "./tools/GetWeatherTool";
-    
-    const skill = new LuaSkill({
-      name: "my-skill",
-      description: "...",
-      context: "...",
-      tools: [new GetWeatherTool()]
-    });
-    
-    export const agent = new LuaAgent({
-      name: "my-agent",
-      persona: "You are a helpful assistant...",
-      skills: [skill]
-    });
+  <Tab title="Minimal (Default)">
     ```
-    
-    This is where you:
-    - Import tool classes
-    - Create LuaSkill instances  
-    - Configure your agent with LuaAgent
-    - Export the agent
-  </Tab>
-
-  <Tab title="tools/">
-    **Tool implementations**
-    
-    Each file contains one or more related tools:
-    
-    - `GetWeatherTool.ts` - Single standalone tool
-    - `ProductsTool.ts` - Multiple related tools (CRUD)
-    - `UserDataTool.ts` - Multiple related tools (Get + Update)
-    
-    Example structure:
-    ```typescript
-    export default class MyTool implements LuaTool {
-      name = "my_tool";
-      description = "...";
-      inputSchema = z.object({...});
-      async execute(input) {...}
-    }
+    your-project/
+    ├── src/
+    │   └── index.ts           # Agent configuration (LuaAgent)
+    ├── lua.skill.yaml         # Configuration (auto-managed)
+    ├── package.json           # Dependencies
+    ├── tsconfig.json          # TypeScript config
+    ├── .env.example           # Environment template
+    └── README.md              # Quick start guide
     ```
   </Tab>
 
-  <Tab title="services/">
-    **Helper services (optional)**
-    
-    Shared utilities and API clients:
-    
-    ```typescript
-    // services/WeatherApi.ts
-    export class WeatherApi {
-      async getWeather(city: string) {
-        // API logic
-      }
-    }
+  <Tab title="With Examples">
     ```
-    
-    Use in tools:
-    ```typescript
-    import { WeatherApi } from '../services/WeatherApi';
+    your-project/
+    ├── src/
+    │   └── index.ts           # Agent configuration
+    ├── examples/              # Example code (reference only)
+    │   ├── skills/            # Example skills & tools
+    │   │   ├── tools/         # Tool implementations
+    │   │   └── *.skill.ts     # Skill definitions
+    │   ├── webhooks/          # HTTP endpoint examples
+    │   ├── jobs/              # Scheduled task examples
+    │   ├── preprocessors/     # Message filter examples
+    │   ├── postprocessors/    # Response formatter examples
+    │   └── services/          # Helper utilities
+    ├── lua.skill.yaml
+    ├── package.json
+    ├── tsconfig.json
+    └── README.md
+    ```
+  </Tab>
+
+  <Tab title="After You Build">
+    ```
+    your-project/
+    ├── src/
+    │   ├── index.ts           # Agent configuration
+    │   ├── skills/            # Your skills
+    │   │   ├── tools/         # Your tools
+    │   │   └── my.skill.ts
+    │   ├── webhooks/          # Your webhooks (optional)
+    │   ├── jobs/              # Your jobs (optional)
+    │   └── services/          # Your utilities (optional)
+    ├── dist/                  # Compiled output (auto-generated)
+    ├── .lua/                  # CLI cache (auto-generated)
+    ├── node_modules/          # Dependencies
+    ├── lua.skill.yaml
+    ├── package.json
+    ├── tsconfig.json
+    └── .env                   # Your environment variables
     ```
   </Tab>
 </Tabs>
 
+## Core Files
+
+### src/index.ts
+
+**Your agent's main configuration file.**
+
+```typescript
+import { LuaAgent } from "lua-cli";
+
+const agent = new LuaAgent({
+    name: `my-agent`,
+    persona: `You are a helpful assistant...`,
+    
+    skills: [],        // Add your skills here
+    
+    // Optional components:
+    // webhooks: [],
+    // jobs: [],
+    // preProcessors: [],
+    // postProcessors: [],
+});
+```
+
+### lua.skill.yaml
+
+**Auto-managed configuration file.** Set during `lua init`, updated by CLI commands.
+
+```yaml
+agent:
+  agentId: agent_abc123
+  orgId: org_xyz789
+  persona: "..."
+
+skills:
+  - name: my-skill
+    version: 1.0.0
+    skillId: skill_xyz  # Auto-created during compile
+```
+
+<Warning>
+Don't manually edit `skillId`, `webhookId`, or `jobId` - they're auto-managed!
+</Warning>
+
+### package.json
+
+Standard Node.js package configuration:
+
+```json
+{
+  "name": "lua-skill",
+  "type": "module",
+  "dependencies": {
+    "lua-cli": "^3.1.0",
+    "zod": "^3.24.1"
+  }
+}
+```
+
+## Building Your Project
+
+### Recommended Structure
+
+As your project grows, organize it like this:
+
+```
+src/
+├── index.ts                    # Agent configuration
+├── skills/
+│   ├── tools/                  # Tool implementations
+│   │   ├── WeatherTool.ts
+│   │   ├── ProductTools.ts     # Multiple related tools
+│   │   └── OrderTool.ts
+│   ├── weather.skill.ts        # Weather skill
+│   └── ecommerce.skill.ts      # E-commerce skill
+├── webhooks/                   # (Optional) HTTP endpoints
+│   └── PaymentWebhook.ts
+├── jobs/                       # (Optional) Scheduled tasks
+│   └── DailyReportJob.ts
+└── services/                   # (Optional) Shared utilities
+    └── ApiClient.ts
+```
+
+### File Naming Conventions
+
+| Type | Pattern | Example |
+|------|---------|---------|
+| Tools | `*Tool.ts` or `*Tools.ts` | `WeatherTool.ts`, `ProductTools.ts` |
+| Skills | `*.skill.ts` | `weather.skill.ts` |
+| Webhooks | `*Webhook.ts` | `PaymentWebhook.ts` |
+| Jobs | `*Job.ts` | `DailyReportJob.ts` |
+| Preprocessors | `*.preprocessor.ts` | `filter.preprocessor.ts` |
+| Postprocessors | `*.postprocessor.ts` | `format.postprocessor.ts` |
+
+## Auto-Generated Directories
+
 ### dist/
 
-Compiled JavaScript output (auto-generated, don't edit).
+Compiled JavaScript output. Created by `lua compile`.
 
 ```
 dist/
 ├── deployment.json       # Deployment metadata
 ├── index.js             # Compiled main file
 └── tools/               # Compiled tool bundles
-    └── *.js
 ```
 
 ### .lua/
 
-CLI cache directory (auto-generated, can delete safely).
+CLI cache directory. Safe to delete - will be regenerated.
 
-## Configuration Files
-
-### lua.skill.yaml
-
-Auto-managed configuration file.
-
-```yaml
-# Agent configuration (set by lua init)
-agent:
-  agentId: agent_abc123
-  orgId: org_xyz789
-  persona: "..."
-
-# Skills (auto-populated by lua compile)
-skills:
-  - name: my-skill
-    version: 1.0.0
-    skillId: skill_xyz789  # Auto-created
-
-# Environment variables (manual)
-skill:
-  env:
-    API_KEY: your_key_here
-```
-
-<Warning>
-Don't manually edit `skillId` - it's auto-managed by the CLI!
-</Warning>
-
-### package.json
-
-Node.js package configuration.
-
-```json
-{
-  "name": "your-skill-name",
-  "version": "1.0.0",
-  "scripts": {
-    "test": "lua test",
-    "chat": "lua chat",
-    "env": "lua env",
-    "compile": "lua compile",
-    "push": "lua push"
-  },
-  "dependencies": {
-    "lua-cli": "^2.0.0",
-    "zod": "^3.0.0"
-  }
-}
-```
-
-### tsconfig.json
-
-TypeScript compiler configuration (pre-configured, rarely needs changes).
+## Environment Files
 
 ### .env
 
-Environment variables for local development.
+Your local environment variables (create this file):
 
 ```bash
 # External API Keys
 STRIPE_API_KEY=sk_test_abc123
-SENDGRID_API_KEY=SG.xyz789
+OPENAI_API_KEY=sk-...
 
 # Configuration
 API_BASE_URL=https://api.example.com
 ```
 
 <Warning>
-Add to `.gitignore` - never commit secrets!
+Add `.env` to `.gitignore` - never commit secrets!
 </Warning>
 
 ### .env.example
 
-Template for environment variables (commit this).
+Template for environment variables (commit this):
 
 ```bash
 STRIPE_API_KEY=your_stripe_key_here
-SENDGRID_API_KEY=your_sendgrid_key_here
-API_BASE_URL=https://api.example.com
+OPENAI_API_KEY=your_openai_key_here
 ```
 
-## File Organization Patterns
-
-### Small Project (< 5 tools)
-
-```
-src/
-├── index.ts
-└── tools/
-    └── MyTools.ts    # All tools in one file
-```
-
-### Medium Project (5-15 tools)
-
-```
-src/
-├── index.ts
-└── tools/
-    ├── WeatherTools.ts
-    ├── UserTools.ts
-    └── ProductTools.ts
-```
-
-### Large Project (> 15 tools)
-
-```
-src/
-├── index.ts
-├── tools/
-│   ├── weather/
-│   │   ├── GetWeather.ts
-│   │   └── GetForecast.ts
-│   ├── products/
-│   │   ├── Search.ts
-│   │   ├── Create.ts
-│   │   └── Update.ts
-│   └── orders/
-│       ├── Create.ts
-│       └── Track.ts
-└── services/
-    ├── WeatherApi.ts
-    └── PaymentApi.ts
-```
-
-## What to Commit to Git
+## Git Configuration
 
 ### ✅ Commit These
 
@@ -291,29 +242,74 @@ dist/
 
 # OS
 .DS_Store
-Thumbs.db
 
 # IDE
 .vscode/
 .idea/
-*.swp
 ```
+
+## Project Size Patterns
+
+<Tabs>
+  <Tab title="Small (1-5 tools)">
+    ```
+    src/
+    ├── index.ts
+    └── skills/
+        ├── tools/
+        │   └── MyTools.ts    # All tools in one file
+        └── my.skill.ts
+    ```
+  </Tab>
+
+  <Tab title="Medium (5-15 tools)">
+    ```
+    src/
+    ├── index.ts
+    └── skills/
+        ├── tools/
+        │   ├── WeatherTool.ts
+        │   ├── UserTools.ts
+        │   └── ProductTools.ts
+        ├── weather.skill.ts
+        └── commerce.skill.ts
+    ```
+  </Tab>
+
+  <Tab title="Large (15+ tools)">
+    ```
+    src/
+    ├── index.ts
+    ├── skills/
+    │   ├── weather/
+    │   │   ├── tools/
+    │   │   └── weather.skill.ts
+    │   ├── commerce/
+    │   │   ├── tools/
+    │   │   └── commerce.skill.ts
+    │   └── support/
+    │       ├── tools/
+    │       └── support.skill.ts
+    ├── webhooks/
+    ├── jobs/
+    └── services/
+    ```
+  </Tab>
+</Tabs>
 
 ## Next Steps
 
 <CardGroup cols={2}>
-  <Card
-    title="Building Skills"
-    icon="hammer"
-    href="/template/building-skills"
-  >
+  <Card title="Building Skills" icon="hammer" href="/template/building-skills">
     Learn how to build custom skills
   </Card>
-  <Card
-    title="Best Practices"
-    icon="star"
-    href="/template/best-practices"
-  >
+  <Card title="Best Practices" icon="star" href="/template/best-practices">
     Follow recommended patterns
+  </Card>
+  <Card title="API Reference" icon="server" href="/api/overview">
+    Available platform APIs
+  </Card>
+  <Card title="Examples" icon="code" href="/examples/overview">
+    See working code examples
   </Card>
 </CardGroup>

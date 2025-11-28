@@ -304,14 +304,19 @@ Skip interactive prompts by specifying your target directly:
     Create new skill project
     ```bash
     mkdir my-skill && cd my-skill
-    lua init
+    lua init                    # Minimal project (recommended)
+    lua init --with-examples    # Include 30+ example tools
     ```
     
-    Creates:
-    - Template project structure
-    - 30+ example tools
+    **Default (minimal):**
+    - Clean agent ready to customize
     - TypeScript configuration
     - `lua.skill.yaml` config
+    
+    **With --with-examples:**
+    - 30+ example tools
+    - Example webhooks, jobs, processors
+    - Complete e-commerce flow examples
     
     <Card title="Learn More" href="/cli/skill-management#init" />
   </Tab>
@@ -408,7 +413,9 @@ Skip interactive prompts by specifying your target directly:
   <Step title="Initialize">
     ```bash
     mkdir my-skill && cd my-skill
-    lua init
+    lua init                    # Minimal project (recommended)
+    # OR
+    lua init --with-examples    # Include example code
     ```
   </Step>
 

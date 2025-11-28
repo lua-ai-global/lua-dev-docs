@@ -31,8 +31,15 @@ Initialize a new Lua skill project in the current directory.
 
 ```bash
 mkdir my-skill && cd my-skill
-lua init
+lua init                    # Minimal project (recommended)
+lua init --with-examples    # Include 30+ example tools
 ```
+
+### Options
+
+| Option | Description |
+|--------|-------------|
+| `--with-examples` | Include example skills, tools, jobs, webhooks, and processors |
 
 ### What It Does
 
@@ -61,7 +68,7 @@ lua init
 ### Interactive Prompts
 
 <Tabs>
-  <Tab title="Create New Agent">
+  <Tab title="Minimal (Default)">
     ```bash
     $ lua init
     ? What would you like to do? Create new agent
@@ -74,12 +81,31 @@ lua init
     ✅ Agent created successfully!
     ✅ Created lua.skill.yaml
     ✅ Copied template files
+    ✅ Updated LuaAgent configuration
     📦 Installing dependencies...
     ✅ Lua skill project initialized successfully!
+    💡 Tip: Use `lua init --with-examples` to include example code
     ```
   </Tab>
 
-  <Tab title="Use Existing Agent">
+  <Tab title="With Examples">
+    ```bash
+    $ lua init --with-examples
+    ? What would you like to do? Create new agent
+    ? Enter business name: My Coffee Shop
+    ? Enter agent name: CoffeeBot
+    ...
+    ✅ Created lua.skill.yaml
+    ✅ Copied template files
+    ✅ Included example skills, tools, jobs, and webhooks
+    ✅ Updated LuaAgent configuration
+    📦 Installing dependencies...
+    ✅ Lua skill project initialized with examples!
+    💡 Check the examples/ folder for sample skills, tools, jobs, and webhooks
+    ```
+  </Tab>
+
+  <Tab title="Existing Agent">
     ```bash
     $ lua init
     ? What would you like to do? Select existing agent
@@ -95,26 +121,46 @@ lua init
 
 ### What Gets Created
 
-```
-your-skill/
-├── src/
-│   ├── index.ts              # Skill definitions (START HERE)
-│   ├── tools/                # Tool implementations
-│   │   ├── GetWeatherTool.ts
-│   │   ├── UserDataTool.ts
-│   │   ├── ProductsTool.ts
-│   │   ├── BasketTool.ts
-│   │   ├── OrderTool.ts
-│   │   ├── CustomDataTool.ts
-│   │   ├── PaymentTool.ts
-│   │   └── CreatePostTool.ts
-│   └── services/             # Helper services (optional)
-├── lua.skill.yaml            # Configuration (auto-managed)
-├── package.json              # Dependencies
-├── tsconfig.json             # TypeScript config
-├── .env.example              # Environment variables template
-└── README.md                 # Project documentation
-```
+<Tabs>
+  <Tab title="Minimal (Default)">
+    ```
+    your-skill/
+    ├── src/
+    │   └── index.ts              # Empty agent ready to customize
+    ├── lua.skill.yaml            # Configuration (auto-managed)
+    ├── package.json              # Dependencies
+    ├── tsconfig.json             # TypeScript config
+    ├── .env.example              # Environment variables template
+    └── README.md                 # Quick start guide
+    ```
+    
+    A clean slate - build your agent from scratch!
+  </Tab>
+
+  <Tab title="With Examples">
+    ```
+    your-skill/
+    ├── src/
+    │   └── index.ts              # Agent configuration
+    ├── examples/                 # Reference code
+    │   ├── skills/               # Example skills & tools
+    │   │   ├── tools/            # 30+ tool implementations
+    │   │   └── *.skill.ts        # Skill definitions
+    │   ├── webhooks/             # HTTP endpoint examples
+    │   ├── jobs/                 # Scheduled task examples
+    │   ├── preprocessors/        # Message filter examples
+    │   ├── postprocessors/       # Response formatter examples
+    │   └── services/             # Helper utilities
+    ├── lua.skill.yaml
+    ├── package.json
+    ├── tsconfig.json
+    ├── .env.example
+    └── README.md
+    ```
+    
+    Examples in a separate folder - copy what you need!
+  </Tab>
+</Tabs>
 
 ### Configuration File
 
