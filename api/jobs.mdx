@@ -128,6 +128,32 @@ console.log(job.name);
 console.log(job.activeVersion?.schedule);
 ```
 
+### Jobs.getAll(options?)
+
+Retrieves all jobs for the current agent.
+
+<ParamField path="options.includeDynamic" type="boolean">
+  Include dynamically created jobs (default: false)
+</ParamField>
+
+**Returns:** `Promise<JobInstance[]>`
+
+**Example:**
+```typescript
+// Get all jobs including dynamically created ones
+const jobs = await Jobs.getAll({ includeDynamic: true });
+
+for (const job of jobs) {
+  console.log(`${job.name}: ${job.data.active ? 'active' : 'inactive'}`);
+}
+
+// Find a specific job by name
+const trackingJob = jobs.find(j => j.name.startsWith('track-game-'));
+if (trackingJob) {
+  await trackingJob.deactivate();
+}
+```
+
 ## Job Configuration
 
 ### Required Fields
@@ -599,6 +625,42 @@ execute: async (job) => {
   
   // Delete one-time job after execution
   await job.delete();
+}
+```
+
+### job.activate()
+
+Activates the job, enabling it to run on schedule.
+
+**Returns:** `Promise<JobInstance>`
+
+**Example:**
+```typescript
+// Re-enable a paused job
+const job = await Jobs.getJob('job_123');
+await job.activate();
+console.log('Job is now active');
+```
+
+### job.deactivate()
+
+Deactivates the job, preventing it from running on schedule. Useful for jobs that should stop themselves.
+
+**Returns:** `Promise<JobInstance>`
+
+**Example:**
+```typescript
+// Job stops itself when work is complete
+execute: async (job) => {
+  const data = await fetchData();
+  
+  if (data.isComplete) {
+    // Stop the recurring job
+    await job.deactivate();
+    return { action: 'completed', stopped: true };
+  }
+  
+  return { action: 'processed', data };
 }
 ```
 
