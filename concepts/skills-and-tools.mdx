@@ -162,6 +162,16 @@ export default class GetWeatherTool implements LuaTool {
   ```
 </ParamField>
 
+<ParamField path="condition" type="function">
+  Optional async function that determines if the tool should be available
+  
+  ```typescript
+  async condition(): Promise<boolean>
+  ```
+  
+  Use for premium features, feature flags, or user-specific availability
+</ParamField>
+
 ## Skills vs Tools
 
 <Tabs>

@@ -30,6 +30,7 @@ interface LuaTool<TInput extends ZodType = ZodType> {
   description: string;
   inputSchema: TInput;
   execute: (input: z.infer<TInput>) => Promise<any>;
+  condition?: () => Promise<boolean>;
 }
 ```
 
@@ -131,6 +132,63 @@ Async function that implements the tool's logic.
   - Must return a JSON-serializable value
   - Can throw errors for failures
 </ParamField>
+
+## Optional Properties
+
+### condition
+
+Async function that determines if the tool should be available to the AI.
+
+<ParamField path="condition" type="function">
+  ```typescript
+  async condition(): Promise<boolean>
+  ```
+  
+  - Runs **before** the tool is offered to the AI
+  - Return `true` to enable the tool, `false` to hide it
+  - If the function throws an error, the tool is disabled (fail-closed)
+  - Has access to all Platform APIs (User, Data, Products, etc.)
+</ParamField>
+
+Use conditions to dynamically enable/disable tools based on:
+- User subscription status (premium features)
+- User verification or account status
+- Feature flags or A/B testing
+- Region-specific functionality
+- Time-based access
+
+```typescript
+import { LuaTool, User } from 'lua-cli';
+import { z } from 'zod';
+
+export default class PremiumSearchTool implements LuaTool {
+  name = "premium_search";
+  description = "Advanced search with filters - premium users only";
+  
+  inputSchema = z.object({
+    query: z.string(),
+    filters: z.object({
+      minPrice: z.number().optional(),
+      maxPrice: z.number().optional()
+    }).optional()
+  });
+
+  // Only show this tool to premium users
+  condition = async () => {
+    const user = await User.get();
+    return user.data?.isPremium === true;
+  };
+
+  async execute(input: z.infer<typeof this.inputSchema>) {
+    // This only runs if condition returned true
+    return { results: [] };
+  }
+}
+```
+
+<Note>
+**Fail-closed behavior:** If your condition function throws an error or times out (30s), the tool is automatically disabled. This ensures tools aren't accidentally exposed when conditions can't be evaluated.
+</Note>
 
 ## Implementation Examples
 
@@ -332,6 +390,62 @@ export default class QuickCheckoutTool implements LuaTool {
       quantity: input.quantity,
       total: `$${(product.price * input.quantity).toFixed(2)}`,
       message: 'Order created successfully'
+    };
+  }
+}
+```
+
+### Conditional Tool (Premium Feature)
+
+```typescript
+import { LuaTool, User, Products } from 'lua-cli';
+import { z } from 'zod';
+
+export default class PremiumAdvancedSearchTool implements LuaTool {
+  name = "premium_advanced_search";
+  description = "Advanced search with filters and sorting - premium users only";
+  
+  inputSchema = z.object({
+    query: z.string().describe("Search query"),
+    filters: z.object({
+      category: z.string().optional(),
+      minPrice: z.number().optional(),
+      maxPrice: z.number().optional()
+    }).optional(),
+    sortBy: z.enum(["relevance", "price_asc", "price_desc", "newest"]).optional()
+  });
+
+  // Condition: Only show to premium users
+  condition = async () => {
+    const user = await User.get();
+    
+    // Check subscription status
+    const isPremium = user.data?.subscription === "premium" 
+                   || user.data?.isPremium === true;
+    
+    return isPremium;
+  };
+
+  async execute(input: z.infer<typeof this.inputSchema>) {
+    const { query, filters, sortBy } = input;
+    
+    const searchResult = await Products.search({ query, limit: 20 });
+    let products = searchResult.products;
+    
+    // Apply price filters
+    if (filters?.minPrice !== undefined || filters?.maxPrice !== undefined) {
+      products = products.filter(p => {
+        if (filters.minPrice && p.price < filters.minPrice) return false;
+        if (filters.maxPrice && p.price > filters.maxPrice) return false;
+        return true;
+      });
+    }
+    
+    return {
+      query,
+      totalResults: products.length,
+      results: products.slice(0, 10),
+      sortedBy: sortBy || "relevance"
     };
   }
 }

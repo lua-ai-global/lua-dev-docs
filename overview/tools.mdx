@@ -214,6 +214,43 @@ class SmartSearchTool implements LuaTool {
 }
 ```
 
+### 4. Conditional Tools
+
+Tools that are only available under certain conditions:
+
+```typescript
+import { User } from 'lua-cli';
+
+class PremiumFeatureTool implements LuaTool {
+  name = "premium_feature";
+  description = "Advanced feature for premium users";
+  
+  inputSchema = z.object({ query: z.string() });
+  
+  // Only show to premium users
+  condition = async () => {
+    const user = await User.get();
+    return user.data?.isPremium === true;
+  };
+  
+  async execute(input) {
+    // Only runs if condition returned true
+    return { result: "premium data" };
+  }
+}
+```
+
+<Note>
+The `condition` function runs before the tool is offered to the AI. If it returns `false` or throws an error, the tool is hidden from the conversation.
+</Note>
+
+**Use cases for conditional tools:**
+- Premium/paid features
+- User verification status
+- Feature flags & A/B testing
+- Region-specific tools
+- Time-based access
+
 ## Tool Best Practices
 
 <AccordionGroup>
