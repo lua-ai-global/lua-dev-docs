@@ -72,7 +72,7 @@ const hipaaConsentPreProcessor = new PreProcessor({
 const medicalDisclaimerPostProcessor = new PostProcessor({
   name: 'medical-disclaimer',
   description: 'Add medical disclaimer to all responses',
-  execute: async (response, user) => {
+  execute: async (user, message, response, channel) => {
     return {
       modifiedResponse: response + 
         "\n\n⚕️ **Medical Disclaimer:** This information is for patient portal access only. Always consult your healthcare provider for medical advice. In case of emergency, call 911."

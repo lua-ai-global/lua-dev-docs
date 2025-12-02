@@ -255,7 +255,7 @@ export const agent = new LuaAgent({
     ```typescript
     new PostProcessor({
       name: "add-disclaimer",
-      execute: async (response, user) => { ... }
+      execute: async (user, message, response, channel) => { ... }
     })
     ```
   </Card>

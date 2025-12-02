@@ -106,7 +106,7 @@ const validateInformationPreProcessor = new PreProcessor({
 const complianceDisclaimerPostProcessor = new PostProcessor({
   name: 'compliance-disclaimer',
   description: 'Add regulatory disclaimers to responses',
-  execute: async (response, user) => {
+  execute: async (user, message, response, channel) => {
     return {
       modifiedResponse: response + 
         "\n\n_Banking services provided by our partner bank. FDIC insured. Member FDIC. Your information is encrypted and secure._"

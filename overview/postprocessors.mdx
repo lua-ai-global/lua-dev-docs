@@ -59,13 +59,13 @@ description: "Transform and enhance AI responses before sending to users"
 ## Simple Example
 
 ```typescript
-import { PostProcessor } from 'lua-cli';
+import { PostProcessor, UserDataInstance } from 'lua-cli';
 
 const addDisclaimer = new PostProcessor({
   name: 'add-disclaimer',
   description: 'Add legal disclaimer to responses',
   
-  execute: async (response, user) => {
+  execute: async (user: UserDataInstance, message: string, response: string, channel: string) => {
     return {
       modifiedResponse: response + 
         "\n\n_Disclaimer: This is AI-generated content for informational purposes only._"
@@ -81,7 +81,7 @@ const addDisclaimer = new PostProcessor({
     **Add legal or informational disclaimers**
     
     ```typescript
-    execute: async (response, user) => {
+    execute: async (user, message, response, channel) => {
       if (containsMedicalAdvice(response)) {
         return {
           modifiedResponse: response + 
@@ -97,7 +97,7 @@ const addDisclaimer = new PostProcessor({
     **Add company branding and signatures**
     
     ```typescript
-    execute: async (response, user) => {
+    execute: async (user, message, response, channel) => {
       const footer = "\n\n---\n" +
         "_Powered by Acme Corp_\n" +
         "Need help? support@acme.com";
@@ -113,7 +113,7 @@ const addDisclaimer = new PostProcessor({
     **Apply consistent text formatting**
     
     ```typescript
-    execute: async (response, user) => {
+    execute: async (user, message, response, channel) => {
       // Capitalize sentences
       let formatted = capitalizeFirst(response);
       
@@ -132,10 +132,11 @@ const addDisclaimer = new PostProcessor({
     **Add user-specific context**
     
     ```typescript
-    execute: async (response, user) => {
+    execute: async (user, message, response, channel) => {
       const greeting = `Hi ${user.name}! `;
+      const userData = await user.data;
       
-      if (user.data.vipStatus) {
+      if (userData.vipStatus) {
         return {
           modifiedResponse: greeting + response + 
             "\n\n✨ VIP members get priority support!"
@@ -152,26 +153,18 @@ const addDisclaimer = new PostProcessor({
 
 ## Execution Order
 
-PostProcessors run in order of their **priority** value (lowest first):
+PostProcessors run in order of their **priority** value (lowest first). Priority is set when creating the postprocessor via the API.
 
-```typescript
-const translator = new PostProcessor({
-  name: 'translator',
-  priority: 1,  // Runs first
-  execute: async (response, user) => { ... }
-});
-
-const formatter = new PostProcessor({
-  name: 'formatter',
-  priority: 10,  // Runs second
-  execute: async (response, user) => { ... }
-});
-
-const disclaimer = new PostProcessor({
-  name: 'disclaimer',
-  priority: 100,  // Runs last
-  execute: async (response, user) => { ... }
-});
+```
+AI Agent Response
+    ↓
+PostProcessor 1 (priority: 1)   → Runs first
+    ↓
+PostProcessor 2 (priority: 10)  → Runs second
+    ↓
+PostProcessor 3 (priority: 100) → Runs last
+    ↓
+Final Response to User
 ```
 
 **Default priority:** 100 (if not specified)
@@ -228,10 +221,12 @@ export const agent = new LuaAgent({
     Fall back to original response on errors
     
     ```typescript
-    try {
-      return { modifiedResponse: process(response) };
-    } catch (error) {
-      return { modifiedResponse: response };
+    execute: async (user, message, response, channel) => {
+      try {
+        return { modifiedResponse: process(response) };
+      } catch (error) {
+        return { modifiedResponse: response };
+      }
     }
     ```
   </Accordion>

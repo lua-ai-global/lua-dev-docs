@@ -374,7 +374,7 @@ import { PostProcessor } from 'lua-cli';
 
 const addDisclaimer = new PostProcessor({
   name: 'add-disclaimer',
-  execute: async (response, user) => {
+  execute: async (user, message, response, channel) => {
     return {
       modifiedResponse: response + "\n\n_This is AI-generated content._"
     };

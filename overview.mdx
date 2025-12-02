@@ -259,7 +259,7 @@ const profanityFilter = new PreProcessor({
 
 const addDisclaimer = new PostProcessor({
   name: 'add-disclaimer',
-  execute: async (response, user) => {
+  execute: async (user, message, response, channel) => {
     return {
       modifiedResponse: response + "\n\n_AI-generated content for informational purposes._"
     };
