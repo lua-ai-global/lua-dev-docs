@@ -132,7 +132,7 @@ Data.search(
   query: string,
   limit?: number,
   scoreThreshold?: number
-): Promise<SearchResult>
+): Promise<DataEntryInstance[]>
 ```
 
 <ParamField path="collectionName" type="string" required>
@@ -147,18 +147,11 @@ Data.search(
   Maximum number of results to return
 </ParamField>
 
-<ParamField path="scoreThreshold" type="number" default={0.7}>
+<ParamField path="scoreThreshold" type="number" default={0.6}>
   Minimum similarity score (0-1). Higher = more similar.
 </ParamField>
 
-**Returns:**
-
-```typescript
-{
-  data: Array<Entry & { score: number }>;
-  count: number;
-}
-```
+**Returns:** Array of `DataEntryInstance` objects, each with a `score` property.
 
 **Similarity Scores:**
 - `1.0` = Perfect match
@@ -172,8 +165,8 @@ Data.search(
 // Finds movies even if query doesn't match exact words!
 const results = await Data.search('movies', 'mind-bending thriller', 5, 0.7);
 
-results.data.forEach(entry => {
-  console.log(`${entry.data.title} - Relevance: ${entry.score}`);
+results.forEach(entry => {
+  console.log(`${entry.title} - Relevance: ${entry.score}`);
 });
 // Output:
 // Inception - Relevance: 0.92
@@ -219,8 +212,11 @@ Data.get(
     currentPage: number;
     totalPages: number;
     totalCount: number;
+    limit: number;
     hasNextPage: boolean;
-    hasPreviousPage: boolean;
+    hasPrevPage: boolean;
+    nextPage: number | null;
+    prevPage: number | null;
   };
 }
 ```
@@ -273,8 +269,9 @@ Update an existing entry.
 Data.update(
   collectionName: string,
   entryId: string,
-  data: object
-): Promise<Entry>
+  data: object,
+  searchText?: string
+): Promise<UpdateResponse>
 ```
 
 <ParamField path="collectionName" type="string" required>
@@ -286,23 +283,39 @@ Data.update(
 </ParamField>
 
 <ParamField path="data" type="object" required>
-  New data (completely replaces existing data)
+  Data to merge with existing entry
 </ParamField>
+
+<ParamField path="searchText" type="string">
+  Optional new text for vector search indexing
+</ParamField>
+
+**Returns:**
+
+```typescript
+{
+  status: string;   // "success"
+  message: string;  // "Custom data entry updated"
+}
+```
 
 **Example:**
 
 ```typescript
-const updated = await Data.update('movies', 'entry_abc123', {
-  title: 'Inception',
-  year: 2010,
-  director: 'Christopher Nolan',
-  rating: 8.8,  // Updated rating
+// Update data and search text
+const result = await Data.update('movies', 'entry_abc123', {
+  rating: 8.8,      // Updated rating
   awards: ['Oscar'] // New field
+}, 'Inception Christopher Nolan oscar winner');
+
+// Update data only
+await Data.update('movies', 'entry_abc123', {
+  views: 1500
 });
 ```
 
 <Note>
-Updates replace the entire data object. To preserve fields, read first then update.
+Updates merge with existing data. Only the specified fields are updated; other fields are preserved.
 </Note>
 
 ## DataEntryInstance Methods
@@ -314,8 +327,12 @@ When you retrieve or create data entries, you get a `DataEntryInstance` object w
 Save the current state of the data entry to the server. This is a convenience method that persists all changes made to the entry.
 
 ```typescript
-entry.save(): Promise<boolean>
+entry.save(searchText?: string): Promise<boolean>
 ```
+
+<ParamField path="searchText" type="string">
+  Optional new text for vector search indexing
+</ParamField>
 
 **Returns:** Promise resolving to `true` if successful
 
@@ -332,11 +349,12 @@ entry.year = 2010;
 // Save all changes at once
 await entry.save();
 
-// Much cleaner workflow!
+// Or save with updated search text
+await entry.save('Inception 2010 Nolan sci-fi thriller dreams');
 ```
 
 <Note>
-**New in Latest Version:** The `save()` method provides a simpler workflow - modify properties then save, rather than calling `Data.update()` with the collection name and entry ID.
+The `save()` method provides a simpler workflow - modify properties then save, rather than calling `Data.update()` with the collection name and entry ID.
 </Note>
 
 ### update() (Instance Method)
@@ -344,14 +362,26 @@ await entry.save();
 Update the entry using the instance method.
 
 ```typescript
-entry.update(data: object, searchText?: string): Promise<any>
+entry.update(data: object, searchText?: string): Promise<object>
 ```
+
+**Returns:** Promise resolving to the updated data object
 
 **Example:**
 
 ```typescript
 const entry = await Data.getEntry('movies', 'entry_abc123');
-await entry.update({ rating: 9.5 }, 'inception nolan 9.5 rating');
+
+// Update with new search text
+const updatedData = await entry.update(
+  { rating: 9.5, review: 'Mind-bending masterpiece' }, 
+  'inception nolan 9.5 rating masterpiece'
+);
+
+console.log(updatedData.rating); // 9.5
+
+// Update data only (keeps existing search text)
+await entry.update({ views: 1000 });
 ```
 
 ### delete() (Instance Method)

@@ -249,20 +249,35 @@ const recentMovies = results.data.filter(m =>
 
 ```typescript
 export class UpdateMovieTool implements LuaTool {
-  async execute(input: { id: string, data: any }) {
+  name = "update_movie";
+  description = "Update movie information";
+  
+  inputSchema = z.object({
+    id: z.string(),
+    data: z.object({
+      rating: z.number().optional(),
+      awards: z.array(z.string()).optional(),
+      description: z.string().optional()
+    }),
+    updateSearchText: z.boolean().optional()
+  });
+
+  async execute(input: z.infer<typeof this.inputSchema>) {
     const movie = await Data.getEntry('movies', input.id);
     
-    await Data.update('movies', input.id, {
-      ...movie.data,
-      ...input.data
-    });
+    // Optionally update search text if description changed
+    const searchText = input.updateSearchText 
+      ? `${movie.title} ${movie.director} ${input.data.description || ''}`
+      : undefined;
     
-    return { success: true };
+    await Data.update('movies', input.id, input.data, searchText);
+    
+    return { success: true, message: `Updated movie ${movie.title}` };
   }
 }
 ```
 
-### Using save() Method (New!)
+### Using save() Method
 
 ```typescript
 export class UpdateMovieRatingTool implements LuaTool {
@@ -287,7 +302,12 @@ export class UpdateMovieRatingTool implements LuaTool {
     movie.updatedAt = new Date().toISOString();
     
     // Save all changes at once
-    await movie.save();
+    // Optionally update search text if review added
+    const searchText = input.review 
+      ? `${movie.title} ${movie.director} rating ${input.rating} ${input.review}`
+      : undefined;
+    
+    await movie.save(searchText);
     
     return { 
       success: true,
