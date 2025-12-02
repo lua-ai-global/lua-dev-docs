@@ -55,8 +55,9 @@ lua [options] [command]
 | `lua compile`    | 📦 Development    | Compile skill to deployable format                                          |
 | `lua test`       | 💬 Testing        | Test skill tools interactively                                              |
 | `lua chat`       | 💬 Testing        | Interactive chat with your agent                                            |
-| `lua push`       | ☁️ Deployment     | Push skill or persona version to server                                     |
+| `lua push`       | ☁️ Deployment     | Push components to server                                                   |
 | `lua deploy`     | 🚀 Deployment     | Deploy version to production                                                |
+| `lua mcp`        | 🔌 Integration    | Manage MCP (Model Context Protocol) servers                                 |
 | `lua production` | 🚀 Deployment     | View and manage production environment                                      |
 | `lua channels`   | 🔌 Integration    | Manage communication channels                                               |
 | `lua logs`       | 🐛 Debugging      | View and filter agent logs by component type (Skills, Jobs, Webhooks, etc.) |
@@ -92,12 +93,15 @@ lua test               # 🧪 Test tools interactively
 lua chat               # 💬 Start interactive chat
 
 # Deployment (Interactive or Direct)
-lua push               # ☁️ Push to server (choose skill/persona)
+lua push               # ☁️ Push to server (choose component)
 lua push skill         # 🎯 Direct: push skill
 lua push persona       # 🎯 Direct: push persona
+lua push mcp           # 🎯 Direct: push MCP server
+lua push all --force   # 🎯 Push all components
 lua deploy             # 🚀 Deploy to production
 
 # Integration & Debugging
+lua mcp                # 🔌 Manage MCP servers (list, activate, deactivate)
 lua channels           # 🔌 Manage communication channels
 lua logs               # 🐛 View and filter execution logs (interactive filtering)
 
@@ -135,6 +139,9 @@ lua docs               # 📖 Open documentation
   </Card>
   <Card title="lua features" icon="sliders">
     Manage agent capabilities
+  </Card>
+  <Card title="lua mcp" icon="plug">
+    Manage MCP servers
   </Card>
   <Card title="lua test" icon="flask">
     Test tools interactively
@@ -605,10 +612,11 @@ The v3.0.0 pattern uses `LuaAgent` for unified configuration:
 
 ```typescript
 // src/index.ts
-import { LuaAgent, LuaSkill, LuaWebhook, LuaJob } from "lua-cli";
+import { LuaAgent, LuaSkill, LuaWebhook, LuaJob, LuaMCPServer } from "lua-cli";
 import { mySkill } from "./skills/my-skill";
 import paymentWebhook from "./webhooks/payment";
 import dailyReportJob from "./jobs/daily-report";
+import filesystemServer from "./mcp/filesystem";
 
 // Export agent (v3.0.0 pattern)
 export const agent = new LuaAgent({
@@ -635,6 +643,9 @@ Communication style:
 
   // Scheduled tasks (optional)
   jobs: [dailyReportJob],
+
+  // MCP servers for external tools (optional)
+  mcpServers: [filesystemServer],
 });
 ```
 
@@ -653,6 +664,8 @@ my-agent/
 │   │   └── payment.ts
 │   ├── jobs/                 # Scheduled jobs (v3.0.0)
 │   │   └── daily-report.ts
+│   ├── mcp/                  # MCP server configurations
+│   │   └── filesystem.ts
 │   ├── preprocessors/        # Message filters (v3.0.0)
 │   │   └── profanity-filter.ts
 │   └── postprocessors/       # Response formatters (v3.0.0)
@@ -692,6 +705,11 @@ jobs:
   - name: daily-report
     jobId: job_abc123 # Auto-created
 
+# MCP Servers
+mcpServers:
+  - name: filesystem
+    mcpServerId: mcp_abc123 # Auto-created
+
 # Environment variables
 skill:
   env:
@@ -703,7 +721,8 @@ skill:
 - `skillId` - Created during compilation
 - `webhookId` - Created during compilation
 - `jobId` - Created during compilation
-- `skills`, `webhooks`, `jobs` arrays - Populated from code
+- `mcpServerId` - Created during compilation
+- `skills`, `webhooks`, `jobs`, `mcpServers` arrays - Populated from code
 - `persona` - Synced from LuaAgent
 
 **Manual fields:**
@@ -779,6 +798,9 @@ skill:
   </Card>
   <Card title="Features Command" icon="sliders" href="/cli/features-command">
     Manage agent capabilities
+  </Card>
+  <Card title="MCP Command" icon="plug" href="/cli/mcp-command">
+    Manage MCP servers for external tools
   </Card>
   <Card title="Chat Command" icon="comments" href="/cli/chat-command">
     Interactive chat with your agent

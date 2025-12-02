@@ -1,0 +1,291 @@
+---
+title: "MCP Command"
+description: "Manage MCP servers for your agent"
+---
+
+## Overview
+
+The `lua mcp` command manages Model Context Protocol (MCP) servers. Use it to list, activate, deactivate, and delete MCP servers.
+
+```bash
+lua mcp              # Interactive mode
+lua mcp list         # List all servers
+lua mcp activate     # Activate a server
+lua mcp deactivate   # Deactivate a server
+lua mcp delete       # Delete a server
+```
+
+## Commands
+
+### lua mcp
+
+Interactive MCP server management.
+
+```bash
+lua mcp
+```
+
+Opens an interactive menu to:
+- List MCP servers
+- Activate a server
+- Deactivate a server
+- Delete a server
+
+### lua mcp list
+
+List all MCP servers and their status.
+
+```bash
+lua mcp list
+# or
+lua mcp ls
+```
+
+**Output:**
+
+```
+============================================================
+🔌 MCP Servers
+============================================================
+
+✅ Active Servers:
+
+🟢 filesystem
+   Transport: stdio
+   Command: npx -y @modelcontextprotocol/server-filesystem /data
+   ID: mcp_abc123
+
+────────────────────────────────────────
+
+⏸️  Inactive Servers:
+
+⚪ github
+   Transport: stdio
+   Command: npx -y @modelcontextprotocol/server-github
+   ID: mcp_def456
+
+============================================================
+```
+
+### lua mcp activate
+
+Activate an MCP server to make its tools available.
+
+```bash
+lua mcp activate              # Interactive selection
+lua mcp activate github       # Activate by name
+# or
+lua mcp enable github         # Alias
+```
+
+**What happens:**
+- Server is marked as active
+- Server's tools become available to your agent
+- Tools appear in the agent's tool list at runtime
+
+**Example:**
+
+```bash
+$ lua mcp activate github
+🔄 Activating github...
+
+✅ MCP server "github" activated successfully!
+
+💡 The server's tools are now available to your agent.
+```
+
+### lua mcp deactivate
+
+Deactivate an MCP server to remove its tools.
+
+```bash
+lua mcp deactivate              # Interactive selection
+lua mcp deactivate github       # Deactivate by name
+# or
+lua mcp disable github          # Alias
+```
+
+**What happens:**
+- Server is marked as inactive
+- Server's tools are removed from agent runtime
+- Configuration is preserved (can be re-activated)
+
+**Example:**
+
+```bash
+$ lua mcp deactivate github
+🔄 Deactivating github...
+
+✅ MCP server "github" deactivated successfully!
+
+💡 The server's tools are no longer available to your agent.
+```
+
+### lua mcp delete
+
+Permanently delete an MCP server.
+
+```bash
+lua mcp delete              # Interactive selection
+lua mcp delete github       # Delete by name
+# or
+lua mcp rm github           # Alias
+```
+
+<Warning>
+**This is permanent!** Deleting an MCP server removes it from the platform. You'll need to re-compile and push to recreate it.
+</Warning>
+
+**Example:**
+
+```bash
+$ lua mcp delete github
+
+⚠️  You are about to delete MCP server: github
+⚠️  WARNING: This server is currently ACTIVE!
+? Are you sure you want to delete this MCP server? (y/N) y
+
+🔄 Deleting github...
+
+✅ MCP server "github" deleted successfully!
+```
+
+## Command Aliases
+
+| Command | Alias |
+|---------|-------|
+| `lua mcp list` | `lua mcp ls` |
+| `lua mcp activate` | `lua mcp enable` |
+| `lua mcp deactivate` | `lua mcp disable` |
+| `lua mcp delete` | `lua mcp rm` |
+
+## Pushing MCP Servers
+
+MCP servers can also be pushed using the `lua push` command:
+
+```bash
+# Push a single MCP server
+lua push mcp
+# Select server from list
+
+# Push all components including MCP servers
+lua push all --force
+```
+
+When pushing all with `--auto-deploy`, MCP servers are automatically activated:
+
+```bash
+lua push all --force --auto-deploy
+```
+
+## Workflow Example
+
+<Steps>
+  <Step title="Define MCP Server">
+    Create the server in your code:
+    
+    ```typescript
+    // src/mcp/github.ts
+    import { LuaMCPServer } from 'lua-cli';
+    
+    export const githubServer = new LuaMCPServer({
+      name: 'github',
+      transport: 'stdio',
+      command: 'npx',
+      args: ['-y', '@modelcontextprotocol/server-github'],
+      env: { 'GITHUB_TOKEN': process.env.GITHUB_TOKEN }
+    });
+    ```
+  </Step>
+  
+  <Step title="Add to Agent">
+    ```typescript
+    // src/index.ts
+    import { LuaAgent } from 'lua-cli';
+    import { githubServer } from './mcp/github';
+    
+    export const agent = new LuaAgent({
+      name: 'my-agent',
+      persona: '...',
+      mcpServers: [githubServer]
+    });
+    ```
+  </Step>
+  
+  <Step title="Compile">
+    ```bash
+    lua compile
+    # Server is registered, ID assigned
+    ```
+  </Step>
+  
+  <Step title="Push">
+    ```bash
+    lua push mcp
+    # or
+    lua push all --force
+    ```
+  </Step>
+  
+  <Step title="Activate">
+    ```bash
+    lua mcp activate github
+    # Tools are now available
+    ```
+  </Step>
+  
+  <Step title="Verify">
+    ```bash
+    lua mcp list
+    # Shows github as active
+    ```
+  </Step>
+</Steps>
+
+## Tips
+
+<AccordionGroup>
+  <Accordion title="Check status before activating">
+    Use `lua mcp list` to see current status before making changes
+    
+    ```bash
+    lua mcp list
+    # Shows which servers are active/inactive
+    ```
+  </Accordion>
+
+  <Accordion title="Activate only what you need">
+    Keep unused servers deactivated to reduce overhead
+    
+    ```bash
+    lua mcp activate github    # When needed
+    lua mcp deactivate github  # When done
+    ```
+  </Accordion>
+
+  <Accordion title="Use --force for automation">
+    In CI/CD, use `lua push all --force` to avoid prompts
+    
+    ```bash
+    lua push all --force --auto-deploy
+    ```
+  </Accordion>
+</AccordionGroup>
+
+## Related Commands
+
+<CardGroup cols={2}>
+  <Card title="lua compile" href="/cli/skill-management#lua-compile" icon="gears">
+    Compile and register MCP servers
+  </Card>
+  <Card title="lua push" href="/cli/skill-management#lua-push" icon="upload">
+    Push MCP server configuration
+  </Card>
+</CardGroup>
+
+## See Also
+
+- [MCP Servers Overview](/overview/mcp-servers) - Conceptual introduction
+- [LuaMCPServer API](/api/luamcpserver) - Complete API reference
+- [Skill Management](/cli/skill-management) - Compile and push commands
+

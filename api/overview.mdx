@@ -27,6 +27,12 @@ Lua CLI v3.0.0 provides a comprehensive set of APIs for building AI agents:
     **PreProcessor, PostProcessor** - Filter and format messages
   </Card>
   <Card
+    title="External Tools"
+    icon="plug"
+  >
+    **LuaMCPServer** - Connect MCP servers for external tool integrations
+  </Card>
+  <Card
     title="Platform APIs"
     icon="server"
   >
@@ -37,12 +43,6 @@ Lua CLI v3.0.0 provides a comprehensive set of APIs for building AI agents:
     icon="key"
   >
     **env()** - Secure configuration management
-  </Card>
-  <Card
-    title="Type Definitions"
-    icon="code"
-  >
-    Full TypeScript support with autocomplete
   </Card>
 </CardGroup>
 
@@ -84,6 +84,7 @@ import {
   LuaTool, 
   LuaWebhook, 
   LuaJob,
+  LuaMCPServer,
   PreProcessor,
   PostProcessor
 } from 'lua-cli';
@@ -589,6 +590,9 @@ export class SearchNotesTool implements LuaTool {
   </Card>
   <Card title="LuaJob" href="/api/luajob" icon="clock">
     **v3.0.0** Scheduled tasks
+  </Card>
+  <Card title="LuaMCPServer" href="/api/luamcpserver" icon="plug">
+    MCP external tools
   </Card>
   <Card title="PreProcessor" href="/api/preprocessor" icon="filter">
     **v3.0.0** Message filtering

@@ -1,0 +1,298 @@
+---
+title: "MCP Servers"
+description: "Extend your agent with external tools via Model Context Protocol"
+---
+
+## What are MCP Servers?
+
+**MCP Servers** are external processes that provide additional tools to your agent using the Model Context Protocol (MCP). Instead of building every tool from scratch, you can connect to existing MCP servers that provide file access, database queries, web searches, and more.
+
+<Card title="Think of it as:" icon="plug">
+  Plug-and-play extensions for your agent - connect to pre-built tools without writing code
+</Card>
+
+<Note>
+**What is MCP?** The Model Context Protocol is an open standard developed by Anthropic for connecting AI models to external tools and data sources. Learn more at [modelcontextprotocol.io](https://modelcontextprotocol.io).
+</Note>
+
+## Why MCP Servers?
+
+<CardGroup cols={2}>
+  <Card title="No Code Required" icon="magic-wand-sparkles">
+    Use existing MCP servers - just configure and connect
+  </Card>
+  <Card title="Open Standard" icon="lock-open">
+    MCP is an open protocol with a growing ecosystem
+  </Card>
+  <Card title="Extend Capabilities" icon="puzzle-piece">
+    Add file access, databases, web search, and more
+  </Card>
+  <Card title="Mix & Match" icon="layer-group">
+    Combine MCP servers with your custom LuaSkills
+  </Card>
+</CardGroup>
+
+## How MCP Servers Work
+
+<Steps>
+  <Step title="Configure Server">
+    Define the MCP server in your code with transport and connection details
+  </Step>
+  
+  <Step title="Compile & Push">
+    Run `lua compile` and `lua push mcp` to register with the platform
+  </Step>
+  
+  <Step title="Activate">
+    Activate the server to make its tools available to your agent
+  </Step>
+  
+  <Step title="Agent Uses Tools">
+    Your agent automatically discovers and uses the MCP server's tools
+  </Step>
+</Steps>
+
+## Transport Types
+
+MCP servers can run locally or remotely:
+
+<Tabs>
+  <Tab title="stdio (Local)">
+    **Run locally as a process**
+    
+    - Uses stdin/stdout for communication
+    - Great for npm packages and CLI tools
+    - No network overhead
+    
+    ```typescript
+    import { LuaMCPServer } from 'lua-cli';
+    
+    const filesystemServer = new LuaMCPServer({
+      name: 'filesystem',
+      transport: 'stdio',
+      command: 'npx',
+      args: ['-y', '@modelcontextprotocol/server-filesystem', '/data']
+    });
+    ```
+  </Tab>
+
+  <Tab title="sse (Remote)">
+    **Connect to remote server**
+    
+    - Uses Server-Sent Events (SSE)
+    - Connect to hosted MCP services
+    - Supports authentication headers
+    
+    ```typescript
+    import { LuaMCPServer } from 'lua-cli';
+    
+    const remoteServer = new LuaMCPServer({
+      name: 'docs',
+      transport: 'sse',
+      url: 'https://mcp.example.com/sse',
+      headers: { 'Authorization': 'Bearer token' }
+    });
+    ```
+  </Tab>
+</Tabs>
+
+## Simple Example
+
+```typescript
+import { LuaAgent, LuaMCPServer, LuaSkill } from 'lua-cli';
+
+// Connect to filesystem MCP server
+const filesystemServer = new LuaMCPServer({
+  name: 'filesystem',
+  transport: 'stdio',
+  command: 'npx',
+  args: ['-y', '@modelcontextprotocol/server-filesystem', '/data']
+});
+
+// Your custom skill
+const coreSkill = new LuaSkill({
+  name: 'core-skill',
+  description: 'Core tools',
+  tools: [...]
+});
+
+export const agent = new LuaAgent({
+  name: 'file-assistant',
+  persona: 'You are a helpful assistant with access to files.',
+  skills: [coreSkill],
+  
+  // Add MCP server
+  mcpServers: [filesystemServer]
+});
+```
+
+## Common Use Cases
+
+<Tabs>
+  <Tab title="File Access">
+    **Read and write files**
+    
+    ```typescript
+    const filesystemServer = new LuaMCPServer({
+      name: 'filesystem',
+      transport: 'stdio',
+      command: 'npx',
+      args: ['-y', '@modelcontextprotocol/server-filesystem', '/uploads']
+    });
+    ```
+    
+    Tools provided:
+    - `read_file` - Read file contents
+    - `write_file` - Write to files
+    - `list_directory` - List files
+    - `search_files` - Search by pattern
+  </Tab>
+
+  <Tab title="Web Search">
+    **Search the web**
+    
+    ```typescript
+    const braveSearch = new LuaMCPServer({
+      name: 'brave-search',
+      transport: 'stdio',
+      command: 'npx',
+      args: ['-y', '@anthropic/mcp-server-brave-search'],
+      env: { 'BRAVE_API_KEY': process.env.BRAVE_KEY }
+    });
+    ```
+    
+    Tools provided:
+    - `brave_search` - Search the web
+    - `brave_local_search` - Local business search
+  </Tab>
+
+  <Tab title="GitHub">
+    **Interact with GitHub**
+    
+    ```typescript
+    const githubServer = new LuaMCPServer({
+      name: 'github',
+      transport: 'stdio',
+      command: 'npx',
+      args: ['-y', '@modelcontextprotocol/server-github'],
+      env: { 'GITHUB_TOKEN': process.env.GITHUB_TOKEN }
+    });
+    ```
+    
+    Tools provided:
+    - `search_repositories` - Find repos
+    - `get_file_contents` - Read files
+    - `create_issue` - Open issues
+    - `list_pull_requests` - View PRs
+  </Tab>
+
+  <Tab title="Databases">
+    **Query databases**
+    
+    ```typescript
+    const sqliteServer = new LuaMCPServer({
+      name: 'sqlite',
+      transport: 'stdio',
+      command: 'npx',
+      args: ['-y', '@modelcontextprotocol/server-sqlite', 'path/to/db.sqlite']
+    });
+    ```
+    
+    Tools provided:
+    - `query` - Execute SQL queries
+    - `list_tables` - Show tables
+    - `describe_table` - Show schema
+  </Tab>
+</Tabs>
+
+## MCP vs Custom Skills
+
+| Aspect | MCP Servers | LuaSkill |
+|--------|-------------|----------|
+| **Code Required** | None (just config) | Yes (TypeScript) |
+| **Customization** | Limited to server options | Full control |
+| **Availability** | Growing ecosystem | Unlimited |
+| **Best For** | Standard integrations | Custom business logic |
+
+<Note>
+**Best practice:** Use MCP servers for standard integrations (files, search, databases) and LuaSkill for custom business logic. They work great together!
+</Note>
+
+## Lifecycle
+
+MCP servers have a simple lifecycle:
+
+```
+Define → Compile → Push → Activate → Use → Deactivate
+```
+
+<AccordionGroup>
+  <Accordion title="1. Define">
+    Create `LuaMCPServer` in your source code
+  </Accordion>
+  
+  <Accordion title="2. Compile">
+    Run `lua compile` - registers server and gets ID
+  </Accordion>
+  
+  <Accordion title="3. Push">
+    Run `lua push mcp` or `lua push all --force` - syncs configuration
+  </Accordion>
+  
+  <Accordion title="4. Activate">
+    Run `lua mcp activate` - makes tools available to agent
+  </Accordion>
+  
+  <Accordion title="5. Use">
+    Agent discovers and uses MCP server tools at runtime
+  </Accordion>
+  
+  <Accordion title="6. Deactivate">
+    Run `lua mcp deactivate` - removes tools from agent
+  </Accordion>
+</AccordionGroup>
+
+## Managing MCP Servers
+
+Use the `lua mcp` command to manage servers:
+
+```bash
+lua mcp list        # List all MCP servers and their status
+lua mcp activate    # Activate a server (make tools available)
+lua mcp deactivate  # Deactivate a server (remove tools)
+lua mcp delete      # Delete a server from the platform
+```
+
+## Next Steps
+
+<CardGroup cols={2}>
+  <Card
+    title="LuaMCPServer API"
+    icon="book"
+    href="/api/luamcpserver"
+  >
+    Complete API reference and examples
+  </Card>
+  <Card
+    title="MCP Command"
+    icon="terminal"
+    href="/cli/mcp-command"
+  >
+    CLI commands for managing servers
+  </Card>
+  <Card
+    title="LuaAgent"
+    icon="robot"
+    href="/overview/agent"
+  >
+    Adding MCP servers to your agent
+  </Card>
+  <Card
+    title="Skills Concept"
+    icon="puzzle-piece"
+    href="/overview/skill"
+  >
+    Custom tools with LuaSkill
+  </Card>
+</CardGroup>
+

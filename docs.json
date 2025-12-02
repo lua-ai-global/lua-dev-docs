@@ -32,6 +32,7 @@
               "overview/jobs",
               "overview/preprocessors",
               "overview/postprocessors",
+              "overview/mcp-servers",
               "overview/resources",
               "overview/channels"
             ]
@@ -80,6 +81,7 @@
               "cli/env-command",
               "cli/persona-command",
               "cli/features-command",
+              "cli/mcp-command",
               "cli/resources-command",
               "cli/channels-command",
               "cli/production-command",
@@ -100,6 +102,7 @@
                   "api/luatool",
                   "api/luawebhook",
                   "api/luajob",
+                  "api/luamcpserver",
                   "api/preprocessor",
                   "api/postprocessor"
                 ]

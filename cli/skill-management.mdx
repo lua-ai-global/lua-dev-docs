@@ -342,16 +342,22 @@ Output: {
 
 ## lua push
 
-Push your compiled skill or persona version to the Lua server with optional immediate deployment.
+Push your compiled components to the Lua server.
 
 ```bash
-lua push              # Interactive: choose skill or persona
-lua push skill        # Direct: push skill
-lua push persona      # Direct: push persona
+lua push                 # Interactive selection
+lua push skill           # Push a skill
+lua push persona         # Push persona
+lua push webhook         # Push a webhook
+lua push job             # Push a job
+lua push preprocessor    # Push a preprocessor
+lua push postprocessor   # Push a postprocessor
+lua push mcp             # Push an MCP server
+lua push all --force     # Push all components
 ```
 
 <Note>
-**New in v2.6.0:** Direct mode lets you skip the selection prompt for faster workflows!
+**Push All:** Use `lua push all --force` to push all components at once. Add `--auto-deploy` to also activate/deploy them.
 </Note>
 
 ### Usage Modes

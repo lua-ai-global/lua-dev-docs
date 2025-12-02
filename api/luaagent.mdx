@@ -101,6 +101,14 @@ Creates a new agent configuration.
   **Default**: `[]`
 </ParamField>
 
+<ParamField path="mcpServers" type="LuaMCPServer[]">
+  MCP (Model Context Protocol) servers providing external tools
+  
+  **Default**: `[]`
+  
+  **See**: [LuaMCPServer API](/api/luamcpserver)
+</ParamField>
+
 ## Basic Example
 
 ```typescript
@@ -129,6 +137,7 @@ import {
   LuaSkill, 
   LuaWebhook, 
   LuaJob,
+  LuaMCPServer,
   PreProcessor,
   PostProcessor
 } from 'lua-cli';
@@ -143,6 +152,7 @@ import dailyReportJob from './jobs/daily-report';
 import cleanupJob from './jobs/cleanup';
 import profanityFilter from './preprocessors/profanity-filter';
 import addDisclaimer from './postprocessors/disclaimer';
+import filesystemServer from './mcp/filesystem';
 
 export const agent = new LuaAgent({
   name: 'ecommerce-assistant',
@@ -196,6 +206,10 @@ Limitations:
 
   postProcessors: [
     addDisclaimer
+  ],
+
+  mcpServers: [
+    filesystemServer
   ]
 });
 ```
@@ -288,6 +302,7 @@ import { webhooks } from './webhooks';
 import { jobs } from './jobs';
 import { preProcessors } from './preprocessors';
 import { postProcessors } from './postprocessors';
+import { mcpServers } from './mcp';
 
 export const agent = new LuaAgent({
   name: 'enterprise-assistant',
@@ -302,7 +317,8 @@ export const agent = new LuaAgent({
   webhooks: webhooks,
   jobs: jobs,
   preProcessors: preProcessors,
-  postProcessors: postProcessors
+  postProcessors: postProcessors,
+  mcpServers: mcpServers
 });
 ```
 
@@ -339,6 +355,7 @@ The LuaAgent automatically validates:
 - ✅ All skills are valid LuaSkill instances
 - ✅ All webhooks are valid LuaWebhook instances
 - ✅ All jobs are valid LuaJob instances
+- ✅ All MCP servers are valid LuaMCPServer instances
 - ✅ Tool names are unique across all skills
 - ✅ Component names follow naming conventions
 
@@ -377,6 +394,9 @@ export const agent = new LuaAgent({
   </Card>
   <Card title="LuaJob" href="/api/luajob" icon="clock">
     Scheduled tasks
+  </Card>
+  <Card title="LuaMCPServer" href="/api/luamcpserver" icon="plug">
+    External MCP tools
   </Card>
 </CardGroup>
 
