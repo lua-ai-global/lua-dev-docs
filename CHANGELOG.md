@@ -113,7 +113,7 @@ See [CONTRIBUTING.md](./CONTRIBUTING.md) for how to contribute to this documenta
 
 ## Questions?
 
-- **GitHub Issues**: For bugs and feature requests
+- **Discord Community**: [Join our Discord](https://discord.gg/SRPEuwCzaD) - Chat with other builders, get help, discuss ideas, and stay updated with announcements
 - **Pull Requests**: For contributions
 - **Email**: support@heylua.ai for general questions
 

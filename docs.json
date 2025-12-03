@@ -335,6 +335,11 @@
           "anchor": "npm Package",
           "href": "https://www.npmjs.com/package/lua-cli",
           "icon": "box"
+        },
+        {
+          "anchor": "Discord Community",
+          "href": "https://discord.gg/SRPEuwCzaD",
+          "icon": "discord"
         }
       ]
     }
@@ -361,7 +366,7 @@
   },
   "footer": {
     "socials": {
-      "github": "https://github.com/lua-ai/lua-cli"
+      "discord": "https://discord.gg/SRPEuwCzaD"
     }
   }
 }

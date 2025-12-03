@@ -241,11 +241,12 @@ Everything needed to add LuaPop to any website:
 ## 📞 Support for Developers
 
 ### Documentation Issues
-- **Technical Problems**: Create GitHub issue
+- **Discord Community**: https://discord.gg/SRPEuwCzaD
 - **Content Questions**: Ask in team chat
 - **Mintlify Issues**: Check Mintlify docs or community
 
 ### Lua Platform Issues
+- **Discord Community**: https://discord.gg/SRPEuwCzaD
 - **Support**: support@heylua.ai
 - **Technical**: dev@heylua.ai
 

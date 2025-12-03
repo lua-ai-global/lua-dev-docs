@@ -270,11 +270,11 @@ mint broken-links
 ## 📞 Contact
 
 ### For Documentation Issues
-- **GitHub Issues**: Technical problems
-- **Pull Requests**: Contributions
+- **Discord Community**: https://discord.gg/SRPEuwCzaD
 - **Email**: docs@heylua.ai
 
 ### For Lua Platform Issues
+- **Discord Community**: https://discord.gg/SRPEuwCzaD
 - **Support**: support@heylua.ai
 - **Sales**: sales@heylua.ai
 - **General**: hello@heylua.ai
