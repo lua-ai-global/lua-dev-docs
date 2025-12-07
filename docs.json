@@ -58,7 +58,8 @@
             "pages": [
               "getting-started/quick-start",
               "getting-started/installation",
-              "getting-started/first-skill"
+              "getting-started/first-skill",
+              "changelog"
             ]
           },
           {

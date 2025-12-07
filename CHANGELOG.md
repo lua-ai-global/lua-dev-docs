@@ -4,6 +4,34 @@ All notable changes to the Lua documentation will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
+## [3.0.0] - 2025-12-07
+
+### Updated - Documentation for lua-cli v3.1.0
+
+#### New Features Documented
+- **MCP Server Support** - `LuaMCPServer` class, `lua mcp` command
+- **Tool Conditions** - Dynamic tool availability with `condition()` function
+- **CDN API** - File upload and retrieval
+- **Jobs API Enhancements** - `Jobs.getAll()`, `job.activate()`, `job.deactivate()`, `job.trigger()`
+- **Evaluations Dashboard** - `lua evals` command
+- **Templates API** - WhatsApp template messaging
+- **Marketplace CLI** - Discover, install, and publish skills
+- **Enhanced Logs Command** - Interactive filtering by primitive type
+- **Immutable User Profile** - `user._luaProfile` for read-only core data
+
+#### Breaking Changes Documented
+- JobInstance restructured (uses `activeVersion`)
+- `welcomeMessage` removed from LuaAgent
+- Webhook execute function signature changed to event object
+- PreProcessor response redesigned with discriminated union
+
+#### Improvements
+- Data API type safety (searchText, Record types)
+- PostProcessor simplified return type
+- Removed deprecated `async` field from PreProcessor
+
+---
+
 ## [2.0.0] - 2025-10-04
 
 ### Added - Complete Documentation Rewrite

@@ -1,0 +1,581 @@
+---
+title: "Changelog"
+description: "Release notes and version history for lua-cli"
+---
+
+## v3.1.0
+
+**Released:** December 7, 2025
+
+### ✨ New Features
+
+<AccordionGroup>
+  <Accordion title="MCP Server Support">
+    New `LuaMCPServer` class for integrating Model Context Protocol servers with your agent:
+    
+    ```typescript
+    import { LuaMCPServer, LuaAgent } from 'lua-cli';
+
+    const docsServer = new LuaMCPServer({
+      name: 'lua-docs',
+      transport: 'sse',
+      url: 'https://docs.heylua.ai/mcp/sse'
+    });
+
+    export const agent = new LuaAgent({
+      mcpServers: [docsServer]
+    });
+    ```
+    
+    **CLI commands:**
+    - `lua mcp` - List, activate, deactivate, or delete MCP servers
+    - `lua push mcp` - Push individual MCP servers
+    - MCP servers included in `lua push all --force`
+  </Accordion>
+
+  <Accordion title="Tool Conditions">
+    Tools can now have a `condition` function that determines if the tool is available:
+    
+    ```typescript
+    const adminTool = new LuaTool({
+      name: 'admin-tool',
+      condition: async () => {
+        const user = await User.get();
+        return user.data?.isAdmin === true;
+      },
+      execute: async (input) => { return 'admin action completed'; }
+    });
+    ```
+    
+    Use conditions to dynamically enable/disable tools based on user subscription, verification status, feature flags, or region.
+  </Accordion>
+
+  <Accordion title="CDN API">
+    New `CDN` namespace for uploading and retrieving files:
+    
+    ```typescript
+    import { CDN } from 'lua-cli';
+
+    // Upload a file
+    const file = new File([buffer], 'image.png', { type: 'image/png' });
+    const fileId = await CDN.upload(file);
+
+    // Get file
+    const file = await CDN.get(fileId);
+    ```
+  </Accordion>
+
+  <Accordion title="Jobs API Enhancements">
+    New methods for job management:
+    
+    ```typescript
+    // Get all jobs
+    const jobs = await Jobs.getAll();
+
+    // Activate/deactivate job scheduling
+    await job.activate();
+    await job.deactivate();
+
+    // Manually trigger execution
+    await job.trigger();
+    ```
+  </Accordion>
+
+  <Accordion title="Evaluations Dashboard">
+    New `lua evals` command opens the Evaluations Dashboard with your agent pre-configured.
+    
+    ```bash
+    lua evals
+    ```
+  </Accordion>
+
+  <Accordion title="Templates API">
+    New `Templates` namespace for WhatsApp template messaging:
+    
+    ```typescript
+    import { Templates } from 'lua-cli';
+
+    // List templates
+    const result = await Templates.whatsapp.list(channelId);
+
+    // Send template message
+    await Templates.whatsapp.send(channelId, templateId, {
+      phoneNumbers: ['+447551166594'],
+      values: { body: { name: 'John' } }
+    });
+    ```
+  </Accordion>
+
+  <Accordion title="Marketplace CLI">
+    New `lua marketplace` command for discovering, installing, and publishing skills:
+    
+    **For Creators:**
+    - Publish skills to the global marketplace
+    - Version management with semantic versioning
+    - Environment variable configuration per version
+    
+    **For Installers:**
+    - Browse and search for verified skills
+    - Smart installation with dependency checks
+    - Interactive environment variable configuration
+  </Accordion>
+
+  <Accordion title="Enhanced Logs Command">
+    The `lua logs` command now features:
+    - Interactive filtering by primitive type (Skills, Jobs, Webhooks, etc.)
+    - Live data from API including dynamically created jobs
+    - Context-aware log display with detailed metadata
+  </Accordion>
+
+  <Accordion title="Immutable User Profile">
+    New `user._luaProfile` property for read-only core user data:
+    
+    ```typescript
+    const userId = user._luaProfile.userId;        // ✅ Recommended
+    const fullName = user._luaProfile.fullName;
+    const emails = user._luaProfile.emailAddresses;
+
+    // user.userId still works but is deprecated
+    ```
+  </Accordion>
+</AccordionGroup>
+
+### 💥 Breaking Changes
+
+<Warning>
+These changes may require updates to your existing code.
+</Warning>
+
+<AccordionGroup>
+  <Accordion title="JobInstance Restructured">
+    `JobInstance` now receives the full `Job` entity with `activeVersion`:
+    
+    ```typescript
+    // Before
+    const schedule = job.schedule;
+    const id = job.jobId;
+
+    // After
+    const schedule = job.activeVersion.schedule;
+    const id = job.id;
+    await job.trigger(); // New method
+    ```
+  </Accordion>
+
+  <Accordion title="welcomeMessage Removed from LuaAgent">
+    The `welcomeMessage` field has been removed from `LuaAgent` configuration:
+    - For voice: use `voiceConfig.welcomeMessage`
+    - For chat widgets: use `WebchatChannelConfig.welcomeMessage`
+  </Accordion>
+
+  <Accordion title="Webhook Execute Signature Changed">
+    Webhook execute functions now receive a single event object:
+    
+    ```typescript
+    // Before
+    execute: async (query, headers, body) => {
+      // handle webhook
+    }
+
+    // After
+    execute: async (event) => {
+      const { query, headers, body, timestamp } = event;
+      // handle webhook
+    }
+    ```
+  </Accordion>
+
+  <Accordion title="PreProcessor Response Redesigned">
+    `PreProcessorResult` now uses a discriminated union:
+    
+    ```typescript
+    // Block response
+    return { action: 'block', response: 'Blocked' };
+
+    // Proceed response
+    return { 
+      action: 'proceed', 
+      modifiedMessage: [{ type: 'text', text: '...' }] 
+    };
+    ```
+    
+    - `modifiedMessage` is now `ChatMessage[]` (array)
+    - Added `priority` field for execution order
+    - Removed `context` field
+  </Accordion>
+</AccordionGroup>
+
+### 🔧 Improvements
+
+- **Data API Type Safety**: `searchText` parameter added to `Data.create()` and `Data.update()`, `data` parameter type changed to `Record<string, any>`
+- **PostProcessor Simplified**: Return type now requires `modifiedResponse: string`, removed `async` field
+- **Compilation**: Handle `.js` extensions for Node16/NodeNext module resolution
+- **Template**: Minimal by default, use `--with-examples` flag for examples
+- **Web UI**: React Query, Sonner toasts, improved env panels, docs in toolbar
+
+### 🛠️ Refactoring
+
+- Removed `context` field from webhooks, jobs, and postprocessors
+- Removed `version` field from `LuaSkill`, `LuaJob`, and processor configurations
+- Improved push command: displays both `webhookId` and `webhook-name` URL formats
+- Rewritten `interfaces/jobs.ts` to match `lua-api` DTOs exactly
+
+---
+
+## v3.0.3
+
+**Released:** October 30, 2025
+
+### 🎯 User API Enhancement
+
+Enhanced `User.get()` method now accepts an optional `userId` parameter:
+
+```typescript
+// Get current user (existing behavior)
+const userData = await User.get();
+
+// NEW: Get specific user by ID
+const specificUser = await User.get('user_123456');
+```
+
+**Use Cases:**
+- Fetch data for specific users in admin tools
+- Access user information in webhooks/jobs
+- Multi-user data operations
+- User management features
+
+<Note>
+This enhancement allows tools, webhooks, and jobs to access any user's data, enabling more sophisticated multi-user scenarios.
+</Note>
+
+---
+
+## v3.0.2
+
+**Released:** October 30, 2025
+
+### 🚀 Major Improvements to Compilation System
+
+This release brings comprehensive dependency bundling, debug mode, enhanced validation, and critical bug fixes.
+
+<AccordionGroup>
+  <Accordion title="Comprehensive Dependency Bundling">
+    All components now properly bundle external dependencies:
+    
+    - ✅ **LuaWebhooks** bundle dependencies (e.g., Stripe, axios)
+    - ✅ **LuaJobs** bundle dependencies
+    - ✅ **PreProcessors** bundle dependencies (e.g., lodash)
+    - ✅ **PostProcessors** bundle dependencies (e.g., date-fns)
+    - ✅ **Nested Jobs** (`Jobs.create()`) independently bundle their own dependencies
+    
+    **Impact:** All compiled components are now truly portable and self-contained, requiring no dependency installation on deployment targets.
+  </Accordion>
+
+  <Accordion title="Debug Mode">
+    Added `--debug` flag to `lua compile` command:
+    
+    ```bash
+    lua compile --debug
+    # or
+    LUA_DEBUG=true lua compile
+    ```
+    
+    **Features:**
+    - Verbose step-by-step logging
+    - Shows detected imports and dependencies
+    - Displays bundle sizes (uncompressed and compressed)
+    - Preserves temp files for inspection
+    - Shows timing information for each component
+    - Full error stack traces
+  </Accordion>
+
+  <Accordion title="Enhanced Validation">
+    - **tsconfig.json validation** - Clear error if missing or invalid
+    - **Empty bundle detection** - Warns about suspiciously small bundles (under 100 bytes)
+    - **Bundle output validation** - Ensures esbuild creates valid output
+    - **Null config handling** - Graceful compilation without lua.skill.yaml
+    - **Safe optional chaining** - Fixed crash when agentData is null
+  </Accordion>
+
+  <Accordion title="Improved Error Handling">
+    Context-aware error messages with actionable hints:
+    - Dependency resolution failures → "Run npm install"
+    - TypeScript syntax errors → "Check syntax in filename.ts"
+    - Missing files → Shows expected path
+    - Full stack traces in debug mode
+  </Accordion>
+
+  <Accordion title="Import Resolution">
+    Enhanced `resolveImportPath()` to support:
+    - `.ts`, `.tsx`, `.js`, `.jsx` files
+    - Directory imports (`index.ts`, `index.tsx`, `index.js`)
+    
+    **Critical Fix:** Relative imports now work correctly in Jobs, Webhooks, and Processors:
+    
+    ```typescript
+    // ✅ Now works perfectly
+    import { MyService } from "../services/MyService";
+    // ✅ Also works
+    import { MyService } from "@/services/MyService";
+    ```
+  </Accordion>
+</AccordionGroup>
+
+### 🐛 Bug Fixes
+
+- Fixed null reference error when compiling without LuaAgent
+- Fixed crash when lua.skill.yaml is missing
+- Fixed compilation with empty agent name/persona
+- **Critical:** Fixed relative import resolution in all component types
+
+### 🧹 Code Quality
+
+- Removed obsolete `dynamic-job-bundler.ts`
+- Extracted common helpers (`extractRelevantImports`, `bundleAndCompressExecuteFunction`)
+- Reduced bundling.ts from 1,149 to 1,036 lines (9.8% reduction)
+- Added 27 comprehensive tests for bundling, execution, validation, and relative imports
+
+---
+
+## v3.0.0
+
+**Released:** October 2025
+
+### 🎉 Major Release
+
+Version 3.0.0 focuses on developer experience, deployment automation, and real-time chat capabilities.
+
+### ✨ New Features
+
+<AccordionGroup>
+  <Accordion title="LuaAgent - Unified Configuration">
+    The flagship feature: a single, intuitive way to configure your entire agent.
+    
+    **Before (v2.x):**
+    ```typescript
+    export const skill1 = new LuaSkill({ name: 'skill1', tools: [] });
+    export const skill2 = new LuaSkill({ name: 'skill2', tools: [] });
+    export const webhook1 = new LuaWebhook({ name: 'webhook1', execute: async () => 'ok' });
+    ```
+    
+    **After (v3.0.0):**
+    ```typescript
+    export const agent = new LuaAgent({
+      name: 'my-assistant',
+      persona: 'You are a helpful AI assistant...',
+      skills: [skill1, skill2],
+      webhooks: [webhook1],
+      jobs: [job1],
+      preProcessors: [processor1],
+      postProcessors: [processor2]
+    });
+    ```
+    
+    **Benefits:**
+    - Single source of truth
+    - Clearer organization
+    - Automatic YAML synchronization
+    - Better IDE support
+  </Accordion>
+
+  <Accordion title="Streaming Chat Interface">
+    Real-time chat responses with improved UX:
+    
+    ```bash
+    lua chat
+    ```
+    
+    - ✅ Animated typing indicator while waiting
+    - ✅ Text streams character-by-character
+    - ✅ Sandbox and production environment selection
+    - ✅ Uses `/chat/stream` endpoint for real-time updates
+  </Accordion>
+
+  <Accordion title="Batch Deployment">
+    New command for deploying all components without prompts:
+    
+    ```bash
+    # Push all with auto-versioning
+    lua push all --force
+    
+    # Push and deploy to production
+    lua push all --force --auto-deploy
+    ```
+    
+    **What it does:**
+    1. Compiles project
+    2. Reads all components from `lua.skill.yaml`
+    3. Increments patch versions automatically
+    4. Pushes all components to server
+    5. Deploys to production (if `--auto-deploy`)
+    
+    **Features:**
+    - Auto-bumps patch versions (e.g., `1.0.0` → `1.0.1`)
+    - Perfect for CI/CD pipelines
+    - Retry mechanism with exponential backoff
+  </Accordion>
+
+  <Accordion title="API Key Fallback">
+    Flexible authentication with multiple sources (priority order):
+    
+    1. **System Keychain** (macOS Keychain, Windows Credential Vault, Linux libsecret)
+    2. **Environment Variable** (`LUA_API_KEY`)
+    3. **.env File** (`LUA_API_KEY=...`)
+    
+    **Usage in CI/CD:**
+    ```bash
+    export LUA_API_KEY=your-key
+    lua push all --force --auto-deploy
+    ```
+  </Accordion>
+
+  <Accordion title="Auto-Sync YAML and Code">
+    Bidirectional synchronization ensures consistency:
+    
+    **On `lua init`:**
+    - Agent name, persona → YAML + `index.ts` LuaAgent
+    
+    **On `lua compile`:**
+    - LuaAgent persona → YAML
+    
+    No manual synchronization needed!
+  </Accordion>
+</AccordionGroup>
+
+### 🔧 Improvements
+
+<AccordionGroup>
+  <Accordion title="Enhanced Bundling">
+    - Excluded lua-cli internals from bundles
+    - Reduced bundle sizes by 50-70%
+    - Fixed relative import issues
+    - Proper sandbox globals (tools use sandbox-provided APIs)
+  </Accordion>
+
+  <Accordion title="Jobs.create() Fixes">
+    - `code` field now properly compressed and included
+    - Execute function properly converts to strings
+    - Excludes lua-cli imports from job execute functions
+    - Better metadata support for passing data
+  </Accordion>
+
+  <Accordion title="Developer Experience">
+    - Comprehensive template with 30+ example tools
+    - Quick Start Guide for new users
+    - TypeScript examples with best practices
+    - CI/CD integration examples
+  </Accordion>
+</AccordionGroup>
+
+### 🐛 Bug Fixes
+
+**Bundling:**
+- Fixed `Cannot find module '../services/ApiService'` in pre-bundled tools
+- Fixed `process.cwd is not a function` in sandbox execution
+- Fixed lua-cli API code being bundled into tools
+
+**Push & Deploy:**
+- Fixed webhooks and jobs not found during `push all`
+- Fixed missing `tools` array causing validation errors
+- Fixed deployment timing issues with retry mechanism
+
+**Chat:**
+- Fixed welcome message reading from `lua.skill.yaml`
+- Fixed streaming endpoint integration
+- Fixed typing indicator cleanup on errors
+
+### 💥 Breaking Changes
+
+<Warning>
+These changes require updates to your existing code.
+</Warning>
+
+<AccordionGroup>
+  <Accordion title="LuaAgent Required">
+    **Old Way:**
+    ```typescript
+    export const skill1 = new LuaSkill({ name: 'skill1', tools: [] });
+    export const skill2 = new LuaSkill({ name: 'skill2', tools: [] });
+    ```
+    
+    **New Way:**
+    ```typescript
+    export const agent = new LuaAgent({
+      skills: [skill1, skill2]
+    });
+    ```
+    
+    **Migration:**
+    1. Wrap your existing skills in a `LuaAgent`
+    2. Add `name` and `persona` fields
+    3. Run `lua compile` to sync with YAML
+  </Accordion>
+
+  <Accordion title="Chat Endpoint Changed">
+    - Old: `/chat/generate/:agentId`
+    - New: `/chat/stream/:agentId`
+    
+    No action needed - handled automatically by CLI.
+  </Accordion>
+
+  <Accordion title="Jobs.create() Signature">
+    Jobs must use `metadata` for data passing:
+    
+    ```typescript
+    await Jobs.create({
+      metadata: { userId: input.userId },
+      execute: async (job) => {
+        const userId = job.metadata.userId;
+      }
+    });
+    ```
+  </Accordion>
+</AccordionGroup>
+
+### 📊 Statistics
+
+| Metric | Before | After |
+|--------|--------|-------|
+| Bundle overhead | ~500KB | 50-70% smaller |
+| Compilation speed | - | 30% faster |
+| Template examples | 5 | 30+ |
+| CLI commands | - | 25+ |
+
+---
+
+## Upgrade Guides
+
+### From v3.0.x to v3.1.0
+
+```bash
+npm install lua-cli@3.1.0
+```
+
+**Required changes:**
+1. Update `JobInstance` access patterns (use `activeVersion.schedule`, `id` instead of `jobId`)
+2. Update webhook execute functions to use event object
+3. Update PreProcessor responses to use discriminated union
+4. Remove `welcomeMessage` from LuaAgent (configure on channel/voice instead)
+
+### From v2.x to v3.0.0
+
+```bash
+npm install lua-cli@3.0.0
+```
+
+**Required changes:**
+1. Wrap skills in a `LuaAgent` configuration
+2. Update jobs to use `metadata` for data passing
+3. Run `lua compile` to sync with YAML
+
+```typescript
+// src/index.ts
+import { LuaAgent } from 'lua-cli';
+
+export const agent = new LuaAgent({
+  name: 'my-agent',
+  persona: 'Your agent persona...',
+  skills: [/* your existing skills */],
+});
+```
+
