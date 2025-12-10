@@ -89,7 +89,7 @@ const agent = new LuaAgent({
 
 ### lua.skill.yaml
 
-**Auto-managed configuration file.** Set during `lua init`, updated by CLI commands.
+**Auto-managed configuration file.** Created during `lua init`, updated automatically by CLI commands.
 
 ```yaml
 agent:
@@ -102,13 +102,19 @@ skills:
     skillId: skill_xyz  # Auto-created during compile
 ```
 
-<Note>
-Persona is stored in your `LuaAgent` code (in `src/index.ts`), not in YAML. The YAML file is state-only and tracks IDs and versions.
-</Note>
-
 <Warning>
-Don't manually edit `skillId`, `webhookId`, or `jobId` - they're auto-managed!
+**Do not manually edit this file!** The `lua.skill.yaml` is managed by the CLI and stores state only (IDs and versions). All configuration belongs in your code:
+- **Persona** → `LuaAgent` in `src/index.ts`
+- **Tool definitions** → Your tool files
+- **Skill configuration** → `LuaSkill` in code
+- **Environment variables** → `.env` file or `lua env` command
+
+The only exception: you may manually increment the `version` number before pushing a new release.
 </Warning>
+
+<Note>
+IDs like `skillId`, `webhookId`, and `jobId` are auto-generated during compilation. Never edit these manually.
+</Note>
 
 ### package.json
 

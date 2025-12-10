@@ -69,9 +69,12 @@ description: "Best practices for developing, testing, and deploying skills"
 
 ### Starting Development
 
-Test your skills with two commands:
+Start by syncing with the server to get any remote changes:
 
 ```bash
+# Check for drift between server and local code
+lua sync
+
 # Test individual tools
 lua test
 
@@ -223,11 +226,15 @@ Select **Sandbox mode** to test with your local changes.
 Use semantic versioning: `MAJOR.MINOR.PATCH`
 
 ```yaml
-# lua.skill.yaml
+# lua.skill.yaml (version is the ONLY field you should manually edit)
 skills:
   - name: my-skill
     version: 1.2.3
 ```
+
+<Note>
+The `lua.skill.yaml` file is auto-managed by the CLI. The **version number** is the only field you should manually edit when preparing a new release. All other fields are managed automatically.
+</Note>
 
 **When to increment:**
 
@@ -257,7 +264,7 @@ skills:
 ### Pushing Versions
 
 ```bash
-# Update version in lua.skill.yaml
+# Increment version in lua.skill.yaml (only field you should edit):
 # skills:
 #   - name: my-skill
 #     version: 1.1.0
@@ -524,6 +531,7 @@ git commit -m "docs: update tool descriptions"
 
 <Warning>
 **Pre-Deployment Checklist:**
+- ✅ Synced with server: `lua sync`
 - ✅ Tested all tools with `lua test`
 - ✅ Tested conversational flows with `lua chat`
 - ✅ Updated version number
@@ -583,16 +591,18 @@ lua deploy
 ```bash
 # Developer 1: Working on Skill A
 cd skill-a
+lua sync  # Get any changes from teammates
 lua test
 lua chat  # Independent sandbox
 
 # Developer 2: Working on Skill B
 cd skill-b
+lua sync  # Get any changes from teammates
 lua test
 lua chat  # Independent sandbox
 
 # Each developer has independent sandbox
-# Deploy when ready
+# Sync helps prevent conflicts when deploying
 ```
 
 ## Troubleshooting
@@ -637,6 +647,17 @@ lua chat  # Independent sandbox
       - name: my-skill
         version: 1.0.1  # Increment this
     ```
+  </Accordion>
+
+  <Accordion title="Drift detected during compile">
+    **Problem**: Server has different persona/name than local code
+    
+    **Solutions**:
+    1. Run `lua sync` to see the diff and choose action
+    2. Use `lua compile --force-sync` to auto-update from server
+    3. Use `lua compile --no-sync` to skip check and keep local
+    
+    This happens when someone updated the agent from the admin dashboard.
   </Accordion>
 </AccordionGroup>
 

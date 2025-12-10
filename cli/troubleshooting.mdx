@@ -214,7 +214,7 @@ description: "Common issues and solutions for Lua CLI"
     
     **Cause**: You've already pushed this version number.
     
-    **Solution**: Increment version in `lua.skill.yaml`:
+    **Solution**: Increment the version number in `lua.skill.yaml` (this is the only field you should manually edit):
     ```yaml
     skills:
       - name: my-skill
@@ -240,6 +240,61 @@ description: "Common issues and solutions for Lua CLI"
     lua compile
     lua push
     ```
+  </Accordion>
+</AccordionGroup>
+
+### Sync Errors
+
+<AccordionGroup>
+  <Accordion title="Drift detected during compile">
+    **Message:**
+    ```
+    ⚠️  Drift detected in: name, persona
+    ```
+    
+    **Cause**: Server has different agent configuration than your local code. This happens when someone updates the agent from the admin dashboard.
+    
+    **Solutions**:
+    1. **Interactive**: Choose to update local from server or keep local
+    2. **Auto-sync**: Use `lua compile --force-sync` to automatically update local
+    3. **Skip**: Use `lua compile --no-sync` to ignore drift (your next push will overwrite server)
+    
+    **To see the diff**:
+    ```bash
+    lua sync
+    ```
+  </Accordion>
+
+  <Accordion title="No persona in local code">
+    **Message:**
+    ```
+    💻 Local (code):
+    (no persona in code)
+    ```
+    
+    **Cause**: The `LuaAgent` configuration is missing or has an empty name.
+    
+    **Solutions**:
+    1. Ensure your `src/index.ts` has a valid LuaAgent:
+       ```typescript
+       const agent = new LuaAgent({
+         name: "my-agent",  // Must not be empty!
+         persona: "...",
+         // ...
+       });
+       ```
+    2. Check for TypeScript compilation errors
+  </Accordion>
+
+  <Accordion title="Network error during sync">
+    **Problem**: Sync silently fails or shows no drift when there should be.
+    
+    **Cause**: Network issues when fetching server state.
+    
+    **Solutions**:
+    1. Check internet connection
+    2. Verify API key is valid: `lua auth key`
+    3. Try again: `lua sync`
   </Accordion>
 </AccordionGroup>
 

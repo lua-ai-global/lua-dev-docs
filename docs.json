@@ -77,6 +77,7 @@
               "cli/overview",
               "cli/authentication",
               "cli/skill-management",
+              "cli/sync-command",
               "cli/skills-command",
               "cli/chat-command",
               "cli/env-command",

@@ -278,12 +278,12 @@ The AI uses your local sandbox versions instead of production versions.
   </Accordion>
 
   <Accordion title="Persona Iteration">
-    1. Update `agent.persona` in `lua.skill.yaml`
+    1. Update `persona` in your `LuaAgent` code (`src/index.ts`)
     2. Run `lua chat` in sandbox
     3. Test conversation style
     4. Refine persona
     5. Repeat until satisfied
-    6. Deploy to production
+    6. Deploy to production with `lua push persona`
   </Accordion>
 </AccordionGroup>
 

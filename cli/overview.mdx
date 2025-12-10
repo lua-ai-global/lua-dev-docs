@@ -53,6 +53,7 @@ lua [options] [command]
 | `lua marketplace`| 🛒 Ecosystem      | Discover, install, and publish skills                                       |
 | `lua skills`     | 🔧 Development    | View and manage skills (sandbox/production)                                 |
 | `lua compile`    | 📦 Development    | Compile skill to deployable format                                          |
+| `lua sync`       | 🔄 Development    | Detect and resolve drift between server and local code                      |
 | `lua test`       | 💬 Testing        | Test skill tools interactively                                              |
 | `lua chat`       | 💬 Testing        | Interactive chat with your agent                                            |
 | `lua push`       | ☁️ Deployment     | Push components to server                                                   |
@@ -89,6 +90,7 @@ lua skills             # 🔧 View and manage skills
 lua skills sandbox     # 🎯 Direct: view local skills
 lua skills production  # 🎯 Direct: manage production skills
 lua compile            # 📦 Compile your skills
+lua sync               # 🔄 Check for drift between server and local
 lua test               # 🧪 Test tools interactively
 lua chat               # 💬 Start interactive chat
 
@@ -142,6 +144,9 @@ lua docs               # 📖 Open documentation
   </Card>
   <Card title="lua mcp" icon="plug">
     Manage MCP servers
+  </Card>
+  <Card title="lua sync" icon="rotate">
+    Detect and resolve drift
   </Card>
   <Card title="lua test" icon="flask">
     Test tools interactively
@@ -590,7 +595,7 @@ All commands include:
     ❌ Version 1.0.0 already exists on the server
     ```
     
-    **Solution**: Increment version in `lua.skill.yaml`
+    **Solution**: Increment the version number in `lua.skill.yaml` (this is the only field you should manually edit)
   </Accordion>
 
   <Accordion title="Compilation failed">
@@ -782,6 +787,9 @@ mcpServers:
   </Card>
   <Card title="Skill Management" icon="wrench" href="/cli/skill-management">
     Learn all skill management commands
+  </Card>
+  <Card title="Sync Command" icon="rotate" href="/cli/sync-command">
+    Detect and resolve drift
   </Card>
   <Card title="Environment Command" icon="gear" href="/cli/env-command">
     Manage sandbox and production variables

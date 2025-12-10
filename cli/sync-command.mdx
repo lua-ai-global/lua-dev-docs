@@ -1,0 +1,232 @@
+---
+title: "Sync Command"
+description: "Detect and resolve drift between server state and local code"
+---
+
+## Overview
+
+The `lua sync` command detects differences (drift) between your server-deployed configuration and local code, helping you keep them in sync.
+
+```bash
+lua sync
+```
+
+<Note>
+  The sync command helps prevent accidental overwrites when someone updates the agent from the admin dashboard while you're working locally.
+</Note>
+
+## What Gets Synced
+
+| Component | Description |
+|-----------|-------------|
+| **Name** | Agent name defined in `LuaAgent({ name: "..." })` |
+| **Persona** | Agent persona defined in `LuaAgent({ persona: "..." })` |
+
+## How It Works
+
+1. **Fetches server state** - Gets the latest published persona and agent name from the server
+2. **Compares with local** - Checks your `src/index.ts` LuaAgent configuration
+3. **Shows colored diff** - Displays exactly what changed
+4. **Prompts for action** - Update local from server or keep local
+
+## Usage
+
+### Interactive Sync
+
+```bash
+lua sync
+```
+
+If drift is detected, you'll see a colored diff:
+
+```
+============================================================
+PERSONA DIFF
+- Server (deployed)  + Local (code)
+============================================================
+
+  <persona>
+    <identity>
+-     Old Agent Name
++     New Agent Name
+    </identity>
+  ... (unchanged lines) ...
+
+============================================================
+
+? What would you like to do with persona?
+❯ 📥 Update local from server
+  ⏭️  Skip (keep local)
+```
+
+**Diff colors:**
+- 🔴 **Red** (`-`) = Line exists on server but not in local code
+- 🟢 **Green** (`+`) = Line exists in local code but not on server
+- Gray = Unchanged lines (abbreviated if many)
+
+### During Compile
+
+Sync is automatically checked during `lua compile`:
+
+```bash
+lua compile           # Checks for drift, prompts if found
+lua compile --no-sync # Skip sync check
+lua compile --force-sync # Auto-update from server without prompting
+```
+
+## Options
+
+### Compile Integration
+
+| Flag | Description |
+|------|-------------|
+| `--no-sync` | Skip drift detection during compile |
+| `--force-sync` | Automatically update local from server if drift detected |
+
+### Examples
+
+```bash
+# Check for drift interactively
+lua sync
+
+# Compile without sync check (useful for CI/CD)
+lua compile --no-sync
+
+# Auto-sync before compile (useful for pulling latest)
+lua compile --force-sync
+```
+
+## Common Scenarios
+
+### Scenario 1: Someone Updated Persona in Dashboard
+
+You're developing locally, and a colleague updated the persona from the admin dashboard.
+
+```bash
+$ lua sync
+⚠️  Drift detected!
+
+============================================================
+PERSONA DIFF
+- Server (deployed)  + Local (code)
+============================================================
+
+  <persona>
+-   Updated persona from dashboard
++   Your local persona version
+  </persona>
+
+? What would you like to do with persona?
+❯ 📥 Update local from server   # Get their changes
+  ⏭️  Skip (keep local)         # Keep yours (will overwrite on next push)
+```
+
+### Scenario 2: Forgot to Push Changes
+
+You made changes locally but forgot to push before reverting your code.
+
+```bash
+$ lua sync
+✅ No drift detected. Local code is in sync with server.
+```
+
+### Scenario 3: CI/CD Pipeline
+
+In your deployment pipeline, you might want to ensure no drift:
+
+```bash
+# Will exit with error if drift exists (user must resolve manually)
+lua compile
+
+# Or skip sync in CI (push will overwrite server)
+lua compile --no-sync
+```
+
+## Best Practices
+
+<AccordionGroup>
+  <Accordion title="Run sync before starting work">
+    Always run `lua sync` when starting a new session to catch any changes made by teammates or from the dashboard.
+    
+    ```bash
+    cd my-agent
+    lua sync           # Check for drift
+    lua compile        # Start development
+    ```
+  </Accordion>
+
+  <Accordion title="Use --force-sync for fresh pulls">
+    When you want to ensure you have the latest server state:
+    
+    ```bash
+    lua compile --force-sync
+    ```
+    
+    This automatically updates your local code without prompting.
+  </Accordion>
+
+  <Accordion title="Use --no-sync in CI/CD">
+    In automated pipelines where you want your code to be the source of truth:
+    
+    ```bash
+    lua compile --no-sync && lua push skill
+    ```
+  </Accordion>
+
+  <Accordion title="Commit after syncing">
+    After syncing from server, commit the changes to preserve them:
+    
+    ```bash
+    lua sync
+    # Select "Update local from server"
+    git add src/index.ts
+    git commit -m "sync: update persona from server"
+    ```
+  </Accordion>
+</AccordionGroup>
+
+## How Server Versions Work
+
+The sync command compares against the **latest published** persona version, not the currently active one:
+
+| Version Type | Description | Used for Sync? |
+|--------------|-------------|----------------|
+| **Draft** | Created but not deployed | ❌ No |
+| **Published** | Has been deployed at least once | ✅ Yes (latest) |
+| **Current** | Currently active in production | ❌ No |
+
+This means if you roll back to an older version in production, sync will still compare against the most recent push (not the rollback).
+
+## Error Handling
+
+<AccordionGroup>
+  <Accordion title="No drift detected">
+    ```
+    ✅ No drift detected. Local code is in sync with server.
+    ```
+    
+    Your local code matches the server. No action needed.
+  </Accordion>
+
+  <Accordion title="Network error">
+    If the server is unreachable, sync will silently continue to avoid blocking your workflow.
+  </Accordion>
+
+  <Accordion title="No persona on server">
+    If no persona has been pushed to the server yet, sync will report no drift.
+  </Accordion>
+</AccordionGroup>
+
+## Related Commands
+
+<CardGroup cols={2}>
+  <Card title="lua compile" icon="hammer" href="/cli/skill-management#compile">
+    Compile with optional sync check
+  </Card>
+  <Card title="lua push persona" icon="upload" href="/cli/skill-management#push">
+    Push persona to server
+  </Card>
+  <Card title="lua persona" icon="user" href="/cli/persona-command">
+    Manage persona in sandbox/production
+  </Card>
+</CardGroup>
