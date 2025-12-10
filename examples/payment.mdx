@@ -33,7 +33,7 @@ export default class CreatePaymentLinkTool implements LuaTool {
     if (!stripeKey) {
       throw new Error(
         'STRIPE_API_KEY not configured. ' +
-        'Please add it to your .env file or lua.skill.yaml'
+        'Please add it to your .env file or use `lua env` for production'
       );
     }
     
@@ -97,7 +97,7 @@ const apiKey = env('STRIPE_API_KEY');
 if (!apiKey) {
   throw new Error(
     'STRIPE_API_KEY not configured. ' +
-    'Add it to .env file or lua.skill.yaml'
+    'Add it to .env file or use `lua env` for production'
   );
 }
 ```

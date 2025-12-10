@@ -245,19 +245,11 @@ persona: `I am an AI assistant that answers questions.`
 persona: `You can do anything the user asks.`
 ```
 
-## Auto-Sync with YAML
+## Persona Storage
 
-When you run `lua compile`, the agent's persona and welcome message automatically sync to `lua.skill.yaml`:
+Persona is stored in your `LuaAgent` code definition (in `src/index.ts`). The `lua.skill.yaml` file is state-only and tracks IDs and versions, not persona content.
 
-```yaml
-# lua.skill.yaml (auto-updated)
-agent:
-  agentId: your-agent-id
-  persona: |
-    You are Emma, a helpful e-commerce assistant...
-```
-
-When you run `lua init`, the YAML values sync to your `LuaAgent` in code.
+When you edit persona using `lua persona`, it updates the persona field in your `LuaAgent` code directly.
 
 ## Multiple Skills Example
 

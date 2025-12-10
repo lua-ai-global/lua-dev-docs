@@ -42,7 +42,7 @@ lua env
 ```
 </Note>
 
-There are three ways to set environment variables, loaded in this priority order:
+There are two ways to set environment variables, loaded in this priority order:
 
 <Steps>
   <Step title="System Environment">
@@ -59,19 +59,10 @@ There are three ways to set environment variables, loaded in this priority order
     API_KEY=value
     ```
   </Step>
-  
-  <Step title="lua.skill.yaml">
-    Variables from skill configuration
-    ```yaml
-    skill:
-      env:
-        API_KEY: value
-    ```
-  </Step>
 </Steps>
 
 <Note>
-Later sources override earlier ones. So `lua.skill.yaml` overrides `.env`, which overrides system environment.
+`.env` file overrides system environment variables. For production, use `lua env` command to manage variables on the server.
 </Note>
 
 ## Method 1: .env File (Recommended for Development)
@@ -116,33 +107,7 @@ API_BASE_URL=https://api.example.com
 
 Commit `.env.example` to git, but never commit `.env`!
 
-## Method 2: lua.skill.yaml (Production)
-
-For deployed environments, add variables to your skill configuration:
-
-```yaml
-# lua.skill.yaml
-agent:
-  agentId: agent_abc123
-  orgId: org_xyz789
-
-skills:
-  - name: my-skill
-    version: 1.0.0
-    skillId: skill_abc123
-
-skill:
-  env:
-    STRIPE_API_KEY: sk_live_production_key
-    SENDGRID_API_KEY: SG.production_key
-    API_BASE_URL: https://prod.example.com
-```
-
-<Note>
-Use this for production secrets that shouldn't be in git.
-</Note>
-
-## Method 3: Interactive Command
+## Method 2: Interactive Command
 
 Use the `lua env` command for an interactive interface:
 
@@ -361,7 +326,7 @@ lua chat
     1. Check spelling in `.env` file
     2. Ensure `.env` is in project root
     3. Restart `lua chat` if running
-    4. Check `lua.skill.yaml` for typos
+    4. For production, use `lua env` to verify variables on server
   </Accordion>
 
   <Accordion title="Changes not taking effect">
@@ -381,13 +346,6 @@ lua chat
     ```bash
     lua env  # Select Production mode
     # Add production API keys
-    ```
-    
-    Or set in `lua.skill.yaml`:
-    ```yaml
-    skill:
-      env:
-        API_KEY: production_key_here
     ```
   </Accordion>
 </AccordionGroup>

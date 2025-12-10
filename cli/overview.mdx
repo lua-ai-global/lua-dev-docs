@@ -680,14 +680,13 @@ my-agent/
 
 ### lua.skill.yaml
 
-Auto-managed configuration file:
+Auto-managed state manifest (IDs and versions only):
 
 ```yaml
 # Agent configuration
 agent:
   agentId: agent_abc123
   orgId: org_xyz789
-  persona: "..." # Synced from LuaAgent
 
 # Multi-skill support
 skills:
@@ -703,17 +702,12 @@ webhooks:
 # Jobs (v3.0.0)
 jobs:
   - name: daily-report
-    jobId: job_abc123 # Auto-created
+    jobId: job_abc123 # Auto-created (version tracked on server)
 
 # MCP Servers
 mcpServers:
   - name: filesystem
     mcpServerId: mcp_abc123 # Auto-created
-
-# Environment variables
-skill:
-  env:
-    API_KEY: your_key_here
 ```
 
 **Auto-managed fields:**
@@ -723,14 +717,13 @@ skill:
 - `jobId` - Created during compilation
 - `mcpServerId` - Created during compilation
 - `skills`, `webhooks`, `jobs`, `mcpServers` arrays - Populated from code
-- `persona` - Synced from LuaAgent
+- Versions/IDs are tracked here; persona/env/schedule live in code (sandbox) or server (production)
 
 **Manual fields:**
 
 - `agentId` - Set during `lua init`
 - `orgId` - Set during `lua init`
-- `version` - Update when releasing
-- `env` - Set your variables
+- `version` - Update when releasing (for each component)
 
 ## System Requirements
 

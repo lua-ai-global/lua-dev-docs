@@ -45,16 +45,11 @@ Environment variables are loaded in this order (later overrides earlier):
     API_KEY=value
     ```
   </Step>
-  
-  <Step title="lua.skill.yaml">
-    Variables from skill configuration
-    ```yaml
-    skill:
-      env:
-        API_KEY: value
-    ```
-  </Step>
 </Steps>
+
+<Note>
+For production, use `lua env` command to manage variables on the server.
+</Note>
 
 ## Examples
 
@@ -164,19 +159,7 @@ SENDGRID_API_KEY=your_sendgrid_key_here
 API_BASE_URL=https://api.example.com
 ```
 
-### Method 2: lua.skill.yaml (Production)
-
-Add to skill configuration:
-
-```yaml
-skill:
-  env:
-    STRIPE_API_KEY: sk_live_production_key
-    SENDGRID_API_KEY: SG.production_key
-    API_BASE_URL: https://prod.api.example.com
-```
-
-### Method 3: System Environment
+### Method 2: System Environment
 
 Set in your shell:
 
@@ -198,7 +181,7 @@ echo 'export API_KEY=value' >> ~/.bashrc
     if (!apiKey) {
       throw new Error(
         'REQUIRED_KEY environment variable is not set. ' +
-        'Please add it to your .env file or lua.skill.yaml'
+        'Please add it to your .env file or use `lua env` for production'
       );
     }
     ```
@@ -323,7 +306,7 @@ export class MyTool implements LuaTool {
 
 - Add `.env` to `.gitignore`
 - Use `.env.example` for documentation
-- Store production secrets in `lua.skill.yaml` or secure vault
+- Store production secrets using `lua env` command (server-managed)
 - Rotate keys regularly
 </Warning>
 
@@ -346,7 +329,7 @@ export class MyTool implements LuaTool {
     1. Check spelling in `.env` file
     2. Ensure `.env` is in project root
     3. Restart CLI command (variables loaded at startup)
-    4. Check `lua.skill.yaml` for typos
+    4. For production, use `lua env` to verify variables on server
   </Accordion>
 
   <Accordion title="Changes not taking effect">

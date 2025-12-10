@@ -95,13 +95,16 @@ const agent = new LuaAgent({
 agent:
   agentId: agent_abc123
   orgId: org_xyz789
-  persona: "..."
 
 skills:
   - name: my-skill
     version: 1.0.0
     skillId: skill_xyz  # Auto-created during compile
 ```
+
+<Note>
+Persona is stored in your `LuaAgent` code (in `src/index.ts`), not in YAML. The YAML file is state-only and tracks IDs and versions.
+</Note>
 
 <Warning>
 Don't manually edit `skillId`, `webhookId`, or `jobId` - they're auto-managed!

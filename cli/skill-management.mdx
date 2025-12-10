@@ -170,10 +170,13 @@ lua init --with-examples    # Include 30+ example tools
 agent:
   agentId: agent_abc123
   orgId: org_xyz789
-  persona: "..."
 
 skills: []  # Auto-populated during compilation
 ```
+
+<Note>
+Persona is stored in your `LuaAgent` code (in `src/index.ts`), not in YAML. The YAML file is state-only and tracks IDs and versions.
+</Note>
 
 ## lua compile
 
