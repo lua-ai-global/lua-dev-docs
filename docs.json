@@ -112,6 +112,7 @@
               {
                 "group": "Runtime APIs",
                 "pages": [
+                  "api/lua",
                   "api/ai",
                   "api/user",
                   "api/data",

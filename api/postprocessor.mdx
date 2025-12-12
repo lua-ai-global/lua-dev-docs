@@ -76,6 +76,14 @@ Creates a new response postprocessor.
   - `channel` - Channel identifier (e.g., 'whatsapp', 'web', 'api')
 </ParamField>
 
+<Note>
+**Recommended:** Use the [Lua Runtime API](/api/lua) instead of the function parameters:
+- **User:** `User.get()` to retrieve the current user
+- **Channel:** `Lua.request.channel` for the current channel
+
+The function parameters may be removed in a future version.
+</Note>
+
 ### Optional Fields
 
 <ParamField path="description" type="string">

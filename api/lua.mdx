@@ -1,0 +1,288 @@
+---
+title: "Lua API"
+description: "Access request-level runtime information in your code"
+---
+
+## Overview
+
+The `Lua` API provides access to request-level runtime information. Use it in your tools, tool conditions, preprocessors, and postprocessors to access context about the current request.
+
+```typescript
+import { Lua } from 'lua-cli';
+
+// Access the current channel
+const channel = Lua.request.channel;
+
+if (channel === 'whatsapp') {
+  // WhatsApp-specific logic
+}
+```
+
+## Import
+
+```typescript
+import { Lua, Channel } from 'lua-cli';
+```
+
+## Availability
+
+The `Lua` API is available in:
+
+| Context | Available |
+|---------|-----------|
+| **Tool `execute`** | ✅ Yes |
+| **Tool `condition`** | ✅ Yes |
+| **Preprocessor `execute`** | ✅ Yes |
+| **Postprocessor `execute`** | ✅ Yes |
+
+## Lua.request
+
+The `request` object contains information about the current request context.
+
+### channel
+
+The channel through which the current request originated.
+
+```typescript
+Lua.request.channel: Channel
+```
+
+**Type:** `Channel`
+
+```typescript
+type Channel = 
+  | 'web'       // Chat widget on a website
+  | 'whatsapp'  // WhatsApp integration
+  | 'facebook'  // Facebook Messenger integration
+  | 'instagram' // Instagram integration
+  | 'slack'     // Slack integration
+  | 'api'       // Direct HTTP API call
+  | 'dev'       // Local development / CLI testing
+  | 'email'     // Email integration
+  | string;     // Any other channel
+```
+
+**Example - Channel-specific behavior:**
+
+```typescript
+import { Lua } from 'lua-cli';
+
+const channel = Lua.request.channel;
+
+switch (channel) {
+  case 'whatsapp':
+    // Keep responses concise for mobile
+    return { format: 'brief' };
+  case 'web':
+    // Can use rich formatting
+    return { format: 'rich' };
+  case 'api':
+    // Return structured data
+    return { format: 'json' };
+  default:
+    return { format: 'standard' };
+}
+```
+
+## Complete Examples
+
+### Conditional Tool Availability
+
+Make a tool available only on certain channels:
+
+```typescript
+import { LuaTool, Lua } from 'lua-cli';
+import { z } from 'zod';
+
+export default class WhatsAppOnlyTool implements LuaTool {
+  name = 'send_whatsapp_template';
+  description = 'Send a WhatsApp message template';
+
+  inputSchema = z.object({
+    templateId: z.string(),
+  });
+
+  // Tool only shows up on WhatsApp
+  condition = async () => {
+    return Lua.request.channel === 'whatsapp';
+  };
+
+  async execute(input: z.infer<typeof this.inputSchema>) {
+    // Implementation
+    return { success: true };
+  }
+}
+```
+
+### Channel-Aware Tool Logic
+
+Adjust tool behavior based on channel:
+
+```typescript
+import { LuaTool, Lua } from 'lua-cli';
+import { z } from 'zod';
+
+export default class GetSupportInfoTool implements LuaTool {
+  name = 'get_support_info';
+  description = 'Get customer support information';
+
+  inputSchema = z.object({});
+
+  async execute() {
+    const channel = Lua.request.channel;
+
+    const baseInfo = {
+      email: 'support@example.com',
+      hours: '9 AM - 5 PM EST',
+    };
+
+    // Add channel-specific info
+    switch (channel) {
+      case 'whatsapp':
+        return {
+          ...baseInfo,
+          message: 'You can also reply here for quick support!',
+        };
+      case 'web':
+        return {
+          ...baseInfo,
+          phone: '1-800-SUPPORT',
+          liveChatUrl: 'https://example.com/chat',
+        };
+      default:
+        return baseInfo;
+    }
+  }
+}
+```
+
+### Preprocessor with Channel Context
+
+Use channel in preprocessors:
+
+```typescript
+import { Preprocessor, PreprocessorConfig, Lua } from 'lua-cli';
+
+const channelGreeting: PreprocessorConfig = {
+  name: 'channel-greeting',
+  description: 'Add channel-specific greeting context',
+  priority: 1,
+  execute: async (userInstance, messages, channel) => {
+    // Prefer using Lua.request.channel
+    const currentChannel = Lua.request.channel;
+
+    return {
+      additionalContext: `User is chatting via ${currentChannel}.`,
+    };
+  },
+};
+
+export default Preprocessor.create(channelGreeting);
+```
+
+### Postprocessor with Channel-Specific Formatting
+
+Format responses based on channel:
+
+```typescript
+import { Postprocessor, PostprocessorConfig, Lua } from 'lua-cli';
+
+const formatForChannel: PostprocessorConfig = {
+  name: 'format-for-channel',
+  description: 'Format response based on channel',
+  execute: async (user, message, response, channel) => {
+    // Prefer using Lua.request.channel
+    const currentChannel = Lua.request.channel;
+
+    // WhatsApp has character limits - truncate long responses
+    if (currentChannel === 'whatsapp' && response.length > 4096) {
+      return {
+        modifiedResponse: response.substring(0, 4093) + '...',
+      };
+    }
+
+    return { modifiedResponse: response };
+  },
+};
+
+export default Postprocessor.create(formatForChannel);
+```
+
+## Future Expansion
+
+The `Lua` API will be expanded to include additional runtime information, such as:
+
+- Request metadata
+- Additional context data
+- More channel-specific information
+
+<Note>
+This API is designed to grow. Check back for new properties as they become available.
+</Note>
+
+## Best Practices
+
+<AccordionGroup>
+  <Accordion title="✅ Import from lua-cli">
+    Always import the `Lua` API from `lua-cli`:
+    
+    ```typescript
+    import { Lua } from 'lua-cli';
+    
+    const channel = Lua.request.channel;
+    ```
+  </Accordion>
+
+  <Accordion title="✅ Handle Unknown Channels">
+    The channel type includes `unknown` for unrecognized values:
+    
+    ```typescript
+    const channel = Lua.request.channel;
+    
+    if (channel === 'whatsapp' || channel === 'web') {
+      // Known channel handling
+    } else {
+      // Fallback for unknown channels
+    }
+    ```
+  </Accordion>
+
+  <Accordion title="✅ Keep Channel Logic Simple">
+    Use channel for minor adjustments, not completely different flows:
+    
+    ```typescript
+    // ✅ Good - Minor adjustments
+    const maxLength = channel === 'whatsapp' ? 4096 : 10000;
+    
+    // ❌ Avoid - Completely different tools per channel
+    // Instead, use tool conditions to show/hide tools
+    ```
+  </Accordion>
+
+  <Accordion title="✅ Use Tool Conditions for Availability">
+    For channel-specific tools, use the `condition` function:
+    
+    ```typescript
+    condition = async () => {
+      return Lua.request.channel === 'whatsapp';
+    };
+    ```
+  </Accordion>
+</AccordionGroup>
+
+## Related
+
+<CardGroup cols={2}>
+  <Card title="Skills & Tools" href="/concepts/skills-and-tools" icon="wrench">
+    Learn about creating tools with conditions
+  </Card>
+  <Card title="Preprocessors" href="/overview/preprocessors" icon="filter">
+    Intercept and modify incoming messages
+  </Card>
+  <Card title="Postprocessors" href="/overview/postprocessors" icon="wand-magic-sparkles">
+    Transform agent responses
+  </Card>
+  <Card title="Channels" href="/channels/introduction" icon="comments">
+    Overview of available channels
+  </Card>
+</CardGroup>

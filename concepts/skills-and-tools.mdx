@@ -169,7 +169,9 @@ export default class GetWeatherTool implements LuaTool {
   async condition(): Promise<boolean>
   ```
   
-  Use for premium features, feature flags, or user-specific availability
+  Use for premium features, feature flags, channel-specific tools, or user-specific availability.
+  
+  Access the current channel via `Lua.request.channel` - see [Lua API](/api/lua).
 </ParamField>
 
 ## Skills vs Tools
