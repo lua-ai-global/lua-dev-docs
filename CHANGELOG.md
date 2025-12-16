@@ -4,6 +4,22 @@ All notable changes to the Lua documentation will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
+## [3.1.0] - 2025-12-16
+
+### Updated - Documentation for lua-cli v3.2.0-alpha.1
+
+#### New Features Documented
+- **Sync Command** - `lua sync` for drift detection between server and local code
+- **Chat Clear Command** - `lua chat clear` to clear conversation history
+- **Lua Runtime API** - `Lua.request.channel` for channel identification with typed `Channel` union
+- **Marketplace Pagination** - Browse skills with page navigation
+
+#### Improvements
+- Centralized persona handling with AST-based code updates
+- Simplified YAML to state-only (IDs and versions)
+
+---
+
 ## [3.0.0] - 2025-12-07
 
 ### Updated - Documentation for lua-cli v3.1.0
