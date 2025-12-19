@@ -84,6 +84,94 @@ switch (channel) {
 }
 ```
 
+### webhook
+
+The webhook object contains information about the incoming webhook request from channel integrations. This provides access to the original data sent by the channel provider (WhatsApp, Slack, Teams, etc.).
+
+```typescript
+Lua.request.webhook: { payload: any } | undefined
+```
+
+**Type:** `{ payload: any } | undefined`
+
+The webhook object is only available when the request originated from a webhook-based channel. For direct API calls or the web chat widget, this will be `undefined`.
+
+#### webhook.payload
+
+The raw, unmodified webhook payload from the channel provider.
+
+**Available for channels:**
+- `whatsapp` - Full WhatsApp Cloud API webhook payload
+- `slack` - Slack Events API payload
+- `teams` - Microsoft Teams activity object
+- `front` - Front webhook body
+- `facebook` - Facebook Messenger webhook event
+- `instagram` - Instagram Messaging webhook event
+- `messagebird` - MessageBird webhook body
+
+**Example - Accessing WhatsApp webhook data:**
+
+```typescript
+import { Lua } from 'lua-cli';
+
+const webhook = Lua.request.webhook;
+
+if (Lua.request.channel === 'whatsapp' && webhook) {
+  // Access WhatsApp-specific data
+  const entry = webhook.payload.entry?.[0];
+  const value = entry?.changes?.[0]?.value;
+  const messageId = value?.messages?.[0]?.id;
+  const phoneNumberId = value?.metadata?.phone_number_id;
+  
+  return {
+    messageId,
+    phoneNumberId,
+    raw: webhook.payload,
+  };
+}
+```
+
+**Example - Slack event data:**
+
+```typescript
+import { Lua } from 'lua-cli';
+
+const webhook = Lua.request.webhook;
+
+if (Lua.request.channel === 'slack' && webhook) {
+  const event = webhook.payload.event;
+  const teamId = webhook.payload.team_id;
+  const channelId = event?.channel;
+  
+  return {
+    teamId,
+    channelId,
+    eventType: event?.type,
+  };
+}
+```
+
+**Example - Teams activity:**
+
+```typescript
+import { Lua } from 'lua-cli';
+
+const webhook = Lua.request.webhook;
+
+if (Lua.request.channel === 'teams' && webhook) {
+  const activity = webhook.payload;
+  const conversationId = activity.conversation?.id;
+  const tenantId = activity.conversation?.tenantId;
+  const serviceUrl = activity.serviceUrl;
+  
+  return {
+    conversationId,
+    tenantId,
+    serviceUrl,
+  };
+}
+```
+
 ## Complete Examples
 
 ### Conditional Tool Availability
@@ -212,9 +300,9 @@ export default Postprocessor.create(formatForChannel);
 
 The `Lua` API will be expanded to include additional runtime information, such as:
 
-- Request metadata
-- Additional context data
-- More channel-specific information
+- User profile data
+- Session information
+- More request metadata
 
 <Note>
 This API is designed to grow. Check back for new properties as they become available.
@@ -266,6 +354,30 @@ This API is designed to grow. Check back for new properties as they become avail
     condition = async () => {
       return Lua.request.channel === 'whatsapp';
     };
+    ```
+  </Accordion>
+
+  <Accordion title="✅ Check webhook Before Use">
+    Always check if webhook exists before accessing it:
+    
+    ```typescript
+    const webhook = Lua.request.webhook;
+    
+    if (webhook) {
+      // Safe to access webhook.payload properties
+      const data = webhook.payload.entry?.[0]?.changes?.[0]?.value;
+    }
+    ```
+  </Accordion>
+
+  <Accordion title="✅ Combine Channel Check with webhook">
+    For channel-specific webhook handling, always check both:
+    
+    ```typescript
+    if (Lua.request.channel === 'whatsapp' && Lua.request.webhook) {
+      // WhatsApp-specific webhook handling
+      const payload = Lua.request.webhook.payload;
+    }
     ```
   </Accordion>
 </AccordionGroup>

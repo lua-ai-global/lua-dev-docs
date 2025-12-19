@@ -80,6 +80,7 @@ Creates a new response postprocessor.
 **Recommended:** Use the [Lua Runtime API](/api/lua) instead of the function parameters:
 - **User:** `User.get()` to retrieve the current user
 - **Channel:** `Lua.request.channel` for the current channel
+- **Webhook:** `Lua.request.webhook?.payload` for raw webhook data (WhatsApp, Slack, Teams, etc.)
 
 The function parameters may be removed in a future version.
 </Note>
