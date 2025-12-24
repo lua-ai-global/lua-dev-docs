@@ -11,13 +11,18 @@ Make your agent's responses visually appealing with **formatting components** th
 **Important**: You must explicitly instruct your agent in the **Persona** or **Skill Context** to use these components. They won't be used automatically!
 </Warning>
 
-## 6 Visual Components
+## 7 Visual Components
 
 <CardGroup cols={3}>
   <Card title="List-Item" icon="list" href="/formatting/list-item">
     **Products, rooms, menus**
     
     Structured lists with images, titles, and descriptions
+  </Card>
+  <Card title="Horizontal-List-Item" icon="images" href="/formatting/horizontal-list-item">
+    **Carousel display**
+    
+    Swipeable cards for visual browsing (WhatsApp only)
   </Card>
   <Card title="Actions" icon="hand-pointer" href="/formatting/actions">
     **Interactive buttons**
@@ -116,7 +121,7 @@ persona: `
 
 ## Platform Support
 
-All components work across:
+Most components work across all channels:
 - ✅ WhatsApp Business
 - ✅ Facebook Messenger
 - ✅ Instagram Messenger
@@ -125,7 +130,9 @@ All components work across:
 - ✅ Website (LuaPop)
 
 <Note>
-**Navigate component** only works on WebChat/LuaPop (requires onNavigate handler)
+**Channel-specific components:**
+- **Navigate** - WebChat/LuaPop only (requires onNavigate handler)
+- **Horizontal-List-Item** - WhatsApp only (falls back to list-item on other channels)
 </Note>
 
 ## Coming Soon

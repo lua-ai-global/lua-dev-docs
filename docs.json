@@ -251,15 +251,16 @@
             "pages": ["formatting/introduction"]
           },
           {
-            "group": "Components",
-            "pages": [
-              "formatting/list-item",
-              "formatting/actions",
-              "formatting/links",
-              "formatting/images",
-              "formatting/payment",
-              "formatting/navigate"
-            ]
+          "group": "Components",
+          "pages": [
+            "formatting/list-item",
+            "formatting/horizontal-list-item",
+            "formatting/actions",
+            "formatting/links",
+            "formatting/images",
+            "formatting/payment",
+            "formatting/navigate"
+          ]
           },
           {
             "group": "Advanced",

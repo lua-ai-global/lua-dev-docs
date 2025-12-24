@@ -1,0 +1,355 @@
+---
+title: "Horizontal-List-Item Component (Carousel)"
+description: "Display items in a horizontally scrollable carousel format"
+---
+
+## Overview
+
+The **Horizontal-List-Item** component displays items as a horizontally scrollable **Media Card Carousel**. This is ideal for showcasing multiple options in a compact, swipeable format.
+
+<Card title="Perfect for:" icon="images">
+  Product categories, menu sections, room options, service packages - any list where visual browsing is key
+</Card>
+
+<Warning>
+**WhatsApp Only**: This component currently only works on WhatsApp Business. On other channels, it falls back to the standard list-item format.
+</Warning>
+
+## Format
+
+```
+::: horizontal-list-item
+![image](Image-URL)
+#Item Title
+##Item Subheading
+Brief description of the item.
+:::
+```
+
+## Requirements & Limitations
+
+<CardGroup cols={2}>
+  <Card title="Minimum 2 Items" icon="hashtag">
+    At least 2 items required for carousel
+  </Card>
+  <Card title="Maximum 10 Items" icon="hashtag">
+    Up to 10 items per carousel. More items split into multiple carousels.
+  </Card>
+  <Card title="Image Required" icon="image">
+    Each item MUST have an image. A placeholder is used if missing.
+  </Card>
+  <Card title="Unique Titles" icon="fingerprint">
+    Each item must have a unique heading
+  </Card>
+</CardGroup>
+
+### Meta/WhatsApp Restrictions
+
+<Warning>
+These are restrictions imposed by Meta's WhatsApp Business API:
+</Warning>
+
+| Restriction | Limit |
+|-------------|-------|
+| Cards per carousel | 2-10 |
+| Card body text | 160 characters max |
+| Header text | 60 characters max |
+| Image format | JPEG, PNG |
+| Buttons per card | Up to 2 (quick reply, URL, or phone) |
+
+<Note>
+**Template Approval**: Carousel templates require Meta approval. The system creates templates automatically when you first use this component. The first request falls back to list-item format while templates are pending approval (~30 seconds to a few minutes).
+</Note>
+
+### Current Implementation Defaults
+
+<Info>
+These are current implementation choices that may become configurable in the future:
+</Info>
+
+| Setting | Current Value |
+|---------|---------------|
+| Button per card | 1 quick reply with text "Select" |
+| Button payload | `#Header` (sent to agent when user taps) |
+| Template body text | `Results: {remainderText}. Browse below.` |
+| Card body format | `Details: {header + subHeading + body}. Select below.` |
+| Default image | Lua placeholder when no image provided |
+
+**Parameter mapping from component:**
+```
+::: horizontal-list-item
+![image](image-url)        → Card header image
+#Item Title                → Button payload + part of card body
+##Subheading               → Part of card body
+Description text here.     → Part of card body
+:::
+```
+
+The card body combines all text (`#Title - ##Subheading - Description`) into a single parameter, truncated to 135 characters to fit WhatsApp's 160 char limit with the static text.
+
+When user taps "Select", the agent receives: `Select: *Item Title*`
+
+## Complete Examples
+
+### Product Categories
+
+```
+::: horizontal-list-item
+![image](https://cdn.example.com/hot-drinks.jpg)
+#Hot Drinks
+##12 Options Available
+Explore our selection of coffees, teas, and specialty hot beverages.
+:::
+
+::: horizontal-list-item
+![image](https://cdn.example.com/cold-drinks.jpg)
+#Cold Drinks
+##8 Options Available
+Refreshing iced coffees, smoothies, and cold brew options.
+:::
+
+::: horizontal-list-item
+![image](https://cdn.example.com/desserts.jpg)
+#Desserts
+##6 Options Available
+Sweet treats including cakes, pastries, and seasonal specials.
+:::
+```
+
+<Frame>
+  <img src="/images/formatting/horizontal-list-item-categories.png" alt="Category carousel in WhatsApp" />
+</Frame>
+
+*Screenshot: Product categories displayed as a swipeable carousel in WhatsApp*
+
+### Menu Items
+
+```
+::: horizontal-list-item
+![image](https://cdn.example.com/latte.jpg)
+#Caramel Latte
+##$4.50 - Popular
+Rich espresso with steamed milk and caramel syrup. Available hot or iced.
+:::
+
+::: horizontal-list-item
+![image](https://cdn.example.com/cappuccino.jpg)
+#Classic Cappuccino
+##$3.75 - Best Seller
+Double shot espresso with velvety foam. Perfect morning pick-me-up.
+:::
+
+::: horizontal-list-item
+![image](https://cdn.example.com/mocha.jpg)
+#Chocolate Mocha
+##$4.25 - Customer Favorite
+Espresso meets rich chocolate. Topped with whipped cream.
+:::
+```
+
+### Hotel Rooms
+
+```
+::: horizontal-list-item
+![image](https://hotel.example.com/standard.jpg)
+#Standard Room
+##$120/night - 5 Available
+Comfortable room with queen bed, city view, and modern amenities.
+:::
+
+::: horizontal-list-item
+![image](https://hotel.example.com/deluxe.jpg)
+#Deluxe Suite
+##$200/night - 2 Available
+Spacious suite with king bed, ocean view, and private balcony.
+:::
+
+::: horizontal-list-item
+![image](https://hotel.example.com/penthouse.jpg)
+#Penthouse
+##$450/night - 1 Available
+Luxury penthouse with panoramic views, jacuzzi, and butler service.
+:::
+```
+
+## How It Works
+
+### First-Time Use
+
+1. Agent responds with `horizontal-list-item` components
+2. System checks if carousel templates exist
+3. If templates don't exist:
+   - Creates templates in background (async)
+   - Falls back to list-item format for this request
+4. Templates submitted to Meta for approval (~30 sec to minutes)
+5. Next request uses the approved carousel templates
+
+### User Interaction
+
+When a user taps "Select" on a carousel card:
+- The agent receives: `Select: *Item Title*`
+- Example: `Select: *Caramel Latte*`
+
+This allows the agent to know exactly which item the user selected.
+
+## How to Configure
+
+### In Persona
+
+```yaml
+persona: |
+  When showing product categories or menu sections, use horizontal-list-item for a carousel view:
+  
+  ::: horizontal-list-item
+  ![image](category-image-url)
+  #Category Name
+  ##Item Count or Key Info
+  Brief description of the category.
+  :::
+  
+  Requirements:
+  - Minimum 2 items, maximum 10 items per carousel
+  - Always include an image for each item
+  - Keep descriptions under 160 characters
+```
+
+### In Skill Context
+
+```typescript
+const menuSkill = new LuaSkill({
+  context: `
+    When showing menu categories, format as horizontal carousel:
+    
+    ::: horizontal-list-item
+    ![image](category.imageUrl)
+    #category.name
+    ##category.itemCount items
+    category.description
+    :::
+    
+    This creates a swipeable carousel on WhatsApp.
+    Minimum 2 categories required for carousel format.
+  `
+});
+```
+
+## Best Practices
+
+<AccordionGroup>
+  <Accordion title="✅ Use for Visual Browsing">
+    ```
+    ✅ Good use cases:
+    - Product categories
+    - Menu sections  
+    - Room types
+    - Service tiers
+    
+    ❌ Not ideal for:
+    - Single items
+    - Text-heavy content
+    - Sequential steps
+    ```
+  </Accordion>
+
+  <Accordion title="✅ Keep Text Concise">
+    ```
+    ✅ Good:
+    Rich espresso with steamed milk. Available hot or iced.
+    
+    ❌ Bad:
+    Our signature caramel latte is made with premium espresso beans 
+    sourced from Colombia, combined with locally sourced organic milk 
+    that is perfectly steamed to 160°F... (too long - will be truncated)
+    ```
+  </Accordion>
+
+  <Accordion title="✅ Use High-Quality Images">
+    - Square or landscape orientation works best
+    - Images are automatically cropped to wide ratio
+    - Use HTTPS URLs
+    - Ensure images load quickly
+  </Accordion>
+
+  <Accordion title="✅ Provide Meaningful Subheadings">
+    ```
+    ✅ Good:
+    ##$4.50 - Popular
+    ##12 Options Available
+    ##$200/night - 2 Available
+    
+    ❌ Bad:
+    ##Info
+    ##Details
+    ##Click here
+    ```
+  </Accordion>
+</AccordionGroup>
+
+## Comparison: List-Item vs Horizontal-List-Item
+
+| Feature | List-Item | Horizontal-List-Item |
+|---------|-----------|---------------------|
+| Layout | Vertical (stacked) | Horizontal (carousel) |
+| Channels | All channels | WhatsApp only |
+| Min items | 1 | 2 |
+| Max items | 10 | 10 (per carousel) |
+| Image | Optional | Required |
+| Interaction | View only | "Select" button |
+| Best for | Detailed listings | Visual browsing |
+
+## Fallback Behavior
+
+When horizontal-list-item can't render as a carousel:
+
+| Situation | Behavior |
+|-----------|----------|
+| Non-WhatsApp channel | Falls back to list-item |
+| Less than 2 items | Falls back to list-item |
+| Templates pending approval | Falls back to list-item |
+| More than 10 items | Splits into multiple carousels |
+
+## Troubleshooting
+
+<AccordionGroup>
+  <Accordion title="Carousel not showing on first use">
+    This is expected! The first request creates templates which need Meta approval. 
+    The response falls back to list-item format. Try again in 30 seconds to a few minutes.
+  </Accordion>
+
+  <Accordion title="Getting list-item format instead of carousel">
+    Check:
+    1. Are you on WhatsApp? (carousel is WhatsApp-only)
+    2. Do you have at least 2 items?
+    3. Have templates been approved? (check agent logs)
+  </Accordion>
+
+  <Accordion title="Images not displaying">
+    Ensure images are:
+    - Using HTTPS URLs
+    - Publicly accessible
+    - In JPEG or PNG format
+    - Loading within reasonable time
+  </Accordion>
+
+  <Accordion title="Text being truncated">
+    WhatsApp limits card body to 160 characters. Keep descriptions concise.
+  </Accordion>
+</AccordionGroup>
+
+## Next Steps
+
+<CardGroup cols={2}>
+  <Card title="List-Item Component" icon="list" href="/formatting/list-item">
+    Standard vertical list format
+  </Card>
+  <Card title="Actions Component" icon="hand-pointer" href="/formatting/actions">
+    Add interactive buttons
+  </Card>
+  <Card title="WhatsApp Channel" icon="whatsapp" href="/channels/whatsapp">
+    Set up WhatsApp integration
+  </Card>
+  <Card title="Configure Persona" icon="user" href="/cli/persona-command">
+    Add formatting instructions
+  </Card>
+</CardGroup>
+
