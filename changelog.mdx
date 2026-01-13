@@ -3,19 +3,9 @@ title: "Changelog"
 description: "Release notes and version history for lua-cli"
 ---
 
-## v3.2.0-alpha.2
+## v3.2.0
 
-**Released:** December 17, 2025
-
-### 🔧 Bug Fixes
-
-- **Compile**: Fix compilation issue when skills are defined inline vs imported from separate files
-
----
-
-## v3.2.0-alpha.1
-
-**Released:** December 16, 2025
+**Released:** January 13, 2026
 
 ### ✨ New Features
 
@@ -62,6 +52,17 @@ description: "Release notes and version history for lua-cli"
     Channel is typed as a union type: `'dev' | 'webchat' | 'whatsapp' | 'messenger' | 'voice' | 'api' | 'email'`
   </Accordion>
 
+  <Accordion title="Lua.request.webhook for Raw Webhook Payload">
+    Access raw webhook payloads in tool execute functions:
+    
+    ```typescript
+    import { Lua } from 'lua-cli';
+
+    // Access raw webhook payload when triggered by webhook
+    const webhookPayload = Lua.request.webhook;
+    ```
+  </Accordion>
+
   <Accordion title="Marketplace Pagination">
     Browse marketplace skills now supports pagination:
     - Navigate through pages with Previous/Next options
@@ -72,15 +73,14 @@ description: "Release notes and version history for lua-cli"
 
 ### 🔧 Improvements
 
-- **Persona Handling Centralized**: Moved persona load/save to shared `agent-code-utils`, simplified YAML to state-only
-- **AST-based Code Updates**: Using ts-morph for proper node replacement, fixing partial replacement bugs
-- **New Dependencies**: Added `diff` package for colored diff display
+- **Simplified Agent Creation**: Streamlined `lua init` flow with cleaner prompts
+- **Better TypeScript Support**: Improved handling of path aliases and variable references in your code
 
-### 📝 Interface Updates
+### 🐛 Bug Fixes
 
-- Added `Channel` type for typed channel identification
-- Added `ProfileResponse` interface for user profile data
-- Added `MarketplacePaginationResponse` and `PaginatedMarketplaceSkillsResponse` interfaces
+- Fixed sync command occasionally showing false drift detection
+- Fixed skill publishing issues
+- Fixed compilation when skills are defined inline vs imported from separate files
 
 ---
 

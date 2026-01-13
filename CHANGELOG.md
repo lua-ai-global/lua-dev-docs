@@ -4,28 +4,25 @@ All notable changes to the Lua documentation will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
-## [3.1.1] - 2025-12-17
+## [3.2.0] - 2026-01-13
 
-### Updated - Documentation for lua-cli v3.2.0-alpha.2
-
-#### Bug Fixes
-- **Compile**: Fix compilation issue when skills are defined inline vs imported from separate files
-
----
-
-## [3.1.0] - 2025-12-16
-
-### Updated - Documentation for lua-cli v3.2.0-alpha.1
+### Updated - Documentation for lua-cli v3.2.0
 
 #### New Features Documented
 - **Sync Command** - `lua sync` for drift detection between server and local code
 - **Chat Clear Command** - `lua chat clear` to clear conversation history
-- **Lua Runtime API** - `Lua.request.channel` for channel identification with typed `Channel` union
+- **Lua Runtime API** - `Lua.request.channel` for channel identification
+- **Lua.request.webhook** - Access raw webhook payloads in tool execute functions
 - **Marketplace Pagination** - Browse skills with page navigation
 
 #### Improvements
-- Centralized persona handling with AST-based code updates
-- Simplified YAML to state-only (IDs and versions)
+- Simplified agent creation flow
+- Better TypeScript path alias support
+
+#### Bug Fixes
+- Fixed sync command drift detection issues
+- Fixed skill publishing
+- Fixed compilation for inline skill definitions
 
 ---
 
