@@ -18,14 +18,14 @@ Six tools demonstrating complete product management with the Products API.
   <Card title="Get All" icon="list">
     List with pagination
   </Card>
+  <Card title="Filter" icon="filter">
+    Query by attributes
+  </Card>
   <Card title="Create" icon="plus">
     Add new products
   </Card>
   <Card title="Update" icon="pen">
     Modify existing
-  </Card>
-  <Card title="Get By ID" icon="fingerprint">
-    Get specific product
   </Card>
   <Card title="Delete" icon="trash">
     Remove products
@@ -122,22 +122,114 @@ export class UpdateProductTool implements LuaTool {
 }
 ```
 
+### BrowseProductsTool (with Filters)
+
+```typescript
+export class BrowseProductsTool implements LuaTool {
+  name = "browse_products";
+  description = "Browse and filter products by category, price, or availability";
+  
+  inputSchema = z.object({
+    category: z.string().optional().describe("Product category"),
+    minPrice: z.number().optional().describe("Minimum price"),
+    maxPrice: z.number().optional().describe("Maximum price"),
+    inStockOnly: z.boolean().optional().describe("Only show in-stock items"),
+    page: z.number().optional().default(1)
+  });
+
+  async execute(input: z.infer<typeof this.inputSchema>) {
+    // Build filter from input
+    const filter: Record<string, any> = {};
+    
+    if (input.category) {
+      filter.category = input.category;
+    }
+    
+    if (input.minPrice !== undefined || input.maxPrice !== undefined) {
+      filter.price = {};
+      if (input.minPrice !== undefined) filter.price.$gte = input.minPrice;
+      if (input.maxPrice !== undefined) filter.price.$lte = input.maxPrice;
+    }
+    
+    if (input.inStockOnly) {
+      filter.inStock = true;
+    }
+    
+    const results = await Products.get({
+      page: input.page,
+      limit: 10,
+      filter
+    });
+    
+    return {
+      products: results.data.map(p => ({
+        id: p.id,
+        name: p.name,
+        price: `$${p.price.toFixed(2)}`,
+        category: p.category,
+        inStock: p.inStock
+      })),
+      pagination: {
+        page: results.pagination.currentPage,
+        totalPages: results.pagination.totalPages,
+        totalProducts: results.pagination.totalCount
+      }
+    };
+  }
+}
+```
+
 ## Use Cases
 
 ### E-commerce Catalog
 
 ```typescript
-// Browse products (page 1, limit 20)
-const products = await Products.get(1, 20);
+// Browse products with pagination
+const products = await Products.get({ page: 1, limit: 20 });
 
-// Search for specific items (default limit: 5)
+// Search for specific items (semantic search)
 const laptops = await Products.search('laptop');
 
-// Search with custom limit
-const moreLaptops = await Products.search('laptop', 10);
+// Filter by category
+const electronics = await Products.get({
+  filter: { category: 'Electronics' }
+});
 
 // Get product details
 const product = await Products.getById(laptops.data[0].id);
+```
+
+### Filtering Products
+
+```typescript
+// Filter by price range
+const affordable = await Products.get({
+  filter: {
+    price: { $gte: 50, $lte: 200 }
+  }
+});
+
+// Filter by category and stock status
+const availablePhones = await Products.get({
+  filter: {
+    category: 'Phones',
+    inStock: true
+  }
+});
+
+// Filter by nested fields
+const appleProducts = await Products.get({
+  filter: {
+    'metadata.brand': 'Apple'
+  }
+});
+
+// Multiple categories
+const gadgets = await Products.get({
+  filter: {
+    category: { $in: ['Phones', 'Tablets', 'Watches'] }
+  }
+});
 ```
 
 ### Inventory Management
@@ -149,25 +241,40 @@ await Products.update({ inStock: false }, productId);
 // Update price
 await Products.update({ price: 899.99 }, productId);
 
-// Bulk update (page 1, limit 100)
-const products = await Products.get(1, 100);
-for (const product of products.data) {
-  if (product.category === 'Electronics') {
-    await Products.update({ onSale: true }, product.id);
-  }
+// Get out-of-stock products
+const outOfStock = await Products.get({
+  filter: { inStock: false }
+});
+
+// Bulk update by category
+const electronics = await Products.get({
+  limit: 100,
+  filter: { category: 'Electronics' }
+});
+
+for (const product of electronics.data) {
+  await Products.update({ onSale: true }, product.id);
 }
 ```
 
 ### Admin Dashboard
 
 ```typescript
-// Get all products (page 1, limit 1000)
-const all = await Products.get(1, 1000);
+// Get all products
+const all = await Products.get({ page: 1, limit: 1000 });
 
 // Statistics
 const totalValue = all.data.reduce((sum, p) => sum + p.price, 0);
 const inStock = all.data.filter(p => p.inStock).length;
 const categories = [...new Set(all.data.map(p => p.category))];
+
+// Get low-stock items (custom field)
+const lowStock = await Products.get({
+  filter: {
+    stockCount: { $lte: 10 },
+    inStock: true
+  }
+});
 ```
 
 ### Using save() Method (New!)
@@ -193,7 +300,7 @@ await product.save();
 ```typescript
 export class BulkDiscountTool implements LuaTool {
   name = "apply_discount";
-  description = "Apply discount to products";
+  description = "Apply discount to products in a category";
   
   inputSchema = z.object({
     category: z.string(),
@@ -201,17 +308,23 @@ export class BulkDiscountTool implements LuaTool {
   });
 
   async execute(input: z.infer<typeof this.inputSchema>) {
-    const products = await Products.get(1, 1000);
+    // Use filter to get only products in the target category
+    const products = await Products.get({
+      limit: 1000,
+      filter: { category: input.category }
+    });
     
+    let updatedCount = 0;
     for (const product of products.data) {
-      if (product.category === input.category) {
-        // Modify and save
-        product.price = product.price * (1 - input.discountPercent / 100);
-        await product.save();
-      }
+      // Modify and save
+      product.price = product.price * (1 - input.discountPercent / 100);
+      await product.save();
+      updatedCount++;
     }
     
-    return { message: `Discount applied to ${input.category} products` };
+    return { 
+      message: `Discount applied to ${updatedCount} ${input.category} products` 
+    };
   }
 }
 ```
@@ -226,10 +339,10 @@ export class BulkDiscountTool implements LuaTool {
     Handle large datasets
   </Card>
   <Card title="Search" icon="magnifying-glass">
-    Query product catalog
+    Semantic search with vector embeddings
   </Card>
-  <Card title="Data Formatting" icon="paintbrush">
-    Transform API responses
+  <Card title="Filtering" icon="filter">
+    MongoDB-style queries for structured data
   </Card>
 </CardGroup>
 

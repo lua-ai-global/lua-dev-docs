@@ -103,10 +103,24 @@ for (const product of results) {
 
 ### get()
 
-Retrieve all products with pagination.
+Retrieve products with pagination and optional filtering.
 
 ```typescript
+// Simple pagination (backward compatible)
 Products.get(page?: number, limit?: number): Promise<ProductPaginationInstance>
+
+// With filter options (recommended)
+Products.get(options?: ProductFilterOptions): Promise<ProductPaginationInstance>
+```
+
+**ProductFilterOptions:**
+
+```typescript
+interface ProductFilterOptions {
+  page?: number;      // Page number (1-indexed), default: 1
+  limit?: number;     // Items per page, default: 10
+  filter?: object;    // MongoDB-style filter for product data
+}
 ```
 
 <ParamField path="page" type="number" default={1}>
@@ -117,13 +131,43 @@ Products.get(page?: number, limit?: number): Promise<ProductPaginationInstance>
   Number of products per page
 </ParamField>
 
+<ParamField path="filter" type="object">
+  MongoDB-style filter object to query product data fields
+</ParamField>
+
 **Returns:** `ProductPaginationInstance` - Array-like collection with pagination support
 
-**Example:**
+**Examples:**
 
 ```typescript
-// Get first 20 products (page 1, limit 20)
+// Simple pagination (backward compatible)
 const page = await Products.get(1, 20);
+
+// Using options object (recommended)
+const page = await Products.get({ page: 1, limit: 20 });
+
+// With filters - exact match
+const electronics = await Products.get({
+  page: 1,
+  limit: 20,
+  filter: { category: 'Electronics' }
+});
+
+// With filters - price range
+const affordable = await Products.get({
+  filter: {
+    price: { $lte: 100 }
+  }
+});
+
+// With filters - multiple conditions
+const inStockLaptops = await Products.get({
+  filter: {
+    category: 'Laptops',
+    inStock: true,
+    price: { $gte: 500, $lte: 1500 }
+  }
+});
 
 // Direct array methods
 page.forEach(product => {
@@ -146,6 +190,27 @@ if (page.pagination.hasPrevPage) {
 // Use array methods
 const names = page.map(p => p.name);
 const inStock = page.filter(p => p.inStock);
+```
+
+**Filter Operators:**
+
+The filter supports MongoDB-style operators:
+
+```typescript
+// Comparison
+{ price: { $eq: 99.99 } }      // Equal
+{ price: { $ne: 99.99 } }      // Not equal
+{ price: { $gt: 50 } }         // Greater than
+{ price: { $gte: 50 } }        // Greater than or equal
+{ price: { $lt: 100 } }        // Less than
+{ price: { $lte: 100 } }       // Less than or equal
+
+// Array matching
+{ category: { $in: ['Electronics', 'Computers'] } }
+
+// Nested fields (dot notation)
+{ 'specs.color': 'black' }
+{ 'metadata.brand': 'Apple' }
 ```
 
 ### getById()
@@ -431,11 +496,16 @@ export class UpdateStockTool implements LuaTool {
 ### E-commerce Catalog
 
 ```typescript
-// Browse products (page 1, limit 20)
-const products = await Products.get(1, 20);
+// Browse products with pagination
+const products = await Products.get({ page: 1, limit: 20 });
 
-// Search specific items
+// Search specific items (semantic search)
 const laptops = await Products.search('laptop');
+
+// Filter by category
+const electronics = await Products.get({
+  filter: { category: 'Electronics' }
+});
 
 // Get product details
 const product = await Products.getById(laptops.data[0].id);
@@ -456,6 +526,44 @@ await Products.update({
   inStock: true,
   category: 'Electronics - Sale'
 }, productId);
+
+// Get all out-of-stock products
+const outOfStock = await Products.get({
+  filter: { inStock: false }
+});
+```
+
+### Filtering Products
+
+```typescript
+// By price range
+const affordable = await Products.get({
+  filter: {
+    price: { $gte: 50, $lte: 200 }
+  }
+});
+
+// By category and availability
+const availablePhones = await Products.get({
+  filter: {
+    category: 'Phones',
+    inStock: true
+  }
+});
+
+// By nested properties
+const appleProducts = await Products.get({
+  filter: {
+    'metadata.brand': 'Apple'
+  }
+});
+
+// Multiple categories
+const gadgets = await Products.get({
+  filter: {
+    category: { $in: ['Phones', 'Tablets', 'Watches'] }
+  }
+});
 ```
 
 ### Product Recommendations
@@ -464,12 +572,52 @@ await Products.update({
 // Search similar products
 const similar = await Products.search(product.category);
 
-// Filter by price range
-const affordable = similar.data.filter(p => 
-  p.price < product.price * 1.2 &&
-  p.price > product.price * 0.8
-);
+// Or filter by same category
+const sameCategory = await Products.get({
+  filter: {
+    category: product.category,
+    price: {
+      $gte: product.price * 0.8,
+      $lte: product.price * 1.2
+    }
+  }
+});
 ```
+
+### Search vs Filter
+
+<Tabs>
+  <Tab title="When to Use Search">
+    **Use `Products.search()`** for semantic/fuzzy matching:
+    - "laptop for students"
+    - "wireless headphones"
+    - Natural language queries
+    
+    ```typescript
+    // Finds products by meaning, not exact match
+    const results = await Products.search('affordable gaming laptop');
+    ```
+  </Tab>
+  
+  <Tab title="When to Use Filter">
+    **Use `Products.get()` with filter** for structured queries:
+    - Exact category matches
+    - Price ranges
+    - Stock status
+    - Attribute combinations
+    
+    ```typescript
+    // Finds products matching exact criteria
+    const results = await Products.get({
+      filter: {
+        category: 'Laptops',
+        price: { $lte: 1000 },
+        inStock: true
+      }
+    });
+    ```
+  </Tab>
+</Tabs>
 
 ## Best Practices
 
