@@ -81,16 +81,18 @@ MCP servers can run locally or remotely:
     
     - Uses Server-Sent Events (SSE)
     - Connect to hosted MCP services
-    - Supports authentication headers
+    - Supports authentication headers with `env()`
     
     ```typescript
-    import { LuaMCPServer } from 'lua-cli';
+    import { LuaMCPServer, env } from 'lua-cli';
     
     const remoteServer = new LuaMCPServer({
       name: 'docs',
       transport: 'sse',
       url: 'https://mcp.example.com/sse',
-      headers: { 'Authorization': 'Bearer token' }
+      headers: () => ({ 
+        'Authorization': `Bearer ${env("MCP_API_TOKEN")}` 
+      })
     });
     ```
   </Tab>
@@ -152,12 +154,16 @@ export const agent = new LuaAgent({
     **Search the web**
     
     ```typescript
+    import { LuaMCPServer, env } from 'lua-cli';
+    
     const braveSearch = new LuaMCPServer({
       name: 'brave-search',
       transport: 'stdio',
       command: 'npx',
       args: ['-y', '@anthropic/mcp-server-brave-search'],
-      env: { 'BRAVE_API_KEY': process.env.BRAVE_KEY }
+      env: () => ({ 
+        BRAVE_API_KEY: env("BRAVE_API_KEY") 
+      })
     });
     ```
     
@@ -170,12 +176,16 @@ export const agent = new LuaAgent({
     **Interact with GitHub**
     
     ```typescript
+    import { LuaMCPServer, env } from 'lua-cli';
+    
     const githubServer = new LuaMCPServer({
       name: 'github',
       transport: 'stdio',
       command: 'npx',
       args: ['-y', '@modelcontextprotocol/server-github'],
-      env: { 'GITHUB_TOKEN': process.env.GITHUB_TOKEN }
+      env: () => ({ 
+        GITHUB_TOKEN: env("GITHUB_TOKEN") 
+      })
     });
     ```
     
@@ -204,6 +214,78 @@ export const agent = new LuaAgent({
     - `describe_table` - Show schema
   </Tab>
 </Tabs>
+
+## Environment Variables
+
+MCP servers often need API keys or connection strings. Use the `env()` function to securely access environment variables at runtime:
+
+<Tabs>
+  <Tab title="Using env() (Recommended)">
+    **Resolved at runtime from agent's environment**
+    
+    ```typescript
+    import { LuaMCPServer, env } from 'lua-cli';
+    
+    const mongoServer = new LuaMCPServer({
+      name: 'mongodb',
+      transport: 'stdio',
+      command: 'npx',
+      args: ['-y', 'mongodb-mcp-server', '--readOnly'],
+      env: () => ({
+        MDB_MCP_CONNECTION_STRING: env("MDB_MCP_CONNECTION_STRING")
+      })
+    });
+    ```
+    
+    - Function is compiled and executed at runtime
+    - Values come from `lua env production` settings
+    - Consistent with `env()` in tool execute functions
+    - **Recommended for secrets and API keys**
+  </Tab>
+
+  <Tab title="Static Values">
+    **Stored directly in configuration**
+    
+    ```typescript
+    const filesystemServer = new LuaMCPServer({
+      name: 'filesystem',
+      transport: 'stdio',
+      command: 'npx',
+      args: ['-y', '@modelcontextprotocol/server-filesystem'],
+      env: { 
+        DEBUG: 'true',
+        MAX_FILES: '100'
+      }
+    });
+    ```
+    
+    - Values are stored as-is in the database
+    - Use only for non-sensitive configuration
+    - **Not recommended for secrets**
+  </Tab>
+</Tabs>
+
+<Note>
+**Setting Environment Variables:** Use `lua env production` to manage your agent's environment variables. These are securely stored and made available to the `env()` function at runtime.
+</Note>
+
+### Headers with env()
+
+For SSE servers, you can also use `env()` in headers:
+
+```typescript
+import { LuaMCPServer, env } from 'lua-cli';
+
+const apiServer = new LuaMCPServer({
+  name: 'my-api',
+  transport: 'sse',
+  url: 'https://api.example.com/mcp',
+  headers: () => ({
+    'Authorization': `Bearer ${env("API_TOKEN")}`,
+    'X-Api-Key': env("API_KEY")
+  })
+});
+```
 
 ## MCP vs Custom Skills
 
