@@ -33,6 +33,7 @@ This guide helps you migrate from popular chat widgets to LuaPop with minimal di
     agentId: "your-agent-id",
     sessionId: "john-doe-123",
     position: "bottom-right",
+    welcomeMessage: "Hi John! 👋 How can I help you today?",
     runtimeContext: "user:john@example.com"
   });
 </script>
@@ -130,6 +131,7 @@ var Tawk_API = Tawk_API || {};
 | **Position** | Not configurable | `position` | Not configurable | `position` |
 | **Color** | `color_override` | `color.theme` | `theme.primaryColor` | `buttonColor` |
 | **Button Text** | Not available | Custom CSS | `teaser.text` | `buttonText` |
+| **Welcome Message** | `custom_launcher_selector` | Limited | `teaser.text` | `welcomeMessage` |
 | **User ID** | `user_id` | Custom | `userId` | `sessionId` |
 
 ## Event Migration
@@ -263,5 +265,3 @@ new GradualMigration();
     Get started with LuaPop
   </Card>
 </CardGroup>
-EOFEX
-

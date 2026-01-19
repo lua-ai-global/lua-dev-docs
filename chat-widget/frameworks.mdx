@@ -270,6 +270,9 @@ interface LuaPopConfig {
   authToken?: string;
   displayMode?: "floating" | "embedded";
   voiceModeEnabled?: boolean;
+  welcomeMessage?: string;
+  chatInputPlaceholder?: string;
+  chatTitle?: string;
   onNavigate?: (pathname: string, options: { query: Record<string, string> }) => void;
   // ... other options
 }

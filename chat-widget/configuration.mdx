@@ -167,6 +167,16 @@ const widget = window.LuaPop.init({
   ```
 </ParamField>
 
+<ParamField path="welcomeMessage" type="string" default="Hi! How can I help you today?">
+  Welcome message displayed when the chat is first opened and no conversation history exists.
+  
+  This message appears as the first assistant message, helping to greet users and set the tone for the conversation.
+  
+  ```javascript
+  welcomeMessage: "Hello! How can we assist you today?"
+  ```
+</ParamField>
+
 ## Advanced Styling
 
 <ParamField path="popupButtonStyles" type="React.CSSProperties">
@@ -326,6 +336,7 @@ window.LuaPop.init({
   
   // Branding
   chatInputPlaceholder: "How can we help?",
+  welcomeMessage: "Hi there! 👋 How can we help you today?",
   chatHeaderSubtitle: {
     visible: true,
     brandName: "Your Company",

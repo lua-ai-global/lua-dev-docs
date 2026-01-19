@@ -28,7 +28,8 @@ description: "Real-world implementation examples for different industries"
       chatTitle: "Customer Support",
       buttonText: "💬 Get Help",
       position: "bottom-right",
-      chatInputPlaceholder: "How can we help you today?"
+      welcomeMessage: "Hi there! 👋 How can we help you today?",
+      chatInputPlaceholder: "Describe your issue..."
     });
   </script>
 </body>
@@ -46,6 +47,7 @@ description: "Real-world implementation examples for different industries"
     buttonText: "🛒 Shop Help",
     buttonColor: "#e74c3c",
     position: "bottom-right",
+    welcomeMessage: "Welcome! 🛍️ Looking for something specific? I can help you find the perfect product!",
 
     onNavigate: (pathname, options) => {
       // Navigate to product pages
@@ -75,6 +77,7 @@ description: "Real-world implementation examples for different industries"
     buttonText: "🛎️ Concierge",
     buttonColor: "#d4af37",
     position: "bottom-right",
+    welcomeMessage: "Welcome to Luxury Resort & Spa! 🌴 How may I assist you with your stay today?",
 
     popupButtonStyles: {
       borderRadius: "50%",
@@ -109,6 +112,9 @@ window.LuaPop.init({
   buttonText: isNewUser ? "🚀 Get Started" : "💡 Need Help?",
   buttonColor: "#9b59b6",
   position: "bottom-right",
+  welcomeMessage: isNewUser 
+    ? "Welcome aboard! 🚀 I'm here to help you get started. What would you like to set up first?"
+    : "Hey! 👋 Need help with anything?",
   voiceModeEnabled: true,
   sessionId: `user-${Date.now()}`,
   
@@ -150,6 +156,7 @@ if (isNewUser) {
       targetContainerId: "docs-chat"
     },
     chatTitle: "Documentation Assistant",
+    welcomeMessage: "Hi! I can help you find anything in our documentation. What are you looking for?",
     chatInputPlaceholder: "Search documentation..."
   });
 </script>
