@@ -54,6 +54,10 @@ Generate a complete chat response (non-streaming).
 POST /chat/generate/:agentId
 ```
 
+<Note>
+**PostProcessors:** Only the `/generate` endpoint supports PostProcessors. Streaming responses (`/stream`) bypass post-processing because text is sent incrementally before the full response is available.
+</Note>
+
 ---
 
 ## Path Parameters

@@ -27,6 +27,10 @@ export default addDisclaimer;
 **New in v3.0.0:** Response postprocessing for formatting, branding, and enhancement. Use with LuaAgent.
 </Note>
 
+<Warning>
+**Streaming Limitation:** PostProcessors only execute on non-streaming (`generate`) requests. Channels that use streaming (WhatsApp, LuaPop, Slack, etc.) do not support post-processing. See [Channel Compatibility](/overview/postprocessors#channel-compatibility) for details.
+</Warning>
+
 ## Use Cases
 
 <CardGroup cols={2}>

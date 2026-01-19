@@ -175,6 +175,23 @@ Final Response to User
 
 Each postprocessor receives the output of the previous one in the chain.
 
+## Channel Compatibility
+
+<Warning>
+**Streaming Limitation:** PostProcessors only run on non-streaming (`generate`) requests. Streaming responses bypass post-processing because the text is sent to users incrementally before the full response is available.
+</Warning>
+
+| Channel | PostProcessors Supported | Notes |
+|---------|-------------------------|-------|
+| Email | Yes | Uses generate (non-streaming) |
+| HTTP API (`/generate`) | Yes | Non-streaming endpoint |
+| HTTP API (`/stream`) | No | Streaming bypasses post-processing |
+| WhatsApp | No | Uses streaming internally |
+| LuaPop (Web Widget) | No | Uses streaming for real-time UX |
+| Slack | No | Uses streaming internally |
+| Facebook Messenger | No | Uses streaming internally |
+| Instagram | No | Uses streaming internally |
+
 ## Adding to Your Agent
 
 ```typescript
