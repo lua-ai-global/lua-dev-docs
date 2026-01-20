@@ -4,6 +4,29 @@ All notable changes to the Lua documentation will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
+## [3.3.0] - 2026-01-20
+
+### Updated - Documentation for lua-cli v3.3.0
+
+#### New Features Documented
+- **Non-Interactive Mode** - Complete automation support for all CLI commands
+  - Consistent option naming patterns (`--<entity>-name`, `--<entity>-version`)
+  - `--force` flag for dangerous operations
+  - `--json` flag for machine-readable output
+  - Action arguments for entity management
+- **User Message and Agent Response Logs** - Filter logs by `user_message` and `agent_response` types
+- **MCP Server Environment Resolution** - Function-based `env()` API in MCP configs
+- **Products.get() Filter Support** - New filter options with backward compatibility
+
+#### Improvements
+- Chat works without mandatory skills
+- Better error handling and visual feedback in CLI
+
+#### Bug Fixes
+- Normalized action handling for case-insensitive commands
+
+---
+
 ## [3.2.0] - 2026-01-13
 
 ### Updated - Documentation for lua-cli v3.2.0

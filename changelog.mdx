@@ -3,6 +3,110 @@ title: "Changelog"
 description: "Release notes and version history for lua-cli"
 ---
 
+## v3.3.0
+
+**Released:** January 20, 2026
+
+### ✨ New Features
+
+<AccordionGroup>
+  <Accordion title="Complete Non-Interactive Mode for All Commands">
+    All CLI commands now support full non-interactive operation, enabling seamless automation for AI IDEs, CI/CD pipelines, and shell scripting.
+    
+    **Design Patterns:**
+    - Consistent option naming: `--<entity>-name` and `--<entity>-version`
+    - `--force` flag for skipping confirmation prompts
+    - `--json` flag for machine-readable output
+    - Action arguments for entity management (view, versions, deploy, activate, deactivate)
+    
+    ```bash
+    # Entity management
+    lua skills view
+    lua skills versions --skill-name mySkill
+    lua skills deploy --skill-name mySkill --skill-version 1.0.3
+    
+    # Init command
+    lua init --agent-id abc123
+    lua init --agent-name "My Bot" --org-id org1
+    
+    # Sync command
+    lua sync --check    # CI drift detection
+    lua sync --accept   # Auto-sync from server
+    
+    # Test command
+    lua test skill --name get_weather --input '{"city": "London"}'
+    
+    # Logs command
+    lua logs --type skill --name mySkill --limit 10 --json
+    ```
+    
+    See the [Non-Interactive Mode Guide](/cli/non-interactive-mode) for complete documentation.
+  </Accordion>
+
+  <Accordion title="User Message and Agent Response Log Types">
+    The logs command now supports filtering by user messages and agent responses:
+    
+    ```bash
+    lua logs --type user_message --limit 20
+    lua logs --type agent_response --limit 20
+    ```
+    
+    - 💬 **User Messages**: View incoming user messages with channel and userId info
+    - 🤖 **Agent Responses**: View AI-generated responses with distinct coloring
+  </Accordion>
+
+  <Accordion title="Function-Based Environment Resolution for MCP Servers">
+    MCP server configurations now support dynamic environment variable resolution using the `env()` API:
+    
+    ```typescript
+    const mcpServer = new LuaMCPServer({
+      name: 'mongo-mcp',
+      transport: 'stdio',
+      command: 'npx',
+      args: ['-y', '@mongodb/mcp-server'],
+      env: () => ({
+        MDB_CONNECTION_STRING: env("MDB_CONNECTION_STRING")
+      })
+    });
+    ```
+    
+    Also supported for SSE transport with `url` and `headers` resolver functions.
+  </Accordion>
+
+  <Accordion title="Products.get() Filter Support">
+    Added filter support to `Products.get()` with backward compatibility:
+    
+    ```typescript
+    // Backward compatible
+    const products = await Products.get(1, 10);
+
+    // New approach with filters
+    const products = await Products.get({
+      page: 1,
+      limit: 10,
+      filter: {
+        category: 'electronics',
+        inStock: true
+      }
+    });
+    ```
+  </Accordion>
+</AccordionGroup>
+
+### 🐛 Bug Fixes
+
+- **Chat**: Allow `lua chat` to work without mandatory skills - agents can now have only webhooks, jobs, or processors
+- **Commands**: Normalized action handling for case-insensitive action comparisons
+
+### 🔧 Improvements
+
+- **Chat Command**: Informational message when defaulting to sandbox environment
+- **Chat Command**: Improved visual separation between compile logs and chat response
+- **Env Command**: Proper error handling for save/delete operations
+- **Push Command**: Shared helper functions reduce code duplication
+
+---
+
 ## v3.2.0
 
 **Released:** January 13, 2026
