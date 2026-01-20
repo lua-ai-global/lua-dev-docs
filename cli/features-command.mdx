@@ -15,6 +15,33 @@ lua features
 **New in v2.6.0:** Centralized control over agent features with instant enable/disable and context customization!
 </Note>
 
+### Non-Interactive Mode
+
+```bash
+# List all features
+lua features list
+
+# Enable a feature
+lua features enable --feature-name tickets
+
+# Disable a feature
+lua features disable --feature-name rag
+
+# View feature details
+lua features view --feature-name webSearch
+```
+
+| Option | Description |
+|--------|-------------|
+| `--feature-name <name>` | Feature name (tickets, rag, webSearch, inquiry) |
+
+| Action | Description | Required Options |
+|--------|-------------|------------------|
+| `list` | List all features with status | None |
+| `enable` | Enable a feature | `--feature-name` |
+| `disable` | Disable a feature | `--feature-name` |
+| `view` | View feature details and context | `--feature-name` |
+
 <CardGroup cols={2}>
   <Card title="View Features" icon="list">
     See all available features and their status

@@ -76,6 +76,13 @@ lua compile --force-sync # Auto-update from server without prompting
 
 ## Options
 
+### Sync Command Options
+
+| Flag | Description |
+|------|-------------|
+| `--check` | Check for drift only, exit code 1 if drift found (CI validation) |
+| `--accept` | Auto-accept server state without prompting |
+
 ### Compile Integration
 
 | Flag | Description |
@@ -83,17 +90,62 @@ lua compile --force-sync # Auto-update from server without prompting
 | `--no-sync` | Skip drift detection during compile |
 | `--force-sync` | Automatically update local from server if drift detected |
 
+### Non-Interactive Mode
+
+```bash
+# Check for drift only (returns exit code 1 if drift detected)
+lua sync --check
+
+# Auto-sync from server without prompting
+lua sync --accept
+```
+
 ### Examples
 
 ```bash
 # Check for drift interactively
 lua sync
 
+# Check only, fail if drift (for CI)
+lua sync --check
+
+# Auto-accept server state
+lua sync --accept
+
 # Compile without sync check (useful for CI/CD)
 lua compile --no-sync
 
 # Auto-sync before compile (useful for pulling latest)
 lua compile --force-sync
+```
+
+### CI/CD Workflow Example
+
+```yaml
+# GitHub Actions example
+name: Deploy Agent
+
+on:
+  push:
+    branches: [main]
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Check for drift
+        run: lua sync --check
+      
+      - name: Compile
+        run: lua compile --no-sync
+      
+      - name: Push version
+        run: lua push skill --name mySkill --version ${{ github.sha }} --force
+      
+      - name: Deploy to production
+        run: lua deploy --skill-name mySkill --skill-version latest --force
 ```
 
 ## Common Scenarios

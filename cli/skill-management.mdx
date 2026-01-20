@@ -40,6 +40,30 @@ lua init --with-examples    # Include 30+ example tools
 | Option | Description |
 |--------|-------------|
 | `--with-examples` | Include example skills, tools, jobs, webhooks, and processors |
+| `--agent-id <id>` | Use existing agent by ID (non-interactive) |
+| `--agent-name <name>` | Name for new agent (requires --org-id or --org-name) |
+| `--org-id <id>` | Use existing organization by ID |
+| `--org-name <name>` | Create new organization with this name |
+| `--force` | Skip confirmations / overwrite existing project |
+
+### Non-Interactive Mode
+
+```bash
+# Use existing agent
+lua init --agent-id abc123
+
+# Create agent in existing organization
+lua init --agent-name "My Bot" --org-id org456
+
+# Create agent + new organization
+lua init --agent-name "My Bot" --org-name "Acme Corp"
+
+# Override existing project
+lua init --agent-id abc123 --force
+
+# With example code
+lua init --agent-id abc123 --with-examples
+```
 
 ### What It Does
 
@@ -281,6 +305,32 @@ Test individual tools locally in a sandboxed environment.
 lua test
 ```
 
+### Options
+
+| Option | Description |
+|--------|-------------|
+| `--name <name>` | Entity name to test (non-interactive) |
+| `--input <json>` | JSON input string for testing |
+
+### Non-Interactive Mode
+
+```bash
+# Test a skill/tool
+lua test skill --name get_weather --input '{"city": "London"}'
+
+# Test a webhook
+lua test webhook --name payment-hook --input '{"query": {}, "headers": {}, "body": {"type": "payment"}}'
+
+# Test a job
+lua test job --name daily-report
+
+# Test preprocessor
+lua test preprocessor --name filter --input '{"message": "hello", "channel": "web"}'
+
+# Test postprocessor
+lua test postprocessor --name formatter --input '{"message": "hi", "response": "hello", "channel": "web"}'
+```
+
 ### How It Works
 
 <Steps>
@@ -381,6 +431,34 @@ lua push preprocessor    # Push a preprocessor
 lua push postprocessor   # Push a postprocessor
 lua push mcp             # Push an MCP server
 lua push all --force     # Push all components
+```
+
+### Options
+
+| Option | Description |
+|--------|-------------|
+| `--name <name>` | Entity name to push (non-interactive) |
+| `--version <ver>` | Version to set (e.g., 1.0.5) |
+| `--force` | Skip all confirmation prompts |
+| `--auto-deploy` | Automatically deploy to production after push |
+
+### Non-Interactive Mode
+
+```bash
+# Push specific skill with version
+lua push skill --name mySkill --version 1.0.5
+
+# Push all components
+lua push all --force
+
+# Push and auto-deploy to production
+lua push all --force --auto-deploy
+
+# Push webhook with version
+lua push webhook --name payment-hook --version 2.0.0
+
+# Push job with version
+lua push job --name daily-report --version 1.0.0
 ```
 
 <Note>
@@ -672,6 +750,24 @@ Deploy a specific version to production (all users).
 
 ```bash
 lua deploy
+```
+
+### Options
+
+| Option | Description |
+|--------|-------------|
+| `--skill-name <name>` | Skill to deploy (non-interactive) |
+| `--skill-version <ver>` | Version to deploy, or 'latest' |
+| `--force` | Skip confirmation prompt |
+
+### Non-Interactive Mode
+
+```bash
+# Deploy specific version
+lua deploy --skill-name mySkill --skill-version 1.0.5 --force
+
+# Deploy latest version
+lua deploy --skill-name mySkill --skill-version latest --force
 ```
 
 ### What It Does

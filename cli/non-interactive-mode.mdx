@@ -1,0 +1,757 @@
+---
+title: "Non-Interactive Mode"
+description: "Automate CLI commands for AI IDEs, CI/CD pipelines, and scripting"
+---
+
+## Overview
+
+All Lua CLI commands now support **non-interactive mode**, enabling seamless automation for:
+
+- **AI IDEs** (Cursor, GitHub Copilot, Windsurf, etc.)
+- **CI/CD pipelines** (GitHub Actions, GitLab CI, Jenkins)
+- **Shell scripting** and automation
+- **Programmatic agent management**
+
+Non-interactive mode bypasses all prompts by providing arguments and flags directly on the command line.
+
+<Note>
+  **New in v3.3.0:** Every command now has non-interactive options with consistent naming patterns.
+</Note>
+
+## Design Patterns
+
+### Consistent Option Naming
+
+All commands follow these patterns:
+
+| Pattern | Description | Example |
+|---------|-------------|---------|
+| `--<entity>-name` | Select entity by name | `--skill-name mySkill` |
+| `--<entity>-version` | Specify version | `--skill-version 1.0.5` |
+| `--force` | Skip confirmation prompts | `--force` |
+| `--json` | Output as JSON for parsing | `--json` |
+| `[action]` | Positional action argument | `lua jobs view` |
+
+### Action Arguments
+
+Many commands accept an action as the first argument:
+
+```bash
+lua skills view                    # View all skills
+lua skills versions --skill-name x # View versions for skill x
+lua skills deploy --skill-name x   # Deploy skill x
+```
+
+## Complete Command Reference
+
+### Project Setup
+
+<Tabs>
+  <Tab title="init">
+    Initialize a new project without prompts:
+    
+    ```bash
+    # Use existing agent
+    lua init --agent-id abc123
+    
+    # Create agent in existing organization
+    lua init --agent-name "My Bot" --org-id org456
+    
+    # Create agent + new organization
+    lua init --agent-name "My Bot" --org-name "Acme Corp"
+    
+    # Override existing project
+    lua init --agent-id abc123 --force
+    
+    # With example code
+    lua init --agent-id abc123 --with-examples
+    ```
+    
+    | Option | Description |
+    |--------|-------------|
+    | `--agent-id <id>` | Use existing agent by ID |
+    | `--agent-name <name>` | Name for new agent |
+    | `--org-id <id>` | Existing organization ID |
+    | `--org-name <name>` | New organization name |
+    | `--force` | Override existing `lua.skill.yaml` |
+    | `--with-examples` | Include example code |
+  </Tab>
+</Tabs>
+
+### Development & Testing
+
+<Tabs>
+  <Tab title="test">
+    Test skills, webhooks, or jobs without prompts:
+    
+    ```bash
+    # Test a skill/tool
+    lua test skill --name get_weather --input '{"city": "London"}'
+    
+    # Test a webhook
+    lua test webhook --name payment-hook --input '{"query": {}, "headers": {}, "body": {"type": "payment"}}'
+    
+    # Test a job
+    lua test job --name daily-report
+    
+    # Test preprocessor
+    lua test preprocessor --name filter --input '{"message": "hello", "channel": "web"}'
+    
+    # Test postprocessor
+    lua test postprocessor --name formatter --input '{"message": "hi", "response": "hello", "channel": "web"}'
+    ```
+    
+    | Option | Description |
+    |--------|-------------|
+    | `--name <name>` | Entity name to test |
+    | `--input <json>` | JSON input for testing |
+  </Tab>
+  
+  <Tab title="sync">
+    Detect and resolve drift without prompts:
+    
+    ```bash
+    # Check for drift (exit code 1 if found)
+    lua sync --check
+    
+    # Auto-accept server state
+    lua sync --accept
+    ```
+    
+    | Option | Description |
+    |--------|-------------|
+    | `--check` | Check only, exit 1 if drift |
+    | `--accept` | Auto-sync from server |
+  </Tab>
+  
+  <Tab title="chat">
+    Send messages without interactive session:
+    
+    ```bash
+    # Send to sandbox
+    lua chat -e sandbox -m "Hello, what can you do?"
+    
+    # Send to production
+    lua chat -e production -m "Help me with my order"
+    
+    # Default: sandbox
+    lua chat -m "Quick test message"
+    ```
+    
+    | Option | Description |
+    |--------|-------------|
+    | `-e, --env <env>` | Environment: sandbox or production |
+    | `-m, --message <text>` | Message to send |
+  </Tab>
+</Tabs>
+
+### Deployment
+
+<Tabs>
+  <Tab title="push">
+    Push components without prompts:
+    
+    ```bash
+    # Push specific skill with version
+    lua push skill --name mySkill --version 1.0.5
+    
+    # Push all components
+    lua push all --force
+    
+    # Push and auto-deploy to production
+    lua push all --force --auto-deploy
+    
+    # Push webhook
+    lua push webhook --name payment-hook --version 2.0.0
+    
+    # Push job
+    lua push job --name daily-report --version 1.0.0
+    ```
+    
+    | Option | Description |
+    |--------|-------------|
+    | `--name <name>` | Entity name to push |
+    | `--version <ver>` | Version to set |
+    | `--force` | Skip confirmations |
+    | `--auto-deploy` | Deploy after push |
+  </Tab>
+  
+  <Tab title="deploy">
+    Deploy to production without prompts:
+    
+    ```bash
+    # Deploy specific version
+    lua deploy --skill-name mySkill --skill-version 1.0.5 --force
+    
+    # Deploy latest version
+    lua deploy --skill-name mySkill --skill-version latest --force
+    ```
+    
+    | Option | Description |
+    |--------|-------------|
+    | `--skill-name <name>` | Skill to deploy |
+    | `--skill-version <ver>` | Version or 'latest' |
+    | `--force` | Skip confirmation |
+  </Tab>
+</Tabs>
+
+### Entity Management
+
+<Tabs>
+  <Tab title="skills">
+    Manage skills without prompts:
+    
+    ```bash
+    # View all production skills
+    lua skills view
+    
+    # View skill versions
+    lua skills versions --skill-name mySkill
+    
+    # Deploy specific version
+    lua skills deploy --skill-name mySkill --skill-version 1.0.3
+    
+    # Deploy latest
+    lua skills deploy --skill-name mySkill --skill-version latest
+    ```
+    
+    | Action | Options Required |
+    |--------|------------------|
+    | `view` | None |
+    | `versions` | `--skill-name` |
+    | `deploy` | `--skill-name`, `--skill-version` |
+  </Tab>
+  
+  <Tab title="webhooks">
+    Manage webhooks without prompts:
+    
+    ```bash
+    lua webhooks view
+    lua webhooks activate --webhook-name myWebhook
+    lua webhooks deactivate --webhook-name myWebhook
+    lua webhooks versions --webhook-name myWebhook
+    lua webhooks deploy --webhook-name myWebhook --webhook-version 1.0.3
+    ```
+    
+    | Action | Options Required |
+    |--------|------------------|
+    | `view` | None |
+    | `activate` | `--webhook-name` |
+    | `deactivate` | `--webhook-name` |
+    | `versions` | `--webhook-name` |
+    | `deploy` | `--webhook-name`, `--webhook-version` |
+  </Tab>
+  
+  <Tab title="jobs">
+    Manage scheduled jobs without prompts:
+    
+    ```bash
+    lua jobs view
+    lua jobs trigger --job-name healthCheck
+    lua jobs activate --job-name myJob
+    lua jobs deactivate --job-name myJob
+    lua jobs versions --job-name myJob
+    lua jobs deploy --job-name myJob --job-version 1.0.3
+    lua jobs history --job-name myJob
+    ```
+    
+    | Action | Options Required |
+    |--------|------------------|
+    | `view` | None |
+    | `trigger` | `--job-name` |
+    | `activate` | `--job-name` |
+    | `deactivate` | `--job-name` |
+    | `versions` | `--job-name` |
+    | `deploy` | `--job-name`, `--job-version` |
+    | `history` | `--job-name` |
+  </Tab>
+  
+  <Tab title="preprocessors">
+    Manage preprocessors without prompts:
+    
+    ```bash
+    lua preprocessors view
+    lua preprocessors activate --preprocessor-name myPre
+    lua preprocessors deactivate --preprocessor-name myPre
+    lua preprocessors versions --preprocessor-name myPre
+    lua preprocessors deploy --preprocessor-name myPre --preprocessor-version 1.0.3
+    lua preprocessors delete --preprocessor-name oldPre
+    ```
+  </Tab>
+  
+  <Tab title="postprocessors">
+    Manage postprocessors without prompts:
+    
+    ```bash
+    lua postprocessors view
+    lua postprocessors activate --postprocessor-name myPost
+    lua postprocessors deactivate --postprocessor-name myPost
+    lua postprocessors versions --postprocessor-name myPost
+    lua postprocessors deploy --postprocessor-name myPost --postprocessor-version 1.0.3
+    lua postprocessors delete --postprocessor-name oldPost
+    ```
+  </Tab>
+</Tabs>
+
+### Configuration
+
+<Tabs>
+  <Tab title="env">
+    Manage environment variables without prompts:
+    
+    ```bash
+    # List variables
+    lua env sandbox --list
+    lua env production --list
+    
+    # Set variable
+    lua env sandbox -k DATABASE_URL -v "postgres://localhost/db"
+    lua env production -k API_KEY -v "sk_live_xxx"
+    
+    # Delete variable
+    lua env production -k OLD_KEY --delete
+    ```
+    
+    | Option | Description |
+    |--------|-------------|
+    | `--list` | List all variables |
+    | `-k, --key <name>` | Variable name |
+    | `-v, --value <val>` | Variable value |
+    | `-d, --delete` | Delete the variable |
+  </Tab>
+  
+  <Tab title="persona">
+    Manage persona without prompts:
+    
+    ```bash
+    # View current persona
+    lua persona production view
+    
+    # List versions
+    lua persona production versions
+    
+    # Deploy specific version
+    lua persona production deploy --persona-version 5
+    
+    # Deploy latest
+    lua persona production deploy --persona-version latest --force
+    ```
+    
+    | Action | Options |
+    |--------|---------|
+    | `view` | None |
+    | `versions` | None |
+    | `deploy` | `--persona-version`, `--force` |
+  </Tab>
+  
+  <Tab title="features">
+    Manage features without prompts:
+    
+    ```bash
+    lua features list
+    lua features enable --feature-name tickets
+    lua features disable --feature-name rag
+    lua features view --feature-name webSearch
+    ```
+    
+    | Action | Options Required |
+    |--------|------------------|
+    | `list` | None |
+    | `enable` | `--feature-name` |
+    | `disable` | `--feature-name` |
+    | `view` | `--feature-name` |
+  </Tab>
+  
+  <Tab title="resources">
+    Manage knowledge base without prompts:
+    
+    ```bash
+    lua resources list
+    lua resources view --resource-name "FAQ Document"
+    lua resources delete --resource-name "Old Document"
+    ```
+    
+    | Action | Options Required |
+    |--------|------------------|
+    | `list` | None |
+    | `view` | `--resource-name` |
+    | `delete` | `--resource-name` |
+  </Tab>
+  
+  <Tab title="mcp">
+    Manage MCP servers without prompts:
+    
+    ```bash
+    lua mcp list
+    lua mcp activate --server-name filesystem
+    lua mcp deactivate --server-name api-server
+    lua mcp delete --server-name old-server
+    
+    # Positional style also works
+    lua mcp activate filesystem
+    ```
+    
+    | Action | Options Required |
+    |--------|------------------|
+    | `list` | None |
+    | `activate` | `--server-name` |
+    | `deactivate` | `--server-name` |
+    | `delete` | `--server-name` |
+  </Tab>
+</Tabs>
+
+### Viewing & Debugging
+
+<Tabs>
+  <Tab title="logs">
+    View logs without prompts:
+    
+    ```bash
+    # View all logs
+    lua logs --type all --limit 50
+    
+    # Filter by type
+    lua logs --type skill --limit 20
+    lua logs --type webhook --limit 20
+    lua logs --type job --limit 20
+    
+    # Filter by specific entity
+    lua logs --type skill --name mySkill --limit 10
+    
+    # Pagination
+    lua logs --type all --limit 20 --page 2
+    
+    # JSON output for scripting
+    lua logs --type all --json
+    ```
+    
+    | Option | Description |
+    |--------|-------------|
+    | `--type <type>` | all, skill, job, webhook, preprocessor, postprocessor |
+    | `--name <name>` | Entity name (requires --type) |
+    | `--limit <n>` | Number of logs (default: 20) |
+    | `--page <n>` | Page number |
+    | `--json` | JSON output |
+  </Tab>
+  
+  <Tab title="production">
+    View production state without prompts:
+    
+    ```bash
+    lua production overview    # Production summary
+    lua production persona     # Current persona
+    lua production skills      # Deployed skills
+    lua production env         # Environment variables
+    ```
+  </Tab>
+  
+  <Tab title="channels">
+    View channels without prompts:
+    
+    ```bash
+    lua channels list    # List all channels
+    ```
+  </Tab>
+</Tabs>
+
+### Authentication & Utilities
+
+<Tabs>
+  <Tab title="auth">
+    Authentication commands with --force:
+    
+    ```bash
+    # View API key without confirmation
+    lua auth key --force
+    
+    # Logout without confirmation
+    lua auth logout --force
+    ```
+  </Tab>
+  
+  <Tab title="chat clear">
+    Clear history without confirmation:
+    
+    ```bash
+    # Clear all history
+    lua chat clear --force
+    
+    # Clear specific user's history
+    lua chat clear --user user@email.com --force
+    lua chat clear --user +1234567890 --force
+    ```
+  </Tab>
+</Tabs>
+
+### Marketplace
+
+<Tabs>
+  <Tab title="Creator Actions">
+    Publish and manage skills:
+    
+    ```bash
+    # List a skill
+    lua marketplace create list --skill-name mySkill --display-name "My Skill"
+    
+    # Publish a version
+    lua marketplace create publish --marketplace-id xyz --version-id v1 --changelog "Bug fixes"
+    
+    # Update metadata
+    lua marketplace create update --marketplace-id xyz --display-name "New Name"
+    
+    # Unlist
+    lua marketplace create unlist --marketplace-id xyz --force
+    
+    # Unpublish version
+    lua marketplace create unpublish --marketplace-id xyz --version-id v1 --force
+    
+    # View my listings
+    lua marketplace create view --json
+    ```
+  </Tab>
+  
+  <Tab title="Installer Actions">
+    Browse and install skills:
+    
+    ```bash
+    # Search marketplace
+    lua marketplace install search --query "CRM" --limit 10 --json
+    
+    # View skill details
+    lua marketplace install view --marketplace-id xyz --json
+    
+    # Install skill
+    lua marketplace install install --marketplace-id xyz --version-id v1 --force
+    
+    # With environment variables
+    lua marketplace install install --marketplace-id xyz --version-id v1 --env-vars "API_KEY=xxx,SECRET=yyy" --force
+    
+    # Update installed skill
+    lua marketplace install update --skill-name mySkill --version-id v2
+    
+    # Uninstall
+    lua marketplace install uninstall --skill-name mySkill --force
+    
+    # List installed
+    lua marketplace install installed --json
+    ```
+  </Tab>
+</Tabs>
+
+## Example Workflows
+
+### AI IDE Workflow (Cursor, Copilot)
+
+When an AI assistant needs to manage your agent:
+
+```bash
+# Initialize project for existing agent
+lua init --agent-id agent_abc123
+
+# Set environment variables
+lua env sandbox -k OPENAI_KEY -v "sk-xxx"
+lua env production -k OPENAI_KEY -v "sk-yyy"
+
+# Test a specific tool
+lua test skill --name get_order --input '{"orderId": "123"}'
+
+# Push and deploy
+lua push skill --name order-service --version 1.0.0 --force
+lua deploy --skill-name order-service --skill-version latest --force
+
+# Check logs
+lua logs --type skill --name order-service --limit 10 --json
+```
+
+### GitHub Actions CI/CD
+
+```yaml
+name: Deploy Agent
+
+on:
+  push:
+    branches: [main]
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      
+      - name: Install dependencies
+        run: npm ci
+      
+      - name: Install Lua CLI
+        run: npm install -g lua-cli
+      
+      - name: Configure auth
+        run: lua auth configure
+        env:
+          LUA_API_KEY: ${{ secrets.LUA_API_KEY }}
+      
+      - name: Check for drift
+        run: lua sync --check
+      
+      - name: Compile
+        run: lua compile --no-sync
+      
+      - name: Push version
+        run: lua push skill --name ${{ github.event.repository.name }} --version ${{ github.sha }} --force
+      
+      - name: Deploy to production
+        run: lua deploy --skill-name ${{ github.event.repository.name }} --skill-version latest --force
+      
+      - name: Verify deployment
+        run: lua logs --type skill --name ${{ github.event.repository.name }} --limit 5 --json
+```
+
+### Bash Scripting
+
+```bash
+#!/bin/bash
+set -e
+
+SKILL_NAME="my-skill"
+VERSION=$(date +%Y%m%d%H%M%S)
+
+echo "Deploying $SKILL_NAME version $VERSION"
+
+# Check drift
+if ! lua sync --check; then
+  echo "Drift detected! Run 'lua sync' manually to resolve."
+  exit 1
+fi
+
+# Compile and push
+lua compile --no-sync
+lua push skill --name "$SKILL_NAME" --version "$VERSION" --force
+
+# Deploy
+lua deploy --skill-name "$SKILL_NAME" --skill-version latest --force
+
+# Verify
+lua logs --type skill --name "$SKILL_NAME" --limit 5
+
+echo "Deployment complete!"
+```
+
+### Multi-Component Deployment
+
+```bash
+#!/bin/bash
+# Deploy all components at once
+
+VERSION="2.0.0"
+
+# Push everything
+lua push all --force
+
+# Or push individually with versions
+lua push skill --name order-service --version $VERSION --force
+lua push webhook --name payment-hook --version $VERSION --force
+lua push job --name daily-report --version $VERSION --force
+
+# Deploy skills
+lua deploy --skill-name order-service --skill-version latest --force
+
+# Activate webhooks and jobs
+lua webhooks activate --webhook-name payment-hook
+lua jobs activate --job-name daily-report
+
+# Verify
+lua production overview
+```
+
+## Exit Codes
+
+All commands return consistent exit codes:
+
+| Code | Meaning |
+|------|---------|
+| `0` | Success |
+| `1` | Error (missing args, not found, API error) |
+
+Use exit codes in scripts:
+
+```bash
+if lua sync --check; then
+  echo "No drift"
+else
+  echo "Drift detected"
+  exit 1
+fi
+```
+
+## JSON Output
+
+Commands with `--json` output machine-readable JSON:
+
+```bash
+# Get logs as JSON
+logs=$(lua logs --type all --limit 5 --json)
+
+# Parse with jq
+echo "$logs" | jq '.logs[].message'
+
+# Get installed skills
+skills=$(lua marketplace install installed --json)
+```
+
+## Best Practices
+
+<AccordionGroup>
+  <Accordion title="Always use --force in CI/CD">
+    In automated pipelines, always use `--force` to skip confirmations:
+    
+    ```bash
+    lua push all --force
+    lua deploy --skill-name x --skill-version latest --force
+    ```
+  </Accordion>
+  
+  <Accordion title="Use --check for validation">
+    Use `lua sync --check` in CI to fail builds on drift:
+    
+    ```bash
+    lua sync --check || { echo "Drift detected"; exit 1; }
+    ```
+  </Accordion>
+  
+  <Accordion title="Use --json for parsing">
+    When processing output programmatically, use `--json`:
+    
+    ```bash
+    lua logs --json | jq '.logs | length'
+    ```
+  </Accordion>
+  
+  <Accordion title="Version with timestamps or git SHAs">
+    Use dynamic versions in CI:
+    
+    ```bash
+    lua push skill --name x --version $(git rev-parse --short HEAD) --force
+    ```
+  </Accordion>
+</AccordionGroup>
+
+## Related
+
+<CardGroup cols={2}>
+  <Card title="CLI Overview" icon="terminal" href="/cli/overview">
+    All available commands
+  </Card>
+  <Card title="Skill Management" icon="wrench" href="/cli/skill-management">
+    init, test, push, deploy details
+  </Card>
+  <Card title="Sync Command" icon="rotate" href="/cli/sync-command">
+    Drift detection details
+  </Card>
+  <Card title="Environment Variables" icon="key" href="/cli/env-command">
+    Managing configuration
+  </Card>
+</CardGroup>

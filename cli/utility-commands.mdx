@@ -26,6 +26,24 @@ Utility commands provide quick access to the Lua Admin interface, documentation,
 **New in v2.6.0:** Shell autocomplete support for Bash, Zsh, and Fish!
 </Note>
 
+## Non-Interactive Mode for Auth Commands
+
+The following commands support `--force` to skip confirmation prompts:
+
+```bash
+# View API key without confirmation
+lua auth key --force
+
+# Logout without confirmation
+lua auth logout --force
+
+# Clear chat history without confirmation
+lua chat clear --force
+
+# Clear specific user's history without confirmation
+lua chat clear --user user@email.com --force
+```
+
 ## lua completion
 
 Generate shell autocomplete scripts for faster command-line workflows.

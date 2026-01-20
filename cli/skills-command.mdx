@@ -18,6 +18,33 @@ lua skills production    # Direct: manage production skills
 **New in v2.6.0:** Dedicated skills management command with environment-specific features!
 </Note>
 
+### Non-Interactive Mode
+
+```bash
+# View all production skills
+lua skills view
+
+# View skill versions
+lua skills versions --skill-name mySkill
+
+# Deploy specific version
+lua skills deploy --skill-name mySkill --skill-version 1.0.3
+
+# Deploy latest version
+lua skills deploy --skill-name mySkill --skill-version latest
+```
+
+| Option | Description |
+|--------|-------------|
+| `--skill-name <name>` | Skill name (for versions/deploy) |
+| `--skill-version <ver>` | Version or 'latest' (for deploy) |
+
+| Action | Description | Required Options |
+|--------|-------------|------------------|
+| `view` | List all production skills | None |
+| `versions` | View skill version history | `--skill-name` |
+| `deploy` | Deploy specific version | `--skill-name`, `--skill-version` |
+
 <CardGroup cols={2}>
   <Card title="Sandbox Mode" icon="flask">
     View local skills from lua.skill.yaml

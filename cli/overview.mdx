@@ -12,6 +12,10 @@ lua [options] [command]
 ```
 
 <Note>
+  **New in v3.3.0 (Non-Interactive Mode):** All commands now support non-interactive mode for AI IDEs (Cursor, Copilot), CI/CD pipelines, and scripting. See [Non-Interactive Mode](/cli/non-interactive-mode) for complete reference.
+</Note>
+
+<Note>
   **New in v3.1.0 (Marketplace):** - 🛒 **Lua Marketplace** - Discover, install, and publish skills directly from the CLI with `lua marketplace`.
 </Note>
 
@@ -42,30 +46,34 @@ lua [options] [command]
 
 ### All Commands
 
-| Command          | Category          | Description                                                                 |
-| ---------------- | ----------------- | --------------------------------------------------------------------------- |
-| `lua auth`       | 🔐 Authentication | Manage API keys and authentication                                          |
-| `lua init`       | 🚀 Project Setup  | Initialize a new Lua skill project                                          |
-| `lua env`        | ⚙️ Configuration  | Manage environment variables (sandbox/production)                           |
-| `lua persona`    | 🤖 Configuration  | Manage agent persona (sandbox/production)                                   |
-| `lua features`   | ⚡ Configuration  | Manage agent capabilities and features                                      |
-| `lua resources`  | 📚 Configuration  | Manage agent knowledge base                                                 |
-| `lua marketplace`| 🛒 Ecosystem      | Discover, install, and publish skills                                       |
-| `lua skills`     | 🔧 Development    | View and manage skills (sandbox/production)                                 |
-| `lua compile`    | 📦 Development    | Compile skill to deployable format                                          |
-| `lua sync`       | 🔄 Development    | Detect and resolve drift between server and local code                      |
-| `lua test`       | 💬 Testing        | Test skill tools interactively                                              |
-| `lua chat`       | 💬 Testing        | Interactive chat with your agent                                            |
-| `lua push`       | ☁️ Deployment     | Push components to server                                                   |
-| `lua deploy`     | 🚀 Deployment     | Deploy version to production                                                |
-| `lua mcp`        | 🔌 Integration    | Manage MCP (Model Context Protocol) servers                                 |
-| `lua production` | 🚀 Deployment     | View and manage production environment                                      |
-| `lua channels`   | 🔌 Integration    | Manage communication channels                                               |
-| `lua logs`       | 🐛 Debugging      | View and filter agent logs by component type (Skills, Jobs, Webhooks, etc.) |
-| `lua completion` | ⌨️ Utilities      | Generate shell autocomplete scripts                                         |
-| `lua admin`      | 🛠️ Utilities      | Open admin dashboard in browser                                             |
-| `lua evals`      | 📊 Utilities      | Open evaluations dashboard in browser                                       |
-| `lua docs`       | 📖 Utilities      | Open documentation in browser                                               |
+| Command          | Category          | Description                                                                 | Non-Interactive |
+| ---------------- | ----------------- | --------------------------------------------------------------------------- | --------------- |
+| `lua auth`       | 🔐 Authentication | Manage API keys and authentication                                          | ✅ `--force`    |
+| `lua init`       | 🚀 Project Setup  | Initialize a new Lua skill project                                          | ✅ Full support |
+| `lua env`        | ⚙️ Configuration  | Manage environment variables (sandbox/production)                           | ✅ Full support |
+| `lua persona`    | 🤖 Configuration  | Manage agent persona (sandbox/production)                                   | ✅ Full support |
+| `lua features`   | ⚡ Configuration  | Manage agent capabilities and features                                      | ✅ Full support |
+| `lua resources`  | 📚 Configuration  | Manage agent knowledge base                                                 | ✅ Full support |
+| `lua marketplace`| 🛒 Ecosystem      | Discover, install, and publish skills                                       | ✅ Full support |
+| `lua skills`     | 🔧 Development    | View and manage skills (sandbox/production)                                 | ✅ Full support |
+| `lua compile`    | 📦 Development    | Compile skill to deployable format                                          | ✅ `--no-sync`  |
+| `lua sync`       | 🔄 Development    | Detect and resolve drift between server and local code                      | ✅ Full support |
+| `lua test`       | 💬 Testing        | Test skill tools interactively                                              | ✅ Full support |
+| `lua chat`       | 💬 Testing        | Interactive chat with your agent                                            | ✅ `-e` `-m`    |
+| `lua push`       | ☁️ Deployment     | Push components to server                                                   | ✅ Full support |
+| `lua deploy`     | 🚀 Deployment     | Deploy version to production                                                | ✅ Full support |
+| `lua mcp`        | 🔌 Integration    | Manage MCP (Model Context Protocol) servers                                 | ✅ Full support |
+| `lua production` | 🚀 Deployment     | View and manage production environment                                      | ✅ Full support |
+| `lua channels`   | 🔌 Integration    | Manage communication channels                                               | ✅ `list`       |
+| `lua logs`       | 🐛 Debugging      | View and filter agent logs by component type (Skills, Jobs, Webhooks, etc.) | ✅ Full support |
+| `lua completion` | ⌨️ Utilities      | Generate shell autocomplete scripts                                         | ✅ Direct       |
+| `lua admin`      | 🛠️ Utilities      | Open admin dashboard in browser                                             | ✅ Direct       |
+| `lua evals`      | 📊 Utilities      | Open evaluations dashboard in browser                                       | ✅ Direct       |
+| `lua docs`       | 📖 Utilities      | Open documentation in browser                                               | ✅ Direct       |
+
+<Card title="Non-Interactive Mode Reference" icon="robot" href="/cli/non-interactive-mode">
+  Complete guide to automating CLI commands for AI IDEs, CI/CD, and scripting
+</Card>
 
 ### Quick Examples
 

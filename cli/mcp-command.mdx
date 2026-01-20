@@ -15,6 +15,34 @@ lua mcp deactivate   # Deactivate a server
 lua mcp delete       # Delete a server
 ```
 
+### Non-Interactive Mode
+
+```bash
+# List all MCP servers
+lua mcp list
+
+# Activate a server (positional or flag style)
+lua mcp activate filesystem
+lua mcp activate --server-name filesystem
+
+# Deactivate a server
+lua mcp deactivate --server-name api-server
+
+# Delete a server
+lua mcp delete --server-name old-server
+```
+
+| Option | Description |
+|--------|-------------|
+| `--server-name <name>` | MCP server name (for activate/deactivate/delete) |
+
+| Action | Description | Required Options |
+|--------|-------------|------------------|
+| `list` | List all MCP servers | None |
+| `activate` | Activate a server | `--server-name` or positional |
+| `deactivate` | Deactivate a server | `--server-name` or positional |
+| `delete` | Delete a server | `--server-name` or positional |
+
 ## Commands
 
 ### lua mcp

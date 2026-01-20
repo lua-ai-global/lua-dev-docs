@@ -18,6 +18,33 @@ lua persona production     # Direct: deploy persona version
 **New in v2.6.0:** Direct environment access lets you skip the selection prompt for faster workflows!
 </Note>
 
+### Non-Interactive Mode
+
+```bash
+# View current deployed persona
+lua persona production view
+
+# List all persona versions
+lua persona production versions
+
+# Deploy specific version
+lua persona production deploy --persona-version 5
+
+# Deploy latest version without confirmation
+lua persona production deploy --persona-version latest --force
+```
+
+| Option | Description |
+|--------|-------------|
+| `--persona-version <ver>` | Version number or 'latest' (for deploy) |
+| `--force` | Skip confirmation prompt |
+
+| Action | Description | Required Options |
+|--------|-------------|------------------|
+| `view` | View current deployed persona | None |
+| `versions` | List all persona versions | None |
+| `deploy` | Deploy specific version | `--persona-version` |
+
 <CardGroup cols={2}>
   <Card title="Sandbox Mode" icon="flask">
     Edit and test persona locally

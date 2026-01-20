@@ -75,6 +75,7 @@
             "group": "CLI Commands",
             "pages": [
               "cli/overview",
+              "cli/non-interactive-mode",
               "cli/authentication",
               "cli/skill-management",
               "cli/sync-command",

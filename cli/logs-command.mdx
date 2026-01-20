@@ -11,6 +11,35 @@ The `lua logs` command provides an interactive interface for viewing and navigat
 lua logs
 ```
 
+### Non-Interactive Mode
+
+```bash
+# View all logs
+lua logs --type all --limit 50
+
+# Filter by type
+lua logs --type skill --limit 20
+lua logs --type webhook --limit 20
+lua logs --type job --limit 20
+
+# Filter by specific entity
+lua logs --type skill --name mySkill --limit 10
+
+# Pagination
+lua logs --type all --limit 20 --page 2
+
+# JSON output for scripting
+lua logs --type all --json
+```
+
+| Option | Description |
+|--------|-------------|
+| `--type <type>` | Filter: all, skill, job, webhook, preprocessor, postprocessor |
+| `--name <name>` | Entity name (requires --type) |
+| `--limit <n>` | Number of logs (default: 20) |
+| `--page <n>` | Page number for pagination |
+| `--json` | Output as JSON for scripting |
+
 <CardGroup cols={2}>
   <Card title="Filter by Type" icon="filter">
     Filter logs by Skills, Jobs, Webhooks, Preprocessors, or Postprocessors

@@ -18,6 +18,32 @@ lua env production       # Direct: manage production API vars
 **New in v2.6.0:** Direct environment access lets you skip the selection prompt for faster workflows!
 </Note>
 
+<Note>
+**New in v3.3.0:** Full non-interactive mode with `-k`, `-v`, `--list`, and `--delete` flags for scripting and CI/CD.
+</Note>
+
+### Non-Interactive Mode
+
+```bash
+# List variables
+lua env sandbox --list
+lua env production --list
+
+# Set a variable
+lua env sandbox -k DATABASE_URL -v "postgres://localhost/db"
+lua env production -k API_KEY -v "sk_live_xxx"
+
+# Delete a variable
+lua env production -k OLD_KEY --delete
+```
+
+| Option | Description |
+|--------|-------------|
+| `--list` | List all environment variables |
+| `-k, --key <name>` | Variable name |
+| `-v, --value <val>` | Variable value |
+| `-d, --delete` | Delete the specified variable |
+
 <CardGroup cols={2}>
   <Card title="Sandbox Mode" icon="flask">
     Manage `.env` file locally

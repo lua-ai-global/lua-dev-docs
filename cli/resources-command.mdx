@@ -11,6 +11,33 @@ The `lua resources` command manages your agent's knowledge base - documents and 
 lua resources
 ```
 
+### Non-Interactive Mode
+
+```bash
+# List all resources
+lua resources list
+
+# View a specific resource
+lua resources view --resource-name "FAQ Document"
+
+# Delete a resource
+lua resources delete --resource-name "Old Document"
+```
+
+| Option | Description |
+|--------|-------------|
+| `--resource-name <name>` | Resource name (for view/delete) |
+
+| Action | Description | Required Options |
+|--------|-------------|------------------|
+| `list` | List all resources | None |
+| `view` | View resource content | `--resource-name` |
+| `delete` | Delete a resource | `--resource-name` |
+
+<Note>
+**Note:** Creating and updating resources requires interactive mode due to the editor integration for writing long-form content.
+</Note>
+
 <CardGroup cols={2}>
   <Card title="Knowledge Base" icon="book">
     Create documents for your agent to reference
