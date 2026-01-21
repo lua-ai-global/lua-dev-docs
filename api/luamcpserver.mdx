@@ -5,19 +5,21 @@ description: "Connect external tools via Model Context Protocol (MCP) servers"
 
 ## Overview
 
-`LuaMCPServer` allows you to connect external MCP (Model Context Protocol) servers to your agent. MCP servers provide additional tools that your agent can use at runtime, enabling integration with file systems, databases, APIs, and more.
+`LuaMCPServer` allows you to connect external MCP (Model Context Protocol) servers to your agent. MCP servers provide additional tools that your agent can use at runtime, enabling integration with APIs, databases, documentation services, and more.
 
 ```typescript
-import { LuaMCPServer } from 'lua-cli';
+import { LuaMCPServer, env } from 'lua-cli';
 
-const filesystemServer = new LuaMCPServer({
-  name: 'filesystem',
-  transport: 'stdio',
-  command: 'npx',
-  args: ['-y', '@modelcontextprotocol/server-filesystem', '/data']
+const docsServer = new LuaMCPServer({
+  name: 'docs',
+  transport: 'streamable-http',
+  url: 'https://mcp.example.com/mcp',
+  headers: () => ({
+    'Authorization': `Bearer ${env("MCP_API_KEY")}`
+  })
 });
 
-export default filesystemServer;
+export default docsServer;
 ```
 
 <Note>
@@ -33,51 +35,58 @@ export default filesystemServer;
   <Card title="Standard Protocol" icon="plug">
     Compatible with any MCP-compliant server
   </Card>
-  <Card title="Local or Remote" icon="globe">
-    Run servers locally (stdio) or connect to remote endpoints (SSE)
+  <Card title="Remote Integration" icon="globe">
+    Connect to hosted MCP services via HTTP
   </Card>
   <Card title="Community Ecosystem" icon="users">
-    Access growing library of community MCP servers
+    Access growing library of hosted MCP servers
   </Card>
 </CardGroup>
 
 ## Transport Types
 
-MCP servers support two transport methods:
+MCP servers support two HTTP-based transport methods:
 
 <Tabs>
-  <Tab title="stdio (Local)">
-    **Best for:** Local execution, npm packages, CLI tools
+  <Tab title="Streamable HTTP (Recommended)">
+    **Best for:** Modern MCP servers, most use cases
     
-    The server runs as a local process. Your agent communicates via stdin/stdout.
+    The modern MCP standard (spec 2025-03-26) with bidirectional communication.
     
     ```typescript
-    const localServer = new LuaMCPServer({
-      name: 'filesystem',
-      transport: 'stdio',
-      command: 'npx',
-      args: ['-y', '@modelcontextprotocol/server-filesystem', '/data']
+    const server = new LuaMCPServer({
+      name: 'my-server',
+      transport: 'streamable-http',
+      url: 'https://mcp.example.com/mcp',
+      headers: () => ({
+        'Authorization': `Bearer ${env("API_KEY")}`
+      })
     });
     ```
   </Tab>
 
-  <Tab title="sse (Remote)">
-    **Best for:** Remote servers, hosted services, APIs
+  <Tab title="SSE (Legacy)">
+    **Best for:** Older MCP servers that don't support Streamable HTTP
     
-    The server runs remotely. Your agent connects via Server-Sent Events (SSE).
+    Uses Server-Sent Events for server-to-client streaming.
     
     ```typescript
-    const remoteServer = new LuaMCPServer({
-      name: 'docs-server',
+    const server = new LuaMCPServer({
+      name: 'legacy-server',
       transport: 'sse',
-      url: 'https://mcp.example.com/sse',
-      headers: {
-        'Authorization': 'Bearer my-api-key'
-      }
+      url: 'https://old-mcp.example.com/sse',
+      headers: () => ({
+        'Authorization': `Bearer ${env("API_KEY")}`
+      })
     });
     ```
   </Tab>
 </Tabs>
+
+<Warning>
+**stdio transport not supported yet**: Local MCP servers (using `npx`, `node`, etc.) are not supported yet. 
+Please use remote MCP servers with `streamable-http` or `sse` transport instead.
+</Warning>
 
 ## Constructor
 
@@ -98,55 +107,37 @@ Creates a new MCP server configuration.
   
   **Format**: lowercase, hyphens allowed
   
-  **Examples**: `'filesystem'`, `'github-server'`, `'database'`
+  **Examples**: `'docs-server'`, `'api-gateway'`, `'database'`
 </ParamField>
 
-<ParamField path="transport" type="'stdio' | 'sse'" required>
+<ParamField path="transport" type="'streamable-http' | 'sse'" required>
   Transport protocol for communication
   
-  - `'stdio'` - Local process via stdin/stdout
-  - `'sse'` - Remote server via Server-Sent Events
+  - `'streamable-http'` - Modern MCP standard (recommended)
+  - `'sse'` - Legacy Server-Sent Events transport
 </ParamField>
 
-### stdio Transport Fields
-
-<ParamField path="command" type="string" required={false}>
-  Command to execute the MCP server
-  
-  **Required when:** `transport: 'stdio'`
-  
-  **Examples**: `'npx'`, `'node'`, `'python'`
-</ParamField>
-
-<ParamField path="args" type="string[]">
-  Arguments to pass to the command
-  
-  **Example**: `['-y', '@modelcontextprotocol/server-filesystem', '/data']`
-</ParamField>
-
-<ParamField path="env" type="Record<string, string>">
-  Environment variables for the server process
-  
-  **Example**: `{ 'API_KEY': 'secret123' }`
-</ParamField>
-
-### SSE Transport Fields
-
-<ParamField path="url" type="string" required={false}>
+<ParamField path="url" type="string | (() => string)" required>
   URL of the remote MCP server
   
-  **Required when:** `transport: 'sse'`
+  Can be a static string or a function that returns the URL at runtime using `env()`.
   
-  **Example**: `'https://mcp.example.com/sse'`
-</ParamField>
-
-<ParamField path="headers" type="Record<string, string>">
-  HTTP headers to send with requests
-  
-  **Example**: `{ 'Authorization': 'Bearer token' }`
+  **Examples**: 
+  - `'https://mcp.example.com/mcp'`
+  - `() => env("MCP_SERVER_URL")`
 </ParamField>
 
 ### Optional Fields
+
+<ParamField path="headers" type="Record<string, string> | (() => Record<string, string>)">
+  HTTP headers to send with requests
+  
+  Can be a static object or a function that returns headers at runtime using `env()`.
+  
+  **Example (static)**: `{ 'X-Custom-Header': 'value' }`
+  
+  **Example (dynamic)**: `() => ({ 'Authorization': \`Bearer \${env("API_KEY")}\` })`
+</ParamField>
 
 <ParamField path="timeout" type="number">
   Timeout in milliseconds for server operations
@@ -156,75 +147,94 @@ Creates a new MCP server configuration.
 
 ## Examples
 
-### Filesystem Access
+### Documentation Server
 
 ```typescript
-import { LuaMCPServer } from 'lua-cli';
+import { LuaMCPServer, env } from 'lua-cli';
 
-const filesystemServer = new LuaMCPServer({
-  name: 'filesystem',
-  transport: 'stdio',
-  command: 'npx',
-  args: ['-y', '@modelcontextprotocol/server-filesystem', '/allowed/path'],
+const docsServer = new LuaMCPServer({
+  name: 'docs',
+  transport: 'streamable-http',
+  url: 'https://docs.example.com/mcp',
+  headers: () => ({
+    'Authorization': `Bearer ${env("DOCS_API_KEY")}`
+  }),
   timeout: 30000
 });
 
-export default filesystemServer;
+export default docsServer;
 ```
 
-### GitHub Integration
+### API Gateway
 
 ```typescript
-import { LuaMCPServer } from 'lua-cli';
+import { LuaMCPServer, env } from 'lua-cli';
 
-const githubServer = new LuaMCPServer({
-  name: 'github',
-  transport: 'stdio',
-  command: 'npx',
-  args: ['-y', '@modelcontextprotocol/server-github'],
-  env: {
-    'GITHUB_PERSONAL_ACCESS_TOKEN': 'ghp_xxxx'
-  }
-});
-
-export default githubServer;
-```
-
-### Remote Database Server
-
-```typescript
-import { LuaMCPServer } from 'lua-cli';
-
-const databaseServer = new LuaMCPServer({
-  name: 'database',
-  transport: 'sse',
-  url: 'https://db-mcp.example.com/sse',
-  headers: {
-    'Authorization': 'Bearer db-api-key',
-    'X-Database': 'production'
-  },
+const apiServer = new LuaMCPServer({
+  name: 'api-gateway',
+  transport: 'streamable-http',
+  url: 'https://api.example.com/mcp',
+  headers: () => ({
+    'Authorization': `Bearer ${env("API_TOKEN")}`,
+    'X-Api-Version': '2024-01'
+  }),
   timeout: 45000
 });
 
-export default databaseServer;
+export default apiServer;
 ```
 
-### Brave Search
+### Database Service
 
 ```typescript
-import { LuaMCPServer } from 'lua-cli';
+import { LuaMCPServer, env } from 'lua-cli';
 
-const braveSearch = new LuaMCPServer({
-  name: 'brave-search',
-  transport: 'stdio',
-  command: 'npx',
-  args: ['-y', '@anthropic/mcp-server-brave-search'],
-  env: {
-    'BRAVE_API_KEY': 'your-brave-api-key'
-  }
+const dbServer = new LuaMCPServer({
+  name: 'database',
+  transport: 'streamable-http',
+  url: 'https://db-mcp.example.com/mcp',
+  headers: () => ({
+    'Authorization': `Bearer ${env("DB_API_KEY")}`,
+    'X-Database': 'production'
+  }),
+  timeout: 60000
 });
 
-export default braveSearch;
+export default dbServer;
+```
+
+### Dynamic URL with env()
+
+```typescript
+import { LuaMCPServer, env } from 'lua-cli';
+
+const server = new LuaMCPServer({
+  name: 'dynamic-server',
+  transport: 'streamable-http',
+  url: () => env("MCP_SERVER_URL"),
+  headers: () => ({
+    'Authorization': `Bearer ${env("API_TOKEN")}`
+  })
+});
+
+export default server;
+```
+
+### Legacy SSE Server
+
+```typescript
+import { LuaMCPServer, env } from 'lua-cli';
+
+const legacyServer = new LuaMCPServer({
+  name: 'legacy-api',
+  transport: 'sse',
+  url: 'https://old-mcp.example.com/sse',
+  headers: () => ({
+    'Authorization': `Bearer ${env("API_KEY")}`
+  })
+});
+
+export default legacyServer;
 ```
 
 ## Using with LuaAgent
@@ -232,9 +242,16 @@ export default braveSearch;
 MCP servers are added to your agent configuration:
 
 ```typescript
-import { LuaAgent, LuaSkill } from 'lua-cli';
-import filesystemServer from './mcp/filesystem';
-import githubServer from './mcp/github';
+import { LuaAgent, LuaSkill, env } from 'lua-cli';
+
+const docsServer = new LuaMCPServer({
+  name: 'docs',
+  transport: 'streamable-http',
+  url: 'https://docs.example.com/mcp',
+  headers: () => ({
+    'Authorization': `Bearer ${env("DOCS_API_KEY")}`
+  })
+});
 
 const coreSkill = new LuaSkill({
   name: 'core-skill',
@@ -243,15 +260,12 @@ const coreSkill = new LuaSkill({
 });
 
 export const agent = new LuaAgent({
-  name: 'enhanced-agent',
-  persona: 'You are an assistant with access to files and GitHub.',
+  name: 'docs-assistant',
+  persona: 'You are an assistant with access to documentation.',
   skills: [coreSkill],
   
   // Add MCP servers
-  mcpServers: [
-    filesystemServer,
-    githubServer
-  ]
+  mcpServers: [docsServer]
 });
 ```
 
@@ -309,36 +323,36 @@ agent:
   persona: ...
 
 mcpServers:
-  - name: filesystem
+  - name: docs
     mcpServerId: mcp_abc123
-  - name: github
+  - name: api-gateway
     mcpServerId: mcp_def456
 ```
 
 <Note>
-The YAML only stores `name` and `mcpServerId`. The full configuration (command, args, url, etc.) lives in your source code.
+The YAML only stores `name` and `mcpServerId`. The full configuration (url, headers, etc.) lives in your source code.
 </Note>
 
 ## Best Practices
 
 <AccordionGroup>
-  <Accordion title="✅ Use Environment Variables for Secrets">
-    Never hardcode API keys or tokens
+  <Accordion title="Use env() for Secrets">
+    Always use `env()` for API keys and tokens
     
     ```typescript
-    // ✅ Good
-    env: {
-      'GITHUB_TOKEN': process.env.GITHUB_TOKEN
-    }
+    // ✅ Good - resolved at runtime
+    headers: () => ({
+      'Authorization': `Bearer ${env("API_KEY")}`
+    })
     
-    // ❌ Bad
-    env: {
-      'GITHUB_TOKEN': 'ghp_hardcoded_token'
+    // ❌ Bad - hardcoded secret
+    headers: {
+      'Authorization': 'Bearer sk_live_xxxx'
     }
     ```
   </Accordion>
 
-  <Accordion title="✅ Set Appropriate Timeouts">
+  <Accordion title="Set Appropriate Timeouts">
     Adjust timeout based on expected operation duration
     
     ```typescript
@@ -348,50 +362,35 @@ The YAML only stores `name` and `mcpServerId`. The full configuration (command, 
     // Database queries
     timeout: 30000  // 30 seconds
     
-    // File processing
+    // Heavy processing
     timeout: 120000 // 2 minutes
     ```
   </Accordion>
 
-  <Accordion title="✅ Restrict Paths for Filesystem Access">
-    Only expose necessary directories
+  <Accordion title="Use Streamable HTTP for New Integrations">
+    Prefer `streamable-http` transport for new MCP server integrations
     
     ```typescript
-    // ✅ Specific allowed path
-    args: ['-y', '@modelcontextprotocol/server-filesystem', '/app/uploads']
+    // ✅ Recommended - modern standard
+    transport: 'streamable-http'
     
-    // ❌ Too permissive
-    args: ['-y', '@modelcontextprotocol/server-filesystem', '/']
+    // Use only for legacy servers
+    transport: 'sse'
     ```
   </Accordion>
 
-  <Accordion title="✅ Activate Only What You Need">
+  <Accordion title="Activate Only What You Need">
     Keep unused servers deactivated to reduce overhead
     
     ```bash
     # Activate only when needed
-    lua mcp activate github-server
+    lua mcp activate docs-server
     
     # Deactivate when done
-    lua mcp deactivate github-server
+    lua mcp deactivate docs-server
     ```
   </Accordion>
 </AccordionGroup>
-
-## Popular MCP Servers
-
-| Server | Description | Install |
-|--------|-------------|---------|
-| Filesystem | Read/write local files | `@modelcontextprotocol/server-filesystem` |
-| GitHub | GitHub API integration | `@modelcontextprotocol/server-github` |
-| Brave Search | Web search via Brave | `@anthropic/mcp-server-brave-search` |
-| SQLite | SQLite database access | `@modelcontextprotocol/server-sqlite` |
-| Postgres | PostgreSQL database | `@modelcontextprotocol/server-postgres` |
-| Google Drive | Google Drive files | `@anthropic/mcp-server-gdrive` |
-
-<Note>
-Check [modelcontextprotocol.io/servers](https://modelcontextprotocol.io) for the full list of available MCP servers.
-</Note>
 
 ## Troubleshooting
 
@@ -405,21 +404,12 @@ Check [modelcontextprotocol.io/servers](https://modelcontextprotocol.io) for the
     ```
   </Accordion>
 
-  <Accordion title="Command not found (stdio)">
-    Ensure the command is installed and in PATH:
-    
-    ```bash
-    # Test the command directly
-    npx -y @modelcontextprotocol/server-filesystem --help
-    ```
-  </Accordion>
-
-  <Accordion title="Connection timeout (sse)">
+  <Accordion title="Connection timeout">
     Check the URL is accessible and increase timeout:
     
     ```typescript
     const server = new LuaMCPServer({
-      transport: 'sse',
+      transport: 'streamable-http',
       url: 'https://...',
       timeout: 120000  // Increase timeout
     });
@@ -427,12 +417,30 @@ Check [modelcontextprotocol.io/servers](https://modelcontextprotocol.io) for the
   </Accordion>
 
   <Accordion title="Authentication failed">
-    Verify your API key or token is correct:
+    Verify your API key is correct and set in environment:
+    
+    ```bash
+    # Check environment variable is set
+    lua env production
+    
+    # Set the variable
+    lua env production -k API_KEY -v "your-api-key"
+    ```
+  </Accordion>
+
+  <Accordion title="stdio transport error">
+    Local MCP servers (stdio) are no longer supported. Migrate to remote servers:
     
     ```typescript
-    headers: {
-      'Authorization': `Bearer ${process.env.MCP_API_KEY}`
-    }
+    // ❌ No longer supported
+    transport: 'stdio',
+    command: 'npx',
+    args: [...]
+    
+    // ✅ Use remote transport instead
+    transport: 'streamable-http',
+    url: 'https://mcp.example.com/mcp',
+    headers: () => ({ ... })
     ```
   </Accordion>
 </AccordionGroup>
@@ -459,4 +467,3 @@ Check [modelcontextprotocol.io/servers](https://modelcontextprotocol.io) for the
 - [MCP Servers Overview](/overview/mcp-servers) - Conceptual introduction
 - [MCP Command](/cli/mcp-command) - CLI management
 - [LuaAgent](/api/luaagent) - Adding MCP servers to your agent
-

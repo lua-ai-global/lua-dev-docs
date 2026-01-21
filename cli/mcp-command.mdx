@@ -22,8 +22,8 @@ lua mcp delete       # Delete a server
 lua mcp list
 
 # Activate a server (positional or flag style)
-lua mcp activate filesystem
-lua mcp activate --server-name filesystem
+lua mcp activate docs-server
+lua mcp activate --server-name docs-server
 
 # Deactivate a server
 lua mcp deactivate --server-name api-server
@@ -78,18 +78,18 @@ lua mcp ls
 
 ✅ Active Servers:
 
-🟢 filesystem
-   Transport: stdio
-   Command: npx -y @modelcontextprotocol/server-filesystem /data
+🟢 docs-server
+   Transport: streamable-http
+   URL: https://docs.example.com/mcp
    ID: mcp_abc123
 
 ────────────────────────────────────────
 
 ⏸️  Inactive Servers:
 
-⚪ github
-   Transport: stdio
-   Command: npx -y @modelcontextprotocol/server-github
+⚪ api-gateway
+   Transport: streamable-http
+   URL: https://api.example.com/mcp
    ID: mcp_def456
 
 ============================================================
@@ -101,9 +101,9 @@ Activate an MCP server to make its tools available.
 
 ```bash
 lua mcp activate              # Interactive selection
-lua mcp activate github       # Activate by name
+lua mcp activate docs-server  # Activate by name
 # or
-lua mcp enable github         # Alias
+lua mcp enable docs-server    # Alias
 ```
 
 **What happens:**
@@ -114,10 +114,10 @@ lua mcp enable github         # Alias
 **Example:**
 
 ```bash
-$ lua mcp activate github
-🔄 Activating github...
+$ lua mcp activate docs-server
+🔄 Activating docs-server...
 
-✅ MCP server "github" activated successfully!
+✅ MCP server "docs-server" activated successfully!
 
 💡 The server's tools are now available to your agent.
 ```
@@ -128,9 +128,9 @@ Deactivate an MCP server to remove its tools.
 
 ```bash
 lua mcp deactivate              # Interactive selection
-lua mcp deactivate github       # Deactivate by name
+lua mcp deactivate docs-server  # Deactivate by name
 # or
-lua mcp disable github          # Alias
+lua mcp disable docs-server     # Alias
 ```
 
 **What happens:**
@@ -141,10 +141,10 @@ lua mcp disable github          # Alias
 **Example:**
 
 ```bash
-$ lua mcp deactivate github
-🔄 Deactivating github...
+$ lua mcp deactivate docs-server
+🔄 Deactivating docs-server...
 
-✅ MCP server "github" deactivated successfully!
+✅ MCP server "docs-server" deactivated successfully!
 
 💡 The server's tools are no longer available to your agent.
 ```
@@ -155,9 +155,9 @@ Permanently delete an MCP server.
 
 ```bash
 lua mcp delete              # Interactive selection
-lua mcp delete github       # Delete by name
+lua mcp delete docs-server  # Delete by name
 # or
-lua mcp rm github           # Alias
+lua mcp rm docs-server      # Alias
 ```
 
 <Warning>
@@ -167,15 +167,15 @@ lua mcp rm github           # Alias
 **Example:**
 
 ```bash
-$ lua mcp delete github
+$ lua mcp delete docs-server
 
-⚠️  You are about to delete MCP server: github
+⚠️  You are about to delete MCP server: docs-server
 ⚠️  WARNING: This server is currently ACTIVE!
 ? Are you sure you want to delete this MCP server? (y/N) y
 
-🔄 Deleting github...
+🔄 Deleting docs-server...
 
-✅ MCP server "github" deleted successfully!
+✅ MCP server "docs-server" deleted successfully!
 ```
 
 ## Command Aliases
@@ -213,15 +213,16 @@ lua push all --force --auto-deploy
     Create the server in your code:
     
     ```typescript
-    // src/mcp/github.ts
-    import { LuaMCPServer } from 'lua-cli';
+    // src/mcp/docs.ts
+    import { LuaMCPServer, env } from 'lua-cli';
     
-    export const githubServer = new LuaMCPServer({
-      name: 'github',
-      transport: 'stdio',
-      command: 'npx',
-      args: ['-y', '@modelcontextprotocol/server-github'],
-      env: { 'GITHUB_TOKEN': process.env.GITHUB_TOKEN }
+    export const docsServer = new LuaMCPServer({
+      name: 'docs-server',
+      transport: 'streamable-http',
+      url: 'https://docs.example.com/mcp',
+      headers: () => ({
+        'Authorization': `Bearer ${env("DOCS_API_KEY")}`
+      })
     });
     ```
   </Step>
@@ -230,12 +231,12 @@ lua push all --force --auto-deploy
     ```typescript
     // src/index.ts
     import { LuaAgent } from 'lua-cli';
-    import { githubServer } from './mcp/github';
+    import { docsServer } from './mcp/docs';
     
     export const agent = new LuaAgent({
       name: 'my-agent',
       persona: '...',
-      mcpServers: [githubServer]
+      mcpServers: [docsServer]
     });
     ```
   </Step>
@@ -257,7 +258,7 @@ lua push all --force --auto-deploy
   
   <Step title="Activate">
     ```bash
-    lua mcp activate github
+    lua mcp activate docs-server
     # Tools are now available
     ```
   </Step>
@@ -265,7 +266,7 @@ lua push all --force --auto-deploy
   <Step title="Verify">
     ```bash
     lua mcp list
-    # Shows github as active
+    # Shows docs-server as active
     ```
   </Step>
 </Steps>
@@ -286,8 +287,8 @@ lua push all --force --auto-deploy
     Keep unused servers deactivated to reduce overhead
     
     ```bash
-    lua mcp activate github    # When needed
-    lua mcp deactivate github  # When done
+    lua mcp activate docs-server    # When needed
+    lua mcp deactivate docs-server  # When done
     ```
   </Accordion>
 
@@ -316,4 +317,3 @@ lua push all --force --auto-deploy
 - [MCP Servers Overview](/overview/mcp-servers) - Conceptual introduction
 - [LuaMCPServer API](/api/luamcpserver) - Complete API reference
 - [Skill Management](/cli/skill-management) - Compile and push commands
-

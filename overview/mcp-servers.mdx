@@ -5,7 +5,7 @@ description: "Extend your agent with external tools via Model Context Protocol"
 
 ## What are MCP Servers?
 
-**MCP Servers** are external processes that provide additional tools to your agent using the Model Context Protocol (MCP). Instead of building every tool from scratch, you can connect to existing MCP servers that provide file access, database queries, web searches, and more.
+**MCP Servers** are remote services that provide additional tools to your agent using the Model Context Protocol (MCP). Instead of building every tool from scratch, you can connect to existing MCP servers that provide database queries, web searches, documentation access, and more.
 
 <Card title="Think of it as:" icon="plug">
   Plug-and-play extensions for your agent - connect to pre-built tools without writing code
@@ -25,7 +25,7 @@ description: "Extend your agent with external tools via Model Context Protocol"
     MCP is an open protocol with a growing ecosystem
   </Card>
   <Card title="Extend Capabilities" icon="puzzle-piece">
-    Add file access, databases, web search, and more
+    Add databases, web search, documentation access, and more
   </Card>
   <Card title="Mix & Match" icon="layer-group">
     Combine MCP servers with your custom LuaSkills
@@ -54,61 +54,70 @@ description: "Extend your agent with external tools via Model Context Protocol"
 
 ## Transport Types
 
-MCP servers can run locally or remotely:
+MCP servers connect via HTTP-based transports:
 
 <Tabs>
-  <Tab title="stdio (Local)">
-    **Run locally as a process**
+  <Tab title="Streamable HTTP (Recommended)">
+    **Modern MCP standard - Best for most use cases**
     
-    - Uses stdin/stdout for communication
-    - Great for npm packages and CLI tools
-    - No network overhead
-    
-    ```typescript
-    import { LuaMCPServer } from 'lua-cli';
-    
-    const filesystemServer = new LuaMCPServer({
-      name: 'filesystem',
-      transport: 'stdio',
-      command: 'npx',
-      args: ['-y', '@modelcontextprotocol/server-filesystem', '/data']
-    });
-    ```
-  </Tab>
-
-  <Tab title="sse (Remote)">
-    **Connect to remote server**
-    
-    - Uses Server-Sent Events (SSE)
-    - Connect to hosted MCP services
-    - Supports authentication headers with `env()`
+    - Single endpoint for bidirectional communication
+    - Supports session management and resumability
+    - Works with all modern MCP servers
     
     ```typescript
     import { LuaMCPServer, env } from 'lua-cli';
     
-    const remoteServer = new LuaMCPServer({
+    const docsServer = new LuaMCPServer({
       name: 'docs',
-      transport: 'sse',
-      url: 'https://mcp.example.com/sse',
+      transport: 'streamable-http',
+      url: 'https://mcp.example.com/mcp',
       headers: () => ({ 
         'Authorization': `Bearer ${env("MCP_API_TOKEN")}` 
       })
     });
     ```
   </Tab>
+
+  <Tab title="SSE (Legacy)">
+    **For older MCP servers that don't support Streamable HTTP**
+    
+    - Uses Server-Sent Events for server-to-client streaming
+    - Separate endpoints for requests and events
+    - Use when connecting to legacy MCP services
+    
+    ```typescript
+    import { LuaMCPServer, env } from 'lua-cli';
+    
+    const legacyServer = new LuaMCPServer({
+      name: 'legacy-api',
+      transport: 'sse',
+      url: 'https://old-mcp.example.com/sse',
+      headers: () => ({ 
+        'Authorization': `Bearer ${env("API_KEY")}` 
+      })
+    });
+    ```
+  </Tab>
 </Tabs>
+
+<Warning>
+**stdio transport not supported yet**: Local MCP servers (using `npx`, `node`, etc.) are not supported yet. 
+Please use remote MCP servers with `streamable-http` or `sse` transport instead.
+</Warning>
 
 ## Simple Example
 
 ```typescript
-import { LuaAgent, LuaMCPServer, LuaSkill } from 'lua-cli';
+import { LuaAgent, LuaMCPServer, LuaSkill, env } from 'lua-cli';
 
-// Connect to filesystem MCP server
-const filesystemServer = new LuaMCPServer({
-  name: 'filesystem',
-  transport: 'stdio',
-  command: 'npx',
-  args: ['-y', '@modelcontextprotocol/server-filesystem', '/data']
+// Connect to a remote MCP server
+const docsServer = new LuaMCPServer({
+  name: 'docs',
+  transport: 'streamable-http',
+  url: 'https://docs.example.com/mcp',
+  headers: () => ({
+    'Authorization': `Bearer ${env("DOCS_API_KEY")}`
+  })
 });
 
 // Your custom skill
@@ -119,99 +128,102 @@ const coreSkill = new LuaSkill({
 });
 
 export const agent = new LuaAgent({
-  name: 'file-assistant',
-  persona: 'You are a helpful assistant with access to files.',
+  name: 'docs-assistant',
+  persona: 'You are a helpful assistant with access to documentation.',
   skills: [coreSkill],
   
   // Add MCP server
-  mcpServers: [filesystemServer]
+  mcpServers: [docsServer]
 });
 ```
 
 ## Common Use Cases
 
 <Tabs>
-  <Tab title="File Access">
-    **Read and write files**
-    
-    ```typescript
-    const filesystemServer = new LuaMCPServer({
-      name: 'filesystem',
-      transport: 'stdio',
-      command: 'npx',
-      args: ['-y', '@modelcontextprotocol/server-filesystem', '/uploads']
-    });
-    ```
-    
-    Tools provided:
-    - `read_file` - Read file contents
-    - `write_file` - Write to files
-    - `list_directory` - List files
-    - `search_files` - Search by pattern
-  </Tab>
-
-  <Tab title="Web Search">
-    **Search the web**
+  <Tab title="Documentation">
+    **Access documentation and knowledge bases**
     
     ```typescript
     import { LuaMCPServer, env } from 'lua-cli';
     
-    const braveSearch = new LuaMCPServer({
-      name: 'brave-search',
-      transport: 'stdio',
-      command: 'npx',
-      args: ['-y', '@anthropic/mcp-server-brave-search'],
-      env: () => ({ 
-        BRAVE_API_KEY: env("BRAVE_API_KEY") 
+    const docsServer = new LuaMCPServer({
+      name: 'docs',
+      transport: 'streamable-http',
+      url: 'https://docs.example.com/mcp',
+      headers: () => ({
+        'Authorization': `Bearer ${env("DOCS_API_KEY")}`
       })
     });
     ```
     
-    Tools provided:
-    - `brave_search` - Search the web
-    - `brave_local_search` - Local business search
+    Tools provided vary by server:
+    - `search_docs` - Search documentation
+    - `get_page` - Get specific page content
+    - `list_sections` - Browse documentation structure
   </Tab>
 
-  <Tab title="GitHub">
-    **Interact with GitHub**
+  <Tab title="APIs">
+    **Connect to API services**
     
     ```typescript
     import { LuaMCPServer, env } from 'lua-cli';
     
-    const githubServer = new LuaMCPServer({
-      name: 'github',
-      transport: 'stdio',
-      command: 'npx',
-      args: ['-y', '@modelcontextprotocol/server-github'],
-      env: () => ({ 
-        GITHUB_TOKEN: env("GITHUB_TOKEN") 
+    const apiServer = new LuaMCPServer({
+      name: 'my-api',
+      transport: 'streamable-http',
+      url: 'https://api.example.com/mcp',
+      headers: () => ({
+        'Authorization': `Bearer ${env("API_KEY")}`,
+        'X-Api-Version': '2024-01'
       })
     });
     ```
     
-    Tools provided:
-    - `search_repositories` - Find repos
-    - `get_file_contents` - Read files
-    - `create_issue` - Open issues
-    - `list_pull_requests` - View PRs
+    Connect to any MCP-compatible API service.
   </Tab>
 
   <Tab title="Databases">
-    **Query databases**
+    **Query hosted database services**
     
     ```typescript
-    const sqliteServer = new LuaMCPServer({
-      name: 'sqlite',
-      transport: 'stdio',
-      command: 'npx',
-      args: ['-y', '@modelcontextprotocol/server-sqlite', 'path/to/db.sqlite']
+    import { LuaMCPServer, env } from 'lua-cli';
+    
+    const dbServer = new LuaMCPServer({
+      name: 'database',
+      transport: 'streamable-http',
+      url: 'https://db-mcp.example.com/mcp',
+      headers: () => ({
+        'Authorization': `Bearer ${env("DB_API_KEY")}`
+      })
     });
     ```
     
-    Tools provided:
-    - `query` - Execute SQL queries
+    Tools provided vary by server:
+    - `query` - Execute queries
     - `list_tables` - Show tables
     - `describe_table` - Show schema
+  </Tab>
+
+  <Tab title="Search">
+    **Web and content search**
+    
+    ```typescript
+    import { LuaMCPServer, env } from 'lua-cli';
+    
+    const searchServer = new LuaMCPServer({
+      name: 'search',
+      transport: 'streamable-http',
+      url: 'https://search-mcp.example.com/mcp',
+      headers: () => ({
+        'X-Api-Key': env("SEARCH_API_KEY")
+      })
+    });
+    ```
+    
+    Tools provided vary by server:
+    - `web_search` - Search the web
+    - `image_search` - Search images
+    - `news_search` - Search news
   </Tab>
 </Tabs>
 
@@ -226,13 +238,13 @@ MCP servers often need API keys or connection strings. Use the `env()` function 
     ```typescript
     import { LuaMCPServer, env } from 'lua-cli';
     
-    const mongoServer = new LuaMCPServer({
-      name: 'mongodb',
-      transport: 'stdio',
-      command: 'npx',
-      args: ['-y', 'mongodb-mcp-server', '--readOnly'],
-      env: () => ({
-        MDB_MCP_CONNECTION_STRING: env("MDB_MCP_CONNECTION_STRING")
+    const apiServer = new LuaMCPServer({
+      name: 'my-api',
+      transport: 'streamable-http',
+      url: 'https://api.example.com/mcp',
+      headers: () => ({
+        'Authorization': `Bearer ${env("API_TOKEN")}`,
+        'X-Api-Key': env("API_KEY")
       })
     });
     ```
@@ -247,14 +259,13 @@ MCP servers often need API keys or connection strings. Use the `env()` function 
     **Stored directly in configuration**
     
     ```typescript
-    const filesystemServer = new LuaMCPServer({
-      name: 'filesystem',
-      transport: 'stdio',
-      command: 'npx',
-      args: ['-y', '@modelcontextprotocol/server-filesystem'],
-      env: { 
-        DEBUG: 'true',
-        MAX_FILES: '100'
+    const apiServer = new LuaMCPServer({
+      name: 'my-api',
+      transport: 'streamable-http',
+      url: 'https://api.example.com/mcp',
+      headers: { 
+        'X-Custom-Header': 'value',
+        'Accept': 'application/json'
       }
     });
     ```
@@ -269,20 +280,19 @@ MCP servers often need API keys or connection strings. Use the `env()` function 
 **Setting Environment Variables:** Use `lua env production` to manage your agent's environment variables. These are securely stored and made available to the `env()` function at runtime.
 </Note>
 
-### Headers with env()
+### Dynamic URL with env()
 
-For SSE servers, you can also use `env()` in headers:
+You can also use `env()` to resolve the URL at runtime:
 
 ```typescript
 import { LuaMCPServer, env } from 'lua-cli';
 
 const apiServer = new LuaMCPServer({
   name: 'my-api',
-  transport: 'sse',
-  url: 'https://api.example.com/mcp',
+  transport: 'streamable-http',
+  url: () => env("MCP_SERVER_URL"),
   headers: () => ({
-    'Authorization': `Bearer ${env("API_TOKEN")}`,
-    'X-Api-Key': env("API_KEY")
+    'Authorization': `Bearer ${env("API_TOKEN")}`
   })
 });
 ```
@@ -297,7 +307,7 @@ const apiServer = new LuaMCPServer({
 | **Best For** | Standard integrations | Custom business logic |
 
 <Note>
-**Best practice:** Use MCP servers for standard integrations (files, search, databases) and LuaSkill for custom business logic. They work great together!
+**Best practice:** Use MCP servers for standard integrations (docs, APIs, databases) and LuaSkill for custom business logic. They work great together!
 </Note>
 
 ## Lifecycle
@@ -377,4 +387,3 @@ lua mcp delete      # Delete a server from the platform
     Custom tools with LuaSkill
   </Card>
 </CardGroup>
-
