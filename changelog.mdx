@@ -3,6 +3,80 @@ title: "Changelog"
 description: "Release notes and version history for lua-cli"
 ---
 
+## v3.4.0
+
+**Released:** January 22, 2026
+
+### ✨ New Features
+
+<AccordionGroup>
+  <Accordion title="Non-Destructive Compile Sync">
+    The `lua compile` command now uses a safer, non-destructive sync pattern. Instead of automatically deleting primitives on the server that aren't in your local code, it now:
+    
+    - **Warns** about orphaned primitives (skills, webhooks, jobs, MCP servers)
+    - **Suggests** using explicit delete commands
+    - **Filters** warnings to CLI-sourced skills only (ignores marketplace and manual skills)
+    
+    This prevents accidental data loss and gives you full control over what gets removed.
+  </Accordion>
+
+  <Accordion title="New Delete Commands">
+    Explicit delete commands for managing primitives no longer in your local code:
+    
+    ```bash
+    # Delete a skill from the server
+    lua skills delete --skill-name my-old-skill
+    
+    # Delete a webhook
+    lua webhooks delete --webhook-name old-webhook
+    
+    # Delete a job
+    lua jobs delete --job-name deprecated-job
+    ```
+    
+    **Features:**
+    - Server lookup for orphaned items not in local YAML
+    - Interactive mode with confirmation prompts
+    - `--force` flag for non-interactive deletion
+  </Accordion>
+
+  <Accordion title="Streamable HTTP MCP Transport">
+    Added support for the modern Streamable HTTP transport (MCP spec 2025-03-26):
+    
+    ```typescript
+    const server = new LuaMCPServer({
+      name: 'my-api',
+      transport: 'streamable-http',  // New transport type
+      url: 'https://mcp.example.com/mcp',
+      headers: () => ({
+        'Authorization': `Bearer ${env("API_KEY")}`
+      })
+    });
+    ```
+    
+    **Supported transports:**
+    - `'streamable-http'` - Modern MCP standard (recommended)
+    - `'sse'` - Legacy Server-Sent Events transport
+    
+    <Warning>
+    **stdio transport removed:** Local MCP servers using `stdio` transport are not supported yet. Use remote servers with `streamable-http` or `sse` instead.
+    </Warning>
+  </Accordion>
+</AccordionGroup>
+
+### 🐛 Bug Fixes
+
+- **Push**: Fixed crash when pushing primitives without a version field. First push now defaults to version `0.0.1` and shows "(none - first push)" in prompts.
+
+### 📝 Interface Updates
+
+- Added `MCPStreamableHttpServerConfig` interface for streamable-http transport
+- Updated `MCPTransport` type to `'sse' | 'streamable-http'`
+- Added `SkillSource` type: `'cli' | 'marketplace' | 'manual'`
+- Removed `MCPStdioServerConfig` (stdio not supported yet)
+
+---
+
 ## v3.3.0
 
 **Released:** January 20, 2026
