@@ -55,8 +55,9 @@ PERSONA DIFF
 ============================================================
 
 ? What would you like to do with persona?
-❯ 📥 Update local from server
-  ⏭️  Skip (keep local)
+❯ 📤 Push local to server
+  📥 Pull server to local
+  ⏭️  Skip
 ```
 
 **Diff colors:**
@@ -66,13 +67,14 @@ PERSONA DIFF
 
 ### During Compile
 
-Sync is automatically checked during `lua compile`:
+Sync is automatically checked during `lua compile`. By default, drift detection is **non-blocking** - it warns about drift but continues compilation:
 
 ```bash
-lua compile           # Checks for drift, prompts if found
-lua compile --no-sync # Skip sync check
-lua compile --force-sync # Auto-update from server without prompting
+lua compile           # Checks for drift, warns if found, continues
+lua compile --no-sync # Skip drift check entirely (silent)
 ```
+
+This non-blocking default is ideal for automated workflows (CI/CD, AI agents, Cursor).
 
 ## Options
 
@@ -81,14 +83,14 @@ lua compile --force-sync # Auto-update from server without prompting
 | Flag | Description |
 |------|-------------|
 | `--check` | Check for drift only, exit code 1 if drift found (CI validation) |
-| `--accept` | Auto-accept server state without prompting |
+| `--accept` | Auto-accept server state without prompting (pull from server) |
+| `--push` | Push local changes to server without prompting |
 
 ### Compile Integration
 
 | Flag | Description |
 |------|-------------|
-| `--no-sync` | Skip drift detection during compile |
-| `--force-sync` | Automatically update local from server if drift detected |
+| `--no-sync` | Skip drift detection entirely during compile |
 
 ### Non-Interactive Mode
 
@@ -96,8 +98,11 @@ lua compile --force-sync # Auto-update from server without prompting
 # Check for drift only (returns exit code 1 if drift detected)
 lua sync --check
 
-# Auto-sync from server without prompting
+# Auto-pull server state to local without prompting
 lua sync --accept
+
+# Auto-push local changes to server without prompting
+lua sync --push
 ```
 
 ### Examples
@@ -109,14 +114,14 @@ lua sync
 # Check only, fail if drift (for CI)
 lua sync --check
 
-# Auto-accept server state
+# Auto-accept server state (pull)
 lua sync --accept
+
+# Auto-push local changes to server
+lua sync --push
 
 # Compile without sync check (useful for CI/CD)
 lua compile --no-sync
-
-# Auto-sync before compile (useful for pulling latest)
-lua compile --force-sync
 ```
 
 ### CI/CD Workflow Example
@@ -169,8 +174,9 @@ PERSONA DIFF
   </persona>
 
 ? What would you like to do with persona?
-❯ 📥 Update local from server   # Get their changes
-  ⏭️  Skip (keep local)         # Keep yours (will overwrite on next push)
+  📤 Push local to server   # Overwrite server with your version
+❯ 📥 Pull server to local   # Get their changes
+  ⏭️  Skip                  # No changes
 ```
 
 ### Scenario 2: Forgot to Push Changes
@@ -184,14 +190,17 @@ $ lua sync
 
 ### Scenario 3: CI/CD Pipeline
 
-In your deployment pipeline, you might want to ensure no drift:
+In your deployment pipeline, you might want to ensure no drift or push local as source of truth:
 
 ```bash
-# Will exit with error if drift exists (user must resolve manually)
+# Check for drift, warn but continue (default behavior)
 lua compile
 
-# Or skip sync in CI (push will overwrite server)
+# Skip sync entirely in CI
 lua compile --no-sync
+
+# Or push local changes to server before compile
+lua sync --push && lua compile --no-sync
 ```
 
 ## Best Practices
@@ -207,14 +216,14 @@ lua compile --no-sync
     ```
   </Accordion>
 
-  <Accordion title="Use --force-sync for fresh pulls">
+  <Accordion title="Use sync --accept for fresh pulls">
     When you want to ensure you have the latest server state:
     
     ```bash
-    lua compile --force-sync
+    lua sync --accept
     ```
     
-    This automatically updates your local code without prompting.
+    This automatically updates your local code from the server without prompting.
   </Accordion>
 
   <Accordion title="Use --no-sync in CI/CD">
