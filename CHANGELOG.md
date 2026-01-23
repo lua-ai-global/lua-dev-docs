@@ -4,6 +4,24 @@ All notable changes to the Lua documentation will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
+## [3.5.0-alpha.1] - 2026-01-23
+
+### Updated - Documentation for lua-cli v3.5.0-alpha.1 (Alpha Release)
+
+#### New Features Documented
+- **User Lookup by Email or Phone** - `User.get()` now supports email/phone lookup
+  - `User.get({ email: 'customer@example.com' })` - Look up by email
+  - `User.get({ phone: '+1234567890' })` - Look up by phone (with or without + prefix)
+  - Returns `null` instead of throwing when user not found
+  - Useful for webhooks receiving contact info from external systems
+
+#### Interface Changes
+- Added `UserLookupOptions` interface for email/phone lookup
+- Updated `User.get()` return type to `UserDataInstance | null`
+- Exported `UserLookupOptions` and `ProfileResponse` types
+
+---
+
 ## [3.4.0] - 2026-01-22
 
 ### Updated - Documentation for lua-cli v3.4.0

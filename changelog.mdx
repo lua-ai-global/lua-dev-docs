@@ -3,6 +3,55 @@ title: "Changelog"
 description: "Release notes and version history for lua-cli"
 ---
 
+## v3.5.0-alpha.1
+
+**Released:** January 23, 2026
+
+<Warning>
+This is an alpha release for testing new features. For production use, we recommend v3.4.0.
+</Warning>
+
+### ✨ New Features
+
+<AccordionGroup>
+  <Accordion title="User Lookup by Email or Phone">
+    The `User.get()` method now supports looking up users by email address or phone number, in addition to userId. This is especially useful in webhooks where you receive contact info from external systems.
+    
+    ```typescript
+    import { User } from 'lua-cli';
+    
+    // Look up by email
+    const user = await User.get({ email: 'customer@example.com' });
+    
+    // Look up by phone (both formats work)
+    const user = await User.get({ phone: '+1234567890' });
+    const user = await User.get({ phone: '1234567890' });
+    
+    // Handle not found
+    if (!user) {
+      return { error: 'User not found' };
+    }
+    ```
+    
+    **Use Cases:**
+    - Webhooks receiving customer email/phone from external systems
+    - Admin tools where operators search by contact info
+    - Integrations with third-party systems that don't have Lua user IDs
+    
+    <Note>
+    Unlike `User.get(userId)` which throws on not found, email/phone lookup returns `null`. Always check for null before using the user object.
+    </Note>
+  </Accordion>
+</AccordionGroup>
+
+### 📝 Interface Updates
+
+- Added `UserLookupOptions` interface for email/phone lookup
+- Updated `User.get()` return type to `UserDataInstance | null`
+- Exported `UserLookupOptions` and `ProfileResponse` types
+
+---
+
 ## v3.4.0
 
 **Released:** January 22, 2026
