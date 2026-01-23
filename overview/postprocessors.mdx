@@ -177,20 +177,47 @@ Each postprocessor receives the output of the previous one in the chain.
 
 ## Channel Compatibility
 
-<Warning>
-**Streaming Limitation:** PostProcessors only run on non-streaming (`generate`) requests. Streaming responses bypass post-processing because the text is sent to users incrementally before the full response is available.
-</Warning>
+PostProcessors are now supported on **all channels**, including streaming endpoints.
 
 | Channel | PostProcessors Supported | Notes |
 |---------|-------------------------|-------|
 | Email | Yes | Uses generate (non-streaming) |
 | HTTP API (`/generate`) | Yes | Non-streaming endpoint |
-| HTTP API (`/stream`) | No | Streaming bypasses post-processing |
-| WhatsApp | No | Uses streaming internally |
-| LuaPop (Web Widget) | No | Uses streaming for real-time UX |
-| Slack | No | Uses streaming internally |
-| Facebook Messenger | No | Uses streaming internally |
-| Instagram | No | Uses streaming internally |
+| HTTP API (`/stream`) | Yes | Post-processes after stream completes |
+| WhatsApp | Yes | Post-processes after stream completes |
+| LuaPop (Web Widget) | Yes | Post-processes after stream completes |
+| Slack | Yes | Post-processes after stream completes |
+| Facebook Messenger | Yes | Post-processes after stream completes |
+| Instagram | Yes | Post-processes after stream completes |
+
+### Streaming Behavior
+
+For streaming channels, post-processing works as follows:
+
+1. **Real-time streaming**: Users see the response as it's generated (original, unprocessed text)
+2. **Post-processing**: After the stream completes, post-processors run on the full response
+3. **Final event**: A `postprocess-complete` event is emitted with the modified response
+4. **Storage**: The post-processed response is saved to the conversation history
+
+<Note>
+**UX Consideration:** With streaming, users briefly see the original response before post-processing completes. For use cases requiring immediate post-processed content (e.g., strict compliance), consider using the non-streaming `/generate` endpoint instead.
+</Note>
+
+### Handling the `postprocess-complete` Event
+
+If you're building a custom client, you can listen for the `postprocess-complete` event to update the displayed response:
+
+```typescript
+// Example: Handling postprocess-complete in a streaming client
+stream.on('chunk', (chunk) => {
+  if (chunk.type === 'text-delta') {
+    appendToDisplay(chunk.textDelta);
+  } else if (chunk.type === 'postprocess-complete') {
+    // Replace displayed content with post-processed version
+    replaceDisplay(chunk.modifiedResponse);
+  }
+});
+```
 
 ## Adding to Your Agent
 

@@ -27,9 +27,9 @@ export default addDisclaimer;
 **New in v3.0.0:** Response postprocessing for formatting, branding, and enhancement. Use with LuaAgent.
 </Note>
 
-<Warning>
-**Streaming Limitation:** PostProcessors only execute on non-streaming (`generate`) requests. Channels that use streaming (WhatsApp, LuaPop, Slack, etc.) do not support post-processing. See [Channel Compatibility](/overview/postprocessors#channel-compatibility) for details.
-</Warning>
+<Note>
+**Streaming Support:** PostProcessors now execute on both streaming and non-streaming requests. For streaming, post-processors run after the stream completes and emit a `postprocess-complete` event. See [Channel Compatibility](/overview/postprocessors#channel-compatibility) for details.
+</Note>
 
 ## Use Cases
 
