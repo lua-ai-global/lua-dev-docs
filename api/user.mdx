@@ -68,44 +68,58 @@ const oldUserId = user.userId;
   </Card>
 </CardGroup>
 
-## get(userId?)
+## get(identifier?)
 
-Retrieve user data as a UserDataInstance.
+Retrieve user data as a UserDataInstance. Supports lookup by userId, email, or phone number.
 
 ```typescript
-User.get(userId?: string): Promise<UserDataInstance>
+User.get(identifier?: string | UserLookupOptions): Promise<UserDataInstance | null>
 ```
 
-<ParamField path="userId" type="string">
-  User ID to retrieve a specific user
+<ParamField path="identifier" type="string | UserLookupOptions">
+  One of:
+  - **No parameter**: Returns current user from conversation context
+  - **string (userId)**: Retrieve a specific user by ID
+  - **{ email: string }**: Look up user by email address
+  - **{ phone: string }**: Look up user by phone number (with or without `+` prefix)
   
   **Required in:** Webhooks, pre-defined LuaJob (no conversational context)
   
   **Optional in:** Tools, dynamic jobs (has conversational context)
-  
-  If not provided, retrieves the current user from the conversation context
 </ParamField>
 
-**Returns:** `UserDataInstance` with proxy-based property access
+**Returns:** `UserDataInstance` with proxy-based property access, or `null` if user not found (for email/phone lookup)
+
+<Note>
+**New in Latest Version:** Look up users by email or phone! This is especially useful in webhooks where you receive contact info from external systems but don't have the internal userId.
+</Note>
 
 ## When to Use userId Parameter
 
 Understanding when userId is required vs optional:
 
-| Context | Method | userId Required? | Why |
+| Context | Method | Identifier Required? | Why |
 |---------|--------|------------------|-----|
 | **Tools** | `User.get()` | ❌ Optional | Has conversational context |
-| **Webhooks** | `User.get(userId)` | ✅ **REQUIRED** | No conversational context |
-| **LuaJob** | `User.get(userId)` | ✅ **REQUIRED** | No conversational context |
+| **Webhooks** | `User.get(userId)` or `User.get({ email })` | ✅ **REQUIRED** | No conversational context |
+| **LuaJob** | `User.get(userId)` or `User.get({ phone })` | ✅ **REQUIRED** | No conversational context |
 | **Jobs API** | `jobInstance.user()` | ❌ N/A | Automatic user context |
 
 <Warning>
 **Context Matters:**
-- **Tools:** userId is optional - defaults to current user in conversation
-- **Webhooks:** userId is REQUIRED - webhooks execute outside conversations
-- **LuaJob (pre-defined):** userId is REQUIRED - jobs execute outside conversations  
+- **Tools:** identifier is optional - defaults to current user in conversation
+- **Webhooks:** identifier is REQUIRED - use userId, email, or phone lookup
+- **LuaJob (pre-defined):** identifier is REQUIRED - use userId, email, or phone lookup
 - **Jobs API (dynamic):** Use `jobInstance.user()` instead - automatic context captured!
 </Warning>
+
+<Tip>
+**New!** In webhooks, you can now look up users by email or phone if you don't have the userId:
+```typescript
+const user = await User.get({ email: 'customer@example.com' });
+const user = await User.get({ phone: '+1234567890' });
+```
+</Tip>
 
 **Examples:**
 
@@ -189,6 +203,49 @@ Understanding when userId is required vs optional:
     ```
     
     **Why it works:** Dynamic jobs created from tools automatically capture the user context, so you don't need to provide a userId.
+  </Tab>
+  
+  <Tab title="Email/Phone Lookup">
+    **Look up a user by email or phone number:**
+    
+    ```typescript
+    import { User } from 'lua-cli';
+    
+    // In a webhook receiving customer contact info
+    execute: async (event) => {
+      const { email, phone } = event.body;
+      
+      // Look up by email
+      const userByEmail = await User.get({ email: 'customer@example.com' });
+      
+      // Look up by phone (both formats work)
+      const userByPhone = await User.get({ phone: '+1234567890' });
+      const userByPhone2 = await User.get({ phone: '1234567890' });
+      
+      // Handle not found gracefully
+      if (!userByEmail) {
+        return { error: 'User not found' };
+      }
+      
+      // Update the user's data
+      userByEmail.routingEnabled = true;
+      await userByEmail.save();
+      
+      return { 
+        success: true, 
+        userId: userByEmail._luaProfile.userId 
+      };
+    }
+    ```
+    
+    **Use cases:**
+    - ✅ **Webhooks** - External systems send email/phone, not userId
+    - ✅ **Admin tools** - Operators search by contact info
+    - ✅ **Integrations** - Third-party systems don't have Lua user IDs
+    
+    <Warning>
+    **Returns `null` if not found:** Unlike `User.get(userId)` which throws on not found, email/phone lookup returns `null`. Always check for null before using the user object.
+    </Warning>
   </Tab>
 </Tabs>
 
@@ -760,6 +817,14 @@ export class SendReceiptTool implements LuaTool {
 ## TypeScript Support
 
 ```typescript
+// User lookup options for email/phone lookup
+interface UserLookupOptions {
+  /** Email address to look up */
+  email?: string;
+  /** Phone number to look up (with or without + prefix) */
+  phone?: string;
+}
+
 interface UserDataInstance {
   // Properties (dynamic based on stored data)
   name?: string;
