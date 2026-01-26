@@ -1,24 +1,66 @@
 
 ![Build AI Agents That Do Anything](/images/hero.png)
 
+<Note>
+**Vibe Code Your AI Agent** - Lua is built for AI-assisted development. Use Cursor, Windsurf, GitHub Copilot, or any AI coding IDE to build, test, and deploy agents fast.
+</Note>
+
+## Connect Your AI IDE to Lua Docs
+
+Get instant access to Lua documentation directly in your coding environment via MCP (Model Context Protocol).
+
+<CardGroup cols={2}>
+  <Card title="Connect to Cursor" icon="bolt" href="cursor://anysphere.cursor-deeplink/mcp/install?name=lua-docs&config=eyJ1cmwiOiJodHRwczovL2RvY3MuaGV5bHVhLmFpL21jcCJ9">
+    **One-click install** - Click to add Lua docs to Cursor
+  </Card>
+  <Card title="Connect to VS Code" icon="code" href="vscode://settings/mcp">
+    Add `https://docs.heylua.ai/mcp` to your MCP servers
+  </Card>
+</CardGroup>
+
+<Accordion title="Manual MCP Setup (Cursor, VS Code, Claude, etc.)">
+  Add this to your MCP configuration:
+  
+  ```json
+  {
+    "mcpServers": {
+      "lua-docs": {
+        "url": "https://docs.heylua.ai/mcp"
+      }
+    }
+  }
+  ```
+  
+  **MCP Server URL:** `https://docs.heylua.ai/mcp`
+  
+  Works with: Cursor, VS Code, Claude, Windsurf, and any MCP-compatible tool.
+</Accordion>
+
+<Card title="AI Agent Building Guide" icon="robot" href="/ai-guide">
+  **Complete workflow for AI IDEs** - Authentication, testing strategies, sandbox vs production, common gotchas, and the full build-test-deploy cycle optimized for Cursor, Windsurf, and GitHub Copilot.
+</Card>
+
+---
+
 ## What is Lua?
 
 **Lua is a developer platform for building AI agents that integrate with your entire business.** 
 
 Write TypeScript functions that connect to any API - your CRM, payment processor, inventory system, or any third-party service - and Lua transforms them into conversational AI capabilities. Your customers chat naturally ("Where's my order?" or "Book me a table"), and your AI agent takes real actions by calling the functions you wrote.
 
-<CardGroup cols={2}>
+<CardGroup cols={3}>
+  <Card title="Vibe Coding Ready" icon="wand-magic-sparkles">
+    **Built for AI IDEs** - Cursor, Windsurf, GitHub Copilot
+    
+    All commands are non-interactive. Let AI write your agent.
+  </Card>
   <Card title="Integrate With ANY API" icon="plug">
     **Your Backend** - CRM, ERP, databases
     
     **External Services** - Stripe, Shopify, SendGrid
-    
-    **Platform APIs (Optional)** - Built-in helpers for e-commerce and vector search
   </Card>
   <Card title="TypeScript-Native" icon="code">
-    Write real code with full type safety
-    
-    Zod validation, environment variables, proper error handling
+    Full type safety with Zod validation
     
     Live reload, testing, instant deployment
   </Card>
@@ -736,6 +778,10 @@ Lua can power AI agents for virtually any industry or use case. Here are some co
 ## Why Developers Love Lua
 
 <AccordionGroup>
+  <Accordion title="🤖 Vibe Coding Ready">
+    Built for AI-assisted development. All CLI commands are non-interactive, meaning Cursor, Windsurf, GitHub Copilot, and other AI coding tools can execute commands directly. Connect docs via MCP for instant context. Build agents faster with AI helping you code.
+  </Accordion>
+
   <Accordion title="🔓 No Vendor Lock-In">
     Build on your own infrastructure. Integrate with any API you choose. Not tied to our Platform APIs - they're completely optional. Your data stays with your systems, your authentication remains yours.
   </Accordion>
@@ -905,7 +951,19 @@ class ValidatedTool implements LuaTool {
 
 <CardGroup cols={2}>
   <Card
-    title="🛠️ Build AI Skills"
+    title="🤖 AI Agent Building Guide"
+    icon="robot"
+    href="/ai-guide"
+  >
+    **For Cursor, Windsurf, Copilot** - Complete workflow for AI IDEs
+    
+    Non-interactive commands, testing strategies, deployment
+    
+    → Best for vibe coding
+  </Card>
+  
+  <Card
+    title="🛠️ Quick Start Tutorial"
     icon="code"
     href="/getting-started/quick-start"
   >
@@ -926,6 +984,18 @@ class ValidatedTool implements LuaTool {
     One script tag, fully customizable, works anywhere
     
     → 2 minute setup
+  </Card>
+  
+  <Card
+    title="📚 Connect Docs to Your IDE"
+    icon="plug"
+    href="#connect-your-ai-ide-to-lua-docs"
+  >
+    **MCP Server** - Get Lua docs in Cursor, VS Code, Claude
+    
+    One-click install for instant documentation access
+    
+    → Scroll up for setup
   </Card>
 </CardGroup>
 

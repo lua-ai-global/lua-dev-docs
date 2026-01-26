@@ -15,20 +15,15 @@
   "navigation": {
     "tabs": [
       {
-        "tab": "AI Agent Guide",
-        "groups": [
-          {
-            "group": "Build with AI",
-            "pages": ["ai-guide"]
-          }
-        ]
-      },
-      {
         "tab": "Overview",
         "groups": [
           {
             "group": "Welcome",
             "pages": ["overview"]
+          },
+          {
+            "group": "Build with AI",
+            "pages": ["ai-guide"]
           },
           {
             "group": "Key Concepts",
@@ -60,7 +55,7 @@
         ]
       },
       {
-        "tab": "CLI",
+        "tab": "CLI & API",
         "groups": [
           {
             "group": "Getting Started",
