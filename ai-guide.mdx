@@ -1,0 +1,655 @@
+---
+title: "AI Agent Building Guide"
+description: "Complete reference for AI Agents and AI Coding IDEs (Cursor, Windsurf, GitHub Copilot) to build, test, and deploy agents on the Lua platform"
+---
+
+## Purpose
+
+This guide is specifically designed for **AI Agents** and **AI Coding IDEs** (Cursor, Windsurf, GitHub Copilot, etc.) to build agents on the Lua platform using non-interactive CLI commands.
+
+All commands in this guide use flags and arguments that work without interactive prompts, enabling full automation.
+
+## Prerequisites
+
+- Node.js 18+ installed
+- npm, yarn, or pnpm
+- Lua CLI installed: `npm install -g lua-cli`
+- Authentication configured (see below)
+
+## High-Level Workflow
+
+```
+Authenticate → lua init → Write Code → lua test → iterate → lua chat sandbox → push → deploy
+```
+
+---
+
+## 1. Authentication (PREREQUISITE)
+
+<Note>
+**Must authenticate before running any other CLI command.**
+</Note>
+
+### Option A: API Key (Fully Non-Interactive)
+
+If the user already has an API key:
+
+```bash
+lua auth configure --api-key <api-key>
+```
+
+This validates and saves the API key immediately.
+
+### Option B: Email OTP (Semi Non-Interactive, 2 Steps)
+
+If the user doesn't have an API key yet:
+
+**Step 1** - Request OTP:
+
+```bash
+lua auth configure --email user@example.com
+```
+
+This sends a 6-digit OTP to the email.
+
+**Step 2** - Verify OTP (user provides the code they received):
+
+```bash
+lua auth configure --email user@example.com --otp 123456
+```
+
+This verifies the OTP and generates + saves an API key.
+
+### Workflow for AI Agents:
+
+1. Ask user if they have an API key
+2. If yes: `lua auth configure --api-key <key>`
+3. If no: 
+   - Get user's email
+   - Run `lua auth configure --email <email>`
+   - Ask user for the OTP they received via email
+   - Run `lua auth configure --email <email> --otp <code>`
+4. Continue with `lua init` once authenticated
+
+---
+
+## 2. Initialization (`lua init`)
+
+<Warning>
+**Run `lua init` only ONCE per project.** After initialization, you have your agent and codebase - work on it from there.
+</Warning>
+
+### Two Modes
+
+#### New Agent (`--agent-name`)
+
+Creates a brand new agent from scratch:
+
+```bash
+# Create agent in existing organization
+lua init --agent-name "My Agent" --org-id org_abc123
+
+# Create agent + new organization
+lua init --agent-name "My Agent" --org-name "My Company"
+
+# With example code included
+lua init --agent-name "My Agent" --org-id org_abc123 --with-examples
+```
+
+#### Existing Agent (`--agent-id`)
+
+Links to an agent that already exists:
+
+```bash
+lua init --agent-id agent_abc123
+
+# Override existing project
+lua init --agent-id agent_abc123 --force
+```
+
+<Note>
+**Important limitation**: Existing code/primitives on the server CANNOT be pulled down to local codebase. Bundling is one-way only (local → server). Use this mode to start fresh development on an existing agent.
+</Note>
+
+### Non-Interactive Flags
+
+| Flag | Description |
+|------|-------------|
+| `--agent-id <id>` | Use existing agent |
+| `--agent-name <name>` | Name for new agent |
+| `--org-id <id>` | Existing organization ID |
+| `--org-name <name>` | Create new organization |
+| `--with-examples` | Include example code |
+| `--force` | Override existing project |
+
+### Project Structure Created
+
+```
+project/
+├── lua.skill.yaml      # Config manifest (managed by CLI, don't edit manually)
+├── package.json
+├── tsconfig.json
+├── .env                # Local environment variables
+└── src/
+    └── index.ts        # LuaAgent configuration
+```
+
+---
+
+## 3. Agent Configuration (LuaAgent)
+
+The main configuration lives in `src/index.ts`:
+
+```typescript
+import { LuaAgent, LuaSkill } from 'lua-cli';
+
+export const agent = new LuaAgent({
+  name: 'my-agent',
+  
+  persona: `You are a helpful assistant.
+  
+Your role:
+- Help users with their tasks
+- Provide accurate information
+
+Communication style:
+- Friendly and professional
+- Clear and concise`,
+
+  skills: [mySkill],
+  
+  // Optional components:
+  // webhooks: [myWebhook],
+  // jobs: [myJob],
+  // preProcessors: [myPreProcessor],
+  // postProcessors: [myPostProcessor],
+});
+```
+
+### Key Properties
+
+| Property | Required | Description |
+|----------|----------|-------------|
+| `name` | Yes | Agent identifier |
+| `persona` | Yes | Personality, behavior, capabilities, limitations |
+| `skills` | Yes | Array of LuaSkill instances |
+| `webhooks` | No | HTTP endpoints for external events |
+| `jobs` | No | Scheduled cron tasks |
+| `preProcessors` | No | Message filters before agent processes |
+| `postProcessors` | No | Response formatters after agent responds |
+| `mcpServers` | No | External MCP tool servers |
+
+---
+
+## 4. Building Components
+
+### Skills & Tools
+
+A **Skill** is a collection of related tools:
+
+```typescript
+import { LuaSkill } from 'lua-cli';
+
+const mySkill = new LuaSkill({
+  name: 'my-skill',
+  description: 'Brief description of the skill',
+  context: `Detailed instructions for when to use these tools.
+  
+  - Use tool_a when user asks about X
+  - Use tool_b when user wants to do Y`,
+  tools: [new ToolA(), new ToolB()]
+});
+```
+
+A **Tool** is a single function the AI can call:
+
+```typescript
+import { LuaTool } from 'lua-cli';
+import { z } from 'zod';
+
+class GetWeatherTool implements LuaTool {
+  name = 'get_weather';
+  description = 'Get current weather for a city';
+  
+  inputSchema = z.object({
+    city: z.string().describe('City name'),
+    units: z.enum(['metric', 'imperial']).optional().default('metric')
+  });
+
+  async execute(input: z.infer<typeof this.inputSchema>) {
+    const { city, units } = input;
+    // Implementation here
+    return { temperature: 22, condition: 'sunny', city };
+  }
+}
+```
+
+### Webhooks
+
+HTTP endpoints for external events:
+
+```typescript
+import { LuaWebhook } from 'lua-cli';
+import { z } from 'zod';
+
+const paymentWebhook = new LuaWebhook({
+  name: 'payment-webhook',
+  description: 'Handle Stripe payment events',
+  
+  bodySchema: z.object({
+    type: z.string(),
+    data: z.any()
+  }),
+
+  execute: async (event) => {
+    const { body } = event;
+    // Handle the webhook
+    return { received: true };
+  }
+});
+```
+
+### Jobs
+
+Scheduled cron tasks:
+
+```typescript
+import { LuaJob } from 'lua-cli';
+
+const dailyReport = new LuaJob({
+  name: 'daily-report',
+  description: 'Generate daily report',
+  schedule: '0 9 * * *', // 9 AM daily
+
+  execute: async (job) => {
+    // Generate report
+    return { status: 'completed' };
+  }
+});
+```
+
+### PreProcessors & PostProcessors
+
+```typescript
+import { PreProcessor, PostProcessor } from 'lua-cli';
+
+const profanityFilter = new PreProcessor({
+  name: 'profanity-filter',
+  description: 'Filter inappropriate content',
+  
+  execute: async (user, message, channel) => {
+    // Return null to block, or modified message to continue
+    return message;
+  }
+});
+
+const addDisclaimer = new PostProcessor({
+  name: 'add-disclaimer',
+  description: 'Add legal disclaimer to responses',
+  
+  execute: async (user, message, response, channel) => {
+    return response + '\n\n_This is not legal advice._';
+  }
+});
+```
+
+---
+
+## 5. Testing Strategy
+
+<Note>
+This is one of the most important sections. Understanding when to use `lua test` vs `lua chat` is critical.
+</Note>
+
+### `lua test` - Isolated Component Testing
+
+**Purpose**: Unit test for individual blocks (tools, jobs, webhooks, processors)
+
+**How it works**:
+- Creates a local VM and executes code directly
+- **No AI involved** - just runs the `execute` function
+- Fast - no network latency, no AI processing time
+
+**Use for**: Quick testing, quick debugging, building components in isolation
+
+**Input format**: Must match the tool's `inputSchema` exactly
+
+```bash
+# Test a tool
+lua test skill --name get_weather --input '{"city": "London"}'
+
+# Test a webhook
+lua test webhook --name payment-webhook --input '{"query": {}, "headers": {}, "body": {"type": "payment.completed"}}'
+
+# Test a job
+lua test job --name daily-report
+
+# Test a preprocessor
+lua test preprocessor --name profanity-filter --input '{"message": "hello", "channel": "web"}'
+
+# Test a postprocessor
+lua test postprocessor --name add-disclaimer --input '{"message": "hi", "response": "hello", "channel": "web"}'
+```
+
+### `lua chat` - Live Agent Testing
+
+**Purpose**: Real agent requests involving AI
+
+**How it works**:
+- HTTP requests for streaming/generating responses
+- Full integration - multiple components may execute (skills, tools, pre/post-processors)
+
+**Two modes**:
+
+| Mode | Description |
+|------|-------------|
+| `sandbox` | Free, unbilled, can override local code without push/deploy |
+| `production` | Uses pushed and deployed versions |
+
+```bash
+# Test in sandbox (uses local code)
+lua chat -e sandbox -m "What's the weather in London?"
+
+# Test in production (uses deployed code)
+lua chat -e production -m "What's the weather in London?"
+```
+
+### Key Difference
+
+| Command | What it does | AI involved? | Speed |
+|---------|--------------|--------------|-------|
+| `lua test` | Runs execute function directly in VM | No | Fast |
+| `lua chat` | Full agent request with AI | Yes | Slower |
+
+### Recommended Development Workflow
+
+```bash
+# 1. Write/modify component code
+
+# 2. Quick isolated test
+lua test skill --name my_tool --input '{"param": "value"}'
+
+# 3. Check logs if issues
+lua logs --type skill --name my_tool --limit 5
+
+# 4. Iterate until component works
+
+# 5. Test with full agent (sandbox)
+lua chat -e sandbox -m "Test message"
+
+# 6. When ready: push and deploy
+
+# 7. Verify in production
+lua chat -e production -m "Test message"
+```
+
+---
+
+## 6. Push vs Deploy
+
+<Warning>
+Understanding this distinction is critical. Many users confuse these commands.
+</Warning>
+
+### `lua push` - Upload Code to Server
+
+- Compiles local code and uploads to Lua platform server/database
+- Creates a **version** on the server
+- Code now exists on server, not just locally
+- **Does NOT make it live yet**
+
+```bash
+# Push a specific skill with version
+lua push skill --name mySkill --version 1.0.0 --force
+
+# Push all components
+lua push all --force
+
+# Push and immediately deploy
+lua push all --force --auto-deploy
+```
+
+### `lua deploy` - Activate a Version
+
+- Makes a previously pushed version **live/active**
+- Only 1 version can be active at a time per primitive
+- This is what production uses
+
+```bash
+# Deploy specific version
+lua deploy --skill-name mySkill --skill-version 1.0.5 --force
+
+# Deploy latest version
+lua deploy --skill-name mySkill --skill-version latest --force
+```
+
+### Key Difference
+
+| Command | What it does |
+|---------|--------------|
+| `lua push` | Upload version to server (staging) |
+| `lua deploy` | Make that version live for all users |
+
+---
+
+## 7. Environment Variables
+
+### Sandbox vs Production
+
+| Environment | Source |
+|-------------|--------|
+| Sandbox | Local `.env` file or CLI env variables |
+| Production | Stored on server (set via `lua env production`) |
+
+### Commands
+
+```bash
+# List variables
+lua env sandbox --list
+lua env production --list
+
+# Set variable
+lua env sandbox -k API_KEY -v "sk-test-xxx"
+lua env production -k API_KEY -v "sk-live-xxx"
+
+# Delete variable
+lua env production -k OLD_KEY --delete
+```
+
+Set environment variables **as needed** when code requires them.
+
+---
+
+## 8. Debugging with `lua logs`
+
+<Note>
+**This is the core debugging command.** All `console.log`, `console.error`, etc. output appears here.
+</Note>
+
+Works for ALL request types: `lua test`, `lua chat`, production requests.
+
+```bash
+# View all logs
+lua logs --type all --limit 50
+
+# Filter by type
+lua logs --type skill --name mySkill --limit 10
+lua logs --type job --name healthCheck --json
+lua logs --type webhook --limit 20
+
+# Pagination
+lua logs --type all --limit 20 --page 2
+```
+
+### Log Types
+
+| Type | Description |
+|------|-------------|
+| `all` | All logs |
+| `skill` | Skill/tool executions |
+| `job` | Job executions |
+| `webhook` | Webhook executions |
+| `preprocessor` | PreProcessor executions |
+| `postprocessor` | PostProcessor executions |
+| `user_message` | User messages |
+| `agent_response` | Agent responses |
+
+---
+
+## 9. Sandbox Overrides
+
+When using `lua chat -e sandbox`, the following can be overridden with local compiled code **without needing to push/deploy**:
+
+| Component | How it works |
+|-----------|--------------|
+| Skills | Local compiled code pushed to Redis cache |
+| Persona | Local persona overrides deployed production persona |
+| PreProcessors | Local code pushed to Redis cache |
+| PostProcessors | Local code pushed to Redis cache |
+| Environment | Local `.env` file used |
+
+This allows testing changes instantly without the push/deploy cycle.
+
+---
+
+## 10. Compilation Gotchas
+
+The CLI uses **esbuild** to bundle each `execute` function:
+
+### What Works
+
+- Standard TypeScript code
+- Imports from `package.json` dependencies
+- Relative imports within your project
+
+### What May Not Work
+
+- Not all Node.js file structures are supported
+- Each execute function's code is extracted and bundled separately
+- `lua-cli` imports are stripped - APIs like `User`, `Products`, `Data` are sandbox globals
+
+### Warning Signs
+
+| Issue | Meaning |
+|-------|---------|
+| Empty bundles (< 100 bytes) | Something went wrong during bundling |
+| "Could not resolve" errors | Check imports/dependencies |
+| "Transform failed" | TypeScript syntax issues |
+
+### Debug Mode
+
+Run with `--debug` for verbose compilation output:
+
+```bash
+lua compile --debug
+```
+
+---
+
+## 11. Platform APIs Available at Runtime
+
+These are available as **globals** in the VM sandbox (don't import from lua-cli):
+
+| API | Description |
+|-----|-------------|
+| `User` | User data management |
+| `Data` | Custom data collections |
+| `Products` | Product catalog |
+| `Baskets` | Shopping cart |
+| `Orders` | Order management |
+| `AI` | AI generation |
+| `Lua` | Request context (`Lua.request.channel`, `Lua.request.webhook`) |
+| `Jobs` | Job scheduling |
+| `Templates` | Message templates |
+| `CDN` | File upload/retrieval |
+| `env(key)` | Environment variable access |
+| `fetch` | HTTP requests |
+| `console` | Logging (appears in `lua logs`) |
+
+---
+
+## 12. Complete Workflow Example
+
+```bash
+# 0. Authenticate (one-time setup)
+# Option A: With API key
+lua auth configure --api-key <your-api-key>
+
+# Option B: With email (2 steps)
+lua auth configure --email user@example.com
+# (user receives OTP via email)
+lua auth configure --email user@example.com --otp 123456
+
+# 1. Initialize project (one-time per agent)
+lua init --agent-id agent_abc123
+
+# 2. Set environment variables (as needed)
+lua env sandbox -k OPENAI_KEY -v "sk-test-xxx"
+
+# 3. Write your code in src/
+
+# 4. Test individual components
+lua test skill --name get_order --input '{"orderId": "123"}'
+
+# 5. Check logs if issues
+lua logs --type skill --name get_order --limit 5
+
+# 6. Test with full agent (sandbox)
+lua chat -e sandbox -m "Get order 123"
+
+# 7. Push to server
+lua push skill --name order-service --version 1.0.0 --force
+
+# 8. Deploy to production
+lua deploy --skill-name order-service --skill-version latest --force
+
+# 9. Set production env vars
+lua env production -k OPENAI_KEY -v "sk-live-xxx"
+
+# 10. Test production
+lua chat -e production -m "Get order 123"
+
+# 11. Monitor logs
+lua logs --type skill --name order-service --limit 10 --json
+```
+
+---
+
+## Quick Reference: Non-Interactive Commands
+
+| Task | Command |
+|------|---------|
+| Authenticate with API key | `lua auth configure --api-key <key>` |
+| Request email OTP | `lua auth configure --email <email>` |
+| Verify email OTP | `lua auth configure --email <email> --otp <code>` |
+| Initialize with existing agent | `lua init --agent-id <id>` |
+| Initialize with new agent | `lua init --agent-name <name> --org-id <id>` |
+| Test a tool | `lua test skill --name <name> --input '<json>'` |
+| Test a webhook | `lua test webhook --name <name> --input '<json>'` |
+| Test a job | `lua test job --name <name>` |
+| Chat in sandbox | `lua chat -e sandbox -m "<message>"` |
+| Chat in production | `lua chat -e production -m "<message>"` |
+| Push all | `lua push all --force` |
+| Push and deploy | `lua push all --force --auto-deploy` |
+| Deploy specific version | `lua deploy --skill-name <name> --skill-version <ver> --force` |
+| Set env variable | `lua env <sandbox\|production> -k <key> -v <value>` |
+| View logs | `lua logs --type <type> --name <name> --limit <n>` |
+
+---
+
+## Related Documentation
+
+<CardGroup cols={2}>
+  <Card title="CLI Commands Reference" icon="terminal" href="/cli/overview">
+    Complete CLI command documentation
+  </Card>
+  <Card title="Non-Interactive Mode" icon="robot" href="/cli/non-interactive-mode">
+    All non-interactive flags and CI/CD examples
+  </Card>
+  <Card title="LuaAgent API" icon="code" href="/api/luaagent">
+    Complete LuaAgent configuration reference
+  </Card>
+  <Card title="Platform APIs" icon="plug" href="/concepts/platform-apis">
+    User, Data, Products, and other runtime APIs
+  </Card>
+</CardGroup>
