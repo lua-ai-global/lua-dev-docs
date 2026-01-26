@@ -361,6 +361,27 @@ lua chat -e production -m "What's the weather in London?"
 | `lua test` | Runs execute function directly in VM | No | Fast |
 | `lua chat` | Full agent request with AI | Yes | Slower |
 
+### Clearing Conversation History (`lua chat clear`)
+
+<Note>
+**Important for testing!** The agent has memory/conversation history. When testing, you often want a fresh state. Use `lua chat clear` to reset the AI's memory.
+</Note>
+
+```bash
+# Clear all conversation history
+lua chat clear --force
+
+# Clear specific user's history
+lua chat clear --user user@email.com --force
+lua chat clear --user +1234567890 --force
+lua chat clear --user user_abc123 --force
+```
+
+**When to use**:
+- Before testing a new feature or flow
+- When the agent's context is polluted from previous tests
+- When debugging unexpected behavior that might be context-related
+
 ### Recommended Development Workflow
 
 ```bash
@@ -374,12 +395,15 @@ lua logs --type skill --name my_tool --limit 5
 
 # 4. Iterate until component works
 
-# 5. Test with full agent (sandbox)
+# 5. Clear conversation history for fresh test
+lua chat clear --force
+
+# 6. Test with full agent (sandbox)
 lua chat -e sandbox -m "Test message"
 
-# 6. When ready: push and deploy
+# 7. When ready: push and deploy
 
-# 7. Verify in production
+# 8. Verify in production
 lua chat -e production -m "Test message"
 ```
 
@@ -629,6 +653,8 @@ lua logs --type skill --name order-service --limit 10 --json
 | Test a job | `lua test job --name <name>` |
 | Chat in sandbox | `lua chat -e sandbox -m "<message>"` |
 | Chat in production | `lua chat -e production -m "<message>"` |
+| Clear conversation history | `lua chat clear --force` |
+| Clear user's history | `lua chat clear --user <email\|mobile\|userId> --force` |
 | Push all | `lua push all --force` |
 | Push and deploy | `lua push all --force --auto-deploy` |
 | Deploy specific version | `lua deploy --skill-name <name> --skill-version <ver> --force` |
