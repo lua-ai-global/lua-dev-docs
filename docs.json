@@ -89,6 +89,7 @@
               "cli/persona-command",
               "cli/features-command",
               "cli/mcp-command",
+              "cli/integrations-command",
               "cli/resources-command",
               "cli/channels-command",
               "cli/production-command",

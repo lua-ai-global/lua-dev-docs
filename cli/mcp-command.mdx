@@ -7,6 +7,10 @@ description: "Manage MCP servers for your agent"
 
 The `lua mcp` command manages Model Context Protocol (MCP) servers. Use it to list, activate, deactivate, and delete MCP servers.
 
+<Note>
+**MCP servers from integrations**: When you connect a third-party account via `lua integrations connect`, an MCP server is automatically created and activated. These integration-based servers have a `source` field set to `unifiedto`. You can manage them with both `lua mcp` and `lua integrations mcp` commands.
+</Note>
+
 ```bash
 lua mcp              # Interactive mode
 lua mcp list         # List all servers
@@ -317,3 +321,4 @@ lua push all --force --auto-deploy
 - [MCP Servers Overview](/overview/mcp-servers) - Conceptual introduction
 - [LuaMCPServer API](/api/luamcpserver) - Complete API reference
 - [Skill Management](/cli/skill-management) - Compile and push commands
+- [Integrations Command](/cli/integrations-command) - Connect third-party accounts (auto-creates MCP servers)

@@ -402,6 +402,75 @@ lua skills deploy --skill-name x   # Deploy skill x
     | `deactivate` | `--server-name` |
     | `delete` | `--server-name` |
   </Tab>
+  
+  <Tab title="integrations">
+    Connect and manage third-party accounts without prompts:
+    
+    ```bash
+    # Connect an integration
+    lua integrations connect --integration linear --auth-method oauth --scopes all
+    lua integrations connect --integration discord --auth-method oauth --scopes all --hide-sensitive false
+    
+    # List connections
+    lua integrations list
+    
+    # View available integrations
+    lua integrations available
+    
+    # Update connection scopes
+    lua integrations update --integration linear --scopes "task_task_read,task_task_write"
+    
+    # Disconnect
+    lua integrations disconnect --connection-id 6978e0294d9c2007ed5cb129
+    ```
+    
+    **Connect Options:**
+    
+    | Option | Description |
+    |--------|-------------|
+    | `--integration <type>` | Integration type (linear, discord, etc.) |
+    | `--auth-method <method>` | `oauth` or `token` |
+    | `--scopes <scopes>` | Comma-separated scopes or `all` |
+    | `--hide-sensitive <bool>` | Hide sensitive data (default: true) |
+    | `--connection-id <id>` | Connection ID (for disconnect) |
+    
+    **Webhook Management:**
+    
+    ```bash
+    # List webhooks
+    lua integrations webhooks list
+    
+    # Create webhook subscription
+    lua integrations webhooks create \
+      --connection abc123 \
+      --object task_task \
+      --event created \
+      --webhook https://webhook.heylua.ai/myagent/handler \
+      --interval 60
+    
+    # Delete webhook
+    lua integrations webhooks delete --webhook-id wh_xyz789
+    ```
+    
+    **Webhook Options:**
+    
+    | Option | Description |
+    |--------|-------------|
+    | `--connection <id>` | Connection ID |
+    | `--object <type>` | Object type (task_task, calendar_event, etc.) |
+    | `--event <type>` | Event: created, updated, deleted |
+    | `--webhook <url>` | Full webhook URL |
+    | `--interval <mins>` | Polling interval (60, 120, 240, 480, 720, 1440, 2880) |
+    | `--webhook-id <id>` | Webhook ID (for delete) |
+    
+    **MCP Server Management:**
+    
+    ```bash
+    lua integrations mcp list
+    lua integrations mcp activate --connection abc123
+    lua integrations mcp deactivate --connection abc123
+    ```
+  </Tab>
 </Tabs>
 
 ### Viewing & Debugging

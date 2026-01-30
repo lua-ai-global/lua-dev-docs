@@ -63,6 +63,7 @@ lua [options] [command]
 | `lua push`       | ☁️ Deployment     | Push components to server                                                   | ✅ Full support |
 | `lua deploy`     | 🚀 Deployment     | Deploy version to production                                                | ✅ Full support |
 | `lua mcp`        | 🔌 Integration    | Manage MCP (Model Context Protocol) servers                                 | ✅ Full support |
+| `lua integrations`| 🔌 Integration   | Connect third-party accounts via Unified.to                                 | ✅ Full support |
 | `lua production` | 🚀 Deployment     | View and manage production environment                                      | ✅ Full support |
 | `lua channels`   | 🔌 Integration    | Manage communication channels                                               | ✅ `list`       |
 | `lua logs`       | 🐛 Debugging      | View and filter agent logs by component type (Skills, Jobs, Webhooks, etc.) | ✅ Full support |
@@ -117,6 +118,7 @@ lua deploy             # 🚀 Deploy to production
 
 # Integration & Debugging
 lua mcp                # 🔌 Manage MCP servers (list, activate, deactivate)
+lua integrations       # 🔌 Connect third-party accounts (Linear, Discord, etc.)
 lua channels           # 🔌 Manage communication channels
 lua logs               # 🐛 View and filter execution logs (interactive filtering)
 
@@ -157,6 +159,9 @@ lua docs               # 📖 Open documentation
   </Card>
   <Card title="lua mcp" icon="plug">
     Manage MCP servers
+  </Card>
+  <Card title="lua integrations" icon="link">
+    Connect third-party accounts
   </Card>
   <Card title="lua sync" icon="rotate">
     Detect and resolve drift
@@ -815,6 +820,9 @@ mcpServers:
   </Card>
   <Card title="MCP Command" icon="plug" href="/cli/mcp-command">
     Manage MCP servers for external tools
+  </Card>
+  <Card title="Integrations Command" icon="link" href="/cli/integrations-command">
+    Connect third-party accounts
   </Card>
   <Card title="Chat Command" icon="comments" href="/cli/chat-command">
     Interactive chat with your agent

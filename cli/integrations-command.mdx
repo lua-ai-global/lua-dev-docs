@@ -1,0 +1,432 @@
+---
+title: "Integrations Command"
+description: "Connect third-party accounts and services to your agent via Unified.to"
+---
+
+## Overview
+
+The `lua integrations` command enables you to connect your agent to third-party services like Linear, Discord, Google Calendar, HubSpot, and 250+ other integrations via [Unified.to](https://unified.to). When you connect an account, an MCP server is automatically created to expose tools to your agent.
+
+```bash
+lua integrations              # Interactive mode
+lua integrations connect      # Connect a new account
+lua integrations list         # List connected accounts
+lua integrations available    # View available integrations
+lua integrations disconnect   # Disconnect an account
+lua integrations update       # Update connection scopes
+lua integrations webhooks     # Manage webhook subscriptions
+lua integrations mcp          # Manage MCP servers for connections
+```
+
+<Note>
+**Limit**: Only 1 connection per integration type is allowed per agent. To change scopes, use `lua integrations update`.
+</Note>
+
+## How It Works
+
+1. **Connect**: Authenticate with a third-party service via OAuth or API token
+2. **Auto-MCP**: An MCP server is automatically created and activated for the connection
+3. **Agent Access**: Your agent can now use tools from that integration (e.g., create Linear issues, send Discord messages)
+4. **Webhooks**: Optionally subscribe to events from the connected service
+
+## Commands
+
+### lua integrations connect
+
+Connect a new third-party account.
+
+```bash
+# Interactive mode
+lua integrations connect
+
+# Non-interactive: connect Linear with OAuth and all scopes
+lua integrations connect --integration linear --auth-method oauth --scopes all
+
+# Specify specific scopes
+lua integrations connect --integration linear --auth-method oauth --scopes "task_task_read,task_task_write"
+
+# Use API token authentication
+lua integrations connect --integration linear --auth-method token
+
+# Control sensitive data visibility
+lua integrations connect --integration discord --auth-method oauth --scopes all --hide-sensitive false
+```
+
+**What happens:**
+1. CLI fetches available integrations
+2. You select or specify an integration and auth method
+3. Browser opens for OAuth authorization (or you enter API credentials)
+4. Connection is established and stored
+5. MCP server is automatically created and activated
+
+### lua integrations list
+
+View all connected accounts and their status.
+
+```bash
+lua integrations list
+```
+
+**Output:**
+
+```
+============================================================
+🔗 Connected Accounts
+============================================================
+
+🟢 Linear
+   ID: 6978e0294d9c2007ed5cb129
+   Status: Active
+   Connected: 1/27/2026
+
+🟡 Discord
+   ID: 6979e707ea702a223666bfd2
+   Status: Connected (tools pending)
+   Connected: 1/28/2026
+
+============================================================
+Total: 2 connection(s)
+```
+
+**Status Icons:**
+- 🟢 Active - Connection healthy, tools available
+- 🟡 Connected (tools pending) - Connection healthy, MCP server inactive
+- 🔴 Unhealthy - Re-authorization required
+- ⏸️ Paused - Connection paused
+
+### lua integrations available
+
+List all available integrations you can connect.
+
+```bash
+lua integrations available
+```
+
+Shows integrations grouped by category (task, messaging, crm, etc.) with auth type indicators:
+- 🔐 OAuth only
+- 🔑 API Token only
+- 🔐🔑 Both available
+
+### lua integrations update
+
+Update an existing connection's OAuth scopes. This re-authorizes the connection with new permissions.
+
+```bash
+# Interactive mode
+lua integrations update
+
+# Non-interactive: update Linear with all scopes
+lua integrations update --integration linear --scopes all
+
+# Specific scopes
+lua integrations update --integration linear --scopes "task_task_read,task_task_write,task_project_read"
+```
+
+<Note>
+Update deletes the old connection and creates a new one with updated scopes. You'll need to re-authorize in the browser.
+</Note>
+
+### lua integrations disconnect
+
+Remove a connected account. This also deletes the associated MCP server and any webhook subscriptions.
+
+```bash
+# Interactive mode
+lua integrations disconnect
+
+# Non-interactive
+lua integrations disconnect --connection-id 6978e0294d9c2007ed5cb129
+```
+
+### lua integrations webhooks
+
+Manage webhook subscriptions for connected integrations. Webhooks let you receive events when things happen in connected services (e.g., task created, message received).
+
+<Tabs>
+  <Tab title="list">
+    List all webhook subscriptions:
+    
+    ```bash
+    lua integrations webhooks list
+    ```
+    
+    **Output:**
+    ```
+    ────────────────────────────────────────────────────────────────────────────────
+    🔔 Webhook Subscriptions
+    ────────────────────────────────────────────────────────────────────────────────
+
+      ID: wh_abc123
+      Integration: linear | Event: task_task.created [virtual]
+      URL: https://webhook.heylua.ai/myagent/linear-handler
+      Status: ✅ active
+    ────────────────────────────────────────────────────────────────────────────────
+
+    Total: 1 webhook subscription(s)
+    ```
+  </Tab>
+  
+  <Tab title="create">
+    Create a new webhook subscription:
+    
+    ```bash
+    # Interactive mode
+    lua integrations webhooks create
+    
+    # Non-interactive
+    lua integrations webhooks create \
+      --connection abc123 \
+      --object task_task \
+      --event created \
+      --webhook https://webhook.heylua.ai/myagent/handler
+    
+    # With polling interval for virtual webhooks
+    lua integrations webhooks create \
+      --connection abc123 \
+      --object task_task \
+      --event updated \
+      --webhook https://webhook.heylua.ai/myagent/handler \
+      --interval 60
+    ```
+    
+    **Webhook Types:**
+    - **Native**: Real-time webhooks from the integration
+    - **Virtual**: Polling-based webhooks (Unified.to polls the API at intervals)
+    
+    **Interval options** (for virtual webhooks):
+    - `60` - 1 hour
+    - `120` - 2 hours
+    - `240` - 4 hours
+    - `480` - 8 hours
+    - `720` - 12 hours
+    - `1440` - 24 hours
+    - `2880` - 48 hours
+  </Tab>
+  
+  <Tab title="delete">
+    Delete a webhook subscription:
+    
+    ```bash
+    lua integrations webhooks delete --webhook-id wh_abc123
+    ```
+  </Tab>
+</Tabs>
+
+### lua integrations mcp
+
+Manage MCP servers for connections. MCP servers are automatically created when you connect an integration, but you can activate/deactivate them manually.
+
+<Tabs>
+  <Tab title="list">
+    List connections with MCP server status:
+    
+    ```bash
+    lua integrations mcp list
+    ```
+    
+    **Output:**
+    ```
+    ────────────────────────────────────────────────────────────────────────────────
+    🔌 MCP Servers for Connections
+    ────────────────────────────────────────────────────────────────────────────────
+
+      Connection: 6978e0294d9c2007ed5cb129
+      Integration: Linear
+      MCP Server: linear
+      Status: ✅ active
+    ────────────────────────────────────────────────────────────────────────────────
+    ```
+  </Tab>
+  
+  <Tab title="activate">
+    Activate MCP server for a connection:
+    
+    ```bash
+    lua integrations mcp activate --connection 6978e0294d9c2007ed5cb129
+    ```
+    
+    Once activated, your agent can use tools from this integration.
+  </Tab>
+  
+  <Tab title="deactivate">
+    Deactivate MCP server for a connection:
+    
+    ```bash
+    lua integrations mcp deactivate --connection 6978e0294d9c2007ed5cb129
+    ```
+    
+    The connection remains but tools are hidden from the agent.
+  </Tab>
+</Tabs>
+
+## Non-Interactive Mode
+
+All integrations commands support non-interactive mode for CI/CD and automation:
+
+### Connect Options
+
+| Option | Description |
+|--------|-------------|
+| `--integration <type>` | Integration type (e.g., `linear`, `discord`, `googlecalendar`) |
+| `--auth-method <method>` | Authentication method: `oauth` or `token` |
+| `--scopes <scopes>` | Comma-separated OAuth scopes, or `all` for all available |
+| `--hide-sensitive <bool>` | Hide sensitive data from MCP tools (default: `true`) |
+
+### Disconnect Options
+
+| Option | Description |
+|--------|-------------|
+| `--connection-id <id>` | Connection ID to disconnect |
+
+### Webhook Options
+
+| Option | Description |
+|--------|-------------|
+| `--connection <id>` | Connection ID for the webhook |
+| `--object <type>` | Object type (e.g., `task_task`, `calendar_event`) |
+| `--event <type>` | Event type: `created`, `updated`, or `deleted` |
+| `--webhook <url>` | Full webhook URL to receive events |
+| `--interval <minutes>` | Polling interval for virtual webhooks |
+| `--webhook-id <id>` | Webhook ID (for delete action) |
+
+### MCP Options
+
+| Option | Description |
+|--------|-------------|
+| `--connection <id>` | Connection ID for MCP operations |
+
+### Examples
+
+```bash
+# Connect and configure in one command
+lua integrations connect --integration linear --auth-method oauth --scopes all
+
+# Create webhook subscription
+lua integrations webhooks create \
+  --connection 6978e0294d9c2007ed5cb129 \
+  --object task_task \
+  --event created \
+  --webhook https://webhook.heylua.ai/myagent/linear-handler
+
+# Disconnect
+lua integrations disconnect --connection-id 6978e0294d9c2007ed5cb129
+```
+
+## Workflow Example
+
+<Steps>
+  <Step title="View Available Integrations">
+    ```bash
+    lua integrations available
+    ```
+    
+    See what integrations are available for your workspace.
+  </Step>
+  
+  <Step title="Connect an Account">
+    ```bash
+    lua integrations connect --integration linear --auth-method oauth --scopes all
+    ```
+    
+    Complete OAuth in the browser. MCP server is auto-created and activated.
+  </Step>
+  
+  <Step title="Verify Connection">
+    ```bash
+    lua integrations list
+    ```
+    
+    Confirm the connection shows as Active (🟢).
+  </Step>
+  
+  <Step title="Test with Agent">
+    ```bash
+    lua chat -e sandbox -m "Create a Linear issue titled 'Test from Lua'"
+    ```
+    
+    Your agent should now have access to Linear tools.
+  </Step>
+  
+  <Step title="(Optional) Add Webhook">
+    ```bash
+    lua integrations webhooks create \
+      --connection abc123 \
+      --object task_task \
+      --event created \
+      --webhook https://webhook.heylua.ai/myagent/linear-handler
+    ```
+    
+    Receive events when tasks are created in Linear.
+  </Step>
+</Steps>
+
+## Authentication Types
+
+### OAuth 2.0 (Recommended)
+
+- Secure authorization flow via browser
+- Scope selection for fine-grained permissions
+- Automatic token refresh
+- Requires OAuth to be configured for the integration in your Unified.to workspace
+
+### API Token / Personal Access Token
+
+- Direct credential entry
+- Simpler setup
+- Token fields vary by integration (e.g., API Key, Personal Access Token, Bot Token)
+- Instructions shown during connection for where to obtain credentials
+
+## Tips
+
+<AccordionGroup>
+  <Accordion title="Hide Sensitive Data">
+    By default, `--hide-sensitive true` is enabled, which hides sensitive fields from MCP tool responses. Disable only if your agent needs access to sensitive data:
+    
+    ```bash
+    lua integrations connect --integration discord --auth-method oauth --scopes all --hide-sensitive false
+    ```
+  </Accordion>
+
+  <Accordion title="Scope Selection">
+    When using OAuth, select only the scopes your agent needs. Use `all` during development, then restrict to specific scopes in production:
+    
+    ```bash
+    # Development
+    lua integrations connect --integration linear --auth-method oauth --scopes all
+    
+    # Production
+    lua integrations connect --integration linear --auth-method oauth --scopes "task_task_read,task_task_write"
+    ```
+  </Accordion>
+
+  <Accordion title="Use Webhooks for Event-Driven Workflows">
+    Instead of polling, use webhooks to react to events:
+    
+    1. Create a LuaWebhook in your codebase to handle events
+    2. Push and deploy the webhook
+    3. Create a subscription: `lua integrations webhooks create`
+    
+    The webhook receives events in real-time (or at polling intervals for virtual webhooks).
+  </Accordion>
+
+  <Accordion title="One Connection Per Integration">
+    Each agent can have only one connection per integration type. To change accounts or scopes, use `lua integrations update` or disconnect and reconnect.
+  </Accordion>
+</AccordionGroup>
+
+## Related Commands
+
+<CardGroup cols={2}>
+  <Card title="MCP Command" icon="plug" href="/cli/mcp-command">
+    Manage all MCP servers (including non-integration servers)
+  </Card>
+  <Card title="Chat Command" icon="comments" href="/cli/chat-command">
+    Test your agent with integration tools
+  </Card>
+</CardGroup>
+
+## See Also
+
+- [MCP Servers Overview](/overview/mcp-servers) - Understanding MCP servers
+- [Webhooks Overview](/overview/webhooks) - Creating webhook handlers
+- [LuaWebhook API](/api/luawebhook) - Webhook API reference

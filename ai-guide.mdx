@@ -20,6 +20,8 @@ All commands in this guide use flags and arguments that work without interactive
 
 ```
 Authenticate → lua init → Write Code → lua test → iterate → lua chat sandbox → push → deploy
+                              ↓
+                    (Optional) lua integrations connect → Agent gets third-party tools instantly
 ```
 
 ---
@@ -177,7 +179,7 @@ Communication style:
 | `jobs` | No | Scheduled cron tasks |
 | `preProcessors` | No | Message filters before agent processes |
 | `postProcessors` | No | Response formatters after agent responds |
-| `mcpServers` | No | External MCP tool servers |
+| `mcpServers` | No | External MCP tool servers (also auto-created via `lua integrations`) |
 
 ---
 
@@ -592,7 +594,177 @@ These are available as **globals** in the VM sandbox (don't import from lua-cli)
 
 ---
 
-## 12. Complete Workflow Example
+## 12. Third-Party Integrations (POWERFUL FEATURE)
+
+<Note>
+**This is one of the most powerful features of the Lua platform.** With a single command, you can give your agent access to 250+ third-party services (Linear, Discord, Google Calendar, HubSpot, Slack, GitHub, and more) - **without writing any code**.
+</Note>
+
+### Why This Matters
+
+Instead of:
+- Writing API integration code
+- Managing OAuth tokens and refresh logic
+- Building tools for each third-party service
+- Handling rate limits and error handling
+
+You simply run:
+```bash
+lua integrations connect --integration linear --auth-method oauth --scopes all
+```
+
+And your agent **instantly** gets tools like `linear_create_issue`, `linear_list_projects`, `linear_update_task`, etc.
+
+### How It Works
+
+1. **Connect** - Authenticate with the third-party service via OAuth or API token
+2. **Auto-MCP** - An MCP (Model Context Protocol) server is automatically created
+3. **Instant Tools** - Your agent can immediately use tools from that integration
+4. **Event-Driven** - Optionally subscribe to webhooks to react to events
+
+### Connecting an Integration
+
+```bash
+# View available integrations
+lua integrations available
+
+# Connect with OAuth (recommended)
+lua integrations connect --integration linear --auth-method oauth --scopes all
+
+# Connect with specific scopes
+lua integrations connect --integration linear --auth-method oauth --scopes "task_task_read,task_task_write"
+
+# Connect with API token
+lua integrations connect --integration linear --auth-method token
+
+# List connected integrations
+lua integrations list
+
+# Update scopes on existing connection
+lua integrations update --integration linear --scopes all
+
+# Disconnect
+lua integrations disconnect --connection-id <id>
+```
+
+### Testing Integration Tools
+
+After connecting, test immediately:
+
+```bash
+# Clear conversation for fresh context
+lua chat clear --force
+
+# Test the integration tools
+lua chat -e sandbox -m "Create a Linear issue titled 'Test from Lua' in my default project"
+
+lua chat -e sandbox -m "List my upcoming Google Calendar events"
+
+lua chat -e sandbox -m "Send a message to the #general channel on Discord"
+```
+
+### Available Integrations (250+)
+
+Common integrations include:
+
+| Category | Examples |
+|----------|----------|
+| **Task Management** | Linear, Asana, Jira, Monday.com, ClickUp, Notion |
+| **Communication** | Discord, Slack, Microsoft Teams, Telegram |
+| **Calendar** | Google Calendar, Outlook Calendar, Calendly |
+| **CRM** | HubSpot, Salesforce, Pipedrive, Zoho CRM |
+| **Development** | GitHub, GitLab, Bitbucket |
+| **Storage** | Google Drive, Dropbox, OneDrive, Box |
+| **Support** | Zendesk, Intercom, Freshdesk |
+| **Email** | Gmail, Outlook, SendGrid |
+
+Run `lua integrations available` to see all available integrations for your workspace.
+
+### Event-Driven Workflows with Webhooks
+
+You can subscribe to events from connected integrations:
+
+```bash
+# List available webhook events for a connection
+lua integrations webhooks create  # Interactive - shows available events
+
+# Create a webhook subscription
+lua integrations webhooks create \
+  --connection <connection-id> \
+  --object task_task \
+  --event created \
+  --webhook https://webhook.heylua.ai/myagent/linear-handler
+
+# List webhook subscriptions
+lua integrations webhooks list
+
+# Delete a subscription
+lua integrations webhooks delete --webhook-id <id>
+```
+
+**Example workflow**: When a Linear issue is created, trigger your LuaWebhook to notify a Discord channel.
+
+### Managing MCP Servers for Integrations
+
+Each integration creates an MCP server. You can manage them:
+
+```bash
+# List MCP servers and their status
+lua integrations mcp list
+
+# Deactivate (hide tools from agent)
+lua integrations mcp deactivate --connection <id>
+
+# Reactivate
+lua integrations mcp activate --connection <id>
+```
+
+### Integration Workflow Example
+
+```bash
+# 1. Check available integrations
+lua integrations available
+
+# 2. Connect Linear
+lua integrations connect --integration linear --auth-method oauth --scopes all
+# (Complete OAuth in browser)
+
+# 3. Verify connection
+lua integrations list
+
+# 4. Clear chat history for fresh test
+lua chat clear --force
+
+# 5. Test the integration
+lua chat -e sandbox -m "List all Linear projects I have access to"
+
+lua chat -e sandbox -m "Create a task in Linear: Review documentation updates"
+
+# 6. (Optional) Set up webhook for events
+lua integrations webhooks create \
+  --connection <linear-connection-id> \
+  --object task_task \
+  --event created \
+  --webhook https://webhook.heylua.ai/myagent/linear-handler
+
+# 7. The agent now has full Linear capabilities!
+```
+
+### Key Points for AI Agents
+
+<Warning>
+**Important for AI coding assistants building Lua agents:**
+
+1. **Ask the user** what third-party services they want to connect
+2. **Run `lua integrations available`** to see what's available
+3. **Connect integrations** before writing custom tool code - the integration might already provide what's needed
+4. **Test with `lua chat`** after connecting to verify tools are available
+5. **One connection per integration type** per agent - use `update` to change scopes
+</Warning>
+
+---
+
+## 13. Complete Workflow Example
 
 ```bash
 # 0. Authenticate (one-time setup)
@@ -610,30 +782,38 @@ lua init --agent-id agent_abc123
 # 2. Set environment variables (as needed)
 lua env sandbox -k OPENAI_KEY -v "sk-test-xxx"
 
-# 3. Write your code in src/
+# 3. (OPTIONAL BUT POWERFUL) Connect third-party integrations
+lua integrations available                                          # See what's available
+lua integrations connect --integration linear --auth-method oauth --scopes all
+lua integrations connect --integration discord --auth-method oauth --scopes all
+lua integrations list                                                # Verify connections
 
-# 4. Test individual components
+# 4. Write your code in src/
+
+# 5. Test individual components
 lua test skill --name get_order --input '{"orderId": "123"}'
 
-# 5. Check logs if issues
+# 6. Check logs if issues
 lua logs --type skill --name get_order --limit 5
 
-# 6. Test with full agent (sandbox)
+# 7. Clear conversation and test with full agent (sandbox)
+lua chat clear --force
 lua chat -e sandbox -m "Get order 123"
+lua chat -e sandbox -m "Create a Linear issue for order 123 review"  # If Linear connected
 
-# 7. Push to server
+# 8. Push to server
 lua push skill --name order-service --version 1.0.0 --force
 
-# 8. Deploy to production
+# 9. Deploy to production
 lua deploy --skill-name order-service --skill-version latest --force
 
-# 9. Set production env vars
+# 10. Set production env vars
 lua env production -k OPENAI_KEY -v "sk-live-xxx"
 
-# 10. Test production
+# 11. Test production
 lua chat -e production -m "Get order 123"
 
-# 11. Monitor logs
+# 12. Monitor logs
 lua logs --type skill --name order-service --limit 10 --json
 ```
 
@@ -655,6 +835,16 @@ lua logs --type skill --name order-service --limit 10 --json
 | Chat in production | `lua chat -e production -m "<message>"` |
 | Clear conversation history | `lua chat clear --force` |
 | Clear user's history | `lua chat clear --user <email\|mobile\|userId> --force` |
+| View available integrations | `lua integrations available` |
+| Connect integration (OAuth) | `lua integrations connect --integration <type> --auth-method oauth --scopes all` |
+| Connect integration (Token) | `lua integrations connect --integration <type> --auth-method token` |
+| List connected integrations | `lua integrations list` |
+| Update integration scopes | `lua integrations update --integration <type> --scopes all` |
+| Disconnect integration | `lua integrations disconnect --connection-id <id>` |
+| List integration webhooks | `lua integrations webhooks list` |
+| Create integration webhook | `lua integrations webhooks create --connection <id> --object <type> --event <event> --webhook <url>` |
+| Delete integration webhook | `lua integrations webhooks delete --webhook-id <id>` |
+| List integration MCP status | `lua integrations mcp list` |
 | Push all | `lua push all --force` |
 | Push and deploy | `lua push all --force --auto-deploy` |
 | Deploy specific version | `lua deploy --skill-name <name> --skill-version <ver> --force` |
@@ -672,10 +862,16 @@ lua logs --type skill --name order-service --limit 10 --json
   <Card title="Non-Interactive Mode" icon="robot" href="/cli/non-interactive-mode">
     All non-interactive flags and CI/CD examples
   </Card>
+  <Card title="Integrations Command" icon="link" href="/cli/integrations-command">
+    Connect 250+ third-party services
+  </Card>
   <Card title="LuaAgent API" icon="code" href="/api/luaagent">
     Complete LuaAgent configuration reference
   </Card>
   <Card title="Platform APIs" icon="plug" href="/concepts/platform-apis">
     User, Data, Products, and other runtime APIs
+  </Card>
+  <Card title="MCP Servers" icon="server" href="/cli/mcp-command">
+    Manage MCP servers for external tools
   </Card>
 </CardGroup>
