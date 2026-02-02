@@ -3,6 +3,93 @@ title: "Changelog"
 description: "Release notes and version history for lua-cli"
 ---
 
+## v3.5.0-alpha.2
+
+**Released:** January 30, 2026
+
+<Warning>
+This is an alpha release for testing new features. For production use, we recommend v3.4.0.
+</Warning>
+
+### ✨ New Features
+
+<AccordionGroup>
+  <Accordion title="Integrations Command">
+    Connect your agent to 250+ third-party services via [Unified.to](https://unified.to). When you connect an account, an MCP server is automatically created to expose tools to your agent.
+    
+    ```bash
+    lua integrations              # Interactive mode
+    lua integrations connect      # Connect a new account
+    lua integrations list         # List connected accounts
+    lua integrations webhooks     # Manage webhook subscriptions
+    lua integrations mcp          # Manage MCP servers for connections
+    ```
+    
+    **Key Features:**
+    - Support for OAuth and API token authentication
+    - Automatic MCP server creation and activation per connection
+    - Webhook subscriptions for receiving events from connected services
+    
+    See the [Integrations Command](/cli/integrations-command) documentation for full details.
+  </Accordion>
+
+  <Accordion title="MCP and Mastra Log Types">
+    The `lua logs` command now supports filtering by MCP tool executions and Mastra AI runtime logs:
+    
+    ```bash
+    lua logs --type mcp      # View MCP tool execution logs
+    lua logs --type mastra   # View Mastra AI runtime logs
+    ```
+    
+    - 🔌 **MCP Tools**: View MCP tool execution logs with plug icon
+    - 🧠 **Mastra Runtime**: View Mastra AI runtime logs with brain icon
+  </Accordion>
+
+  <Accordion title="User ID Filtering in Logs">
+    Filter logs by specific user ID:
+    
+    ```bash
+    lua logs --user-id user_123456
+    ```
+  </Accordion>
+
+  <Accordion title="Non-Interactive Configure Command">
+    The `lua configure` command now supports full non-interactive operation for CI/CD pipelines and dashboard users:
+    
+    ```bash
+    # Direct API key setup (for dashboard users or CI/CD)
+    lua configure --api-key YOUR_API_KEY
+
+    # Request OTP via email (step 1)
+    lua configure --email user@example.com
+
+    # Verify OTP and generate API key (step 2)
+    lua configure --email user@example.com --otp 123456
+    ```
+  </Accordion>
+
+  <Accordion title="Post-Process Complete Event in Chat">
+    The CLI now displays post-processed responses when post-processors modify the AI's response during chat streaming. A clear indicator shows when post-processing occurs.
+  </Accordion>
+</AccordionGroup>
+
+### 🔧 Improvements
+
+- **updateAgent API**: New `AgentApi.updateAgent()` method for partial sub-agent updates (name, persona)
+- **Compile Command**: Removed `--force-sync` flag (sync is now the default behavior)
+
+### 🐛 Bug Fixes
+
+- **Marketplace**: Browse and search commands now only display skills with published and approved versions
+- **Test Command**: Fixed preprocessor test handling for `PreProcessorResult` object format
+
+### 📝 Interface Updates
+
+- Added `MCPServerSource` enum to `interfaces/mcp.ts`
+- Added `'mcp'` and `'mastra'` to `PrimitiveType` and `FilterType` enums
+
+---
+
 ## v3.5.0-alpha.1
 
 **Released:** January 23, 2026

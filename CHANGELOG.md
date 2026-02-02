@@ -4,6 +4,35 @@ All notable changes to the Lua documentation will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
+## [3.5.0-alpha.2] - 2026-01-30
+
+### Updated - Documentation for lua-cli v3.5.0-alpha.2 (Alpha Release)
+
+#### New Features Documented
+- **Integrations Command** - Connect 250+ third-party services via Unified.to
+  - `lua integrations connect` - OAuth and API token authentication
+  - `lua integrations list` - View connected accounts
+  - `lua integrations webhooks` - Manage webhook subscriptions
+  - `lua integrations mcp` - Manage MCP servers for connections
+- **MCP and Mastra Log Types** - New `--type mcp` and `--type mastra` options in logs command
+- **User ID Filtering in Logs** - `--user-id` option for filtering logs by user
+- **Non-Interactive Configure** - `--api-key`, `--email`, `--otp` options for CI/CD and automation
+- **Post-Process Display** - Post-processed responses now shown in chat streaming
+
+#### Improvements
+- Sync command refactored with dedicated endpoints for name/persona updates
+- `--force-sync` flag removed (sync is now default behavior)
+
+#### Bug Fixes
+- Marketplace filtering for approved versions only
+- PreProcessor test handling fixed for object format
+
+#### Interface Changes
+- Added `MCPServerSource` enum for tracking MCP server origin
+- Added `'mcp'` and `'mastra'` to log type enums
+
+---
+
 ## [3.5.0-alpha.1] - 2026-01-23
 
 ### Updated - Documentation for lua-cli v3.5.0-alpha.1 (Alpha Release)
