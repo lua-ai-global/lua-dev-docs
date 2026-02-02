@@ -378,5 +378,10 @@
     "socials": {
       "discord": "https://discord.gg/SRPEuwCzaD"
     }
+  },
+  "integrations": {
+    "gtm": {
+      "tagId": "GTM-P43XVQLH"
+    }
   }
 }
