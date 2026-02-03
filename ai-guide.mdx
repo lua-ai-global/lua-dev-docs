@@ -610,17 +610,43 @@ Instead of:
 
 You simply run:
 ```bash
-lua integrations connect --integration linear --auth-method oauth --scopes all
+lua integrations connect --integration linear --auth-method oauth --scopes all --triggers task_task.created
 ```
 
-And your agent **instantly** gets tools like `linear_create_issue`, `linear_list_projects`, `linear_update_task`, etc.
+And your agent **instantly** gets:
+- Tools like `linear_create_issue`, `linear_list_projects`, `linear_update_task`, etc.
+- **Triggers** that wake up your agent when events occur (e.g., when a new issue is created)
 
 ### How It Works
 
 1. **Connect** - Authenticate with the third-party service via OAuth or API token
 2. **Auto-MCP** - An MCP (Model Context Protocol) server is automatically created
 3. **Instant Tools** - Your agent can immediately use tools from that integration
-4. **Event-Driven** - Optionally subscribe to webhooks to react to events
+4. **Triggers** - Optionally enable triggers to wake up your agent on events
+
+### Discovery Commands (For AI Agents)
+
+Before connecting, use discovery commands to understand what's available:
+
+```bash
+# List all available integrations
+lua integrations available
+
+# Get detailed info about an integration (scopes and triggers)
+lua integrations info linear
+
+# Get info as JSON (for parsing)
+lua integrations info linear --json
+
+# List available trigger events
+lua integrations webhooks events --integration linear
+lua integrations webhooks events --integration linear --json
+```
+
+**JSON output** is especially useful for AI coding assistants to programmatically discover:
+- Available OAuth scopes with friendly descriptions
+- Available trigger events with friendly descriptions
+- Webhook types (native vs virtual)
 
 ### Connecting an Integration
 
@@ -628,10 +654,14 @@ And your agent **instantly** gets tools like `linear_create_issue`, `linear_list
 # View available integrations
 lua integrations available
 
-# Connect with OAuth (recommended)
-lua integrations connect --integration linear --auth-method oauth --scopes all
+# Connect with OAuth and triggers (recommended)
+lua integrations connect --integration linear --auth-method oauth --scopes all \
+  --triggers task_task.created,task_task.updated
 
-# Connect with specific scopes
+# Connect with all available triggers
+lua integrations connect --integration linear --auth-method oauth --scopes all --triggers all
+
+# Connect with specific scopes only (no triggers)
 lua integrations connect --integration linear --auth-method oauth --scopes "task_task_read,task_task_write"
 
 # Connect with API token
@@ -646,6 +676,31 @@ lua integrations update --integration linear --scopes all
 # Disconnect
 lua integrations disconnect --connection-id <id>
 ```
+
+### Triggers: Event-Driven Agent Wake-Up
+
+**Triggers** are one of the easiest ways to make your agent reactive. When enabled, your agent automatically wakes up when events occur in connected services.
+
+```bash
+# Enable triggers during connection
+lua integrations connect --integration linear --auth-method oauth --scopes all \
+  --triggers task_task.created,task_task.updated
+
+# Or add triggers after connection
+lua integrations webhooks create --connection <id> --object task_task --event created
+
+# List active triggers
+lua integrations webhooks list
+
+# Delete a trigger
+lua integrations webhooks delete --webhook-id <id>
+```
+
+**What happens when a trigger fires:**
+1. An event occurs in the connected service (e.g., a new Linear issue is created)
+2. Unified.to sends a webhook to your agent
+3. Your agent wakes up with the event data in `runtimeContext`
+4. The agent can respond based on what happened
 
 ### Testing Integration Tools
 
@@ -680,30 +735,6 @@ Common integrations include:
 
 Run `lua integrations available` to see all available integrations for your workspace.
 
-### Event-Driven Workflows with Webhooks
-
-You can subscribe to events from connected integrations:
-
-```bash
-# List available webhook events for a connection
-lua integrations webhooks create  # Interactive - shows available events
-
-# Create a webhook subscription
-lua integrations webhooks create \
-  --connection <connection-id> \
-  --object task_task \
-  --event created \
-  --webhook https://webhook.heylua.ai/myagent/linear-handler
-
-# List webhook subscriptions
-lua integrations webhooks list
-
-# Delete a subscription
-lua integrations webhooks delete --webhook-id <id>
-```
-
-**Example workflow**: When a Linear issue is created, trigger your LuaWebhook to notify a Discord channel.
-
 ### Managing MCP Servers for Integrations
 
 Each integration creates an MCP server. You can manage them:
@@ -722,32 +753,27 @@ lua integrations mcp activate --connection <id>
 ### Integration Workflow Example
 
 ```bash
-# 1. Check available integrations
+# 1. Discover available integrations and their capabilities
 lua integrations available
+lua integrations info linear --json
 
-# 2. Connect Linear
-lua integrations connect --integration linear --auth-method oauth --scopes all
+# 2. Connect Linear with triggers
+lua integrations connect --integration linear --auth-method oauth --scopes all \
+  --triggers task_task.created,task_task.updated
 # (Complete OAuth in browser)
 
-# 3. Verify connection
+# 3. Verify connection and triggers
 lua integrations list
+lua integrations webhooks list
 
 # 4. Clear chat history for fresh test
 lua chat clear --force
 
 # 5. Test the integration
 lua chat -e sandbox -m "List all Linear projects I have access to"
-
 lua chat -e sandbox -m "Create a task in Linear: Review documentation updates"
 
-# 6. (Optional) Set up webhook for events
-lua integrations webhooks create \
-  --connection <linear-connection-id> \
-  --object task_task \
-  --event created \
-  --webhook https://webhook.heylua.ai/myagent/linear-handler
-
-# 7. The agent now has full Linear capabilities!
+# 6. The agent now has full Linear capabilities and reacts to events!
 ```
 
 ### Key Points for AI Agents
@@ -755,10 +781,19 @@ lua integrations webhooks create \
 <Warning>
 **Important for AI coding assistants building Lua agents:**
 
-1. **Ask the user** what third-party services they want to connect
-2. **Run `lua integrations available`** to see what's available
+1. **Use discovery commands** to understand what's available:
+   - `lua integrations available` - list integrations
+   - `lua integrations info <type> --json` - get scopes and triggers
+   - `lua integrations webhooks events --integration <type> --json` - get trigger events
+
+2. **Enable triggers** during connection for event-driven workflows:
+   - `--triggers task_task.created,task_task.updated` - specific triggers
+   - `--triggers all` - all available triggers
+
 3. **Connect integrations** before writing custom tool code - the integration might already provide what's needed
+
 4. **Test with `lua chat`** after connecting to verify tools are available
+
 5. **One connection per integration type** per agent - use `update` to change scopes
 </Warning>
 
@@ -836,14 +871,17 @@ lua logs --type skill --name order-service --limit 10 --json
 | Clear conversation history | `lua chat clear --force` |
 | Clear user's history | `lua chat clear --user <email\|mobile\|userId> --force` |
 | View available integrations | `lua integrations available` |
+| Get integration info (JSON) | `lua integrations info <type> --json` |
+| List trigger events (JSON) | `lua integrations webhooks events --integration <type> --json` |
+| Connect with triggers | `lua integrations connect --integration <type> --auth-method oauth --scopes all --triggers <events>` |
 | Connect integration (OAuth) | `lua integrations connect --integration <type> --auth-method oauth --scopes all` |
 | Connect integration (Token) | `lua integrations connect --integration <type> --auth-method token` |
 | List connected integrations | `lua integrations list` |
 | Update integration scopes | `lua integrations update --integration <type> --scopes all` |
 | Disconnect integration | `lua integrations disconnect --connection-id <id>` |
-| List integration webhooks | `lua integrations webhooks list` |
-| Create integration webhook | `lua integrations webhooks create --connection <id> --object <type> --event <event> --webhook <url>` |
-| Delete integration webhook | `lua integrations webhooks delete --webhook-id <id>` |
+| List triggers | `lua integrations webhooks list` |
+| Create trigger | `lua integrations webhooks create --connection <id> --object <type> --event <event>` |
+| Delete trigger | `lua integrations webhooks delete --webhook-id <id>` |
 | List integration MCP status | `lua integrations mcp list` |
 | Push all | `lua push all --force` |
 | Push and deploy | `lua push all --force --auto-deploy` |

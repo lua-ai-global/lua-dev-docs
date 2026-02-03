@@ -404,18 +404,42 @@ lua skills deploy --skill-name x   # Deploy skill x
   </Tab>
   
   <Tab title="integrations">
-    Connect and manage third-party accounts without prompts:
+    Connect and manage third-party integrations without prompts:
+    
+    **Discovery Commands (for AI agents and scripting):**
     
     ```bash
-    # Connect an integration
+    # View available integrations
+    lua integrations available
+    
+    # Get integration details (scopes and triggers)
+    lua integrations info linear
+    lua integrations info linear --json
+    
+    # List available trigger events
+    lua integrations webhooks events --integration linear
+    lua integrations webhooks events --integration linear --json
+    ```
+    
+    **Connect with Triggers:**
+    
+    ```bash
+    # Connect with triggers enabled (recommended)
+    lua integrations connect --integration linear --auth-method oauth --scopes all \
+      --triggers task_task.created,task_task.updated
+    
+    # Connect with all available triggers
+    lua integrations connect --integration linear --auth-method oauth --scopes all --triggers all
+    
+    # Connect without triggers
     lua integrations connect --integration linear --auth-method oauth --scopes all
-    lua integrations connect --integration discord --auth-method oauth --scopes all --hide-sensitive false
+    
+    # Connect with custom webhook URL instead of agent trigger
+    lua integrations connect --integration linear --auth-method oauth --scopes all \
+      --triggers task_task.created --custom-webhook --hook-url https://my-server.com/webhook
     
     # List connections
     lua integrations list
-    
-    # View available integrations
-    lua integrations available
     
     # Update connection scopes
     lua integrations update --integration linear --scopes "task_task_read,task_task_write"
@@ -432,36 +456,62 @@ lua skills deploy --skill-name x   # Deploy skill x
     | `--auth-method <method>` | `oauth` or `token` |
     | `--scopes <scopes>` | Comma-separated scopes or `all` |
     | `--hide-sensitive <bool>` | Hide sensitive data (default: true) |
+    | `--triggers <events>` | Comma-separated triggers or `all` |
+    | `--custom-webhook` | Use custom URL instead of agent trigger |
+    | `--hook-url <url>` | Custom webhook URL |
     | `--connection-id <id>` | Connection ID (for disconnect) |
     
-    **Webhook Management:**
+    **Info Options:**
+    
+    | Option | Description |
+    |--------|-------------|
+    | `--json` | Output as JSON for scripting |
+    
+    **Trigger Management:**
     
     ```bash
-    # List webhooks
+    # List triggers
     lua integrations webhooks list
     
-    # Create webhook subscription
+    # List available trigger events
+    lua integrations webhooks events --integration linear --json
+    
+    # Create trigger (agent wake-up mode - default)
+    lua integrations webhooks create \
+      --connection abc123 \
+      --object task_task \
+      --event created
+    
+    # Create trigger with custom webhook URL
     lua integrations webhooks create \
       --connection abc123 \
       --object task_task \
       --event created \
-      --webhook https://webhook.heylua.ai/myagent/handler \
-      --interval 60
+      --hook-url https://my-server.com/webhook
     
-    # Delete webhook
+    # Create trigger with custom polling interval
+    lua integrations webhooks create \
+      --connection abc123 \
+      --object task_task \
+      --event updated \
+      --interval 120
+    
+    # Delete trigger
     lua integrations webhooks delete --webhook-id wh_xyz789
     ```
     
-    **Webhook Options:**
+    **Trigger Options:**
     
     | Option | Description |
     |--------|-------------|
     | `--connection <id>` | Connection ID |
+    | `--integration <type>` | Integration type (for events discovery) |
     | `--object <type>` | Object type (task_task, calendar_event, etc.) |
     | `--event <type>` | Event: created, updated, deleted |
-    | `--webhook <url>` | Full webhook URL |
+    | `--hook-url <url>` | Custom webhook URL (default: agent trigger) |
     | `--interval <mins>` | Polling interval (60, 120, 240, 480, 720, 1440, 2880) |
-    | `--webhook-id <id>` | Webhook ID (for delete) |
+    | `--webhook-id <id>` | Trigger ID (for delete) |
+    | `--json` | Output as JSON (for events command) |
     
     **MCP Server Management:**
     
@@ -624,6 +674,16 @@ lua init --agent-id agent_abc123
 # Set environment variables
 lua env sandbox -k OPENAI_KEY -v "sk-xxx"
 lua env production -k OPENAI_KEY -v "sk-yyy"
+
+# Discover and connect third-party integrations
+lua integrations available
+lua integrations info linear --json                    # Get scopes and triggers as JSON
+lua integrations connect --integration linear --auth-method oauth --scopes all \
+  --triggers task_task.created,task_task.updated       # Connect with triggers
+
+# Verify integration
+lua integrations list
+lua integrations webhooks list
 
 # Test a specific tool
 lua test skill --name get_order --input '{"orderId": "123"}'
