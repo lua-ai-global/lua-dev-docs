@@ -216,6 +216,9 @@ Manage triggers (webhook subscriptions) for connected integrations. Triggers let
     
     ```bash
     lua integrations webhooks list
+    
+    # Output as JSON for scripting
+    lua integrations webhooks list --json
     ```
     
     **Output:**
@@ -224,23 +227,39 @@ Manage triggers (webhook subscriptions) for connected integrations. Triggers let
     ⚡ Triggers / Webhook Subscriptions
     ────────────────────────────────────────────────────────────────────────────────
 
-    📦 Linear (6978e0294d9c2007ed5cb129)
-
-      ID: wh_abc123
-      Event: task_task.created
-      Mode: Agent Trigger (wakes up agent)
-      Type: virtual (60min interval)
-      Status: ✅ active
-
-      ID: wh_def456
-      Event: task_task.updated
-      Mode: Agent Trigger (wakes up agent)
-      Type: virtual (60min interval)
-      Status: ✅ active
+    📦 linear
+       ✅ task_task.created (poll, agent trigger)
+          ID: 698304fa49d44978357b6435
+       ✅ task_task.updated (poll, agent trigger)
+          ID: 698304fb49d44978357b6436
 
     ────────────────────────────────────────────────────────────────────────────────
     Total: 2 trigger(s)
     ```
+    
+    **JSON Output:**
+    ```json
+    {
+      "triggers": [
+        {
+          "id": "698304fa49d44978357b6435",
+          "integrationType": "linear",
+          "objectType": "task_task",
+          "event": "created",
+          "webhookType": "virtual",
+          "hookUrl": "https://api.heylua.ai/webhook/unifiedto/data",
+          "status": "active",
+          "interval": 60,
+          "connectionId": "698304f949d44978357b6425"
+        }
+      ],
+      "total": 1
+    }
+    ```
+    
+    <Note>
+    Webhook IDs are displayed for each trigger, making it easy to delete specific triggers using `--webhook-id`.
+    </Note>
   </Tab>
   
   <Tab title="events">

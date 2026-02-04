@@ -3,6 +3,66 @@ title: "Changelog"
 description: "Release notes and version history for lua-cli"
 ---
 
+## v3.5.0-alpha.3
+
+**Released:** February 4, 2026
+
+<Warning>
+This is an alpha release for testing new features. For production use, we recommend v3.4.0.
+</Warning>
+
+### ✨ New Features
+
+<AccordionGroup>
+  <Accordion title="Webhook Triggers for Integrations">
+    Event-driven triggers that wake up your agent when events occur in connected services.
+    
+    ```bash
+    # Connect with triggers (all selected by default in interactive mode)
+    lua integrations connect --integration linear --auth-method oauth --scopes all \
+      --triggers task_task.created,task_task.updated
+    
+    # Use custom webhook URL instead of agent trigger
+    lua integrations connect --integration linear --auth-method oauth --scopes all \
+      --triggers task_task.created --custom-webhook --hook-url https://my-server.com/webhook
+    ```
+    
+    **Key Features:**
+    - Triggers pre-selected by default in interactive mode
+    - Choose between "Agent wake-up" mode or custom webhook URLs
+    - Friendly labels for OAuth scopes and webhook events
+    - Triggers preserved when updating connection scopes
+    
+    See the [Integrations Command](/cli/integrations-command) documentation for full details.
+  </Accordion>
+
+  <Accordion title="Webhooks List JSON Output">
+    The `lua integrations webhooks list` command now supports JSON output and displays webhook IDs:
+    
+    ```bash
+    # List triggers with IDs for deletion
+    lua integrations webhooks list
+    
+    # Output as JSON for scripting
+    lua integrations webhooks list --json
+    ```
+    
+    Output includes: id, integrationType, objectType, event, webhookType, hookUrl, status, interval, connectionId.
+  </Accordion>
+</AccordionGroup>
+
+### 🔧 Improvements
+
+- **Push Command**: Corrected HTTP methods for webhook and job deployment with improved error handling
+- **Automated Deploy**: Fully automated push & deploy with `--force --auto-deploy` flags
+- **Terminology**: User-facing text uses "Integration" instead of "Account" and "Trigger" instead of "Webhook Subscription"
+
+### 🐛 Bug Fixes
+
+- **Update Flow**: Triggers now preserved when updating connection scopes (per-trigger hookUrl and interval restored)
+
+---
+
 ## v3.5.0-alpha.2
 
 **Released:** January 30, 2026

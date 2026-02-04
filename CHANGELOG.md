@@ -4,6 +4,29 @@ All notable changes to the Lua documentation will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
+## [3.5.0-alpha.3] - 2026-02-04
+
+### Updated - Documentation for lua-cli v3.5.0-alpha.3 (Alpha Release)
+
+#### New Features Documented
+- **Webhook Triggers for Integrations** - Event-driven triggers that wake up your agent
+  - `--triggers` flag for specifying events (e.g., `task_task.created,task_task.updated`)
+  - `--custom-webhook` and `--hook-url` flags for custom webhook URLs
+  - Triggers pre-selected by default in interactive mode
+  - Friendly labels for OAuth scopes and webhook events
+- **Webhooks List JSON Output** - `lua integrations webhooks list --json` for scripting
+- **Webhook IDs in List Output** - IDs now displayed for easier deletion
+
+#### Improvements
+- Push command: correct HTTP methods and improved error handling
+- Automated push & deploy with `--force --auto-deploy` flags
+- Terminology update: "Integration" instead of "Account", "Trigger" instead of "Webhook Subscription"
+
+#### Bug Fixes
+- Trigger preservation when updating connection scopes (per-trigger hookUrl and interval restored)
+
+---
+
 ## [3.5.0-alpha.2] - 2026-01-30
 
 ### Updated - Documentation for lua-cli v3.5.0-alpha.2 (Alpha Release)
