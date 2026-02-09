@@ -21,7 +21,10 @@ lua persona production     # Direct: deploy persona version
 ### Non-Interactive Mode
 
 ```bash
-# View current deployed persona
+# View sandbox persona (local code)
+lua persona sandbox view
+
+# View production persona (deployed)
 lua persona production view
 
 # List all persona versions
@@ -34,16 +37,21 @@ lua persona production deploy --persona-version 5
 lua persona production deploy --persona-version latest --force
 ```
 
+<Note>
+  **New in v3.5.0:** `lua persona sandbox view` prints the persona text and exits (no interactive menu) - perfect for CI/CD and scripts.
+</Note>
+
 | Option | Description |
 |--------|-------------|
 | `--persona-version <ver>` | Version number or 'latest' (for deploy) |
 | `--force` | Skip confirmation prompt |
 
-| Action | Description | Required Options |
-|--------|-------------|------------------|
-| `view` | View current deployed persona | None |
-| `versions` | List all persona versions | None |
-| `deploy` | Deploy specific version | `--persona-version` |
+| Environment | Action | Description | Required Options |
+|-------------|--------|-------------|------------------|
+| `sandbox` | `view` | Print local persona and exit | None |
+| `production` | `view` | View current deployed persona | None |
+| `production` | `versions` | List all persona versions | None |
+| `production` | `deploy` | Deploy specific version | `--persona-version` |
 
 <CardGroup cols={2}>
   <Card title="Sandbox Mode" icon="flask">

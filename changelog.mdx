@@ -3,6 +3,161 @@ title: "Changelog"
 description: "Release notes and version history for lua-cli"
 ---
 
+## v3.5.0
+
+**Released:** February 9, 2026
+
+### ✨ New Features
+
+<AccordionGroup>
+  <Accordion title="Project Backup & Restore">
+    Backup your project source files to cloud storage for disaster recovery and team collaboration.
+
+    ```bash
+    # Backup project sources
+    lua push backup
+
+    # Restore on new machine
+    lua init --agent-id abc123 --restore-sources
+    ```
+
+    **Key Features:**
+    - Content-addressed storage with automatic deduplication
+    - Efficient incremental backups (only changed files uploaded)
+    - Full project recovery on new machines
+    - Perfect for disaster recovery and team collaboration
+
+    See the [Skill Management](/cli/skill-management#lua-push-backup) documentation for details.
+  </Accordion>
+
+  <Accordion title="CI/CD Mode (--ci flag)">
+    New global `--ci` flag makes the CLI fail loudly on missing required arguments instead of silently hanging in non-TTY environments.
+
+    ```bash
+    # In CI/CD pipelines
+    lua --ci push skill --name mySkill --set-version ${{ github.sha }} --force
+
+    # In local development (interactive prompts work normally)
+    lua push skill
+    ```
+
+    **Benefits:**
+    - Fails immediately with clear error messages in CI/CD
+    - Prevents silent hangs waiting for input in automated environments
+    - Auto-detects non-TTY environments and shows helpful warnings
+
+    See the [Non-Interactive Mode](/cli/non-interactive-mode#cicd-mode-ci-flag) documentation.
+  </Accordion>
+
+  <Accordion title="Agents Discovery Command">
+    New `lua agents` command lists all organizations and agents you have access to.
+
+    ```bash
+    # List all accessible agents
+    lua agents
+
+    # JSON output for scripting
+    lua agents --json
+    ```
+
+    **Use Cases:**
+    - Discover agent IDs for initialization or scripts
+    - Team management and access auditing
+    - Automation with JSON parsing
+    - Multi-agent deployment workflows
+
+    See the [Utility Commands](/cli/utility-commands#lua-agents) documentation.
+  </Accordion>
+
+  <Accordion title="Non-Interactive Sandbox View Commands">
+    New non-interactive view commands for sandbox environments.
+
+    ```bash
+    # Print sandbox persona and exit
+    lua persona sandbox view
+
+    # Print local skills and exit
+    lua skills sandbox view
+    ```
+
+    Perfect for CI/CD pipelines, automation scripts, and quick reference.
+  </Accordion>
+</AccordionGroup>
+
+### 🔧 Breaking Changes
+
+<Warning>
+These changes may affect existing scripts and workflows. Please update accordingly.
+</Warning>
+
+<AccordionGroup>
+  <Accordion title="Push Flag: --version renamed to --set-version">
+    The `--version` flag in push commands has been renamed to `--set-version` for clarity.
+
+    ```bash
+    # Old (no longer works)
+    lua push skill --name mySkill --version 1.0.5
+
+    # New (correct)
+    lua push skill --name mySkill --set-version 1.0.5
+    ```
+
+    **Reason:** Avoids confusion with the global `--version` flag that shows CLI version.
+  </Accordion>
+
+  <Accordion title="Compile Sync: --no-sync changed to --sync (opt-in)">
+    Compile now **does NOT** check for drift by default. Sync is opt-in for faster compilation.
+
+    ```bash
+    # Old behavior (sync ran by default)
+    lua compile             # Checked for drift
+    lua compile --no-sync   # Skipped drift check
+
+    # New behavior (sync is opt-in)
+    lua compile       # No drift check (fast)
+    lua compile --sync      # Enable drift check
+    ```
+
+    **Reason:** Faster compilation by default, drift check only when needed.
+
+    **New flag:** `--verbose` for detailed compilation output.
+  </Accordion>
+</AccordionGroup>
+
+### 🚀 Improvements
+
+<AccordionGroup>
+  <Accordion title="Version Conflict Avoidance in Push">
+    `lua push --force` now automatically checks the server for the highest existing version and suggests the next available version.
+
+    **Benefit:** Prevents "Version already exists" errors during automated deployments.
+  </Accordion>
+
+  <Accordion title="Sync Compiles Before Checking Drift">
+    `lua sync` now runs compilation first to ensure the manifest is fresh before comparing with server state.
+
+    **Benefit:** More accurate drift detection with latest local changes.
+  </Accordion>
+
+  <Accordion title="Chat Preprocessor Block Response">
+    Chat now displays preprocessor block response text (e.g., "Message detected as spam") instead of showing empty responses.
+
+    **Benefit:** Better visibility into preprocessor behavior during testing.
+  </Accordion>
+
+  <Accordion title="Error Message Format">
+    All errors now go through standardized `withErrorHandling()` wrapper for consistent formatting.
+
+    ```
+    Error during push: No skills found
+    ```
+
+    **Benefit:** Clearer, more actionable error messages.
+  </Accordion>
+</AccordionGroup>
+
+---
+
 ## v3.5.0-alpha.3
 
 **Released:** February 4, 2026

@@ -426,7 +426,7 @@ Understanding this distinction is critical. Many users confuse these commands.
 
 ```bash
 # Push a specific skill with version
-lua push skill --name mySkill --version 1.0.0 --force
+lua push skill --name mySkill --set-version 1.0.0 --force
 
 # Push all components
 lua push all --force
@@ -837,7 +837,7 @@ lua chat -e sandbox -m "Get order 123"
 lua chat -e sandbox -m "Create a Linear issue for order 123 review"  # If Linear connected
 
 # 8. Push to server
-lua push skill --name order-service --version 1.0.0 --force
+lua push skill --name order-service --set-version 1.0.0 --force
 
 # 9. Deploy to production
 lua deploy --skill-name order-service --skill-version latest --force

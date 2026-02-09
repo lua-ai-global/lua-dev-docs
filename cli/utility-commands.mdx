@@ -7,7 +7,10 @@ description: "Quick access commands for admin interface and documentation"
 
 Utility commands provide quick access to the Lua Admin interface, documentation, and shell autocomplete setup.
 
-<CardGroup cols={4}>
+<CardGroup cols={3}>
+  <Card title="lua agents" icon="users">
+    List organizations and agents
+  </Card>
   <Card title="lua completion" icon="terminal">
     Generate shell autocomplete
   </Card>
@@ -25,6 +28,327 @@ Utility commands provide quick access to the Lua Admin interface, documentation,
 <Note>
 **New in v2.6.0:** Shell autocomplete support for Bash, Zsh, and Fish!
 </Note>
+
+<Note>
+**New in v3.5.0:** `lua agents` command to list all accessible organizations and agents with JSON output support.
+</Note>
+
+## lua agents
+
+<Note>
+  **New in v3.5.0:** List all organizations and agents you have access to for discovery and scripting.
+</Note>
+
+View all organizations and agents accessible with your API key. Useful for automation, team management, and discovering available agents.
+
+```bash
+lua agents           # List all accessible agents
+lua agents --json    # JSON output for scripting
+```
+
+### What It Shows
+
+The command displays all organizations you're a member of and their associated agents:
+
+**Organization Information:**
+- Organization ID
+- Organization name
+- Your role (owner, admin, developer)
+
+**Agent Information:**
+- Agent ID
+- Agent name
+- Environment (production/staging/sandbox)
+- Status (active/inactive)
+
+### Example Output
+
+<Tabs>
+  <Tab title="Interactive">
+    ```bash
+    $ lua agents
+
+    ✅ Found 2 organizations with 4 agents
+
+    Organization: My Company (org_abc123)
+    Role: Owner
+    ├── Customer Support Bot (agent_xyz789)
+    │   Environment: Production
+    │   Status: Active
+    ├── Sales Assistant (agent_def456)
+    │   Environment: Production
+    │   Status: Active
+
+    Organization: Test Workspace (org_test999)
+    Role: Developer
+    ├── Dev Bot (agent_dev111)
+    │   Environment: Staging
+    │   Status: Active
+    └── Experimental Agent (agent_exp222)
+        Environment: Sandbox
+        Status: Inactive
+    ```
+  </Tab>
+
+  <Tab title="JSON Output">
+    ```bash
+    $ lua agents --json
+    ```
+
+    ```json
+    {
+      "success": true,
+      "organizations": [
+        {
+          "orgId": "org_abc123",
+          "orgName": "My Company",
+          "role": "owner",
+          "agents": [
+            {
+              "agentId": "agent_xyz789",
+              "agentName": "Customer Support Bot",
+              "environment": "production",
+              "status": "active",
+              "createdAt": "2025-01-15T10:30:00Z",
+              "lastUpdated": "2025-01-20T14:22:00Z"
+            },
+            {
+              "agentId": "agent_def456",
+              "agentName": "Sales Assistant",
+              "environment": "production",
+              "status": "active",
+              "createdAt": "2025-01-18T09:15:00Z",
+              "lastUpdated": "2025-01-21T16:45:00Z"
+            }
+          ]
+        },
+        {
+          "orgId": "org_test999",
+          "orgName": "Test Workspace",
+          "role": "developer",
+          "agents": [
+            {
+              "agentId": "agent_dev111",
+              "agentName": "Dev Bot",
+              "environment": "staging",
+              "status": "active",
+              "createdAt": "2025-01-10T12:00:00Z",
+              "lastUpdated": "2025-01-19T11:30:00Z"
+            },
+            {
+              "agentId": "agent_exp222",
+              "agentName": "Experimental Agent",
+              "environment": "sandbox",
+              "status": "inactive",
+              "createdAt": "2025-01-12T15:20:00Z",
+              "lastUpdated": "2025-01-14T10:10:00Z"
+            }
+          ]
+        }
+      ]
+    }
+    ```
+  </Tab>
+</Tabs>
+
+### Options
+
+| Option | Description |
+|--------|-------------|
+| `--json` | Output as JSON for programmatic parsing |
+
+### Use Cases
+
+<AccordionGroup>
+  <Accordion title="Discover Available Agents">
+    **Find agent IDs for `lua init` or scripts:**
+
+    ```bash
+    $ lua agents
+    # Copy agent ID for initialization
+
+    $ lua init --agent-id agent_xyz789
+    ```
+
+    Quickly find the correct agent ID without going to admin dashboard.
+  </Accordion>
+
+  <Accordion title="Team Management">
+    **See what agents team members have access to:**
+
+    ```bash
+    $ lua agents
+    # Review all accessible agents
+    # Verify permissions are correct
+    # Check which agents are active
+    ```
+
+    Audit team access and agent organization.
+  </Accordion>
+
+  <Accordion title="Automation & Scripting">
+    **Parse JSON to automate agent operations:**
+
+    ```bash
+    # Get all production agents
+    lua agents --json | jq '.organizations[].agents[] | select(.environment == "production")'
+
+    # Count total agents
+    lua agents --json | jq '[.organizations[].agents[]] | length'
+
+    # Find agent by name
+    lua agents --json | jq '.organizations[].agents[] | select(.agentName == "Sales Assistant")'
+
+    # List all agent IDs
+    lua agents --json | jq -r '.organizations[].agents[].agentId'
+    ```
+
+    Build automation tools and monitoring scripts.
+  </Accordion>
+
+  <Accordion title="Environment Discovery">
+    **Identify staging/sandbox agents for testing:**
+
+    ```bash
+    # Find all staging agents
+    lua agents --json | jq '.organizations[].agents[] | select(.environment == "staging")'
+
+    # Check for inactive agents
+    lua agents --json | jq '.organizations[].agents[] | select(.status == "inactive")'
+    ```
+
+    Manage different environments effectively.
+  </Accordion>
+
+  <Accordion title="CI/CD Integration">
+    **Validate agent access in pipelines:**
+
+    ```bash
+    #!/bin/bash
+    # Verify agent exists before deployment
+
+    AGENT_ID="agent_xyz789"
+    AGENTS_JSON=$(lua agents --json)
+
+    if echo "$AGENTS_JSON" | jq -e ".organizations[].agents[] | select(.agentId == \"$AGENT_ID\")" > /dev/null; then
+      echo "✅ Agent found - proceeding with deployment"
+      lua push all --force --auto-deploy
+    else
+      echo "❌ Agent not accessible - check API key permissions"
+      exit 1
+    fi
+    ```
+
+    Validate environment before deploying.
+  </Accordion>
+
+  <Accordion title="Multi-Agent Workflows">
+    **Deploy to multiple agents programmatically:**
+
+    ```bash
+    # Deploy to all production agents
+    for agent_id in $(lua agents --json | jq -r '.organizations[].agents[] | select(.environment == "production") | .agentId'); do
+      echo "Deploying to $agent_id"
+      cd "/path/to/project/$agent_id"
+      lua push all --force --auto-deploy
+    done
+    ```
+
+    Automate multi-agent deployments.
+  </Accordion>
+</AccordionGroup>
+
+### JSON Parsing Examples
+
+**Extract specific information:**
+
+```bash
+# Get organization names
+lua agents --json | jq -r '.organizations[].orgName'
+
+# Get agents in specific org
+lua agents --json | jq '.organizations[] | select(.orgName == "My Company") | .agents'
+
+# Count agents per organization
+lua agents --json | jq '.organizations[] | {org: .orgName, count: (.agents | length)}'
+
+# Find your role in each organization
+lua agents --json | jq '.organizations[] | {org: .orgName, role: .role}'
+
+# List active production agents with details
+lua agents --json | jq '.organizations[].agents[] | select(.status == "active" and .environment == "production") | {name: .agentName, id: .agentId}'
+```
+
+### Requirements
+
+- Must be authenticated (`lua auth configure`)
+- API key must have valid permissions
+
+### Troubleshooting
+
+<AccordionGroup>
+  <Accordion title="No organizations found">
+    **Check:**
+    1. Verify authentication: `lua auth key --force`
+    2. Ensure API key has permissions
+    3. Check if you're a member of any organizations
+
+    **Error:** "No organizations accessible"
+    ```bash
+    # Re-authenticate
+    $ lua auth configure
+    # Ask organization owner to add you
+    ```
+  </Accordion>
+
+  <Accordion title="Missing expected agents">
+    **Check:**
+    1. Verify agent exists in admin dashboard
+    2. Ensure you have access to the agent's organization
+    3. Check if agent was recently created (may take a moment)
+
+    **Solution:**
+    ```bash
+    # Refresh by re-running
+    $ lua agents
+    ```
+  </Accordion>
+
+  <Accordion title="JSON parsing errors">
+    **Ensure jq is installed:**
+    ```bash
+    # macOS
+    brew install jq
+
+    # Ubuntu/Debian
+    apt-get install jq
+
+    # Test
+    echo '{"test": true}' | jq '.'
+    ```
+  </Accordion>
+</AccordionGroup>
+
+### Integration with Other Commands
+
+```bash
+# Discover agent → Initialize project → Deploy
+lua agents                              # Find agent ID
+lua init --agent-id agent_xyz789        # Initialize
+lua push all --force --auto-deploy      # Deploy
+
+# List agents → Select one → Check production state
+lua agents --json | jq -r '.organizations[].agents[].agentId'
+lua production overview                 # Check specific agent
+
+# Automate init for multiple agents
+for agent_id in $(lua agents --json | jq -r '.organizations[0].agents[].agentId'); do
+  mkdir "project-$agent_id"
+  cd "project-$agent_id"
+  lua init --agent-id "$agent_id"
+  cd ..
+done
+```
 
 ## Non-Interactive Mode for Auth Commands
 
@@ -701,6 +1025,7 @@ $ ld
 
 | Command | Opens/Generates | Requires Auth | Use For |
 |---------|----------------|---------------|---------|
+| `lua agents` | List of organizations/agents | ✅ Yes | Discovery, automation, team management |
 | `lua completion` | Shell completion script | ❌ No | Tab completion, faster workflows |
 | `lua admin` | Admin dashboard | ✅ Yes | Managing agent, conversations, billing |
 | `lua evals` | Evaluations dashboard | ✅ Yes | Testing agent, tracking performance |

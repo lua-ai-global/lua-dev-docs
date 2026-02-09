@@ -21,6 +21,9 @@ lua skills production    # Direct: manage production skills
 ### Non-Interactive Mode
 
 ```bash
+# View local skills (sandbox)
+lua skills sandbox view
+
 # View all production skills
 lua skills view
 
@@ -34,16 +37,21 @@ lua skills deploy --skill-name mySkill --skill-version 1.0.3
 lua skills deploy --skill-name mySkill --skill-version latest
 ```
 
+<Note>
+  **New in v3.5.0:** `lua skills sandbox view` prints local skills and exits (no interactive menu) - perfect for CI/CD pipelines and automation scripts.
+</Note>
+
 | Option | Description |
 |--------|-------------|
 | `--skill-name <name>` | Skill name (for versions/deploy) |
 | `--skill-version <ver>` | Version or 'latest' (for deploy) |
 
-| Action | Description | Required Options |
-|--------|-------------|------------------|
-| `view` | List all production skills | None |
-| `versions` | View skill version history | `--skill-name` |
-| `deploy` | Deploy specific version | `--skill-name`, `--skill-version` |
+| Environment | Action | Description | Required Options |
+|-------------|--------|-------------|------------------|
+| `sandbox` | `view` | Print local skills and exit | None |
+| `production` | `view` | List all production skills | None |
+| `production` | `versions` | View skill version history | `--skill-name` |
+| `production` | `deploy` | Deploy specific version | `--skill-name`, `--skill-version` |
 
 <CardGroup cols={2}>
   <Card title="Sandbox Mode" icon="flask">

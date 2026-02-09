@@ -24,10 +24,15 @@ lua sync
 
 ## How It Works
 
-1. **Fetches server state** - Gets the latest published persona and agent name from the server
-2. **Compares with local** - Checks your `src/index.ts` LuaAgent configuration
-3. **Shows colored diff** - Displays exactly what changed
-4. **Prompts for action** - Update local from server or keep local
+1. **Compiles code** - Ensures manifest is fresh (runs `lua compile` internally)
+2. **Fetches server state** - Gets the latest published persona and agent name from the server
+3. **Compares with local** - Checks your compiled manifest against server state
+4. **Shows colored diff** - Displays exactly what changed
+5. **Prompts for action** - Update local from server or keep local
+
+<Note>
+  **New in v3.5.0**: Sync now compiles before checking drift to ensure accurate comparison with the latest local changes.
+</Note>
 
 ## Usage
 
@@ -67,14 +72,14 @@ PERSONA DIFF
 
 ### During Compile
 
-Sync is automatically checked during `lua compile`. By default, drift detection is **non-blocking** - it warns about drift but continues compilation:
+Sync is **opt-in** during `lua compile`. By default, drift detection is **disabled** for faster compilation:
 
 ```bash
-lua compile           # Checks for drift, warns if found, continues
-lua compile --no-sync # Skip drift check entirely (silent)
+lua compile        # Default: no drift check (fast)
+lua compile --sync # Enable drift detection (checks before compiling)
 ```
 
-This non-blocking default is ideal for automated workflows (CI/CD, AI agents, Cursor).
+This opt-in behavior is ideal for faster development iterations. Use `--sync` when you need to ensure alignment with the server.
 
 ## Options
 
@@ -90,7 +95,8 @@ This non-blocking default is ideal for automated workflows (CI/CD, AI agents, Cu
 
 | Flag | Description |
 |------|-------------|
-| `--no-sync` | Skip drift detection entirely during compile |
+| `--sync` | Enable drift detection during compile (checks before compiling) |
+| `--verbose` | Show detailed compilation output |
 
 ### Non-Interactive Mode
 
@@ -120,8 +126,8 @@ lua sync --accept
 # Auto-push local changes to server
 lua sync --push
 
-# Compile without sync check (useful for CI/CD)
-lua compile --no-sync
+# Compile with sync check (opt-in)
+lua compile --sync
 ```
 
 ### CI/CD Workflow Example
@@ -144,10 +150,10 @@ jobs:
         run: lua sync --check
       
       - name: Compile
-        run: lua compile --no-sync
+        run: lua compile
       
       - name: Push version
-        run: lua push skill --name mySkill --version ${{ github.sha }} --force
+        run: lua push skill --name mySkill --set-version ${{ github.sha }} --force
       
       - name: Deploy to production
         run: lua deploy --skill-name mySkill --skill-version latest --force
@@ -193,14 +199,14 @@ $ lua sync
 In your deployment pipeline, you might want to ensure no drift or push local as source of truth:
 
 ```bash
-# Check for drift, warn but continue (default behavior)
+# Compile only (default - no drift check)
 lua compile
 
-# Skip sync entirely in CI
-lua compile --no-sync
+# Compile with drift check
+lua compile --sync
 
 # Or push local changes to server before compile
-lua sync --push && lua compile --no-sync
+lua sync --push && lua compile
 ```
 
 ## Best Practices
@@ -226,12 +232,14 @@ lua sync --push && lua compile --no-sync
     This automatically updates your local code from the server without prompting.
   </Accordion>
 
-  <Accordion title="Use --no-sync in CI/CD">
-    In automated pipelines where you want your code to be the source of truth:
-    
+  <Accordion title="Fast CI/CD builds">
+    In automated pipelines, compile runs without drift check by default (fast):
+
     ```bash
-    lua compile --no-sync && lua push skill
+    lua compile && lua push skill
     ```
+
+    Add `--sync` only if you need to validate against server state first.
   </Accordion>
 
   <Accordion title="Commit after syncing">

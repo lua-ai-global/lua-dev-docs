@@ -45,6 +45,7 @@ lua init --with-examples    # Include 30+ example tools
 | `--org-id <id>` | Use existing organization by ID |
 | `--org-name <name>` | Create new organization with this name |
 | `--force` | Skip confirmations / overwrite existing project |
+| `--restore-sources` | Automatically restore project source files from backup (requires --agent-id) |
 
 ### Non-Interactive Mode
 
@@ -63,6 +64,9 @@ lua init --agent-id abc123 --force
 
 # With example code
 lua init --agent-id abc123 --with-examples
+
+# Restore from backup
+lua init --agent-id abc123 --restore-sources
 ```
 
 ### What It Does
@@ -278,20 +282,18 @@ $ lua compile
 - ✅ **Skill Creation** - Auto-creates skills in config
 - ✅ **Drift Detection** - Checks for server/local differences
 
-### Sync Options
-
-Control drift detection during compile:
+### Compile Options
 
 ```bash
-lua compile              # Default: check for drift, prompt if found
-lua compile --no-sync    # Skip drift check entirely
-lua compile --force-sync # Auto-update local from server if drift found
+lua compile              # Default: compile without drift check
+lua compile --sync       # Enable drift detection and prompt if found
+lua compile --verbose    # Show detailed compilation output
 ```
 
 | Flag | Description |
 |------|-------------|
-| `--no-sync` | Skip drift detection (useful for CI/CD) |
-| `--force-sync` | Automatically sync from server without prompting |
+| `--sync` | Enable drift detection during compile (prompts if drift found) |
+| `--verbose` | Show detailed compilation output |
 
 <Card title="Learn More" href="/cli/sync-command">
   See lua sync for details on drift detection
@@ -438,7 +440,7 @@ lua push all --force     # Push all components
 | Option | Description |
 |--------|-------------|
 | `--name <name>` | Entity name to push (non-interactive) |
-| `--version <ver>` | Version to set (e.g., 1.0.5) |
+| `--set-version <ver>` | Version to set (e.g., 1.0.5) |
 | `--force` | Skip all confirmation prompts |
 | `--auto-deploy` | Automatically deploy to production after push |
 
@@ -446,7 +448,7 @@ lua push all --force     # Push all components
 
 ```bash
 # Push specific skill with version
-lua push skill --name mySkill --version 1.0.5
+lua push skill --name mySkill --set-version 1.0.5
 
 # Push all components
 lua push all --force
@@ -455,10 +457,10 @@ lua push all --force
 lua push all --force --auto-deploy
 
 # Push webhook with version
-lua push webhook --name payment-hook --version 2.0.0
+lua push webhook --name payment-hook --set-version 2.0.0
 
 # Push job with version
-lua push job --name daily-report --version 1.0.0
+lua push job --name daily-report --set-version 1.0.0
 ```
 
 <Note>
@@ -664,6 +666,10 @@ Current version: 0.5.0
   </Tab>
 </Tabs>
 
+<Note>
+  **Version Conflict Avoidance**: When using `--force`, the CLI automatically checks the server for the highest existing version and suggests the next available version. This prevents "Version already exists" errors during automated deployments.
+</Note>
+
 ### Deploy Now or Later?
 
 <Tabs>
@@ -823,6 +829,234 @@ $ lua deploy
 
 All users will get the new version right away. Test thoroughly with `lua chat` first!
 </Warning>
+
+## lua push backup
+
+<Note>
+  **New in v3.5.0:** Backup your project source files to cloud storage for disaster recovery and team collaboration.
+</Note>
+
+Push your project source files to cloud storage for safekeeping. Uses content-addressed storage with automatic deduplication for efficient backups.
+
+```bash
+lua push backup                 # Backup project sources
+lua push backup --force         # Force backup even if up-to-date
+lua push backup --skip-compile  # Skip compilation (assume already compiled)
+```
+
+### Options
+
+| Option | Description |
+|--------|-------------|
+| `--force` | Force backup even if hash matches previous backup |
+| `--skip-compile` | Skip compilation step (assumes dist/ already exists) |
+
+### What Gets Backed Up
+
+The backup includes all source files tracked in your compilation manifest:
+
+- **Source Code**: `src/` directory (TypeScript files)
+- **Configuration**: `lua.skill.yaml`, `tsconfig.json`, `package.json`
+- **Environment Template**: `.env.example` (if exists)
+- **Documentation**: `README.md` (if exists)
+
+<Warning>
+  **NOT backed up**: `node_modules/`, `dist/`, `.env` (secrets), `.git/` (use Git for version control)
+</Warning>
+
+### How It Works
+
+<Steps>
+  <Step title="Compile Project">
+    Ensures manifest is fresh (runs `lua compile` if needed)
+  </Step>
+
+  <Step title="Calculate Project Hash">
+    Creates a content hash of all source files for deduplication
+  </Step>
+
+  <Step title="Check Existing Backup">
+    Verifies if this exact project state already exists on server
+  </Step>
+
+  <Step title="Upload New Files">
+    Uploads only new/changed files (content-addressed storage)
+    - Compares file hashes with server
+    - Uploads missing blobs in batches
+    - Deduplicates identical files across backups
+  </Step>
+
+  <Step title="Save Manifest">
+    Saves the project structure and file references to MongoDB
+  </Step>
+
+  <Step title="Update Local Tracking">
+    Updates `lua.skill.yaml` with backup hash for drift detection
+  </Step>
+</Steps>
+
+### Example Output
+
+```bash
+$ lua push backup
+ℹ️  Project hash: 8f3d4a2b1c9e...
+🔄 Checking server for existing backup...
+🔄 Checking which files need upload...
+ℹ️  Files: 42 total, 38 already stored, 4 to upload
+ℹ️  Upload size: 12.3 KB (base64)
+🔄 Uploading 4 new files to storage...
+🔄 Uploaded 4/4 files...
+🔄 Saving backup manifest...
+✅ Backup pushed successfully!
+   Files: 42
+   New uploads: 4
+   Deduplicated: 38
+   Hash: 8f3d4a2b1c9e...
+```
+
+### Restoring from Backup
+
+To restore a backed-up project on a new machine:
+
+```bash
+# Initialize with restore flag
+lua init --agent-id abc123 --restore-sources
+```
+
+This will:
+1. Create a new project directory
+2. Download all source files from cloud storage
+3. Restore the exact project state from backup
+4. Install dependencies
+
+**Interactive restore:**
+```bash
+$ lua init --agent-id abc123
+? Would you like to restore project sources from backup? Yes
+🔄 Fetching backup manifest...
+✅ Found backup with 42 files
+🔄 Downloading source files...
+🔄 Downloaded 42/42 files...
+✅ Sources restored successfully!
+💡 Run 'lua compile' to rebuild from restored sources
+```
+
+### Use Cases
+
+<Tabs>
+  <Tab title="Disaster Recovery">
+    **Recover from lost laptop or corrupted files:**
+
+    ```bash
+    # On new machine
+    lua init --agent-id abc123 --restore-sources
+    npm install
+    lua compile
+    lua test
+    ```
+
+    All your source code is back!
+  </Tab>
+
+  <Tab title="Team Collaboration">
+    **Share project with team members:**
+
+    ```bash
+    # Team member A pushes backup
+    lua push backup
+
+    # Team member B clones it
+    lua init --agent-id abc123 --restore-sources
+    ```
+
+    No Git setup required for quick sharing.
+  </Tab>
+
+  <Tab title="Migration">
+    **Move project between machines:**
+
+    ```bash
+    # Old machine
+    lua push backup
+
+    # New machine
+    lua init --agent-id abc123 --restore-sources
+    ```
+
+    Fresh install with all your code intact.
+  </Tab>
+
+  <Tab title="CI/CD Safety Net">
+    **Automatic backups before deployments:**
+
+    ```bash
+    # In CI pipeline
+    lua push backup --force
+    lua push all --force --auto-deploy
+    ```
+
+    Always have a recovery point.
+  </Tab>
+</Tabs>
+
+### Content-Addressed Storage
+
+Backups use **content-addressed storage** (like Git):
+- Each file is stored by its SHA-256 hash
+- Identical files are stored only once
+- Subsequent backups only upload changed files
+- Extremely efficient for large projects with small changes
+
+**Example:** If you change one line in one file, only that file is re-uploaded. The other 99 files reference existing blobs.
+
+### Best Practices
+
+<AccordionGroup>
+  <Accordion title="Backup Before Major Changes">
+    ```bash
+    lua push backup  # Safety checkpoint
+    # Make risky changes
+    lua test
+    lua push skill
+    ```
+
+    If something breaks, restore from backup.
+  </Accordion>
+
+  <Accordion title="Use Git for Version Control">
+    **Backup ≠ Version Control**
+
+    - **Backup**: Disaster recovery, single snapshot
+    - **Git**: Full history, branching, collaboration
+
+    Use both:
+    ```bash
+    git commit -m "Add feature"  # Version control
+    lua push backup              # Disaster recovery snapshot
+    ```
+  </Accordion>
+
+  <Accordion title="Backup Before Deployment">
+    ```bash
+    lua push backup --force
+    lua push all --force --auto-deploy
+    ```
+
+    Always have a recovery point before production changes.
+  </Accordion>
+
+  <Accordion title="Regular Backups in CI/CD">
+    Add to your deployment pipeline:
+
+    ```yaml
+    - name: Backup sources
+      run: lua push backup --force
+
+    - name: Deploy
+      run: lua push all --force --auto-deploy
+    ```
+  </Accordion>
+</AccordionGroup>
 
 ## Complete Workflow
 

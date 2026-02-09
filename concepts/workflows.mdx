@@ -651,12 +651,14 @@ lua chat  # Independent sandbox
 
   <Accordion title="Drift detected during compile">
     **Problem**: Server has different persona/name than local code
-    
+
     **Solutions**:
     1. Run `lua sync` to see the diff and choose action
-    2. Use `lua compile --force-sync` to auto-update from server
-    3. Use `lua compile --no-sync` to skip check and keep local
-    
+    2. Use `lua sync --accept` to auto-update from server
+    3. Use `lua sync --push` to push local changes to server
+
+    **Note**: By default, `lua compile` does NOT check for drift. Use `lua compile --sync` to enable drift detection.
+
     This happens when someone updated the agent from the admin dashboard.
   </Accordion>
 </AccordionGroup>

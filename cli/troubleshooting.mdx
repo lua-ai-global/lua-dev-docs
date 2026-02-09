@@ -255,9 +255,11 @@ description: "Common issues and solutions for Lua CLI"
     **Cause**: Server has different agent configuration than your local code. This happens when someone updates the agent from the admin dashboard.
     
     **Solutions**:
-    1. **Interactive**: Choose to update local from server or keep local
-    2. **Auto-sync**: Use `lua compile --force-sync` to automatically update local
-    3. **Skip**: Use `lua compile --no-sync` to ignore drift (your next push will overwrite server)
+    1. **Run sync**: Use `lua sync` to review and resolve drift interactively
+    2. **Auto-accept**: Use `lua sync --accept` to automatically update local from server
+    3. **Auto-push**: Use `lua sync --push` to push local changes to server
+
+    **Note**: By default, `lua compile` does NOT check for drift. Use `lua compile --sync` to enable drift detection during compilation.
     
     **To see the diff**:
     ```bash

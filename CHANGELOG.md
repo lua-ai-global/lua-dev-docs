@@ -4,6 +4,33 @@ All notable changes to the Lua documentation will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
+## [3.5.0-alpha.4] - 2026-02-09
+
+### Updated - Documentation for lua-cli v3.5.0-alpha.4 (Alpha Release)
+
+#### New Features Documented
+- **Project Backup & Restore** - Back up and restore project source files
+  - `lua push backup` for cloud backup with content-addressed deduplication
+  - `lua init --agent-id X --restore-sources` for full project recovery
+- **CI/CD Mode** - New `--ci` global flag for non-TTY environments
+  - Fails loudly on missing required flags instead of silently canceling
+  - Auto-detects non-TTY and warns about potential prompt issues
+- **`lua agents` Command** - List all organizations and agents with `--json` output
+- **Non-Interactive Sandbox Views** - `lua persona sandbox view` and `lua skills sandbox view`
+
+#### Breaking Changes
+- **Push flag renamed**: `--version` → `--set-version`
+- **Compile sync default changed**: `--no-sync` (opt-out) → `--sync` (opt-in)
+- **New compile flag**: `--verbose` for detailed output
+
+#### Improvements
+- Push `--force` now checks server for highest version to avoid conflicts
+- Sync command compiles before checking drift for accurate comparison
+- Chat preprocessor block now shows response text instead of empty response
+- Improved error messages through centralized error handling
+
+---
+
 ## [3.5.0-alpha.3] - 2026-02-04
 
 ### Updated - Documentation for lua-cli v3.5.0-alpha.3 (Alpha Release)

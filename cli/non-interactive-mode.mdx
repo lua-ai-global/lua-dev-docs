@@ -46,6 +46,110 @@ lua skills versions --skill-name x # View versions for skill x
 lua skills deploy --skill-name x   # Deploy skill x
 ```
 
+## CI/CD Mode (--ci flag)
+
+<Note>
+  **New in v3.5.0:** The global `--ci` flag makes the CLI fail loudly on missing required arguments instead of silently prompting (which fails in non-TTY environments).
+</Note>
+
+In CI/CD pipelines and non-TTY environments (piped input, background jobs), interactive prompts silently fail, causing commands to cancel without clear error messages. The `--ci` flag prevents this by throwing errors when required arguments are missing:
+
+```bash
+# Without --ci (fails silently in CI/CD)
+lua push skill
+# Silently cancels - no clear error
+
+# With --ci (fails loudly with helpful error)
+lua --ci push skill
+# Error: Interactive prompt required but --ci flag is set. Provide all required flags or arguments.
+```
+
+### Usage
+
+The `--ci` flag is a **global flag** that must come before the command:
+
+```bash
+# Correct
+lua --ci push skill --name mySkill --set-version 1.0.0 --force
+
+# Incorrect
+lua push skill --ci  # Won't work - must be global
+```
+
+### When to Use
+
+<Tabs>
+  <Tab title="CI/CD Pipelines">
+    **Always use `--ci` in automated environments:**
+
+    ```yaml
+    # GitHub Actions
+    - name: Push skill
+      run: lua --ci push skill --name mySkill --set-version ${{ github.sha }} --force
+
+    # GitLab CI
+    script:
+      - lua --ci push all --force --auto-deploy
+    ```
+
+    **Why**: Ensures missing flags cause immediate, clear failures instead of silent hangs.
+  </Tab>
+
+  <Tab title="Local Development">
+    **Don't use `--ci` locally:**
+
+    ```bash
+    # Local - interactive prompts are helpful
+    lua push skill
+    ? Select a skill: mySkill
+    ? Enter version: 1.0.1
+
+    # CI/CD - no prompts, just errors
+    lua --ci push skill
+    # Error: missing --name flag
+    ```
+
+    **Why**: Interactive prompts provide guidance and defaults.
+  </Tab>
+
+  <Tab title="Scripts & Automation">
+    **Use `--ci` in bash scripts:**
+
+    ```bash
+    #!/bin/bash
+    set -e
+
+    # Fail fast if required args missing
+    lua --ci push skill \
+      --name "$SKILL_NAME" \
+      --set-version "$VERSION" \
+      --force
+    ```
+
+    **Why**: Scripts should fail fast and clearly, not hang waiting for input.
+  </Tab>
+</Tabs>
+
+### Behavior Differences
+
+| Scenario | Without --ci | With --ci |
+|----------|--------------|-----------|
+| Missing required flag | Shows prompt (hangs in CI) | Throws error immediately |
+| Non-TTY environment | Shows warning, continues | Throws error if prompts needed |
+| All flags provided | Works normally | Works normally |
+
+### Auto-Detection
+
+Even without `--ci`, the CLI automatically detects non-TTY environments and shows a warning:
+
+```bash
+echo "" | lua push skill
+# Warning: stdin is not a TTY. Interactive prompts may not work correctly.
+# Tip: Use --ci flag in CI/CD environments to fail loudly on missing required flags.
+```
+
+However, this still allows the command to continue (and likely fail silently). Using `--ci` prevents this by failing immediately.
+
 ## Complete Command Reference
 
 ### Project Setup
@@ -157,7 +261,7 @@ lua skills deploy --skill-name x   # Deploy skill x
     
     ```bash
     # Push specific skill with version
-    lua push skill --name mySkill --version 1.0.5
+    lua push skill --name mySkill --set-version 1.0.5
     
     # Push all components
     lua push all --force
@@ -166,16 +270,16 @@ lua skills deploy --skill-name x   # Deploy skill x
     lua push all --force --auto-deploy
     
     # Push webhook
-    lua push webhook --name payment-hook --version 2.0.0
+    lua push webhook --name payment-hook --set-version 2.0.0
     
     # Push job
-    lua push job --name daily-report --version 1.0.0
+    lua push job --name daily-report --set-version 1.0.0
     ```
     
     | Option | Description |
     |--------|-------------|
     | `--name <name>` | Entity name to push |
-    | `--version <ver>` | Version to set |
+    | `--set-version <ver>` | Version to set |
     | `--force` | Skip confirmations |
     | `--auto-deploy` | Deploy after push |
   </Tab>
@@ -689,7 +793,7 @@ lua integrations webhooks list
 lua test skill --name get_order --input '{"orderId": "123"}'
 
 # Push and deploy
-lua push skill --name order-service --version 1.0.0 --force
+lua push skill --name order-service --set-version 1.0.0 --force
 lua deploy --skill-name order-service --skill-version latest --force
 
 # Check logs
@@ -731,10 +835,10 @@ jobs:
         run: lua sync --check
       
       - name: Compile
-        run: lua compile --no-sync
+        run: lua compile
       
       - name: Push version
-        run: lua push skill --name ${{ github.event.repository.name }} --version ${{ github.sha }} --force
+        run: lua push skill --name ${{ github.event.repository.name }} --set-version ${{ github.sha }} --force
       
       - name: Deploy to production
         run: lua deploy --skill-name ${{ github.event.repository.name }} --skill-version latest --force
@@ -761,8 +865,8 @@ if ! lua sync --check; then
 fi
 
 # Compile and push
-lua compile --no-sync
-lua push skill --name "$SKILL_NAME" --version "$VERSION" --force
+lua compile
+lua push skill --name "$SKILL_NAME" --set-version "$VERSION" --force
 
 # Deploy
 lua deploy --skill-name "$SKILL_NAME" --skill-version latest --force
@@ -785,9 +889,9 @@ VERSION="2.0.0"
 lua push all --force
 
 # Or push individually with versions
-lua push skill --name order-service --version $VERSION --force
-lua push webhook --name payment-hook --version $VERSION --force
-lua push job --name daily-report --version $VERSION --force
+lua push skill --name order-service --set-version $VERSION --force
+lua push webhook --name payment-hook --set-version $VERSION --force
+lua push job --name daily-report --set-version $VERSION --force
 
 # Deploy skills
 lua deploy --skill-name order-service --skill-version latest --force
@@ -867,7 +971,7 @@ skills=$(lua marketplace install installed --json)
     Use dynamic versions in CI:
     
     ```bash
-    lua push skill --name x --version $(git rev-parse --short HEAD) --force
+    lua push skill --name x --set-version $(git rev-parse --short HEAD) --force
     ```
   </Accordion>
 </AccordionGroup>
