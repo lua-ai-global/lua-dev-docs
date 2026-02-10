@@ -4,6 +4,29 @@ All notable changes to the Lua documentation will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
+## [3.5.0-alpha.5] - 2026-02-10
+
+### Updated - Documentation for lua-cli v3.5.0-alpha.5 (Alpha Release)
+
+#### New Features Documented
+- **Auto-Add `dist-v2/` to `.gitignore`** - Automatically added on compile and init
+  - New projects via `lua init` include it in template `.gitignore`
+  - Existing projects get it added after first successful compilation
+  - Creates `.gitignore` if missing; idempotent
+
+#### Performance Improvements
+- **Parallel server sync** during compilation (6 sequential HTTP calls → parallel)
+- **Batch version checks** in `lua push all` (one call per type instead of per entity)
+- **Lazy authentication** — no upfront validation call; first API call validates
+
+#### Bug Fixes
+- **Tool condition regression** — tools without `condition()` no longer fail with "Tool condition evaluation failed"
+- **MCP server push** — fixed detection, manifest metadata, and push pipeline (3 bugs)
+- **Auth error handling** — `AuthenticationError` properly propagated during sync; 403 handling added
+- **Compile sync** — fixed stale config bug where handlers overwrote each other's IDs
+
+---
+
 ## [3.5.0-alpha.4] - 2026-02-09
 
 ### Updated - Documentation for lua-cli v3.5.0-alpha.4 (Alpha Release)

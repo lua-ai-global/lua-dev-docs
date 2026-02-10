@@ -5,11 +5,19 @@ description: "Release notes and version history for lua-cli"
 
 ## v3.5.0
 
-**Released:** February 9, 2026
+**Released:** February 10, 2026
 
 ### ✨ New Features
 
 <AccordionGroup>
+  <Accordion title="Auto-Add dist-v2/ to .gitignore">
+    The CLI now automatically adds `dist-v2/` to your `.gitignore` file to keep compiled output out of version control.
+
+    - **New projects**: `lua init` template includes `dist-v2/` in `.gitignore`
+    - **Existing projects**: Added automatically after the first successful compilation
+    - Creates `.gitignore` if missing; idempotent (safe to run multiple times)
+  </Accordion>
+
   <Accordion title="Project Backup & Restore">
     Backup your project source files to cloud storage for disaster recovery and team collaboration.
 
@@ -155,6 +163,38 @@ These changes may affect existing scripts and workflows. Please update according
     **Benefit:** Clearer, more actionable error messages.
   </Accordion>
 </AccordionGroup>
+
+### ⚡ Performance
+
+<AccordionGroup>
+  <Accordion title="Parallel Server Sync During Compilation">
+    Compile-time server sync now fetches all primitive types in parallel instead of sequentially.
+
+    - **Before**: 6 sequential HTTP calls (~3-6s)
+    - **After**: All fetched in parallel via `Promise.all` (~1s)
+
+    **Benefit:** Noticeably faster `lua compile --sync` and `lua push all`.
+  </Accordion>
+
+  <Accordion title="Batch Version Checks in Push All">
+    `lua push all` now batches version lookups — one HTTP call per primitive type instead of one per entity.
+
+    **Benefit:** Significant speedup for projects with many skills, webhooks, or jobs.
+  </Accordion>
+
+  <Accordion title="Lazy Authentication">
+    Authentication is no longer validated upfront on every command. The first actual API call validates the key.
+
+    **Benefit:** Faster command startup, especially for `compile`, `push`, and `sync`.
+  </Accordion>
+</AccordionGroup>
+
+### 🐛 Bug Fixes
+
+- **Tool Conditions**: Tools without a `condition()` method no longer fail with "Tool condition evaluation failed"
+- **MCP Server Push**: Fixed three bugs preventing MCP servers from being pushed (detection, manifest metadata, and push pipeline)
+- **Auth Errors**: `AuthenticationError` now properly propagated during sync; added 403 Forbidden handling
+- **Compile Sync**: Fixed stale config bug where handlers overwrote each other's IDs during server sync
 
 ---
 
