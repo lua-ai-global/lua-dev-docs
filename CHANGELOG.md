@@ -4,6 +4,20 @@ All notable changes to the Lua documentation will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
+## [3.5.0-alpha.6] - 2026-02-11
+
+### Updated - Documentation for lua-cli v3.5.0-alpha.6 (Alpha Release)
+
+#### New Features Documented
+- **Variable references in primitive config** - Properties like `schedule`, `retry`, `tools`, and resolver functions can now be defined using variables, imports, and expressions (not just inline literals)
+- **Complete `push all`** - Now includes persona and source backup in addition to all primitives, agents, and MCP servers. Persona is deployed when `--auto-deploy` is set
+
+#### Bug Fixes
+- **Agent config arrays with variables** - Defining `jobs: MY_JOBS` or `tools: MY_TOOLS` via variables no longer silently produces an empty agent. Also fixes `skill.addTools(MY_TOOLS)`
+- **Webhook `headerSchema`** - Header validation schemas are now correctly pushed to the server (was silently dropped due to key mapping bug)
+
+---
+
 ## [3.5.0-alpha.5] - 2026-02-10
 
 ### Updated - Documentation for lua-cli v3.5.0-alpha.5 (Alpha Release)

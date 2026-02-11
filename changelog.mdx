@@ -3,6 +3,83 @@ title: "Changelog"
 description: "Release notes and version history for lua-cli"
 ---
 
+## v3.5.0-alpha.6
+
+**Released:** February 11, 2026
+
+### ✨ New Features
+
+<AccordionGroup>
+  <Accordion title="Variable References in Primitive Config">
+    You can now define primitive properties using variables and imports — not just inline literals. Previously, extracting values to a variable would cause the compiler to silently ignore them.
+
+    ```typescript
+    // All of these now work:
+    const MY_SCHEDULE = { type: 'cron', expression: '0 9 * * *' };
+    const MY_TOOLS = [calculatorTool, weatherTool];
+    import { RETRY_CONFIG } from './config';
+
+    export const myJob = defineJob({
+      schedule: MY_SCHEDULE,        // ✅ variable reference
+      retry: RETRY_CONFIG,          // ✅ imported constant
+      execute: async () => { ... }
+    });
+
+    export const mySkill = defineSkill({
+      tools: MY_TOOLS,              // ✅ variable reference
+    });
+    ```
+
+    **Supported for:**
+    - Job `schedule` and `retry` configuration
+    - Skill `tools` arrays
+    - MCP server resolver functions
+    - All agent config arrays (`jobs`, `tools`, `webhooks`, `preProcessors`, `postProcessors`, `mcpServers`)
+  </Accordion>
+
+  <Accordion title="Complete Push All — Persona & Backup Included">
+    `lua push all` previously skipped persona and backup, requiring separate commands. Now it pushes everything in one go:
+
+    ```bash
+    # Pushes all primitives + persona + backup
+    lua push all --force
+
+    # Also deploys persona to production
+    lua push all --force --auto-deploy
+    ```
+
+    **What's included now:**
+    - All versioned primitives (skills, webhooks, jobs, preprocessors, postprocessors)
+    - Agents and MCP servers
+    - Persona (deployed to production when `--auto-deploy` is set)
+    - Source backup
+
+    Persona and backup failures are non-fatal — the rest of the push completes normally.
+  </Accordion>
+</AccordionGroup>
+
+### 🐛 Bug Fixes
+
+<AccordionGroup>
+  <Accordion title="Agent Config Arrays With Variables">
+    Defining agent primitive arrays via variables (e.g. `jobs: MY_JOBS`) previously caused the compiler to silently produce an agent with 0 jobs/tools/webhooks. This is now fixed:
+
+    ```typescript
+    const MY_JOBS = [dailyCleanup, weeklyReport];
+    new LuaAgent({
+      jobs: MY_JOBS,       // was silently ignored, now works
+      webhooks: [myHook],  // inline still works too
+    });
+    ```
+
+    Also applies to `skill.addTools(MY_TOOLS)`.
+  </Accordion>
+
+  <Accordion title="Webhook headerSchema Now Works">
+    Webhooks defining `headerSchema` previously had their header validation silently dropped due to a key mapping bug. This is now fixed — header validation schemas are correctly pushed to the server.
+  </Accordion>
+</AccordionGroup>
+
 ## v3.5.0
 
 **Released:** February 10, 2026
