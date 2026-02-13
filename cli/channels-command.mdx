@@ -49,10 +49,13 @@ Lua currently supports 6 communication channels:
   <Tab title="📧 Email">
     **Email Integration**
     
-    Respond to emails automatically.
+    Respond to emails automatically. Two modes available:
     
-    **Requirements:**
-    - Sender Name
+    **Generated Inbox Requirements:**
+    - Display Name
+    
+    **Existing Email Requirements:**
+    - Display Name
     - Sender Email Address
     - Email forwarding setup
     
@@ -60,6 +63,7 @@ Lua currently supports 6 communication channels:
     - Automated email responses
     - Custom sender identity
     - Professional communication
+    - Generated inbox (no forwarding needed)
     
     **CLI Support:** ✅ Yes
   </Tab>
@@ -273,37 +277,70 @@ Press Enter to continue...
 
 ### Email Setup
 
-```bash
-? What would you like to do? 🔗 Link new channel
-? Select channel type: 📧 Email
+Email channels support two modes: **generated inbox** (Lua creates an address) and **existing email** (forward from your own address).
 
-? Enter sender name (shown in email header): Support Team
-? Enter sender email address: support@mybusiness.com
+<Tabs>
+  <Tab title="Generated Inbox">
+    ```bash
+    ? What would you like to do? 🔗 Link new channel
+    ? Select channel type: 📧 Email
 
-📡 Creating Email channel...
+    ? Select email channel mode: 📬 Generate new inbox
+    ? Enter display name (shown in email header): Support Team
 
-✅ Email channel created successfully!
+    📡 Creating Email channel...
 
-────────────────────────────────────────────────────
-⚠️  IMPORTANT: Email Forwarding Setup Required
-────────────────────────────────────────────────────
+    ✅ Email channel created successfully!
 
-📧 Sender: support@mybusiness.com
-📬 Forward all emails to:
-   b5469c03-082e-481d-929b-663daf66bbef@mail.heylua.ai
+    📧 Display Name:    Support Team
+    📬 Email Address:   agent-abc123@mail.heylua.ai
 
-Setup Instructions:
+    ────────────────────────────────────────────────────
+    Your agent's email inbox has been created.
+    ────────────────────────────────────────────────────
 
-1. Log into your email provider
-2. Create email forwarding rule
-3. Forward from: support@mybusiness.com
-4. Forward to: b5469c03-082e-481d-929b-663daf66bbef@mail.heylua.ai
+    Share this address with your customers or use it
+    in your workflows:
+       agent-abc123@mail.heylua.ai
 
-5. Test by sending email to support@mybusiness.com
-   Your agent will respond automatically!
+    Emails sent to this address will be handled by
+    your agent.
+    ────────────────────────────────────────────────────
+    ```
+  </Tab>
 
-────────────────────────────────────────────────────
-```
+  <Tab title="Existing Email">
+    ```bash
+    ? What would you like to do? 🔗 Link new channel
+    ? Select channel type: 📧 Email
+
+    ? Select email channel mode: 📧 Use existing email
+    ? Enter display name (shown in email header): Support Team
+    ? Enter sender email address: support@mybusiness.com
+
+    📡 Creating Email channel...
+
+    ✅ Email channel created successfully!
+
+    📧 Display Name:    Support Team
+    📧 Sender Email:    support@mybusiness.com
+    📬 Forward To:      b5469c03-082e-481d-929b-663daf66bbef@mail.heylua.ai
+
+    ────────────────────────────────────────────────────
+    IMPORTANT: Email Forwarding Setup Required
+    ────────────────────────────────────────────────────
+
+    1. Log into your email provider's settings
+    2. Set up email forwarding or filtering
+    3. Forward all emails from support@mybusiness.com to:
+       b5469c03-082e-481d-929b-663daf66bbef@mail.heylua.ai
+
+    4. Test by sending an email to support@mybusiness.com
+       Your agent will respond automatically!
+    ────────────────────────────────────────────────────
+    ```
+  </Tab>
+</Tabs>
 
 ### Slack Private Setup
 
@@ -447,15 +484,18 @@ $ lua channels → Link Slack
 
 ### Email
 
-**Forwarding Setup:**
-- Critical for email to work
-- Must forward to provided address
+**Two modes available:**
+- **Generated inbox** - Lua creates an email address; no forwarding setup needed
+- **Existing email** - Uses your own address; requires email forwarding
+
+**Forwarding Setup (existing email mode only):**
+- Must forward to the provided Lua address
 - Can use email rules/filters
 - Test after setup
 
 **Response Behavior:**
-- Agent replies to forwarded emails
-- Uses configured sender name/email
+- Agent replies to incoming emails
+- Uses configured display name
 - Threading supported
 - Attachments handled
 
@@ -712,7 +752,18 @@ lua channels → Link Facebook
 
 ### Email
 
-**Before you start:**
+**Generated inbox -- before you start:**
+1. Choose a display name for your agent
+
+**Then:**
+```bash
+lua channels → Link Email
+# Select: Generate new inbox
+# Enter: Display name
+# Done -- share the generated address
+```
+
+**Existing email -- before you start:**
 1. Have email address ready
 2. Access to email provider settings
 3. Ability to configure forwarding
@@ -720,7 +771,8 @@ lua channels → Link Facebook
 **Then:**
 ```bash
 lua channels → Link Email
-# Enter: Sender name, Sender email
+# Select: Use existing email
+# Enter: Display name, Sender email
 # Configure forwarding as instructed
 ```
 

@@ -5,7 +5,10 @@ description: "Connect your agent to email for automated responses"
 
 ## Overview
 
-Email integration allows your agent to automatically respond to emails sent to your support or business email address.
+Email integration allows your agent to automatically respond to emails. There are two modes:
+
+- **Generated inbox** - Lua creates a dedicated email address for your agent (e.g. `agent-abc@mail.heylua.ai`)
+- **Existing email** - Use your own email address (e.g. `support@mybusiness.com`) with forwarding
 
 <CardGroup cols={2}>
   <Card title="Professional" icon="briefcase">
@@ -24,55 +27,130 @@ Email integration allows your agent to automatically respond to emails sent to y
 
 ## How It Works
 
-<Steps>
-  <Step title="User Sends Email">
-    Customer emails: support@yourcompany.com
-  </Step>
-  
-  <Step title="Email Forwards to Lua">
-    Your email provider forwards to Lua
-  </Step>
-  
-  <Step title="Agent Processes">
-    Agent reads and understands email
-  </Step>
-  
-  <Step title="Agent Responds">
-    Agent sends reply via email
-  </Step>
-  
-  <Step title="User Receives Reply">
-    Reply appears in their inbox
-  </Step>
-</Steps>
+<Tabs>
+  <Tab title="Generated Inbox">
+    <Steps>
+      <Step title="Lua Creates Inbox">
+        A dedicated email address is generated for your agent
+      </Step>
+      
+      <Step title="User Sends Email">
+        Customer emails the generated address directly
+      </Step>
+      
+      <Step title="Agent Processes">
+        Agent reads and understands email
+      </Step>
+      
+      <Step title="Agent Responds">
+        Agent sends reply via email
+      </Step>
+      
+      <Step title="User Receives Reply">
+        Reply appears in their inbox
+      </Step>
+    </Steps>
+  </Tab>
+
+  <Tab title="Existing Email">
+    <Steps>
+      <Step title="User Sends Email">
+        Customer emails: support@yourcompany.com
+      </Step>
+      
+      <Step title="Email Forwards to Lua">
+        Your email provider forwards to Lua
+      </Step>
+      
+      <Step title="Agent Processes">
+        Agent reads and understands email
+      </Step>
+      
+      <Step title="Agent Responds">
+        Agent sends reply via email
+      </Step>
+      
+      <Step title="User Receives Reply">
+        Reply appears in their inbox
+      </Step>
+    </Steps>
+  </Tab>
+</Tabs>
 
 ## Connection Method 1: CLI
 
-```bash
-$ lua channels
-✅ Using agent: myAgent
+<Tabs>
+  <Tab title="Generated Inbox">
+    ```bash
+    $ lua channels
+    ✅ Using agent: myAgent
 
-? What would you like to do? 🔗 Link new channel
-? Select channel type: 📧 Email
+    ? What would you like to do? 🔗 Link new channel
+    ? Select channel type: 📧 Email
 
-? Enter sender name (shown in email header): Support Team
-? Enter sender email address: support@mybusiness.com
+    ? Select email channel mode: 📬 Generate new inbox
+    ? Enter display name (shown in email header): Support Team
 
-📡 Creating Email channel...
+    📡 Creating Email channel...
 
-✅ Email channel created successfully!
+    ✅ Email channel created successfully!
 
-────────────────────────────────────────────────────
-⚠️  IMPORTANT: Email Forwarding Setup Required
-────────────────────────────────────────────────────
+    📧 Display Name:    Support Team
+    📬 Email Address:   agent-abc123@mail.heylua.ai
 
-📧 Sender: support@mybusiness.com
-📬 Forward ALL emails to:
-   b5469c03-082e-481d-929b-663daf66bbef@mail.heylua.ai
+    ────────────────────────────────────────────────────
+    Your agent's email inbox has been created.
+    ────────────────────────────────────────────────────
 
-[See setup instructions below]
-────────────────────────────────────────────────────
-```
+    Share this address with your customers or use it
+    in your workflows:
+       agent-abc123@mail.heylua.ai
+
+    Emails sent to this address will be handled by
+    your agent.
+    ────────────────────────────────────────────────────
+    ```
+
+    No additional setup required -- your agent is ready to receive emails immediately.
+  </Tab>
+
+  <Tab title="Existing Email">
+    ```bash
+    $ lua channels
+    ✅ Using agent: myAgent
+
+    ? What would you like to do? 🔗 Link new channel
+    ? Select channel type: 📧 Email
+
+    ? Select email channel mode: 📧 Use existing email
+    ? Enter display name (shown in email header): Support Team
+    ? Enter sender email address: support@mybusiness.com
+
+    📡 Creating Email channel...
+
+    ✅ Email channel created successfully!
+
+    📧 Display Name:    Support Team
+    📧 Sender Email:    support@mybusiness.com
+    📬 Forward To:      b5469c03-082e-481d-929b-663daf66bbef@mail.heylua.ai
+
+    ────────────────────────────────────────────────────
+    IMPORTANT: Email Forwarding Setup Required
+    ────────────────────────────────────────────────────
+
+    1. Log into your email provider's settings
+    2. Set up email forwarding or filtering
+    3. Forward all emails from support@mybusiness.com to:
+       b5469c03-082e-481d-929b-663daf66bbef@mail.heylua.ai
+
+    4. Test by sending an email to support@mybusiness.com
+       Your agent will respond automatically!
+    ────────────────────────────────────────────────────
+    ```
+
+    See [Email Provider Setup](#email-provider-setup) below for forwarding instructions.
+  </Tab>
+</Tabs>
 
 ## Connection Method 2: Admin Dashboard
 
@@ -90,7 +168,7 @@ $ lua channels
       <img src="/images/channels/admin-email-form.png" alt="Email form" />
     </Frame>
     
-    *Screenshot: Form with Sender Name and Email Address fields*
+    *Screenshot: Form with Mode selection, Display Name, and Email Address fields*
   </Step>
   
   <Step title="Click Create Channel">
