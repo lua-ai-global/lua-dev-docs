@@ -4,9 +4,9 @@ All notable changes to the Lua documentation will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
-## [3.5.0-alpha.7] - 2026-02-16
+## [3.5.0-alpha.9] - 2026-02-16
 
-### Updated - Documentation for lua-cli v3.5.0-alpha.7 (Alpha Release)
+### Updated - Documentation for lua-cli v3.5.0-alpha.9 (Alpha Release)
 
 #### Bug Fixes
 - **Email channel creation** - Aligned with updated API schema: mode selection (generated inbox or existing email forwarding), `name` renamed to `displayName`, and both response types handled correctly (LUA-122)
