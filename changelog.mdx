@@ -3,6 +3,40 @@ title: "Changelog"
 description: "Release notes and version history for lua-cli"
 ---
 
+## v3.5.0-alpha.7
+
+**Released:** February 16, 2026
+
+### 🐛 Bug Fixes
+
+<AccordionGroup>
+  <Accordion title="Email Channel Creation Aligned With API Schema (LUA-122)">
+    The `lua channels` email channel creation flow has been updated to match the current API schema:
+
+    - **Mode selection**: Choose between "generated" (Lua creates an inbox for you) or "existing" (forward from your own email address)
+    - **Display name**: The `name` field has been renamed to `displayName`
+    - **Generated mode**: Creates a new email address — no forwarding setup required
+    - **Existing mode**: Provides a forwarding address with setup instructions (previous behavior)
+
+    ```bash
+    # Interactive flow now asks:
+    # 1. Select mode: Generated inbox or Existing email
+    # 2. Enter display name
+    # 3. (Existing only) Enter sender email address
+    lua channels
+    ```
+  </Accordion>
+</AccordionGroup>
+
+### 📝 Interface Updates
+
+- Added `EmailChannelMode` type: `'generated' | 'existing'`
+- Added `CreateGeneratedEmailChannelResponse` interface (returns `emailAddress`)
+- Added `CreateExistingEmailChannelResponse` interface (returns `forwardTo`)
+- `CreateEmailChannelRequest.email` now uses `{ mode, displayName, email? }` instead of `{ name, email }`
+
+---
+
 ## v3.5.0-alpha.6
 
 **Released:** February 11, 2026
