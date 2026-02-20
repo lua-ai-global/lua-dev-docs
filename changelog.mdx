@@ -3,134 +3,75 @@ title: "Changelog"
 description: "Release notes and version history for lua-cli"
 ---
 
-## v3.5.0-alpha.9
-
-**Released:** February 16, 2026
-
-### 🐛 Bug Fixes
-
-<AccordionGroup>
-  <Accordion title="Email Channel Creation Aligned With API Schema (LUA-122)">
-    The `lua channels` email channel creation flow has been updated to match the current API schema:
-
-    - **Mode selection**: Choose between "generated" (Lua creates an inbox for you) or "existing" (forward from your own email address)
-    - **Display name**: The `name` field has been renamed to `displayName`
-    - **Generated mode**: Creates a new email address — no forwarding setup required
-    - **Existing mode**: Provides a forwarding address with setup instructions (previous behavior)
-
-    ```bash
-    # Interactive flow now asks:
-    # 1. Select mode: Generated inbox or Existing email
-    # 2. Enter display name
-    # 3. (Existing only) Enter sender email address
-    lua channels
-    ```
-  </Accordion>
-</AccordionGroup>
-
-### 📝 Interface Updates
-
-- Added `EmailChannelMode` type: `'generated' | 'existing'`
-- Added `CreateGeneratedEmailChannelResponse` interface (returns `emailAddress`)
-- Added `CreateExistingEmailChannelResponse` interface (returns `forwardTo`)
-- `CreateEmailChannelRequest.email` now uses `{ mode, displayName, email? }` instead of `{ name, email }`
-
----
-
-## v3.5.0-alpha.6
-
-**Released:** February 11, 2026
-
-### ✨ New Features
-
-<AccordionGroup>
-  <Accordion title="Variable References in Primitive Config">
-    You can now define primitive properties using variables and imports — not just inline literals. Previously, extracting values to a variable would cause the compiler to silently ignore them.
-
-    ```typescript
-    // All of these now work:
-    const MY_SCHEDULE = { type: 'cron', expression: '0 9 * * *' };
-    const MY_TOOLS = [calculatorTool, weatherTool];
-    import { RETRY_CONFIG } from './config';
-
-    export const myJob = defineJob({
-      schedule: MY_SCHEDULE,        // ✅ variable reference
-      retry: RETRY_CONFIG,          // ✅ imported constant
-      execute: async () => { ... }
-    });
-
-    export const mySkill = defineSkill({
-      tools: MY_TOOLS,              // ✅ variable reference
-    });
-    ```
-
-    **Supported for:**
-    - Job `schedule` and `retry` configuration
-    - Skill `tools` arrays
-    - MCP server resolver functions
-    - All agent config arrays (`jobs`, `tools`, `webhooks`, `preProcessors`, `postProcessors`, `mcpServers`)
-  </Accordion>
-
-  <Accordion title="Complete Push All — Persona & Backup Included">
-    `lua push all` previously skipped persona and backup, requiring separate commands. Now it pushes everything in one go:
-
-    ```bash
-    # Pushes all primitives + persona + backup
-    lua push all --force
-
-    # Also deploys persona to production
-    lua push all --force --auto-deploy
-    ```
-
-    **What's included now:**
-    - All versioned primitives (skills, webhooks, jobs, preprocessors, postprocessors)
-    - Agents and MCP servers
-    - Persona (deployed to production when `--auto-deploy` is set)
-    - Source backup
-
-    Persona and backup failures are non-fatal — the rest of the push completes normally.
-  </Accordion>
-</AccordionGroup>
-
-### 🐛 Bug Fixes
-
-<AccordionGroup>
-  <Accordion title="Agent Config Arrays With Variables">
-    Defining agent primitive arrays via variables (e.g. `jobs: MY_JOBS`) previously caused the compiler to silently produce an agent with 0 jobs/tools/webhooks. This is now fixed:
-
-    ```typescript
-    const MY_JOBS = [dailyCleanup, weeklyReport];
-    new LuaAgent({
-      jobs: MY_JOBS,       // was silently ignored, now works
-      webhooks: [myHook],  // inline still works too
-    });
-    ```
-
-    Also applies to `skill.addTools(MY_TOOLS)`.
-  </Accordion>
-
-  <Accordion title="Webhook headerSchema Now Works">
-    Webhooks defining `headerSchema` previously had their header validation silently dropped due to a key mapping bug. This is now fixed — header validation schemas are correctly pushed to the server.
-  </Accordion>
-</AccordionGroup>
-
 ## v3.5.0
 
-**Released:** February 10, 2026
+**Released:** February 20, 2026
 
 ### ✨ New Features
 
 <AccordionGroup>
-  <Accordion title="Auto-Add dist-v2/ to .gitignore">
-    The CLI now automatically adds `dist-v2/` to your `.gitignore` file to keep compiled output out of version control.
+  <Accordion title="User Lookup by Email or Phone">
+    The `User.get()` method now supports looking up users by email address or phone number, in addition to userId.
 
-    - **New projects**: `lua init` template includes `dist-v2/` in `.gitignore`
-    - **Existing projects**: Added automatically after the first successful compilation
-    - Creates `.gitignore` if missing; idempotent (safe to run multiple times)
+    ```typescript
+    import { User } from 'lua-cli';
+
+    // Look up by email
+    const user = await User.get({ email: 'customer@example.com' });
+
+    // Look up by phone (both formats work)
+    const user = await User.get({ phone: '+1234567890' });
+
+    // Handle not found (returns null, doesn't throw)
+    if (!user) {
+      return { error: 'User not found' };
+    }
+    ```
+
+    Useful for webhooks receiving contact info from external systems.
+  </Accordion>
+
+  <Accordion title="Integrations Command">
+    Connect your agent to 250+ third-party services via [Unified.to](https://unified.to). When you connect an account, an MCP server is automatically created to expose tools to your agent.
+
+    ```bash
+    lua integrations              # Interactive mode
+    lua integrations connect      # Connect (OAuth or API token)
+    lua integrations list         # List connected accounts
+    lua integrations webhooks     # Manage webhook triggers
+    lua integrations mcp          # Manage MCP servers
+    ```
+
+    **Key Features:**
+    - OAuth and API token authentication
+    - Automatic MCP server creation and activation per connection
+    - Event-driven webhook triggers that wake up your agent
+    - Server-side finalization for reliable connection setup
+
+    See the [Integrations Command](/cli/integrations-command) documentation.
+  </Accordion>
+
+  <Accordion title="Webhook Triggers for Integrations">
+    Event-driven triggers that wake up your agent when events occur in connected services.
+
+    ```bash
+    # Connect with triggers (all selected by default in interactive mode)
+    lua integrations connect --integration linear --auth-method oauth --scopes all \
+      --triggers task_task.created,task_task.updated
+
+    # Use custom webhook URL instead of agent trigger
+    lua integrations connect --integration linear --auth-method oauth --scopes all \
+      --triggers task_task.created --custom-webhook --hook-url https://my-server.com/webhook
+    ```
+
+    - Triggers pre-selected by default in interactive mode
+    - Choose between "Agent wake-up" mode or custom webhook URLs
+    - Friendly labels for OAuth scopes and webhook events
+    - JSON output: `lua integrations webhooks list --json`
   </Accordion>
 
   <Accordion title="Project Backup & Restore">
-    Backup your project source files to cloud storage for disaster recovery and team collaboration.
+    Back up your project source files to cloud storage and restore them on any machine.
 
     ```bash
     # Backup project sources
@@ -142,11 +83,11 @@ description: "Release notes and version history for lua-cli"
 
     **Key Features:**
     - Content-addressed storage with automatic deduplication
+    - S3 direct upload — no file size limits
     - Efficient incremental backups (only changed files uploaded)
     - Full project recovery on new machines
-    - Perfect for disaster recovery and team collaboration
 
-    See the [Skill Management](/cli/skill-management#lua-push-backup) documentation for details.
+    See the [Skill Management](/cli/skill-management#lua-push-backup) documentation.
   </Accordion>
 
   <Accordion title="CI/CD Mode (--ci flag)">
@@ -160,46 +101,89 @@ description: "Release notes and version history for lua-cli"
     lua push skill
     ```
 
-    **Benefits:**
-    - Fails immediately with clear error messages in CI/CD
-    - Prevents silent hangs waiting for input in automated environments
-    - Auto-detects non-TTY environments and shows helpful warnings
-
     See the [Non-Interactive Mode](/cli/non-interactive-mode#cicd-mode-ci-flag) documentation.
+  </Accordion>
+
+  <Accordion title="Self-Update Command">
+    New `lua update` command for self-updating from npm, plus a background outdated version warning on every command.
+
+    ```bash
+    lua update   # Force-fetch latest version and install
+    ```
+
+    - Background version check with 24h file cache (zero latency impact)
+    - Alpha users stay on alpha channel, stable users stay on latest
+    - Boxed warning to stderr when outdated
   </Accordion>
 
   <Accordion title="Agents Discovery Command">
     New `lua agents` command lists all organizations and agents you have access to.
 
     ```bash
-    # List all accessible agents
-    lua agents
-
-    # JSON output for scripting
-    lua agents --json
+    lua agents            # Formatted output
+    lua agents --json     # JSON output for scripting
     ```
-
-    **Use Cases:**
-    - Discover agent IDs for initialization or scripts
-    - Team management and access auditing
-    - Automation with JSON parsing
-    - Multi-agent deployment workflows
 
     See the [Utility Commands](/cli/utility-commands#lua-agents) documentation.
   </Accordion>
 
-  <Accordion title="Non-Interactive Sandbox View Commands">
-    New non-interactive view commands for sandbox environments.
+  <Accordion title="Variable References in Primitive Config">
+    You can now define primitive properties using variables and imports — not just inline literals.
 
-    ```bash
-    # Print sandbox persona and exit
-    lua persona sandbox view
+    ```typescript
+    const MY_SCHEDULE = { type: 'cron', expression: '0 9 * * *' };
+    const MY_TOOLS = [calculatorTool, weatherTool];
+    import { RETRY_CONFIG } from './config';
 
-    # Print local skills and exit
-    lua skills sandbox view
+    export const myJob = defineJob({
+      schedule: MY_SCHEDULE,        // ✅ variable reference
+      retry: RETRY_CONFIG,          // ✅ imported constant
+      execute: async () => { ... }
+    });
     ```
 
-    Perfect for CI/CD pipelines, automation scripts, and quick reference.
+    **Supported for:** job schedule/retry, skill tools arrays, MCP server resolver functions, and all agent config arrays.
+  </Accordion>
+
+  <Accordion title="Complete Push All — Persona & Backup Included">
+    `lua push all` now pushes everything including persona and backup:
+
+    ```bash
+    lua push all --force                # All primitives + persona + backup
+    lua push all --force --auto-deploy  # Also deploys persona to production
+    ```
+
+    Persona and backup failures are non-fatal — the rest of the push completes normally.
+  </Accordion>
+
+  <Accordion title="Auto-Add dist-v2/ to .gitignore">
+    The CLI now automatically adds `dist-v2/` to your `.gitignore`:
+    - **New projects**: Included in `lua init` template
+    - **Existing projects**: Added after first successful compilation
+    - Idempotent and safe to run multiple times
+  </Accordion>
+
+  <Accordion title="MCP and Mastra Log Types">
+    ```bash
+    lua logs --type mcp      # View MCP tool execution logs
+    lua logs --type mastra   # View Mastra AI runtime logs
+    lua logs --user-id user_123456  # Filter by user ID
+    ```
+  </Accordion>
+
+  <Accordion title="Non-Interactive Configure Command">
+    ```bash
+    lua configure --api-key YOUR_API_KEY              # Direct setup
+    lua configure --email user@example.com            # Request OTP
+    lua configure --email user@example.com --otp 123  # Verify OTP
+    ```
+  </Accordion>
+
+  <Accordion title="Non-Interactive Sandbox View Commands">
+    ```bash
+    lua persona sandbox view    # Print persona and exit
+    lua skills sandbox view     # List local skills and exit
+    ```
   </Accordion>
 </AccordionGroup>
 
@@ -211,8 +195,6 @@ These changes may affect existing scripts and workflows. Please update according
 
 <AccordionGroup>
   <Accordion title="Push Flag: --version renamed to --set-version">
-    The `--version` flag in push commands has been renamed to `--set-version` for clarity.
-
     ```bash
     # Old (no longer works)
     lua push skill --name mySkill --version 1.0.5
@@ -225,19 +207,14 @@ These changes may affect existing scripts and workflows. Please update according
   </Accordion>
 
   <Accordion title="Compile Sync: --no-sync changed to --sync (opt-in)">
-    Compile now **does NOT** check for drift by default. Sync is opt-in for faster compilation.
-
     ```bash
     # Old behavior (sync ran by default)
     lua compile             # Checked for drift
-    lua compile --no-sync   # Skipped drift check
 
     # New behavior (sync is opt-in)
-    lua compile       # No drift check (fast)
+    lua compile             # No drift check (fast)
     lua compile --sync      # Enable drift check
     ```
-
-    **Reason:** Faster compilation by default, drift check only when needed.
 
     **New flag:** `--verbose` for detailed compilation output.
   </Accordion>
@@ -247,31 +224,21 @@ These changes may affect existing scripts and workflows. Please update according
 
 <AccordionGroup>
   <Accordion title="Version Conflict Avoidance in Push">
-    `lua push --force` now automatically checks the server for the highest existing version and suggests the next available version.
+    `lua push --force` now automatically checks the server for the highest existing version.
 
     **Benefit:** Prevents "Version already exists" errors during automated deployments.
   </Accordion>
 
   <Accordion title="Sync Compiles Before Checking Drift">
-    `lua sync` now runs compilation first to ensure the manifest is fresh before comparing with server state.
-
-    **Benefit:** More accurate drift detection with latest local changes.
+    `lua sync` now runs compilation first for more accurate drift detection.
   </Accordion>
 
   <Accordion title="Chat Preprocessor Block Response">
-    Chat now displays preprocessor block response text (e.g., "Message detected as spam") instead of showing empty responses.
-
-    **Benefit:** Better visibility into preprocessor behavior during testing.
+    Chat now displays preprocessor block response text instead of showing empty responses.
   </Accordion>
 
-  <Accordion title="Error Message Format">
-    All errors now go through standardized `withErrorHandling()` wrapper for consistent formatting.
-
-    ```
-    Error during push: No skills found
-    ```
-
-    **Benefit:** Clearer, more actionable error messages.
+  <Accordion title="Consistent Error Messages">
+    All errors now go through standardized formatting for clearer, more actionable messages.
   </Accordion>
 </AccordionGroup>
 
@@ -279,229 +246,41 @@ These changes may affect existing scripts and workflows. Please update according
 
 <AccordionGroup>
   <Accordion title="Parallel Server Sync During Compilation">
-    Compile-time server sync now fetches all primitive types in parallel instead of sequentially.
-
     - **Before**: 6 sequential HTTP calls (~3-6s)
-    - **After**: All fetched in parallel via `Promise.all` (~1s)
-
-    **Benefit:** Noticeably faster `lua compile --sync` and `lua push all`.
+    - **After**: All fetched in parallel (~1s)
   </Accordion>
 
   <Accordion title="Batch Version Checks in Push All">
-    `lua push all` now batches version lookups — one HTTP call per primitive type instead of one per entity.
-
-    **Benefit:** Significant speedup for projects with many skills, webhooks, or jobs.
+    One HTTP call per primitive type instead of one per entity.
   </Accordion>
 
   <Accordion title="Lazy Authentication">
-    Authentication is no longer validated upfront on every command. The first actual API call validates the key.
-
-    **Benefit:** Faster command startup, especially for `compile`, `push`, and `sync`.
+    No upfront validation call. The first API call validates the key.
   </Accordion>
 </AccordionGroup>
 
 ### 🐛 Bug Fixes
 
-- **Tool Conditions**: Tools without a `condition()` method no longer fail with "Tool condition evaluation failed"
-- **MCP Server Push**: Fixed three bugs preventing MCP servers from being pushed (detection, manifest metadata, and push pipeline)
-- **Auth Errors**: `AuthenticationError` now properly propagated during sync; added 403 Forbidden handling
-- **Compile Sync**: Fixed stale config bug where handlers overwrote each other's IDs during server sync
-
----
-
-## v3.5.0-alpha.3
-
-**Released:** February 4, 2026
-
-<Warning>
-This is an alpha release for testing new features. For production use, we recommend v3.4.0.
-</Warning>
-
-### ✨ New Features
-
-<AccordionGroup>
-  <Accordion title="Webhook Triggers for Integrations">
-    Event-driven triggers that wake up your agent when events occur in connected services.
-    
-    ```bash
-    # Connect with triggers (all selected by default in interactive mode)
-    lua integrations connect --integration linear --auth-method oauth --scopes all \
-      --triggers task_task.created,task_task.updated
-    
-    # Use custom webhook URL instead of agent trigger
-    lua integrations connect --integration linear --auth-method oauth --scopes all \
-      --triggers task_task.created --custom-webhook --hook-url https://my-server.com/webhook
-    ```
-    
-    **Key Features:**
-    - Triggers pre-selected by default in interactive mode
-    - Choose between "Agent wake-up" mode or custom webhook URLs
-    - Friendly labels for OAuth scopes and webhook events
-    - Triggers preserved when updating connection scopes
-    
-    See the [Integrations Command](/cli/integrations-command) documentation for full details.
-  </Accordion>
-
-  <Accordion title="Webhooks List JSON Output">
-    The `lua integrations webhooks list` command now supports JSON output and displays webhook IDs:
-    
-    ```bash
-    # List triggers with IDs for deletion
-    lua integrations webhooks list
-    
-    # Output as JSON for scripting
-    lua integrations webhooks list --json
-    ```
-    
-    Output includes: id, integrationType, objectType, event, webhookType, hookUrl, status, interval, connectionId.
-  </Accordion>
-</AccordionGroup>
-
-### 🔧 Improvements
-
-- **Push Command**: Corrected HTTP methods for webhook and job deployment with improved error handling
-- **Automated Deploy**: Fully automated push & deploy with `--force --auto-deploy` flags
-- **Terminology**: User-facing text uses "Integration" instead of "Account" and "Trigger" instead of "Webhook Subscription"
-
-### 🐛 Bug Fixes
-
-- **Update Flow**: Triggers now preserved when updating connection scopes (per-trigger hookUrl and interval restored)
-
----
-
-## v3.5.0-alpha.2
-
-**Released:** January 30, 2026
-
-<Warning>
-This is an alpha release for testing new features. For production use, we recommend v3.4.0.
-</Warning>
-
-### ✨ New Features
-
-<AccordionGroup>
-  <Accordion title="Integrations Command">
-    Connect your agent to 250+ third-party services via [Unified.to](https://unified.to). When you connect an account, an MCP server is automatically created to expose tools to your agent.
-    
-    ```bash
-    lua integrations              # Interactive mode
-    lua integrations connect      # Connect a new account
-    lua integrations list         # List connected accounts
-    lua integrations webhooks     # Manage webhook subscriptions
-    lua integrations mcp          # Manage MCP servers for connections
-    ```
-    
-    **Key Features:**
-    - Support for OAuth and API token authentication
-    - Automatic MCP server creation and activation per connection
-    - Webhook subscriptions for receiving events from connected services
-    
-    See the [Integrations Command](/cli/integrations-command) documentation for full details.
-  </Accordion>
-
-  <Accordion title="MCP and Mastra Log Types">
-    The `lua logs` command now supports filtering by MCP tool executions and Mastra AI runtime logs:
-    
-    ```bash
-    lua logs --type mcp      # View MCP tool execution logs
-    lua logs --type mastra   # View Mastra AI runtime logs
-    ```
-    
-    - 🔌 **MCP Tools**: View MCP tool execution logs with plug icon
-    - 🧠 **Mastra Runtime**: View Mastra AI runtime logs with brain icon
-  </Accordion>
-
-  <Accordion title="User ID Filtering in Logs">
-    Filter logs by specific user ID:
-    
-    ```bash
-    lua logs --user-id user_123456
-    ```
-  </Accordion>
-
-  <Accordion title="Non-Interactive Configure Command">
-    The `lua configure` command now supports full non-interactive operation for CI/CD pipelines and dashboard users:
-    
-    ```bash
-    # Direct API key setup (for dashboard users or CI/CD)
-    lua configure --api-key YOUR_API_KEY
-
-    # Request OTP via email (step 1)
-    lua configure --email user@example.com
-
-    # Verify OTP and generate API key (step 2)
-    lua configure --email user@example.com --otp 123456
-    ```
-  </Accordion>
-
-  <Accordion title="Post-Process Complete Event in Chat">
-    The CLI now displays post-processed responses when post-processors modify the AI's response during chat streaming. A clear indicator shows when post-processing occurs.
-  </Accordion>
-</AccordionGroup>
-
-### 🔧 Improvements
-
-- **updateAgent API**: New `AgentApi.updateAgent()` method for partial sub-agent updates (name, persona)
-- **Compile Command**: Removed `--force-sync` flag (sync is now the default behavior)
-
-### 🐛 Bug Fixes
-
-- **Marketplace**: Browse and search commands now only display skills with published and approved versions
-- **Test Command**: Fixed preprocessor test handling for `PreProcessorResult` object format
+- **Job Creation**: Fixed `__exports` naming collision when primitives called `Jobs.create()` at runtime
+- **Backup Size Limit**: S3 presigned uploads fix "request entity too large" for large projects
+- **MCP Server Duplicates**: Intelligent URL merging handles concurrent MCP creation flows
+- **Email Channels**: Aligned with updated API schema (mode selection, displayName, response types)
+- **Agent Config Arrays**: Defining `jobs: MY_JOBS` via variables no longer silently empties the agent
+- **Webhook headerSchema**: Header validation schemas now correctly pushed to server
+- **Tool Conditions**: Tools without `condition()` no longer fail at runtime
+- **MCP Server Push**: Fixed detection, manifest metadata, and push pipeline (3 bugs)
+- **Auth Errors**: `AuthenticationError` properly propagated; 403 Forbidden handling added
+- **Compile Sync**: Handlers no longer overwrite each other's IDs
+- **Marketplace**: Only shows skills with published and approved versions
+- **Test Command**: Fixed preprocessor test handling for object format
 
 ### 📝 Interface Updates
 
-- Added `MCPServerSource` enum to `interfaces/mcp.ts`
-- Added `'mcp'` and `'mastra'` to `PrimitiveType` and `FilterType` enums
-
----
-
-## v3.5.0-alpha.1
-
-**Released:** January 23, 2026
-
-<Warning>
-This is an alpha release for testing new features. For production use, we recommend v3.4.0.
-</Warning>
-
-### ✨ New Features
-
-<AccordionGroup>
-  <Accordion title="User Lookup by Email or Phone">
-    The `User.get()` method now supports looking up users by email address or phone number, in addition to userId. This is especially useful in webhooks where you receive contact info from external systems.
-    
-    ```typescript
-    import { User } from 'lua-cli';
-    
-    // Look up by email
-    const user = await User.get({ email: 'customer@example.com' });
-    
-    // Look up by phone (both formats work)
-    const user = await User.get({ phone: '+1234567890' });
-    const user = await User.get({ phone: '1234567890' });
-    
-    // Handle not found
-    if (!user) {
-      return { error: 'User not found' };
-    }
-    ```
-    
-    **Use Cases:**
-    - Webhooks receiving customer email/phone from external systems
-    - Admin tools where operators search by contact info
-    - Integrations with third-party systems that don't have Lua user IDs
-    
-    <Note>
-    Unlike `User.get(userId)` which throws on not found, email/phone lookup returns `null`. Always check for null before using the user object.
-    </Note>
-  </Accordion>
-</AccordionGroup>
-
-### 📝 Interface Updates
-
-- Added `UserLookupOptions` interface for email/phone lookup
+- Added `UserLookupOptions` for email/phone lookup
+- Added `EmailChannelMode`, `CreateGeneratedEmailChannelResponse`, `CreateExistingEmailChannelResponse`
+- Added `MCPServerSource` enum for tracking MCP server origin
 - Updated `User.get()` return type to `UserDataInstance | null`
-- Exported `UserLookupOptions` and `ProfileResponse` types
+- Added `'mcp'` and `'mastra'` to log type enums
 
 ---
 

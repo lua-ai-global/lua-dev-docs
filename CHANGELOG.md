@@ -4,151 +4,69 @@ All notable changes to the Lua documentation will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
-## [3.5.0-alpha.9] - 2026-02-16
+## [3.5.0] - 2026-02-20
 
-### Updated - Documentation for lua-cli v3.5.0-alpha.9 (Alpha Release)
-
-#### Bug Fixes
-- **Email channel creation** - Aligned with updated API schema: mode selection (generated inbox or existing email forwarding), `name` renamed to `displayName`, and both response types handled correctly (LUA-122)
-
-#### Interface Changes
-- Added `EmailChannelMode` type (`'generated' | 'existing'`)
-- Added `CreateGeneratedEmailChannelResponse` and `CreateExistingEmailChannelResponse` interfaces
-- Updated `CreateEmailChannelRequest.email` to use `{ mode, displayName, email? }`
-
----
-
-## [3.5.0-alpha.6] - 2026-02-11
-
-### Updated - Documentation for lua-cli v3.5.0-alpha.6 (Alpha Release)
-
-#### New Features Documented
-- **Variable references in primitive config** - Properties like `schedule`, `retry`, `tools`, and resolver functions can now be defined using variables, imports, and expressions (not just inline literals)
-- **Complete `push all`** - Now includes persona and source backup in addition to all primitives, agents, and MCP servers. Persona is deployed when `--auto-deploy` is set
-
-#### Bug Fixes
-- **Agent config arrays with variables** - Defining `jobs: MY_JOBS` or `tools: MY_TOOLS` via variables no longer silently produces an empty agent. Also fixes `skill.addTools(MY_TOOLS)`
-- **Webhook `headerSchema`** - Header validation schemas are now correctly pushed to the server (was silently dropped due to key mapping bug)
-
----
-
-## [3.5.0-alpha.5] - 2026-02-10
-
-### Updated - Documentation for lua-cli v3.5.0-alpha.5 (Alpha Release)
-
-#### New Features Documented
-- **Auto-Add `dist-v2/` to `.gitignore`** - Automatically added on compile and init
-  - New projects via `lua init` include it in template `.gitignore`
-  - Existing projects get it added after first successful compilation
-  - Creates `.gitignore` if missing; idempotent
-
-#### Performance Improvements
-- **Parallel server sync** during compilation (6 sequential HTTP calls → parallel)
-- **Batch version checks** in `lua push all` (one call per type instead of per entity)
-- **Lazy authentication** — no upfront validation call; first API call validates
-
-#### Bug Fixes
-- **Tool condition regression** — tools without `condition()` no longer fail with "Tool condition evaluation failed"
-- **MCP server push** — fixed detection, manifest metadata, and push pipeline (3 bugs)
-- **Auth error handling** — `AuthenticationError` properly propagated during sync; 403 handling added
-- **Compile sync** — fixed stale config bug where handlers overwrote each other's IDs
-
----
-
-## [3.5.0-alpha.4] - 2026-02-09
-
-### Updated - Documentation for lua-cli v3.5.0-alpha.4 (Alpha Release)
-
-#### New Features Documented
-- **Project Backup & Restore** - Back up and restore project source files
-  - `lua push backup` for cloud backup with content-addressed deduplication
-  - `lua init --agent-id X --restore-sources` for full project recovery
-- **CI/CD Mode** - New `--ci` global flag for non-TTY environments
-  - Fails loudly on missing required flags instead of silently canceling
-  - Auto-detects non-TTY and warns about potential prompt issues
-- **`lua agents` Command** - List all organizations and agents with `--json` output
-- **Non-Interactive Sandbox Views** - `lua persona sandbox view` and `lua skills sandbox view`
-
-#### Breaking Changes
-- **Push flag renamed**: `--version` → `--set-version`
-- **Compile sync default changed**: `--no-sync` (opt-out) → `--sync` (opt-in)
-- **New compile flag**: `--verbose` for detailed output
-
-#### Improvements
-- Push `--force` now checks server for highest version to avoid conflicts
-- Sync command compiles before checking drift for accurate comparison
-- Chat preprocessor block now shows response text instead of empty response
-- Improved error messages through centralized error handling
-
----
-
-## [3.5.0-alpha.3] - 2026-02-04
-
-### Updated - Documentation for lua-cli v3.5.0-alpha.3 (Alpha Release)
-
-#### New Features Documented
-- **Webhook Triggers for Integrations** - Event-driven triggers that wake up your agent
-  - `--triggers` flag for specifying events (e.g., `task_task.created,task_task.updated`)
-  - `--custom-webhook` and `--hook-url` flags for custom webhook URLs
-  - Triggers pre-selected by default in interactive mode
-  - Friendly labels for OAuth scopes and webhook events
-- **Webhooks List JSON Output** - `lua integrations webhooks list --json` for scripting
-- **Webhook IDs in List Output** - IDs now displayed for easier deletion
-
-#### Improvements
-- Push command: correct HTTP methods and improved error handling
-- Automated push & deploy with `--force --auto-deploy` flags
-- Terminology update: "Integration" instead of "Account", "Trigger" instead of "Webhook Subscription"
-
-#### Bug Fixes
-- Trigger preservation when updating connection scopes (per-trigger hookUrl and interval restored)
-
----
-
-## [3.5.0-alpha.2] - 2026-01-30
-
-### Updated - Documentation for lua-cli v3.5.0-alpha.2 (Alpha Release)
-
-#### New Features Documented
-- **Integrations Command** - Connect 250+ third-party services via Unified.to
-  - `lua integrations connect` - OAuth and API token authentication
-  - `lua integrations list` - View connected accounts
-  - `lua integrations webhooks` - Manage webhook subscriptions
-  - `lua integrations mcp` - Manage MCP servers for connections
-- **MCP and Mastra Log Types** - New `--type mcp` and `--type mastra` options in logs command
-- **User ID Filtering in Logs** - `--user-id` option for filtering logs by user
-- **Non-Interactive Configure** - `--api-key`, `--email`, `--otp` options for CI/CD and automation
-- **Post-Process Display** - Post-processed responses now shown in chat streaming
-
-#### Improvements
-- Sync command refactored with dedicated endpoints for name/persona updates
-- `--force-sync` flag removed (sync is now default behavior)
-
-#### Bug Fixes
-- Marketplace filtering for approved versions only
-- PreProcessor test handling fixed for object format
-
-#### Interface Changes
-- Added `MCPServerSource` enum for tracking MCP server origin
-- Added `'mcp'` and `'mastra'` to log type enums
-
----
-
-## [3.5.0-alpha.1] - 2026-01-23
-
-### Updated - Documentation for lua-cli v3.5.0-alpha.1 (Alpha Release)
+### Updated - Documentation for lua-cli v3.5.0
 
 #### New Features Documented
 - **User Lookup by Email or Phone** - `User.get()` now supports email/phone lookup
   - `User.get({ email: 'customer@example.com' })` - Look up by email
-  - `User.get({ phone: '+1234567890' })` - Look up by phone (with or without + prefix)
+  - `User.get({ phone: '+1234567890' })` - Look up by phone
   - Returns `null` instead of throwing when user not found
-  - Useful for webhooks receiving contact info from external systems
+- **Integrations Command** - Connect 250+ third-party services via Unified.to
+  - `lua integrations connect` - OAuth and API token authentication
+  - `lua integrations list` - View connected accounts
+  - `lua integrations webhooks` - Manage webhook triggers
+  - `lua integrations mcp` - Manage MCP servers for connections
+  - Server-side finalization for reliable connection setup
+  - Auth URL redirect resolution for seamless OAuth flows
+- **Webhook Triggers for Integrations** - Event-driven triggers that wake up your agent
+  - `--triggers` flag for specifying events
+  - `--custom-webhook` and `--hook-url` flags for custom webhook URLs
+  - Triggers pre-selected by default in interactive mode
+- **Project Backup & Restore** - `lua push backup` and `lua init --restore-sources`
+  - Content-addressed deduplication, S3 direct upload (no size limits)
+- **CI/CD Mode** - `--ci` global flag fails loudly on missing required flags
+- **`lua agents` Command** - List all organizations and agents with `--json` output
+- **`lua update` Command** - Self-update from npm with background outdated version warning
+- **Auto-Add `dist-v2/` to `.gitignore`** - Added on compile and init
+- **Variable References in Primitive Config** - Variables, imports, and expressions in config properties
+- **Complete `push all`** - Now includes persona and source backup
+- **MCP and Mastra Log Types** - `--type mcp` and `--type mastra` in logs command
+- **User ID Filtering in Logs** - `--user-id` option
+- **Non-Interactive Configure** - `--api-key`, `--email`, `--otp` options
+- **Non-Interactive Sandbox Views** - `lua persona sandbox view`, `lua skills sandbox view`
+- **Post-Process Display** - Post-processed responses shown in chat streaming
+
+#### Performance Improvements
+- Parallel server sync during compilation (~3-6s → ~1s)
+- Batch version checks in `lua push all`
+- Lazy authentication (no upfront validation call)
+
+#### Breaking Changes
+- Push flag renamed: `--version` → `--set-version`
+- Compile sync default changed: `--no-sync` (opt-out) → `--sync` (opt-in)
+- New compile flag: `--verbose` for detailed output
+
+#### Bug Fixes
+- Job creation regression from new bundle format (BAC-40)
+- Backup "request entity too large" with S3 presigned uploads (BAC-39)
+- MCP server duplicate name race condition (BAC-44)
+- Email channel creation aligned with API schema (LUA-122)
+- Agent config arrays with variables no longer silently empty
+- Webhook `headerSchema` key mapping fixed
+- Tool condition regression fixed
+- MCP server push pipeline (3 bugs) fixed
+- Auth error handling improved (403, sync propagation)
+- Compile sync stale config fixed
+- Marketplace approved-only filtering
+- PreProcessor test object format handling
 
 #### Interface Changes
-- Added `UserLookupOptions` interface for email/phone lookup
+- Added `UserLookupOptions`, `EmailChannelMode`, `MCPServerSource`
+- Added `CreateGeneratedEmailChannelResponse`, `CreateExistingEmailChannelResponse`
+- Added `'mcp'` and `'mastra'` to log type enums
 - Updated `User.get()` return type to `UserDataInstance | null`
-- Exported `UserLookupOptions` and `ProfileResponse` types
 
 ---
 
