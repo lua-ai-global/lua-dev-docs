@@ -29,6 +29,7 @@
             "group": "Key Concepts",
             "pages": [
               "overview/agent",
+              "overview/model-selection",
               "overview/persona",
               "overview/skill",
               "overview/tools",

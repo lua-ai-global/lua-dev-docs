@@ -1,0 +1,142 @@
+---
+title: "Model Selection"
+description: "Choose which LLM powers your agent — statically or dynamically per request"
+---
+
+## Overview
+
+By default, every Lua agent uses **Google Gemini 2.5 Flash**. The `model` property on `LuaAgent` lets you choose a different model or select one dynamically based on the request context.
+
+```typescript
+export const agent = new LuaAgent({
+  name: 'my-agent',
+  persona: '...',
+  model: 'openai/gpt-4o',  // ← add this
+  skills: [mySkill]
+});
+```
+
+<Note>
+  **Lua manages the API credentials.** You don't need to configure any API keys or provider accounts — Lua handles all LLM infrastructure on your behalf.
+
+  Support for user-provided API keys (Bring Your Own Key) is coming in a future release.
+</Note>
+
+---
+
+## Available Models
+
+| Model string | Provider | Context window |
+|---|---|---|
+| `google/gemini-2.5-flash` | Google (Vertex AI) | 1M tokens **(default)** |
+| `google/gemini-2.5-pro` | Google (Vertex AI) | 1M tokens |
+| `google/gemini-2.0-flash` | Google (Vertex AI) | 1M tokens |
+| `openai/gpt-4o` | OpenAI | 128K tokens |
+| `openai/gpt-4o-mini` | OpenAI | 128K tokens |
+| `openai/gpt-4.1` | OpenAI | 1M tokens |
+| `openai/gpt-4.1-mini` | OpenAI | 1M tokens |
+| `anthropic/claude-3.5-sonnet` | Anthropic | 200K tokens |
+| `anthropic/claude-3.7-sonnet` | Anthropic | 200K tokens |
+
+---
+
+## Static Model
+
+The simplest form — one model for all requests:
+
+```typescript
+export const agent = new LuaAgent({
+  name: 'support-agent',
+  persona: '...',
+  model: 'openai/gpt-4o',
+  skills: [supportSkill]
+});
+```
+
+**When to use:** When you want a specific model across all users and channels.
+
+---
+
+## Dynamic Model Resolver
+
+Use a function to select the model per request. The resolver receives the full request with access to all platform APIs — `User`, `Baskets`, `Products`, `Data`, and more.
+
+```typescript
+export const agent = new LuaAgent({
+  name: 'smart-agent',
+  persona: '...',
+  model: async (request) => {
+    const user = await User.get();
+    return user.data?.isPremium ? 'openai/gpt-4o' : 'google/gemini-2.5-flash';
+  },
+  skills: [mySkill]
+});
+```
+
+The resolver must return a `'provider/model'` string synchronously or asynchronously.
+
+---
+
+## Common Patterns
+
+### Premium vs free users
+
+```typescript
+model: async (request) => {
+  const user = await User.get();
+  const tier = user.data?.subscriptionTier;
+
+  if (tier === 'pro') return 'openai/gpt-4.1';        // large context
+  if (tier === 'standard') return 'openai/gpt-4o';     // balanced
+  return 'google/gemini-2.5-flash';                    // default
+}
+```
+
+### Channel-based selection
+
+```typescript
+model: (request) => {
+  // Use a faster/cheaper model for voice channels
+  if (request.channel === 'voice') return 'google/gemini-2.0-flash';
+  // Use a more capable model for complex web requests
+  return 'openai/gpt-4o';
+}
+```
+
+### Content-based routing
+
+```typescript
+model: async (request) => {
+  // Use a model with large context for document-heavy workflows
+  const basketCount = await Baskets.getCount();
+  if (basketCount > 50) return 'openai/gpt-4.1';  // 1M context
+  return 'openai/gpt-4o';
+}
+```
+
+### Environment-based
+
+```typescript
+import { env } from 'lua-cli';
+
+model: env('PREFERRED_MODEL') || 'google/gemini-2.5-flash'
+```
+
+---
+
+## Default Model
+
+If you don't set `model`, your agent uses `google/gemini-2.5-flash`. This is a fast, capable model with a 1M token context window — suitable for most use cases.
+
+---
+
+## Related
+
+<CardGroup cols={2}>
+  <Card title="LuaAgent API" href="/api/luaagent" icon="code">
+    Full constructor reference including the model param
+  </Card>
+  <Card title="Platform APIs" href="/concepts/platform-apis" icon="plug">
+    APIs available inside a model resolver function
+  </Card>
+</CardGroup>

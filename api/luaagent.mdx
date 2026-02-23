@@ -103,10 +103,39 @@ Creates a new agent configuration.
 
 <ParamField path="mcpServers" type="LuaMCPServer[]">
   MCP (Model Context Protocol) servers providing external tools
-  
+
   **Default**: `[]`
-  
+
   **See**: [LuaMCPServer API](/api/luamcpserver)
+</ParamField>
+
+<ParamField path="model" type="string | ((request: LuaRequest) => string | Promise<string>)">
+  The LLM your agent uses. Either a static `'provider/model'` string or a resolver function
+  that selects the model dynamically per request.
+
+  **Format**: `'provider/model'` — e.g. `'google/gemini-2.5-flash'`, `'openai/gpt-4o'`
+
+  **Default**: `'google/gemini-2.5-flash'`
+
+  <Note>
+    Lua manages the API credentials — you don't need to configure any API keys.
+    Support for user-provided API keys is coming in a future release.
+  </Note>
+
+  **Static model:**
+  ```typescript
+  model: 'openai/gpt-4o'
+  ```
+
+  **Dynamic resolver** — receives the full request with all platform APIs available (`User`, `Baskets`, `Products`, etc.):
+  ```typescript
+  model: async (request) => {
+    const user = await User.get();
+    return user.data?.isPremium ? 'openai/gpt-4o' : 'google/gemini-2.5-flash';
+  }
+  ```
+
+  **See**: [Model Selection](/overview/model-selection)
 </ParamField>
 
 ## Basic Example

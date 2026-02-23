@@ -55,6 +55,9 @@ Communication style:
 - Proactive with solutions`,
 
   
+  // Optional: Which LLM to use (default: google/gemini-2.5-flash)
+  model: 'openai/gpt-4o',
+
   // Optional: Skills with tools
   skills: [customerServiceSkill, productSkill],
   
@@ -123,6 +126,18 @@ skills: [mySkill]
 Without skills, the agent has no capabilities!
 
 ## Optional Components
+
+### Model
+
+Which LLM your agent uses to generate responses:
+
+```typescript
+model: 'openai/gpt-4o'
+```
+
+**Use for:** Choosing a model with different capabilities, context window, or cost profile. You can also select models dynamically per user or channel.
+
+**See:** [Model Selection](/overview/model-selection) for available models and dynamic selection patterns.
 
 ### Welcome Message
 
