@@ -5,7 +5,7 @@ description: "Quick access commands for admin interface and documentation"
 
 ## Overview
 
-Utility commands provide quick access to the Lua Admin interface, documentation, and shell autocomplete setup.
+Utility commands provide quick access to the Lua Admin interface, documentation, shell autocomplete setup, and telemetry settings.
 
 <CardGroup cols={3}>
   <Card title="lua agents" icon="users">
@@ -23,7 +23,14 @@ Utility commands provide quick access to the Lua Admin interface, documentation,
   <Card title="lua docs" icon="book">
     Open documentation
   </Card>
+  <Card title="lua telemetry" icon="chart-mixed">
+    Manage usage telemetry
+  </Card>
 </CardGroup>
+
+<Note>
+**New in v3.6.0:** `lua telemetry` command to manage anonymous usage data collection.
+</Note>
 
 <Note>
 **New in v2.6.0:** Shell autocomplete support for Bash, Zsh, and Fish!
@@ -1021,6 +1028,97 @@ $ ld
 # Opens documentation instantly
 ```
 
+## lua telemetry
+
+<Note>
+  **New in v3.6.0:** Manage whether lua-cli sends anonymous usage data.
+</Note>
+
+Control whether lua-cli collects anonymous usage data to help improve the developer experience.
+
+```bash
+lua telemetry           # Show current status
+lua telemetry on        # Enable telemetry
+lua telemetry off       # Disable telemetry
+lua telemetry status    # Show status (same as no argument)
+```
+
+### What Is Collected
+
+lua-cli collects **anonymous, non-identifiable** usage data:
+
+| Collected | Not Collected |
+|-----------|---------------|
+| Command name (e.g. `push`, `compile`) | Your code or file contents |
+| Success or failure | Command arguments or flag values |
+| Command duration | API keys or secrets |
+| CLI version | Email or personal information |
+| OS and Node.js version | Agent names or custom data |
+
+All users are identified by a one-way hash of their API key — it cannot be reversed.
+
+### Opting Out
+
+You can opt out at any time using either method:
+
+<Tabs>
+  <Tab title="CLI command">
+    ```bash
+    lua telemetry off
+    ```
+
+    Persists your preference in `~/.lua-cli/telemetry.json`. Re-enable with `lua telemetry on`.
+  </Tab>
+  <Tab title="Environment variable">
+    ```bash
+    # Disable for this session
+    LUA_TELEMETRY=false lua push
+
+    # Or add to your shell profile to disable permanently
+    echo 'export LUA_TELEMETRY=false' >> ~/.zshrc
+    ```
+
+    The environment variable takes highest priority and overrides the saved preference.
+  </Tab>
+</Tabs>
+
+### Check Current Status
+
+```bash
+$ lua telemetry
+Telemetry: enabled
+
+Usage:
+  lua telemetry on      Enable anonymous telemetry
+  lua telemetry off     Disable telemetry
+  lua telemetry status  Show current setting
+
+Or set LUA_TELEMETRY=false in your environment.
+```
+
+### First-Run Notice
+
+On first use, lua-cli prints a one-time notice:
+
+```
+  Lua CLI collects anonymous usage data to improve the developer experience.
+  To opt out, run: lua telemetry off
+  Or set: LUA_TELEMETRY=false
+```
+
+This notice is shown once and never again.
+
+### CI/CD Environments
+
+In CI/CD pipelines, disable telemetry via environment variable — no config file needed:
+
+```bash
+# In your CI environment variables
+LUA_TELEMETRY=false
+```
+
+Or use the `--ci` flag which automatically adjusts CLI behavior for non-interactive environments.
+
 ## Quick Comparison
 
 | Command | Opens/Generates | Requires Auth | Use For |
@@ -1030,6 +1128,7 @@ $ ld
 | `lua admin` | Admin dashboard | ✅ Yes | Managing agent, conversations, billing |
 | `lua evals` | Evaluations dashboard | ✅ Yes | Testing agent, tracking performance |
 | `lua docs` | Documentation | ❌ No | Reference, examples, learning |
+| `lua telemetry` | Telemetry settings | ❌ No | Opt in/out of anonymous usage data |
 
 ## Integration with Workflow
 
