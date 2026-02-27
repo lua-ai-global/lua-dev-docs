@@ -1,0 +1,168 @@
+---
+title: "Flow Component"
+description: "Send WhatsApp Flows as interactive forms inside the chat"
+---
+
+## Overview
+
+The **Flow** component sends a [WhatsApp Flow](https://developers.facebook.com/docs/whatsapp/flows) as an interactive message with a CTA button. When the user taps the button, a multi-screen form opens inside WhatsApp — they fill it in and submit it, all without leaving the chat.
+
+Flows are built in **WhatsApp Manager** (not in Lua). The agent just needs to know the Flow ID to send it.
+
+<Warning>
+**WhatsApp only** — This component only works on WhatsApp. On other channels, the raw `:::` block will be sent as plain text.
+</Warning>
+
+## Format
+
+```
+::: flow
+flow_id=<FLOW_ID>
+flow_cta=<Button text>
+body=<Message body shown above the button>
+:::
+```
+
+### Required Fields
+
+| Field | Description |
+|---|---|
+| `flow_id` | The Flow ID from WhatsApp Manager (e.g. `1234567890`) |
+| `flow_cta` | Text on the CTA button (max 30 characters, no emoji) |
+
+### Optional Fields
+
+| Field | Description |
+|---|---|
+| `body` | Message body text shown above the CTA button. Falls back to the text outside the `:::` block if omitted. |
+| `header` | Header text shown above the body |
+| `footer` | Footer text shown below the body |
+| `screen` | The screen ID to open first (defaults to the flow's entry screen) |
+
+<Note>
+The parser is flexible — it accepts `=` or `:` as separators, with or without spaces or quotes around values. All of these work:
+```
+flow_id=123
+flow_id = 123
+flow_id: 123
+body="Hello world"
+body='Hello world'
+body = Hello world
+```
+</Note>
+
+## Examples
+
+### Simple — OTP / Password Entry
+
+```
+Please tap below to securely enter your verification code.
+
+::: flow
+flow_id=9876543210
+flow_cta=Enter Code
+body=Tap to enter your verification code securely
+:::
+```
+
+The user sees a message with a "Enter Code" button. Tapping it opens the flow form where they can type their code in a password field — hidden from the chat history.
+
+### With Header and Footer
+
+```
+::: flow
+flow_id=1122334455
+flow_cta=Book Appointment
+body=Select your preferred date and time
+header=Schedule a Visit
+footer=Available Mon-Fri, 9am-5pm
+:::
+```
+
+### With Specific Start Screen
+
+```
+::: flow
+flow_id=5566778899
+flow_cta=Start Survey
+body=We'd love your feedback! It only takes 2 minutes.
+screen=FEEDBACK_SCREEN
+:::
+```
+
+## How the Response Works
+
+When the user completes the flow and submits, the agent receives a message like:
+
+```
+User completed a WhatsApp Flow. Submitted data:
+- name: John Smith
+- email: john@example.com
+- appointment_date: 2025-03-15
+(flow_token: abc123)
+```
+
+The agent can then process the submitted data as normal conversation context.
+
+<Note>
+**Password/passcode fields** are automatically excluded from the WhatsApp chat summary UI (since Flows v5.1). However, the submitted values **are still included in the webhook payload** and will appear in the agent's conversation history.
+</Note>
+
+## Handling Sensitive Data
+
+WhatsApp hides password/passcode fields from the chat summary UI, but the raw values still arrive in the webhook and get stored in conversation history. There are two approaches depending on your security needs:
+
+### Option A: Preprocessor masking (basic)
+
+Use a [preprocessor](/cli/preprocessors) to mask sensitive fields before the agent sees the current message. Note that the original values may still appear in stored conversation history.
+
+```typescript
+// Detect flow response messages and mask fields matching sensitive patterns
+const SENSITIVE_PATTERNS = [/password/i, /passcode/i, /secret/i, /pin/i, /otp/i, /code/i];
+
+// Replace values with [REDACTED] before the agent processes the message
+```
+
+### Option B: Flow with endpoint (recommended for sensitive data)
+
+For truly secure handling (OTP validation, password checks), use a **flow with a data exchange endpoint**. The sensitive data is validated server-side *inside* the flow before it closes. The `complete` payload only sends the validation result (e.g., `"otp_verified": true`), so the raw value never reaches the agent or conversation history.
+
+This requires setting up an encrypted endpoint — see [WhatsApp Flows endpoint documentation](https://developers.facebook.com/docs/whatsapp/flows/guides/implementingyourflowendpoint) for details.
+
+## Configure
+
+Tell your agent in **Persona** or **Skill Context** which flow to use and when:
+
+```
+context: `
+  When the user needs to enter their verification code,
+  send them the secure input flow:
+
+  ::: flow
+  flow_id=9876543210
+  flow_cta=Enter Code
+  body=Tap to securely enter your verification code
+  :::
+
+  After they submit, you'll receive their input as
+  "User completed a WhatsApp Flow. Submitted data:"
+  followed by the form fields.
+`
+```
+
+## Finding Your Flow ID
+
+1. Go to **WhatsApp Manager** > **Account tools** > **Flows**
+2. Click on your flow
+3. The Flow ID is shown in the URL or flow details
+
+Only **Published** flows can be sent to users. Draft flows can be sent for testing using the API with `mode=draft`.
+
+## Best For
+
+- Appointment booking forms
+- Lead generation & sign-up forms
+- Customer feedback surveys
+- Order details collection
+- Any structured data collection that benefits from a form UI
+- OTP / password / PIN entry (hidden from WhatsApp chat UI; for full security, use a flow with endpoint)

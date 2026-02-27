@@ -11,42 +11,47 @@ Make your agent's responses visually appealing with **formatting components** th
 **Important**: You must explicitly instruct your agent in the **Persona** or **Skill Context** to use these components. They won't be used automatically!
 </Warning>
 
-## 7 Visual Components
+## 8 Visual Components
 
 <CardGroup cols={3}>
   <Card title="List-Item" icon="list" href="/formatting/list-item">
     **Products, rooms, menus**
-    
+
     Structured lists with images, titles, and descriptions
   </Card>
   <Card title="Horizontal-List-Item" icon="images" href="/formatting/horizontal-list-item">
     **Carousel display**
-    
+
     Swipeable cards for visual browsing (WhatsApp only)
   </Card>
   <Card title="Actions" icon="hand-pointer" href="/formatting/actions">
     **Interactive buttons**
-    
+
     Clickable action buttons for next steps
   </Card>
   <Card title="Links" icon="link" href="/formatting/links">
     **Web URLs**
-    
+
     Links with rich previews
   </Card>
   <Card title="Images" icon="image" href="/formatting/images">
     **Photo galleries**
-    
+
     Multiple images in gallery format
   </Card>
   <Card title="Payment" icon="credit-card" href="/formatting/payment">
     **Checkout links**
-    
+
     Secure payment and booking links
+  </Card>
+  <Card title="Flow" icon="rectangle-list" href="/formatting/flow">
+    **Interactive forms**
+
+    WhatsApp Flows for secure data collection (WhatsApp only)
   </Card>
   <Card title="Navigate" icon="arrow-up-right-from-square" href="/formatting/navigate">
     **Website navigation**
-    
+
     Direct users to pages (WebChat only)
   </Card>
 </CardGroup>
@@ -133,6 +138,7 @@ Most components work across all channels:
 **Channel-specific components:**
 - **Navigate** - WebChat/LuaPop only (requires onNavigate handler)
 - **Horizontal-List-Item** - WhatsApp only (falls back to list-item on other channels)
+- **Flow** - WhatsApp only (sends interactive WhatsApp Flows for secure data collection)
 </Note>
 
 ## Coming Soon
