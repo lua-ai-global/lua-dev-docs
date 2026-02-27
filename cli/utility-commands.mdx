@@ -29,7 +29,7 @@ Utility commands provide quick access to the Lua Admin interface, documentation,
 </CardGroup>
 
 <Note>
-**New in v3.6.0:** `lua telemetry` command to manage anonymous usage data collection.
+**New in v3.6.0:** `lua telemetry` command to manage usage data collection.
 </Note>
 
 <Note>
@@ -1031,10 +1031,10 @@ $ ld
 ## lua telemetry
 
 <Note>
-  **New in v3.6.0:** Manage whether lua-cli sends anonymous usage data.
+  **New in v3.6.0:** Manage whether lua-cli sends usage data.
 </Note>
 
-Control whether lua-cli collects anonymous usage data to help improve the developer experience.
+Control whether lua-cli collects usage data to help improve the developer experience.
 
 ```bash
 lua telemetry           # Show current status
@@ -1045,17 +1045,17 @@ lua telemetry status    # Show status (same as no argument)
 
 ### What Is Collected
 
-lua-cli collects **anonymous, non-identifiable** usage data:
+lua-cli collects usage data to improve the developer experience:
 
 | Collected | Not Collected |
 |-----------|---------------|
 | Command name (e.g. `push`, `compile`) | Your code or file contents |
 | Success or failure | Command arguments or flag values |
 | Command duration | API keys or secrets |
-| CLI version | Email or personal information |
-| OS and Node.js version | Agent names or custom data |
+| CLI version, OS, Node.js version | Agent names or custom data |
+| Account email (for person identification) | |
 
-All users are identified by a one-way hash of their API key — it cannot be reversed.
+Your data is handled in accordance with our [Privacy Policy](https://heylua.ai/privacy).
 
 ### Opting Out
 
@@ -1089,7 +1089,7 @@ $ lua telemetry
 Telemetry: enabled
 
 Usage:
-  lua telemetry on      Enable anonymous telemetry
+  lua telemetry on      Enable telemetry
   lua telemetry off     Disable telemetry
   lua telemetry status  Show current setting
 
@@ -1101,7 +1101,7 @@ Or set LUA_TELEMETRY=false in your environment.
 On first use, lua-cli prints a one-time notice:
 
 ```
-  Lua CLI collects anonymous usage data to improve the developer experience.
+  Lua CLI collects usage data to improve the developer experience.
   To opt out, run: lua telemetry off
   Or set: LUA_TELEMETRY=false
 ```
@@ -1128,7 +1128,7 @@ Or use the `--ci` flag which automatically adjusts CLI behavior for non-interact
 | `lua admin` | Admin dashboard | ✅ Yes | Managing agent, conversations, billing |
 | `lua evals` | Evaluations dashboard | ✅ Yes | Testing agent, tracking performance |
 | `lua docs` | Documentation | ❌ No | Reference, examples, learning |
-| `lua telemetry` | Telemetry settings | ❌ No | Opt in/out of anonymous usage data |
+| `lua telemetry` | Telemetry settings | ❌ No | Opt in/out of usage data collection |
 
 ## Integration with Workflow
 
