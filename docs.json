@@ -266,6 +266,7 @@
             "formatting/links",
             "formatting/images",
             "formatting/payment",
+            "formatting/flow",
             "formatting/navigate"
           ]
           },
