@@ -3,6 +3,63 @@ title: "Changelog"
 description: "Release notes and version history for lua-cli"
 ---
 
+## v3.6.0
+
+**Released:** February 27, 2026
+
+### ✨ New Features
+
+<AccordionGroup>
+  <Accordion title="Agent Model Selection">
+    `LuaAgent` now supports a `model` property to control which AI model your agent uses. Specify a static model string or a dynamic resolver function.
+
+    ```typescript
+    import { LuaAgent } from 'lua-cli';
+
+    // Static model
+    export const agent = new LuaAgent({
+      name: 'my-agent',
+      persona: 'You are a helpful assistant.',
+      model: 'openai/gpt-4o',
+    });
+
+    // Dynamic model based on channel
+    export const agent = new LuaAgent({
+      name: 'my-agent',
+      persona: 'You are a helpful assistant.',
+      model: async (request) => {
+        if (request.channel === 'whatsapp') return 'openai/gpt-4o-mini';
+        return 'openai/gpt-4o';
+      },
+    });
+    ```
+
+    Supported providers: `google/*`, `openai/*`, `anthropic/*`. Default: `google/gemini-2.5-flash`.
+  </Accordion>
+
+  <Accordion title="Usage Telemetry">
+    lua-cli now collects usage data to help improve the developer experience. A new `lua telemetry` command lets you control data collection:
+
+    ```bash
+    lua telemetry          # Show current status
+    lua telemetry on       # Enable telemetry
+    lua telemetry off      # Disable telemetry
+    ```
+
+    Or set `LUA_TELEMETRY=false` in your environment. See [Telemetry](/cli/utility-commands#lua-telemetry) for details.
+  </Accordion>
+</AccordionGroup>
+
+### 🔧 Improvements
+
+<AccordionGroup>
+  <Accordion title="keytar as Optional Dependency">
+    `keytar` (OS keychain access) is now optional. Fixes installation on CI/CD systems without native build tools. Falls back to environment variables or `.env` file.
+  </Accordion>
+</AccordionGroup>
+
+---
+
 ## v3.5.0
 
 **Released:** February 20, 2026

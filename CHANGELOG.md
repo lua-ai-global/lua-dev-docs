@@ -4,6 +4,23 @@ All notable changes to the Lua documentation will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
+## [3.6.0] - 2026-02-27
+
+### Updated - Documentation for lua-cli v3.6.0
+
+#### New Features Documented
+- **Agent Model Selection** (BAC-49) - `LuaAgent` now supports a `model` property
+  - Static model: `model: 'openai/gpt-4o'`
+  - Dynamic resolver: `model: async (request) => { ... }`
+  - Supported providers: `google/*`, `openai/*`, `anthropic/*`
+- **Usage Telemetry** (BAC-37) - `lua telemetry` command for managing usage data collection
+  - `lua telemetry on/off/status`
+  - `LUA_TELEMETRY=false` environment variable for opt-out
+- **Agent as Primitive** - LuaAgent compiled through standard plugin pipeline (internal change, no user action needed)
+
+#### Improvements Documented
+- **keytar as optional dependency** - Fixes installation on CI/CD systems without native build tools
+
 ## [3.5.0] - 2026-02-20
 
 ### Updated - Documentation for lua-cli v3.5.0
