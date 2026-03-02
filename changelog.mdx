@@ -3,6 +3,45 @@ title: "Changelog"
 description: "Release notes and version history for lua-cli"
 ---
 
+## v3.6.1
+
+**Released:** March 2, 2026
+
+### 🐛 Bug Fixes
+
+<AccordionGroup>
+  <Accordion title="Job Schedule Fields Now Preserved">
+    `interval` and `once` job schedules now compile and push correctly. Previously, the `seconds` field (interval) and `executeAt` field (once) were silently dropped during compilation, causing `lua push job` to fail with:
+
+    ```
+    Push Error: Interval seconds must be at least 60
+    ```
+
+    All three schedule types now work as documented:
+
+    ```typescript
+    // Interval — seconds now correctly sent to server
+    schedule: { type: 'interval', seconds: 300 }
+
+    // Once — executeAt now correctly sent to server
+    schedule: { type: 'once', executeAt: new Date(Date.now() + 3600000) }
+
+    // Cron — was already working
+    schedule: { type: 'cron', expression: '0 9 * * *' }
+    ```
+  </Accordion>
+
+  <Accordion title="Agent Imported Primitive Resolution">
+    Agents that reference imported primitives using instantiation patterns in their config arrays (e.g. `jobs: [new MyJob()]`) now correctly resolve and compile.
+  </Accordion>
+
+  <Accordion title="CLI Exits Immediately">
+    The CLI now exits immediately after completing a command. Previously, a background timer kept the process alive for up to ~1s after all work was done.
+  </Accordion>
+</AccordionGroup>
+
+---
+
 ## v3.6.0
 
 **Released:** February 27, 2026

@@ -4,6 +4,14 @@ All notable changes to the Lua documentation will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
+## [3.6.1] - 2026-03-02
+
+### Bug Fixes
+
+- **Job schedule fields preserved** - `interval` schedules now correctly send `seconds` and `once` schedules now correctly send `executeAt` to the server. Previously these fields were dropped during compilation, causing push to fail with a validation error.
+- **Agent imports resolved correctly** - Agents referencing imported primitives in config arrays now compile correctly.
+- **CLI exits immediately** - Removed ~1s exit delay after commands complete.
+
 ## [3.6.0] - 2026-02-27
 
 ### Updated - Documentation for lua-cli v3.6.0
