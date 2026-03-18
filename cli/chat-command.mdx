@@ -243,6 +243,53 @@ agent:
 
 The AI uses your local sandbox versions instead of production versions.
 
+## Thread Isolation
+
+By default, `lua chat` uses your agent's shared conversation context. Use the `--thread` flag to scope a session to an isolated thread — useful for running consecutive tests without state leaking between runs.
+
+### Usage
+
+```bash
+# Scope to an explicit thread ID
+lua chat --thread my-test-scenario
+
+# Auto-generate a fresh thread ID (printed at session start)
+lua chat --thread
+
+# Reuse a thread across multiple non-interactive messages
+lua chat -m "step 1" --thread test-flow
+lua chat -m "step 2" --thread test-flow
+
+# Isolated test: scoped thread, auto-cleared on exit
+lua chat -m "run test" -t --clear
+
+# Explicit thread with auto-clear
+lua chat -m "run test" -t my-test --clear
+```
+
+### Flags
+
+| Flag | Description |
+|------|-------------|
+| `-t, --thread [id]` | Scope to a thread. Omit the ID to auto-generate a UUID. The active thread ID is always printed at session start. |
+| `--clear`, `--clear-thread` | Clear the thread's history when the session ends (interactive: on exit, non-interactive: after response). Requires `--thread`. |
+
+### Clearing a Thread Manually
+
+```bash
+lua chat clear --thread my-test-scenario
+```
+
+### Testing Workflow Example
+
+Run 10 isolated test cases against your agent, each with a clean slate:
+
+```bash
+for i in $(seq 1 10); do
+  lua chat -m "test scenario $i" -t "test-run-$i" --clear -e sandbox
+done
+```
+
 ## Keyboard Shortcuts
 
 | Shortcut | Action |

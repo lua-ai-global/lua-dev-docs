@@ -244,12 +244,23 @@ However, this still allows the command to continue (and likely fail silently). U
     
     # Default: sandbox
     lua chat -m "Quick test message"
+    
+    # Scoped to an explicit thread
+    lua chat -m "Run scenario A" --thread scenario-a
+    
+    # Auto-generated thread (UUID printed at start)
+    lua chat -m "Isolated test" --thread
+    
+    # Isolated test with auto-clear after response
+    lua chat -m "Run test" -t my-test --clear
     ```
     
     | Option | Description |
     |--------|-------------|
     | `-e, --env <env>` | Environment: sandbox or production |
     | `-m, --message <text>` | Message to send |
+    | `-t, --thread [id]` | Scope to a thread (omit ID to auto-generate UUID) |
+    | `--clear`, `--clear-thread` | Clear thread history after response (requires `--thread`) |
   </Tab>
 </Tabs>
 
@@ -706,6 +717,9 @@ However, this still allows the command to continue (and likely fail silently). U
     # Clear specific user's history
     lua chat clear --user user@email.com --force
     lua chat clear --user +1234567890 --force
+    
+    # Clear a specific thread's history
+    lua chat clear --thread my-test-scenario --force
     ```
   </Tab>
 </Tabs>

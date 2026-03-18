@@ -363,11 +363,52 @@ lua chat -e production -m "What's the weather in London?"
 | `lua test` | Runs execute function directly in VM | No | Fast |
 | `lua chat` | Full agent request with AI | Yes | Slower |
 
-### Clearing Conversation History (`lua chat clear`)
+### Thread Isolation for Testing
 
 <Note>
-**Important for testing!** The agent has memory/conversation history. When testing, you often want a fresh state. Use `lua chat clear` to reset the AI's memory.
+**Recommended for AI agents running automated tests.** Use `--thread` to scope each chat session to an isolated conversation context. This prevents test state from leaking between runs — no need to call `lua chat clear` between tests.
 </Note>
+
+Each `--thread` creates a completely independent conversation context. This also means **multiple tests can run concurrently** (5-10 at a time) without interfering with each other.
+
+```bash
+# Scope to an explicit thread ID
+lua chat -e sandbox -m "Test scenario A" --thread scenario-a
+
+# Auto-generate a UUID thread (printed at start so you can log/reuse it)
+lua chat -e sandbox -m "Test scenario B" --thread
+
+# Isolated test with automatic cleanup after response
+lua chat -e sandbox -m "Test scenario C" -t scenario-c --clear
+
+# Run 10 isolated tests sequentially, each with a clean context
+for i in $(seq 1 10); do
+  lua chat -e sandbox -m "test scenario $i" -t "test-$i" --clear
+done
+```
+
+**`--thread` flags:**
+
+| Flag | Description |
+|------|-------------|
+| `-t, --thread [id]` | Scope to a named thread. Omit the ID to auto-generate a UUID. Thread ID is printed at session start. |
+| `--clear`, `--clear-thread` | Clear the thread's history when the session ends (interactive: on exit, non-interactive: after response). Requires `--thread`. |
+
+### Concurrent Testing
+
+Because each `--thread` is a fully isolated conversation, you can run multiple `lua chat` invocations in parallel without any state collision. This is especially useful for AI agents that need to validate multiple conversation scenarios at once:
+
+```bash
+# Run 5 tests in parallel (background jobs)
+lua chat -e sandbox -m "test flow A" -t test-a --clear &
+lua chat -e sandbox -m "test flow B" -t test-b --clear &
+lua chat -e sandbox -m "test flow C" -t test-c --clear &
+lua chat -e sandbox -m "test flow D" -t test-d --clear &
+lua chat -e sandbox -m "test flow E" -t test-e --clear &
+wait  # wait for all to complete
+```
+
+### Clearing Conversation History (`lua chat clear`)
 
 ```bash
 # Clear all conversation history
@@ -377,12 +418,18 @@ lua chat clear --force
 lua chat clear --user user@email.com --force
 lua chat clear --user +1234567890 --force
 lua chat clear --user user_abc123 --force
+
+# Clear a specific thread's history
+lua chat clear --thread my-test-scenario --force
 ```
 
-**When to use**:
-- Before testing a new feature or flow
-- When the agent's context is polluted from previous tests
-- When debugging unexpected behavior that might be context-related
+**When to use `lua chat clear` vs `--thread`**:
+
+| Approach | When to use |
+|----------|-------------|
+| `lua chat clear --force` | Reset all history before a new development session |
+| `--thread <id>` | Isolate individual test runs without touching other contexts |
+| `--clear` | Auto-clean up thread history at end of each automated test |
 
 ### Recommended Development Workflow
 
@@ -397,16 +444,18 @@ lua logs --type skill --name my_tool --limit 5
 
 # 4. Iterate until component works
 
-# 5. Clear conversation history for fresh test
-lua chat clear --force
+# 5. Test with full agent in an isolated thread (no need to clear history)
+lua chat -e sandbox -m "Test message" -t dev-session
 
-# 6. Test with full agent (sandbox)
-lua chat -e sandbox -m "Test message"
+# 6. Run a suite of scenario tests concurrently
+lua chat -e sandbox -m "scenario 1" -t s1 --clear &
+lua chat -e sandbox -m "scenario 2" -t s2 --clear &
+wait
 
 # 7. When ready: push and deploy
 
 # 8. Verify in production
-lua chat -e production -m "Test message"
+lua chat -e production -m "Test message" -t prod-verify --clear
 ```
 
 ---
@@ -704,18 +753,15 @@ lua integrations webhooks delete --webhook-id <id>
 
 ### Testing Integration Tools
 
-After connecting, test immediately:
+After connecting, test immediately. Use `--thread` to keep each test isolated:
 
 ```bash
-# Clear conversation for fresh context
-lua chat clear --force
+# Test integration tools in isolated threads (can run concurrently)
+lua chat -e sandbox -m "Create a Linear issue titled 'Test from Lua' in my default project" -t test-linear --clear
 
-# Test the integration tools
-lua chat -e sandbox -m "Create a Linear issue titled 'Test from Lua' in my default project"
+lua chat -e sandbox -m "List my upcoming Google Calendar events" -t test-gcal --clear
 
-lua chat -e sandbox -m "List my upcoming Google Calendar events"
-
-lua chat -e sandbox -m "Send a message to the #general channel on Discord"
+lua chat -e sandbox -m "Send a message to the #general channel on Discord" -t test-discord --clear
 ```
 
 ### Available Integrations (250+)
@@ -766,14 +812,11 @@ lua integrations connect --integration linear --auth-method oauth --scopes all \
 lua integrations list
 lua integrations webhooks list
 
-# 4. Clear chat history for fresh test
-lua chat clear --force
+# 4. Test the integration in isolated threads
+lua chat -e sandbox -m "List all Linear projects I have access to" -t test-list --clear
+lua chat -e sandbox -m "Create a task in Linear: Review documentation updates" -t test-create --clear
 
-# 5. Test the integration
-lua chat -e sandbox -m "List all Linear projects I have access to"
-lua chat -e sandbox -m "Create a task in Linear: Review documentation updates"
-
-# 6. The agent now has full Linear capabilities and reacts to events!
+# 5. The agent now has full Linear capabilities and reacts to events!
 ```
 
 ### Key Points for AI Agents
@@ -831,10 +874,14 @@ lua test skill --name get_order --input '{"orderId": "123"}'
 # 6. Check logs if issues
 lua logs --type skill --name get_order --limit 5
 
-# 7. Clear conversation and test with full agent (sandbox)
-lua chat clear --force
-lua chat -e sandbox -m "Get order 123"
-lua chat -e sandbox -m "Create a Linear issue for order 123 review"  # If Linear connected
+# 7. Test with full agent in isolated threads (sandbox)
+lua chat -e sandbox -m "Get order 123" -t test-get-order --clear
+lua chat -e sandbox -m "Create a Linear issue for order 123 review" -t test-linear --clear  # If Linear connected
+
+# Or run both concurrently
+lua chat -e sandbox -m "Get order 123" -t test-get-order --clear &
+lua chat -e sandbox -m "Create a Linear issue" -t test-linear --clear &
+wait
 
 # 8. Push to server
 lua push skill --name order-service --set-version 1.0.0 --force
@@ -845,8 +892,8 @@ lua deploy --skill-name order-service --skill-version latest --force
 # 10. Set production env vars
 lua env production -k OPENAI_KEY -v "sk-live-xxx"
 
-# 11. Test production
-lua chat -e production -m "Get order 123"
+# 11. Test production in isolated thread
+lua chat -e production -m "Get order 123" -t prod-verify --clear
 
 # 12. Monitor logs
 lua logs --type skill --name order-service --limit 10 --json
@@ -868,8 +915,12 @@ lua logs --type skill --name order-service --limit 10 --json
 | Test a job | `lua test job --name <name>` |
 | Chat in sandbox | `lua chat -e sandbox -m "<message>"` |
 | Chat in production | `lua chat -e production -m "<message>"` |
-| Clear conversation history | `lua chat clear --force` |
+| Chat in isolated thread | `lua chat -e sandbox -m "<message>" -t <thread-id>` |
+| Chat in auto-generated thread | `lua chat -e sandbox -m "<message>" -t` |
+| Isolated test with auto-cleanup | `lua chat -e sandbox -m "<message>" -t <id> --clear` |
+| Clear all conversation history | `lua chat clear --force` |
 | Clear user's history | `lua chat clear --user <email\|mobile\|userId> --force` |
+| Clear specific thread history | `lua chat clear --thread <thread-id> --force` |
 | View available integrations | `lua integrations available` |
 | Get integration info (JSON) | `lua integrations info <type> --json` |
 | List trigger events (JSON) | `lua integrations webhooks events --integration <type> --json` |
