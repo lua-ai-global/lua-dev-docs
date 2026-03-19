@@ -90,15 +90,23 @@ RAG-based knowledge base search for retrieving information from your documentati
 
 ### Web Search (`webSearch`)
 
-Real-time internet search capability for accessing current information.
+Real-time internet search capability for accessing current information. This feature uses Google Search to synthesize answers to queries and provide source links.
+
+<Note>
+**Important:** The Web Search feature is not a web scraper. It cannot navigate to or read specific URLs directly, and it does not scrape content from individual or bulk pages.
+</Note>
 
 **Capabilities:**
 - Search the web in real-time
-- Retrieve up-to-date information
-- Access domain-specific data
-- Find current events and news
+- Retrieve up-to-date information and current events
+- Access domain-specific data indexed by Google
+- Return synthesized answers with source citations
 
 **Best for:** Research agents, information lookup, real-time data needs
+
+**How to Enable:**
+- Enabled by default for all agents.
+- Can be toggled on or off by running `lua features enable --feature-name webSearch` or `lua features disable --feature-name webSearch` in the CLI.
 
 ---
 
