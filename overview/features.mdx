@@ -1,0 +1,63 @@
+---
+title: "Features"
+description: "Built-in agent capabilities you can turn on or off per agent"
+---
+
+## What are features?
+
+**Features** are optional platform capabilities attached to your agent. When a feature is enabled, the runtime adds the right tools and prompt instructions so the model knows when and how to use them.
+
+You toggle features per agent using the CLI (`lua features`) or via the platform APIs. For full command options and interactive flows, see the [Features command](/cli/features-command) reference.
+
+<Card title="Current features" icon="toggle-on">
+  There are three built-in features: **Knowledge Search** (`rag`), **Web Search** (`webSearch`), and **Inquiry Forms** (`inquiry`).
+</Card>
+
+## Knowledge Search (`rag`)
+
+RAG-based search over your agent’s **resources** (documents you upload as the knowledge base).
+
+**What it does:** Lets the agent retrieve relevant passages from your uploaded materials and answer with citations.
+
+**How you add knowledge:** Use [`lua resources`](/cli/resources-command) from a skill project, or upload documents in the **Admin Dashboard** (recommended for many teams). Almost any common document type can be processed and used for retrieval.
+
+**Best for:** FAQs, policies, product docs, internal knowledge that should stay in *your* data—not the open web.
+
+See also: [Resources](/overview/resources).
+
+---
+
+## Web Search (`webSearch`)
+
+Real-time answers grounded in web search results.
+
+**What it does:** The agent can run a web search for a natural-language query and get a synthesized answer plus source links. It is **not** a web scraper: it does not open arbitrary URLs or extract full page HTML.
+
+**Best for:** Current events, public facts, or anything not in your uploaded resources.
+
+For details and limitations, see the [Features command](/cli/features-command) reference (Web Search section).
+
+---
+
+## Inquiry Forms (`inquiry`)
+
+Structured data collection through conversational **forms** you define.
+
+**What it does:** The agent can present forms (questions/fields), collect responses, and store submissions. Submissions appear in the **Admin Dashboard** so your team can review them—similar to how legacy “support tickets” worked, but inquiry forms are general-purpose (leads, intake, feedback, or support-style flows).
+
+**Best for:** Lead capture, onboarding questionnaires, support intake, or any workflow where you need structured answers from users.
+
+---
+
+## Enabling and disabling features
+
+From your skill project directory (with `lua.skill.yaml` configured):
+
+```bash
+lua features list
+lua features enable --feature-name rag
+lua features disable --feature-name webSearch
+lua features view --feature-name inquiry
+```
+
+See [Features command](/cli/features-command) for interactive mode, context editing, and troubleshooting.

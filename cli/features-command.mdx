@@ -5,7 +5,9 @@ description: "Manage agent capabilities and features"
 
 ## Overview
 
-The `lua features` command provides an interactive interface for managing your AI agent's capabilities, including Support Tickets, Knowledge Search (RAG), Web Search, and Inquiry Forms.
+The `lua features` command provides an interactive interface for managing your AI agent's capabilities: **Knowledge Search** (`rag`), **Web Search** (`webSearch`), and **Inquiry Forms** (`inquiry`).
+
+For what each feature does and how it fits with resources and the Admin Dashboard, see [Features](/overview/features).
 
 ```bash
 lua features
@@ -22,7 +24,7 @@ lua features
 lua features list
 
 # Enable a feature
-lua features enable --feature-name tickets
+lua features enable --feature-name rag
 
 # Disable a feature
 lua features disable --feature-name rag
@@ -33,7 +35,7 @@ lua features view --feature-name webSearch
 
 | Option | Description |
 |--------|-------------|
-| `--feature-name <name>` | Feature name (tickets, rag, webSearch, inquiry) |
+| `--feature-name <name>` | Feature name (`rag`, `webSearch`, `inquiry`) |
 
 | Action | Description | Required Options |
 |--------|-------------|------------------|
@@ -58,21 +60,6 @@ lua features view --feature-name webSearch
 </CardGroup>
 
 ## Available Features
-
-### Support Tickets (`tickets`)
-
-Create and manage customer support tickets directly from conversations.
-
-**Capabilities:**
-- Create support tickets
-- Track customer issues
-- Add comments to tickets
-- Close resolved tickets
-- View ticket history
-
-**Best for:** Customer support agents, help desk automation
-
----
 
 ### Knowledge Search (`rag`)
 
@@ -112,15 +99,14 @@ Real-time internet search capability for accessing current information. This fea
 
 ### Inquiry Forms (`inquiry`)
 
-Create and manage customer inquiry and contact forms.
+Define conversational forms so the agent can collect structured answers from users. Submissions are visible in the **Admin Dashboard**. Inquiry forms are general-purpose (leads, intake, feedback, or support-style flows)—they replaced the older standalone “support tickets” feature.
 
 **Capabilities:**
-- Generate inquiry forms
-- Collect customer information
-- Track inquiries
-- Manage lead generation
+- Generate inquiry forms from your form definitions
+- Collect and track submissions
+- Add comments and manage follow-up in the dashboard
 
-**Best for:** Sales agents, lead generation, contact management
+**Best for:** Sales, lead capture, support intake, or any workflow that needs structured data from conversations
 
 ## Quick Start
 
@@ -137,19 +123,15 @@ Create and manage customer inquiry and contact forms.
     ```
     Available features:
 
-    1. ✅ Support Tickets
-       Name: tickets
-       Status: Active
-
-    2. ✅ Knowledge Search (RAG)
+    1. ✅ Knowledge Search (RAG)
        Name: rag
        Status: Active
 
-    3. ❌ WebSearch
+    2. ❌ WebSearch
        Name: webSearch
        Status: Inactive
 
-    4. ❌ Create Inquiry forms
+    3. ❌ Create Inquiry forms
        Name: inquiry
        Status: Inactive
     ```
@@ -171,19 +153,19 @@ Create and manage customer inquiry and contact forms.
     
     ```bash
     ? What would you like to do? View feature details
-    ? Select feature: ✅ Support Tickets
+    ? Select feature: ✅ Knowledge Search (RAG)
     
     ============================================================
-    Feature: Support Tickets
+    Feature: Knowledge Search (RAG)
     ============================================================
     
-    Name: tickets
+    Name: rag
     Status: ✅ Active
     
     Context/Instructions:
-    Create and manage support tickets for customer issues.
-    Track problems, add comments, and close resolved tickets.
-    Use this when customers report problems or need help.
+    Search the knowledge base for information.
+    Use categories: FAQ, policies, instructions.
+    Always cite sources when providing information.
     
     Press Enter to continue...
     ```
@@ -260,7 +242,7 @@ Create and manage customer inquiry and contact forms.
     ```bash
     $ lua features
     ? What would you like to do? Manage a feature
-    ? Select feature: ✅ Support Tickets
+    ? Select feature: ✅ Knowledge Search (RAG)
     ```
   </Step>
   
@@ -268,12 +250,12 @@ Create and manage customer inquiry and contact forms.
     ```bash
     ? What would you like to do? Deactivate feature
     
-    ⚠️  This will disable "Support Tickets" for your agent.
+    ⚠️  This will disable "Knowledge Search (RAG)" for your agent.
     
     ? Are you sure? Yes
     
     🔄 Updating feature...
-    ✅ Feature "Support Tickets" deactivated successfully
+    ✅ Feature "Knowledge Search (RAG)" deactivated successfully
     ```
   </Step>
 </Steps>
@@ -385,31 +367,30 @@ Update both feature status and context in one operation.
 
 ### Customer Support Agent
 
-Enable features for comprehensive support:
+Enable features for internal knowledge and optional intake:
 
 ```bash
 $ lua features
-
-# Enable Support Tickets
-→ Manage: ❌ Support Tickets → Activate
-✅ Tickets enabled
 
 # Enable Knowledge Search
 → Manage: ❌ Knowledge Search → Activate
 ✅ RAG enabled
 
-# Disable unnecessary features
+# Optional: inquiry forms for structured support intake (visible in Admin Dashboard)
+→ Manage: ❌ Inquiry Forms → Activate
+✅ Inquiry forms enabled
+
+# Disable Web Search if you only want org-approved sources
 → Manage: ✅ WebSearch → Deactivate
 ✅ WebSearch disabled
 
-# Result: Agent focused on support with internal knowledge
+# Result: Agent focused on your knowledge base (and optional forms)
 ```
 
 **Features Active:**
-- ✅ Support Tickets - Track customer issues
-- ✅ Knowledge Search - Access help docs
-- ❌ Web Search - Not needed for internal support
-- ❌ Inquiry Forms - Support only, no lead gen
+- ✅ Knowledge Search - Access help docs and policies
+- ✅ Inquiry Forms (optional) - Structured intake or follow-up
+- ❌ Web Search - Not needed for internal-only support
 
 ---
 
@@ -433,16 +414,13 @@ $ lua features
 → Manage: ❌ Web Search → Activate
 ✅ WebSearch enabled
 
-# Disable Support Tickets (not handling support)
-→ Manage: ✅ Support Tickets → Deactivate
-✅ Tickets disabled
+# Result: Lead capture + product knowledge + market research
 ```
 
 **Features Active:**
 - ✅ Inquiry Forms - Lead generation
 - ✅ Knowledge Search - Product information
 - ✅ Web Search - Market research
-- ❌ Support Tickets - Sales focus only
 
 ---
 
@@ -463,17 +441,15 @@ $ lua features
 → Update context: "Use only when RAG doesn't have the answer."
 ✅ WebSearch enabled
 
-# Disable transactional features
-→ Manage: ✅ Support Tickets → Deactivate
+# Disable inquiry if you only need read-only answers
 → Manage: ✅ Inquiry Forms → Deactivate
-✅ Focused on information only
+✅ Focused on information retrieval only
 ```
 
 **Features Active:**
 - ✅ Knowledge Search - Primary source
 - ✅ Web Search - Supplementary data
-- ❌ Support Tickets - Information only
-- ❌ Inquiry Forms - No lead generation
+- ❌ Inquiry Forms - No data collection needed
 
 ## Customizing Feature Context
 
@@ -500,18 +476,17 @@ Good feature context should include:
     
     ```
     ✅ Good:
-    "Create a support ticket when:
-    - Customer reports a bug
-    - Issue requires technical team review
-    - Problem cannot be solved immediately
+    "Use inquiry forms when:
+    - You need structured lead or intake data
+    - The user agrees to submit a form
+    - Follow-up will happen in the Admin Dashboard
     
-    Do NOT create tickets for:
-    - Simple questions answered in FAQ
-    - Billing issues (escalate to billing team)
-    - General information requests"
+    Do NOT use inquiry forms for:
+    - Simple FAQs already in the knowledge base
+    - One-off questions that RAG can answer"
     
     ❌ Bad:
-    "Create tickets for problems."
+    "Use forms sometimes."
     ```
   </Accordion>
 
@@ -553,29 +528,6 @@ Good feature context should include:
 </AccordionGroup>
 
 ### Context Templates
-
-#### Support Tickets Template
-
-```markdown
-Create support tickets for customer issues that require tracking.
-
-When to create tickets:
-- Technical problems or bugs
-- Feature requests
-- Issues requiring follow-up
-- Problems needing escalation
-
-Ticket information to collect:
-- Clear description of the issue
-- Steps to reproduce (for bugs)
-- Customer impact level (low/medium/high)
-- Any relevant context
-
-Do NOT create tickets for:
-- Simple questions (answer directly)
-- Billing issues (escalate to billing)
-- General information (use knowledge base)
-```
 
 #### Knowledge Search Template
 
@@ -737,11 +689,11 @@ Coordinate features with persona:
 ```bash
 # 1. Enable features
 lua features
-→ Enable: tickets, rag
+→ Enable: rag, inquiry
 
 # 2. Update persona to mention capabilities
 lua persona sandbox
-# Add: "I can search our knowledge base and create support tickets"
+# Add: "I can search our knowledge base and collect details via inquiry forms"
 
 # 3. Test together
 lua chat
@@ -753,15 +705,15 @@ lua push skill
 
 ### Features + Skills
 
-Build skills that use features:
+Build skills that use platform features:
 
 ```bash
-# 1. Enable feature
+# 1. Enable features you need (e.g. RAG + inquiry)
 lua features
-→ Activate: tickets
+→ Activate: rag
 
-# 2. Build skill tool that creates tickets
-vim src/tools/CreateTicketTool.ts
+# 2. Add or extend tools in your skill project
+vim src/tools/MyTool.ts
 
 # 3. Test
 lua test
@@ -781,8 +733,8 @@ lua features
 
 # Production: Enable only needed features
 lua features
-→ Activate: tickets, rag
-→ Deactivate: webSearch, inquiry
+→ Activate: rag, inquiry
+→ Deactivate: webSearch
 ```
 
 ## Best Practices
@@ -794,7 +746,7 @@ lua features
     ```bash
     # ✅ Good: Start with essentials
     lua features
-    → Enable: tickets, rag only
+    → Enable: rag only (add webSearch or inquiry when needed)
     
     # Test and add more as needed
     
@@ -809,12 +761,12 @@ lua features
     
     ```bash
     # ✅ Good: Detailed context
-    "Create support tickets for technical issues.
-    Include: problem description, steps to reproduce,
+    "Use inquiry forms for technical escalations.
+    Include: problem summary, steps to reproduce,
     customer impact, and priority level."
     
     # ❌ Bad: Vague context
-    "Create tickets for problems."
+    "Use forms for problems."
     ```
   </Accordion>
 
@@ -839,10 +791,9 @@ lua features
     # In README.md or docs
     ## Active Features
     
-    - Support Tickets: Create for technical issues
-    - Knowledge Search: Internal docs only
+    - Knowledge Search (rag): Internal docs only
     - Web Search: Disabled (use internal knowledge)
-    - Inquiry Forms: Disabled (not doing lead gen)
+    - Inquiry Forms: Disabled (not collecting structured data)
     ```
   </Accordion>
 
@@ -986,6 +937,13 @@ lua features
 ## Next Steps
 
 <CardGroup cols={2}>
+  <Card
+    title="Features overview"
+    icon="book"
+    href="/overview/features"
+  >
+    What each feature does (rag, webSearch, inquiry)
+  </Card>
   <Card
     title="Test Features"
     icon="flask"
