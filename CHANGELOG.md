@@ -4,6 +4,25 @@ All notable changes to the Lua documentation will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
+## [3.7.0] - 2026-03-20
+
+### Features
+
+- **Chat thread isolation** - `lua chat` supports `-t` / `--thread` for scoped conversations; `lua chat clear` accepts `--thread` to clear one thread.
+- **Auto-clear chat history** - `--clear` and `--clear-thread` clear conversation history when the session ends (interactive and non-interactive).
+
+### Bug Fixes
+
+- **Model cleared on push** - Removing `model` from `LuaAgent` and pushing now clears the model on the server (BAC-87).
+- **Features help** - `lua features` help and examples use current feature names (e.g. `inquiry` instead of deprecated `tickets`).
+
+## [3.6.7] - 2026-03-15
+
+### Bug Fixes
+
+- **MCP integrations** - Default for hiding sensitive MCP fields is now off so agents receive full tool payloads; `defer_tools` is set correctly for Unified.to (BAC-83).
+- **Skill compilation** - Tool references in skills resolve more reliably for import tracking.
+
 ## [3.6.6] - 2026-03-11
 
 ### Features

@@ -3,6 +3,65 @@ title: "Changelog"
 description: "Release notes and version history for lua-cli"
 ---
 
+## v3.7.0
+
+**Released:** March 20, 2026
+
+### ✨ New Features
+
+<AccordionGroup>
+  <Accordion title="Chat thread isolation">
+    Use `lua chat -t` or `--thread <id>` for isolated sessions. `lua chat clear --thread <id>` clears one thread. Omit the thread ID with `-t` to auto-generate a UUID.
+
+    ```bash
+    lua chat --thread my-test
+    lua chat -t
+    lua chat clear --thread my-test --force
+    ```
+  </Accordion>
+
+  <Accordion title="Auto-clear chat history">
+    `--clear` / `--clear-thread` clear history when the session ends—useful after testing without running `lua chat clear` separately.
+
+    ```bash
+    lua chat --clear
+    lua chat -t my-test --clear
+    ```
+  </Accordion>
+</AccordionGroup>
+
+### 🐛 Bug Fixes
+
+<AccordionGroup>
+  <Accordion title="Model cleared when removed from agent">
+    Pushing after removing `model` from your agent now clears the server-side model (BAC-87).
+  </Accordion>
+
+  <Accordion title="Features help and examples">
+    Help text and examples reference current feature names (e.g. `inquiry` instead of deprecated `tickets`).
+  </Accordion>
+</AccordionGroup>
+
+---
+
+## v3.6.7
+
+**Released:** March 15, 2026
+
+### 🐛 Bug Fixes
+
+<AccordionGroup>
+  <Accordion title="MCP integrations defaults (BAC-83)">
+    Connecting integrations defaults to exposing full MCP tool payloads (hide sensitive off). `defer_tools` is aligned with Unified.to expectations.
+  </Accordion>
+
+  <Accordion title="Skill tool references">
+    Compiling skills resolves tool references more reliably for imports and dependencies.
+  </Accordion>
+</AccordionGroup>
+
+---
+
 ## v3.6.6
 
 **Released:** March 11, 2026
