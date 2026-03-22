@@ -4,6 +4,12 @@ All notable changes to the Lua documentation will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
+## [3.7.1] - 2026-03-22
+
+### Features
+
+- **Isolated AI text generation (`AI.generate`)** — New API for running text generation from within tools, aligned with Vercel AI SDK `generateText`. Two call patterns: simplified `AI.generate(prompt, content?)` returns plain text; full-options `AI.generate({ model, system, prompt, ... })` returns a rich result with `text`, `finishReason`, `usage`, `sources` (Google Search grounding), `reasoning`, and more. Supports `google/*`, `openai/*`, and `anthropic/*` providers (BAC-14).
+
 ## [3.7.0] - 2026-03-20
 
 ### Features

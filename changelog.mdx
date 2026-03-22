@@ -3,6 +3,52 @@ title: "Changelog"
 description: "Release notes and version history for lua-cli"
 ---
 
+## v3.7.1
+
+**Released:** March 22, 2026
+
+### ✨ New Features
+
+<AccordionGroup>
+  <Accordion title="Isolated AI text generation — AI.generate (BAC-14)">
+    New `AI.generate` API for running text generation from within tools, aligned with Vercel AI SDK `generateText` semantics.
+
+    **Simplified — returns plain text:**
+
+    ```typescript
+    // Single argument: prompt is the user message
+    const text = await AI.generate('Summarize the latest AI news.');
+
+    // Two arguments: system instruction + user content (string or multimodal parts)
+    const text2 = await AI.generate(
+      'You are a helpful assistant.',
+      [{ type: 'text', text: 'What products do you recommend?' }]
+    );
+    ```
+
+    **Full options — returns rich result:**
+
+    ```typescript
+    const result = await AI.generate({
+      model: 'google/gemini-2.0-flash',
+      system: 'You are concise.',
+      prompt: 'What is the weather in London?',
+    });
+
+    result.text           // Generated text
+    result.finishReason   // 'stop', 'length', etc.
+    result.usage          // { promptTokens, completionTokens, totalTokens }
+    result.sources        // Google Search grounding URLs (when available)
+    ```
+
+    **Supported providers:** `google/*` (Vertex AI), `openai/*`, `anthropic/*` — with automatic fallback if the requested provider's API key is missing.
+
+    Google Search grounding is automatically attached for Google models.
+  </Accordion>
+</AccordionGroup>
+
+---
+
 ## v3.7.0
 
 **Released:** March 20, 2026
