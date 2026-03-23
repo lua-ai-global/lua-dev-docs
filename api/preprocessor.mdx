@@ -70,17 +70,15 @@ Creates a new message preprocessor.
 
 ### Required Fields
 
-<ParamField path="name" type="string" required>
-  Unique preprocessor name
-  
-  **Examples**: `'profanity-filter'`, `'message-router'`
+<ParamField path="description" type="string" required>
+  Preprocessor description for documentation
 </ParamField>
 
 <ParamField path="execute" type="function" required>
   Function that processes incoming messages
-  
+
   **Signature:** `(user: UserDataInstance, messages: ChatMessage[], channel: string) => Promise<PreProcessorBlockResponse | PreProcessorProceedResponse>`
-  
+
   **Arguments:**
   - `user`: The [UserDataInstance](#userdata-object) representing the current user.
   - `messages`: Array of [ChatMessage](#message-structure) objects sent by the user.
@@ -98,12 +96,18 @@ The function parameters may be removed in a future version.
 
 ### Optional Fields
 
-<ParamField path="description" type="string">
-  Preprocessor description for documentation
+<ParamField path="name" type="string">
+  Unique preprocessor name. Defaults to `'unnamed-preprocessor'` if not provided.
+
+  **Examples**: `'profanity-filter'`, `'message-router'`
 </ParamField>
 
 <ParamField path="priority" type="number">
   Execution priority (lower runs first). Default: `100`
+</ParamField>
+
+<ParamField path="async" type="boolean">
+  Run this preprocessor asynchronously on the server. When `true`, the preprocessor executes in a non-blocking mode. Default: `false`
 </ParamField>
 
 ## UserData Object
@@ -162,9 +166,10 @@ To allow the message to continue to the next preprocessor or the agent:
 return { action: 'proceed' };
 
 // OR proceed with a modified message
-return { 
+return {
   action: 'proceed',
-  modifiedMessage: [{ type: 'text', text: 'Modified content' }]
+  modifiedMessage: [{ type: 'text', text: 'Modified content' }],
+  metadata: { reason: 'message-modified' }  // optional metadata
 };
 ```
 
@@ -175,7 +180,8 @@ To stop processing immediately and respond to the user:
 ```typescript
 return {
   action: 'block',
-  response: "This message was blocked."
+  response: "This message was blocked.",
+  metadata: { reason: 'profanity' }  // optional metadata
 };
 ```
 

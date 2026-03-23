@@ -497,6 +497,24 @@ await user.send([
 **New in Latest Version:** Send proactive messages to users for notifications, updates, and automated workflows.
 </Note>
 
+### getChatHistory()
+
+Retrieve the conversation history for the current user.
+
+```typescript
+user.getChatHistory(): Promise<ChatHistoryMessage[]>
+```
+
+**Returns:** Promise resolving to an array of chat history messages
+
+**Example:**
+
+```typescript
+const user = await User.get();
+const history = await user.getChatHistory();
+console.log(history.length); // Number of messages
+```
+
 ### clear()
 
 Clear all user data for the current user.
