@@ -62,17 +62,15 @@ Creates a new response postprocessor.
 
 ### Required Fields
 
-<ParamField path="name" type="string" required>
-  Unique postprocessor name
-  
-  **Examples**: `'add-disclaimer'`, `'format-response'`
+<ParamField path="description" type="string" required>
+  Postprocessor description for documentation
 </ParamField>
 
 <ParamField path="execute" type="function" required>
   Function that processes AI responses
-  
+
   **Signature:** `(user: UserDataInstance, message: string, response: string, channel: string) => Promise<PostProcessorResponse>`
-  
+
   **Parameters:**
   - `user` - User data instance with profile and custom data
   - `message` - Original user message (string)
@@ -91,8 +89,10 @@ The function parameters may be removed in a future version.
 
 ### Optional Fields
 
-<ParamField path="description" type="string">
-  Postprocessor description for documentation
+<ParamField path="name" type="string">
+  Unique postprocessor name. Defaults to `'unnamed-postprocessor'` if not provided.
+
+  **Examples**: `'add-disclaimer'`, `'format-response'`
 </ParamField>
 
 ## PostProcessorResponse

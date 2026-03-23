@@ -600,13 +600,18 @@ interface PaginatedTemplatesResponse {
 }
 
 // WhatsApp template structure
-interface Template {
+interface WhatsAppTemplate {
   id: string;
   name: string;
   status: 'APPROVED' | 'PENDING' | 'REJECTED';
   category: 'UTILITY' | 'MARKETING' | 'AUTHENTICATION';
   language: string;
   components: TemplateComponent[];
+  correct_category?: string;
+  message_send_ttl_seconds?: number;
+  parameter_format?: 'NAMED' | 'POSITIONAL';
+  previous_category?: string;
+  rejected_reason?: string;
 }
 
 interface SendTemplateData {
@@ -635,6 +640,8 @@ interface SendTemplateResponse {
     phoneNumber: string;
     error: string;
   }>;
+  totalProcessed: number;
+  totalErrors: number;
 }
 ```
 
