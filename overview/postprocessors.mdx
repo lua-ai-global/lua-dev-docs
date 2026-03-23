@@ -157,23 +157,19 @@ const addDisclaimer = new PostProcessor({
 
 ## Execution Order
 
-PostProcessors run in order of their **priority** value (lowest first). Priority is set when creating the postprocessor via the API.
+PostProcessors run in the order they are defined in the `postProcessors` array of your `LuaAgent` configuration. Each postprocessor receives the output of the previous one in the chain.
 
 ```
 AI Agent Response
     ↓
-PostProcessor 1 (priority: 1)   → Runs first
+PostProcessor 1 → Runs first
     ↓
-PostProcessor 2 (priority: 10)  → Runs second
+PostProcessor 2 → Runs second
     ↓
-PostProcessor 3 (priority: 100) → Runs last
+PostProcessor 3 → Runs last
     ↓
 Final Response to User
 ```
-
-**Default priority:** 100 (if not specified)
-
-Each postprocessor receives the output of the previous one in the chain.
 
 ## Channel Compatibility
 

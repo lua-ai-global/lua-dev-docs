@@ -138,12 +138,14 @@ interface TextMessage {
 
 interface ImageMessage {
   type: 'image';
-  image: string; // URL or base64
+  image: string;      // URL or base64
+  mimeType: string;   // e.g. "image/png", "image/jpeg"
 }
 
 interface FileMessage {
   type: 'file';
-  file: string; // URL
+  data: string;       // URL or base64
+  mimeType: string;   // e.g. "application/pdf"
 }
 ```
 

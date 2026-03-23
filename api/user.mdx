@@ -526,32 +526,28 @@ try {
 
 ## Data Sanitization
 
-UserDataInstance automatically removes sensitive fields:
+UserDataInstance separates system identity from custom data:
 
-**Removed (not accessible):**
-- `agentId`
-- `userId`
+**System identity (read-only via `_luaProfile`):**
+- `userId`, `fullName`, `mobileNumbers`, `emailAddresses`
+- Extracted from response and made immutable — access via `user._luaProfile`
 
-**Available (accessible):**
+**Custom data (read/write via direct properties):**
 - `name`, `email`, `phone`
 - Custom fields you set
-- Preferences and settings
-- Any other data
+- Preferences, settings, and any other data
 
 ```typescript
-// Server returns:
-{
-  userId: "12345",       // ❌ Removed
-  agentId: "agent-123",  // ❌ Removed
-  name: "John Doe",      // ✅ Accessible
-  email: "john@example.com"  // ✅ Accessible
-}
+const user = await User.get();
 
-// Your user instance has:
-{
-  name: "John Doe",
-  email: "john@example.com"
-}
+// System identity — read-only
+user._luaProfile.userId;        // "12345"
+user._luaProfile.fullName;      // "John Doe"
+
+// Custom data — read/write
+user.name;                      // "John Doe"
+user.email;                     // "john@example.com"
+user.preferences;               // { theme: "dark" }
 ```
 
 ## Complete Examples
