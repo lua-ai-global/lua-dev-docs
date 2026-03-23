@@ -77,8 +77,8 @@ export class OnboardingTool implements LuaTool {
     data: z.record(z.any()).optional().describe('Data collected in this step')
   });
 
-  async execute(input: any, context: ToolContext) {
-    const user = context.user;
+  async execute(input: any) {
+    const user = await User.get();
 
     // Read persisted state — survives across conversations!
     const step = user.onboardingStep || 'not_started';
@@ -572,9 +572,9 @@ export class ManagePreferencesTool implements LuaTool {
     language: z.string().optional()
   });
 
-  async execute(input: any, context: ToolContext) {
-    const user = context.user;
-    
+  async execute(input: any) {
+    const user = await User.get();
+
     // Direct property access
     const currentPrefs = user.preferences || {};
     
@@ -608,9 +608,9 @@ export class CartTool implements LuaTool {
     quantity: z.number().optional()
   });
 
-  async execute(input: any, context: ToolContext) {
-    const user = context.user;
-    
+  async execute(input: any) {
+    const user = await User.get();
+
     // Get current cart (direct access)
     let cart = user.cart || [];
     
@@ -649,9 +649,9 @@ export class ProfileTool implements LuaTool {
     bio: z.string().optional()
   });
 
-  async execute(input: any, context: ToolContext) {
-    const user = context.user;
-    
+  async execute(input: any) {
+    const user = await User.get();
+
     // Update user data
     await user.update(input);
     
@@ -679,9 +679,9 @@ export class GreetUserTool implements LuaTool {
   
   inputSchema = z.object({});
 
-  async execute(input: any, context: ToolContext) {
-    const user = context.user;
-    
+  async execute(input: any) {
+    const user = await User.get();
+
     // Direct property access
     const hour = new Date().getHours();
     const timeGreeting = hour < 12 ? 'Good morning'
@@ -709,9 +709,9 @@ export class SendOrderNotificationTool implements LuaTool {
     receiptUrl: z.string().optional()
   });
 
-  async execute(input: z.infer<typeof this.inputSchema>, context: ToolContext) {
-    const user = context.user;
-    
+  async execute(input: z.infer<typeof this.inputSchema>) {
+    const user = await User.get();
+
     // Build notification message
     const messages = [
       {
@@ -756,9 +756,9 @@ export class SendReceiptTool implements LuaTool {
     qrCodeBase64: z.string()
   });
 
-  async execute(input: z.infer<typeof this.inputSchema>, context: ToolContext) {
-    const user = context.user;
-    
+  async execute(input: z.infer<typeof this.inputSchema>) {
+    const user = await User.get();
+
     // Send receipt with QR code
     await user.send([
       {
@@ -957,7 +957,7 @@ interface MyUserData {
 }
 
 // Access with type safety
-const user = context.user;
+const user = await User.get();
 const name: string = user.name;
 const theme = user.preferences?.theme || 'light';
 ```

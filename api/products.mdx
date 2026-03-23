@@ -293,31 +293,28 @@ console.log(product.price);   // 29.99
 await product.update({ price: 24.99 });
 ```
 
-### update()
+### update() (Instance Method)
 
-Update an existing product. Returns updated ProductInstance.
+Update an existing product via an instance. Use `product.update()` on a retrieved product — there is no static `Products.update()` method.
 
 ```typescript
-Products.update(data: Partial<Product>, id: string): Promise<ProductInstance>
+product.update(data: Record<string, any>): Promise<Product>
 ```
 
 <ParamField path="data" type="object" required>
   Partial product data to update
 </ParamField>
 
-<ParamField path="id" type="string" required>
-  Product ID to update
-</ParamField>
-
-**Returns:** `ProductInstance` with updated data
-
 **Example:**
 
 ```typescript
-const product = await Products.update({
+const product = await Products.getById('product_xyz789');
+
+// Update via instance method
+await product.update({
   price: 24.99,
   inStock: false
-}, 'product_xyz789');
+});
 
 // Access updated properties
 console.log(product.price);   // 24.99
@@ -417,7 +414,7 @@ export class SearchProductsTool implements LuaTool {
     const results = await Products.search(input.query);
     
     // Filter by price if specified
-    let products = results.data;
+    let products = results.products;
     if (input.maxPrice) {
       products = products.filter(p => p.price <= input.maxPrice);
     }
@@ -508,7 +505,7 @@ const electronics = await Products.get({
 });
 
 // Get product details
-const product = await Products.getById(laptops.data[0].id);
+const product = await Products.getById(laptops.products[0].id);
 ```
 
 ### Inventory Management
@@ -666,7 +663,7 @@ const sameCategory = await Products.get({
     ```typescript
     const results = await Products.search(query);
     
-    if (results.data.length === 0) {
+    if (results.products.length === 0) {
       return {
         products: [],
         message: `No products found for "${query}". Try different search terms.`

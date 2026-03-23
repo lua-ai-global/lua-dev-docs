@@ -82,8 +82,8 @@ export class OnboardingStepTool {
     data: z.record(z.any()).optional().describe('Data collected in this step')
   });
 
-  async execute(input: any, context: ToolContext) {
-    const user = context.user;
+  async execute(input: any) {
+    const user = await User.get();
 
     // This persists across conversations — the user can leave and come back
     const step = user.onboardingStep || 'not_started';

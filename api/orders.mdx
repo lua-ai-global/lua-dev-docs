@@ -119,7 +119,7 @@ console.log(order.items);       // Array of items
 console.log(order.shippingAddress.city); // "New York"
 
 // Instance methods available
-await order.updateStatus(OrderStatus.PROCESSING);
+await order.updateStatus(OrderStatus.CONFIRMED);
 ```
 
 ### get()
@@ -165,7 +165,7 @@ console.log(order.items);        // Array of items
 console.log(order.shippingAddress); // Address object
 
 // Instance methods
-await order.updateStatus(OrderStatus.DELIVERED);
+await order.updateStatus(OrderStatus.FULFILLED);
 await order.update({ deliveryDate: '2025-10-15' });
 ```
 
@@ -191,12 +191,12 @@ order.updateStatus(status: OrderStatus): Promise<OrderInstance>
 const order = await Orders.updateStatus(OrderStatus.CONFIRMED, orderId);
 
 // Or using instance method (recommended)
-await order.updateStatus(OrderStatus.PROCESSING);
-await order.updateStatus(OrderStatus.SHIPPED);
-await order.updateStatus(OrderStatus.DELIVERED);
+await order.updateStatus(OrderStatus.CONFIRMED);
+await order.updateStatus(OrderStatus.FULFILLED);
+await order.updateStatus(OrderStatus.FULFILLED);
 
 // Access updated status directly
-console.log(order.status); // "delivered"
+console.log(order.status); // "fulfilled"
 
 // Cancel order
 await order.updateStatus(OrderStatus.CANCELLED);
@@ -271,7 +271,7 @@ order.updatedAt       // Via proxy
 
 **Instance Methods:**
 ```typescript
-await order.updateStatus(OrderStatus.SHIPPED);
+await order.updateStatus(OrderStatus.FULFILLED);
 await order.update({ trackingNumber: 'ABC123' });
 await order.save();
 ```
