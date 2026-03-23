@@ -162,8 +162,8 @@ User.get(identifier?: string | UserLookupOptions): Promise<UserDataInstance | nu
   One of:
   - **No parameter**: Returns current user from conversation context
   - **string (userId)**: Retrieve a specific user by ID
-  - **{ email: string }**: Look up user by email address
-  - **{ phone: string }**: Look up user by phone number (with or without `+` prefix)
+  - **`{ email: string }`**: Look up user by email address
+  - **`{ phone: string }`**: Look up user by phone number (with or without `+` prefix)
   
   **Required in:** Webhooks, pre-defined LuaJob (no conversational context)
   
