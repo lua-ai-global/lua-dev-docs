@@ -81,7 +81,7 @@ Data.create(
   collectionName: string,
   data: object,
   searchText?: string
-): Promise<Entry>
+): Promise<DataEntryInstance>
 ```
 
 <ParamField path="collectionName" type="string" required>
@@ -129,7 +129,7 @@ Semantic search using vector embeddings.
 ```typescript
 Data.search(
   collectionName: string,
-  query: string,
+  searchText: string,
   limit?: number,
   scoreThreshold?: number
 ): Promise<DataEntryInstance[]>
@@ -139,8 +139,8 @@ Data.search(
   Name of the collection to search
 </ParamField>
 
-<ParamField path="query" type="string" required>
-  Search query (natural language)
+<ParamField path="searchText" type="string" required>
+  Search text (natural language query)
 </ParamField>
 
 <ParamField path="limit" type="number" default={10}>
@@ -184,7 +184,7 @@ Data.get(
   filter?: object,
   page?: number,
   limit?: number
-): Promise<GetResult>
+): Promise<GetCustomDataResponse>
 ```
 
 <ParamField path="collectionName" type="string" required>
@@ -251,14 +251,14 @@ Retrieve a specific entry by ID.
 Data.getEntry(
   collectionName: string,
   entryId: string
-): Promise<Entry>
+): Promise<DataEntryInstance>
 ```
 
 **Example:**
 
 ```typescript
 const movie = await Data.getEntry('movies', 'entry_abc123');
-console.log(movie.data.title); // "Inception"
+console.log(movie.title); // "Inception" (direct property access via proxy)
 ```
 
 ### update()
@@ -271,7 +271,7 @@ Data.update(
   entryId: string,
   data: object,
   searchText?: string
-): Promise<UpdateResponse>
+): Promise<UpdateCustomDataResponse>
 ```
 
 <ParamField path="collectionName" type="string" required>
@@ -389,7 +389,7 @@ await entry.update({ views: 1000 });
 Delete the entry using the instance method.
 
 ```typescript
-entry.delete(): Promise<void>
+entry.delete(): Promise<boolean>
 ```
 
 **Example:**
@@ -409,7 +409,7 @@ Delete an entry using the static method.
 Data.delete(
   collectionName: string,
   entryId: string
-): Promise<void>
+): Promise<DeleteCustomDataResponse>
 ```
 
 **Example:**

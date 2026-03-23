@@ -50,16 +50,19 @@ Lua.request.channel: Channel
 **Type:** `Channel`
 
 ```typescript
-type Channel = 
-  | 'web'       // Chat widget on a website
-  | 'whatsapp'  // WhatsApp integration
-  | 'facebook'  // Facebook Messenger integration
-  | 'instagram' // Instagram integration
-  | 'slack'     // Slack integration
-  | 'api'       // Direct HTTP API call
-  | 'dev'       // Local development / CLI testing
-  | 'email'     // Email integration
-  | string;     // Any other channel
+type Channel =
+  | 'web'         // Chat widget on a website
+  | 'whatsapp'    // WhatsApp integration
+  | 'facebook'    // Facebook Messenger integration
+  | 'instagram'   // Instagram integration
+  | 'slack'       // Slack integration
+  | 'teams'       // Microsoft Teams integration
+  | 'front'       // Front integration
+  | 'messagebird' // MessageBird integration
+  | 'api'         // Direct HTTP API call
+  | 'dev'         // Local development / CLI testing
+  | 'email'       // Email integration
+  | string;       // Any other channel
 ```
 
 **Example - Channel-specific behavior:**
@@ -249,23 +252,17 @@ export default class GetSupportInfoTool implements LuaTool {
 Use channel in preprocessors:
 
 ```typescript
-import { Preprocessor, PreprocessorConfig, Lua } from 'lua-cli';
+import { PreProcessor, Lua } from 'lua-cli';
 
-const channelGreeting: PreprocessorConfig = {
+const channelGreeting = new PreProcessor({
   name: 'channel-greeting',
   description: 'Add channel-specific greeting context',
   priority: 1,
-  execute: async (userInstance, messages, channel) => {
-    // Prefer using Lua.request.channel
+  execute: async (user, messages, channel) => {
     const currentChannel = Lua.request.channel;
-
-    return {
-      additionalContext: `User is chatting via ${currentChannel}.`,
-    };
+    return { action: 'proceed' };
   },
-};
-
-export default Preprocessor.create(channelGreeting);
+});
 ```
 
 ### Postprocessor with Channel-Specific Formatting
@@ -273,13 +270,12 @@ export default Preprocessor.create(channelGreeting);
 Format responses based on channel:
 
 ```typescript
-import { Postprocessor, PostprocessorConfig, Lua } from 'lua-cli';
+import { PostProcessor, Lua } from 'lua-cli';
 
-const formatForChannel: PostprocessorConfig = {
+const formatForChannel = new PostProcessor({
   name: 'format-for-channel',
   description: 'Format response based on channel',
   execute: async (user, message, response, channel) => {
-    // Prefer using Lua.request.channel
     const currentChannel = Lua.request.channel;
 
     // WhatsApp has character limits - truncate long responses
@@ -291,9 +287,7 @@ const formatForChannel: PostprocessorConfig = {
 
     return { modifiedResponse: response };
   },
-};
-
-export default Postprocessor.create(formatForChannel);
+});
 ```
 
 ## Future Expansion

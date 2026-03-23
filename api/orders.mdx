@@ -82,7 +82,7 @@ import { OrderStatus } from 'lua-cli';
 Create a new order.
 
 ```typescript
-Orders.create(orderData: OrderInput): Promise<OrderInstance>
+Orders.create(orderData: CreateOrderRequest): Promise<OrderInstance>
 ```
 
 <ParamField path="orderData.basketId" type="string" required>
@@ -127,7 +127,7 @@ await order.updateStatus(OrderStatus.CONFIRMED);
 Retrieve orders, optionally filtered by status.
 
 ```typescript
-Orders.get(status?: OrderStatus): Promise<Order[]>
+Orders.get(status?: OrderStatus): Promise<OrderInstance[]>
 ```
 
 **Examples:**
@@ -174,7 +174,7 @@ await order.update({ deliveryDate: '2025-10-15' });
 Update order status.
 
 ```typescript
-Orders.updateStatus(status: OrderStatus, orderId: string): Promise<OrderInstance>
+Orders.updateStatus(status: OrderStatus, orderId: string): Promise<OrderResponse>
 ```
 
 Or use instance method:
@@ -207,7 +207,7 @@ await order.updateStatus(OrderStatus.CANCELLED);
 Update order data/metadata.
 
 ```typescript
-Orders.updateData(data: object, orderId: string): Promise<Order>
+Orders.updateData(data: Record<string, any>, orderId: string): Promise<OrderResponse>
 ```
 
 **Example:**
@@ -265,8 +265,7 @@ order.items           // Array of items
 order.currency
 order.shippingAddress // Data property via proxy
 order.paymentMethod   // Data property via proxy
-order.createdAt       // Via proxy
-order.updatedAt       // Via proxy
+order.createdAt       // Via proxy (from OrderData)
 ```
 
 **Instance Methods:**

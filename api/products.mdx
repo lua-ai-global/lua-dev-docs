@@ -55,18 +55,14 @@ await product.delete();
 Search products by name or description using semantic search.
 
 ```typescript
-Products.search(query: string, limit?: number): Promise<ProductSearchInstance>
+Products.search(query: string): Promise<ProductSearchInstance>
 ```
 
 <ParamField path="query" type="string" required>
   Search query to match against product names and descriptions
 </ParamField>
 
-<ParamField path="limit" type="number" default={5}>
-  Maximum number of products to return
-</ParamField>
-
-**Returns:** `ProductSearchInstance` - Array-like collection with direct access to products
+**Returns:** `ProductSearchInstance` - Array-like collection with direct access to products via `.products` property
 
 **Example:**
 
@@ -243,7 +239,7 @@ await product.delete();
 Create a new product.
 
 ```typescript
-Products.create(product: ProductInput): Promise<ProductInstance>
+Products.create(product: Product): Promise<ProductInstance>
 ```
 
 <ParamField path="product.name" type="string" required>
@@ -356,7 +352,7 @@ await product.save();
 Delete a product.
 
 ```typescript
-Products.delete(id: string): Promise<void>
+Products.delete(id: string): Promise<DeleteProductResponse>
 ```
 
 **Example:**
@@ -455,7 +451,7 @@ export class CreateProductTool implements LuaTool {
     
     return {
       success: true,
-      productId: result.product.id,
+      productId: result.id,
       message: `Product "${input.name}" created successfully`
     };
   }

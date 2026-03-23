@@ -198,8 +198,8 @@ Templates.whatsapp.send(
   Body component parameter values
 </ParamField>
 
-<ParamField path="data.values.buttons" type="object">
-  Button component parameter values
+<ParamField path="data.values.buttons" type="SendTemplateButtonValue[]">
+  Array of button parameter values. Each entry has `sub_type` (`'QUICK_REPLY'` | `'URL'` | `'PHONE_NUMBER'` | `'COPY_CODE'`), `index`, and optional `text` or `coupon_code`.
 </ParamField>
 
 **Returns:**
@@ -283,10 +283,11 @@ interface TemplateComponent {
 }
 
 interface TemplateButton {
-  type: 'QUICK_REPLY' | 'URL' | 'PHONE_NUMBER';
+  type: 'QUICK_REPLY' | 'URL' | 'PHONE_NUMBER' | 'COPY_CODE';
   text: string;
   url?: string;
-  phoneNumber?: string;
+  phone_number?: string;
+  example?: string[];
 }
 ```
 
@@ -514,7 +515,7 @@ await Templates.whatsapp.send(channelId, 'otp_verification', {
     When sending to multiple recipients, always check for partial failures:
     
     ```typescript
-    const result = await Templates.send(channelId, templateId, {
+    const result = await Templates.whatsapp.send(channelId, templateId, {
       phoneNumbers: phoneNumbers
     });
     
@@ -613,8 +614,15 @@ interface SendTemplateData {
   values?: {
     header?: Record<string, string>;
     body?: Record<string, string>;
-    buttons?: Record<string, string>;
+    buttons?: SendTemplateButtonValue[];
   };
+}
+
+interface SendTemplateButtonValue {
+  sub_type: 'QUICK_REPLY' | 'URL' | 'PHONE_NUMBER' | 'COPY_CODE';
+  index: string;
+  text?: string;
+  coupon_code?: string;
 }
 
 interface SendTemplateResponse {

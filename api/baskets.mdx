@@ -87,7 +87,7 @@ import { BasketStatus } from 'lua-cli';
 Create a new shopping basket.
 
 ```typescript
-Baskets.create(data: BasketInput): Promise<BasketInstance>
+Baskets.create(data: CreateBasketRequest): Promise<BasketInstance>
 ```
 
 <ParamField path="data.currency" type="string" default="USD">
@@ -128,7 +128,7 @@ await basket.updateMetadata({...});
 Retrieve baskets, optionally filtered by status.
 
 ```typescript
-Baskets.get(status?: BasketStatus): Promise<Basket[]>
+Baskets.get(status?: BasketStatus): Promise<BasketInstance[]>
 ```
 
 **Examples:**
@@ -175,10 +175,10 @@ await basket.clear();
 Add an item to a basket.
 
 ```typescript
-Baskets.addItem(basketId: string, item: BasketItem): Promise<BasketInstance>
+Baskets.addItem(basketId: string, item: BasketItem): Promise<Basket>
 ```
 
-Or use instance method:
+Or use instance method (recommended — returns enriched instance):
 ```typescript
 basket.addItem(item: BasketItem): Promise<BasketInstance>
 ```
@@ -203,7 +203,7 @@ basket.addItem(item: BasketItem): Promise<BasketInstance>
   Stock keeping unit
 </ParamField>
 
-**Returns:** `BasketInstance` with updated item count and total
+**Returns:** Static method returns raw `Basket` data. Instance method returns `BasketInstance` with updated item count and total.
 
 **Example:**
 
@@ -264,7 +264,7 @@ console.log(emptyBasket.common.itemCount); // 0
 Update basket status.
 
 ```typescript
-Baskets.updateStatus(basketId: string, status: BasketStatus): Promise<Basket>
+Baskets.updateStatus(basketId: string, status: BasketStatus): Promise<BasketStatus>
 ```
 
 **Example:**
@@ -278,7 +278,7 @@ await Baskets.updateStatus('basket_abc123', BasketStatus.ABANDONED);
 Update basket metadata.
 
 ```typescript
-Baskets.updateMetadata(basketId: string, metadata: object): Promise<Basket>
+Baskets.updateMetadata(basketId: string, metadata: Record<string, any>): Promise<Record<string, any>>
 ```
 
 **Example:**
@@ -296,7 +296,7 @@ await Baskets.updateMetadata('basket_abc123', {
 Convert basket to order (checkout).
 
 ```typescript
-Baskets.placeOrder(orderData: OrderData, basketId: string): Promise<Order>
+Baskets.placeOrder(orderData: Record<string, any>, basketId: string): Promise<OrderInstance>
 ```
 
 <ParamField path="orderData.shippingAddress" type="object" required>
@@ -532,7 +532,7 @@ export class ViewCartTool implements LuaTool {
     const basket = await Baskets.getById(input.basketId);
     
     return {
-      items: basket.common.items.map(item => ({
+      items: basket.items.map(item => ({
         product: item.id,
         quantity: item.quantity,
         price: `$${item.price}`,
