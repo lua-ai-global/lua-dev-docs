@@ -15,6 +15,44 @@
   "navigation": {
     "tabs": [
       {
+        "tab": "Learn",
+        "groups": [
+          {
+            "group": "Beginner",
+            "pages": [
+              "learn/authentication",
+              "learn/your-first-agent",
+              "learn/skills-and-tools",
+              "learn/testing",
+              "learn/push-and-deploy",
+              "learn/persona-design"
+            ]
+          },
+          {
+            "group": "Intermediate",
+            "pages": [
+              "learn/user-state",
+              "learn/data-and-search",
+              "learn/webhooks",
+              "learn/scheduled-jobs",
+              "learn/processors",
+              "learn/integrations",
+              "learn/ecommerce"
+            ]
+          },
+          {
+            "group": "Professional",
+            "pages": [
+              "learn/mcp-servers",
+              "learn/multi-channel",
+              "learn/dynamic-jobs",
+              "learn/production-ops",
+              "learn/full-project"
+            ]
+          }
+        ]
+      },
+      {
         "tab": "Overview",
         "groups": [
           {
