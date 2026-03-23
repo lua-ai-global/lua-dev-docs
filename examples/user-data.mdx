@@ -1,13 +1,13 @@
 ---
 title: "User Data Tools Example"
-description: "User profile management with platform APIs"
+description: "Persistent user storage: state machines, onboarding flows, and preferences"
 ---
 
 ## Overview
 
 **File**: `src/tools/UserDataTool.ts`
 
-Simple tools demonstrating the User API for accessing and updating user profiles.
+Tools demonstrating the User API as a **persistent per-user storage layer** — from simple profile reads to multi-step onboarding state machines.
 
 ## Tools Included
 
@@ -68,6 +68,61 @@ export class UpdateUserDataTool implements LuaTool {
 ```
 
 ## Use Cases
+
+### Onboarding State Machine (Persistent Across Sessions)
+
+The most powerful use of the User API — track multi-step workflows that persist across conversations. If a user leaves mid-onboarding and comes back days later, your agent picks up exactly where they left off.
+
+```typescript
+export class OnboardingStepTool {
+  name = 'onboarding_step';
+  description = 'Advance the user through onboarding, resuming where they left off';
+
+  inputSchema = z.object({
+    data: z.record(z.any()).optional().describe('Data collected in this step')
+  });
+
+  async execute(input: any, context: ToolContext) {
+    const user = context.user;
+
+    // This persists across conversations — the user can leave and come back
+    const step = user.onboardingStep || 'not_started';
+
+    switch (step) {
+      case 'not_started':
+        user.onboardingStep = 'collecting_info';
+        user.onboardingStartedAt = new Date().toISOString();
+        user.completedSteps = [];
+        await user.save();
+        return { nextAction: 'Ask for company name and role' };
+
+      case 'collecting_info':
+        // Accumulate data across multiple tool calls
+        user.companyName = input.data?.companyName;
+        user.role = input.data?.role;
+        user.onboardingStep = 'selecting_plan';
+        user.completedSteps = [...(user.completedSteps || []), 'info_collected'];
+        await user.save();
+        return { nextAction: 'Present plan options' };
+
+      case 'selecting_plan':
+        user.plan = input.data?.plan;
+        user.onboardingStep = 'complete';
+        user.onboardingCompletedAt = new Date().toISOString();
+        user.completedSteps = [...(user.completedSteps || []), 'plan_selected'];
+        await user.save();
+        return { message: `Welcome to the ${user.plan} plan, ${user.companyName}!` };
+
+      case 'complete':
+        return {
+          message: 'Onboarding already complete!',
+          completedAt: user.onboardingCompletedAt,
+          plan: user.plan
+        };
+    }
+  }
+}
+```
 
 ### Personalized Greeting
 
@@ -192,14 +247,14 @@ export class SendReceiptTool {
 ## What You'll Learn
 
 <CardGroup cols={2}>
+  <Card title="Persistent State" icon="database">
+    Store onboarding progress, workflow state, and custom data across sessions
+  </Card>
+  <Card title="State Machines" icon="arrows-spin">
+    Build multi-step flows that resume where the user left off
+  </Card>
   <Card title="Platform APIs" icon="server">
     Using Lua's built-in User API
-  </Card>
-  <Card title="Chaining Operations" icon="link">
-    Get instance, then call methods
-  </Card>
-  <Card title="Partial Updates" icon="pen">
-    Update only specified fields
   </Card>
   <Card title="save() Method" icon="floppy-disk">
     Simpler workflow for multiple changes

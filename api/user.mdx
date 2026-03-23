@@ -1,11 +1,13 @@
 ---
 title: "User API"
-description: "Access and manage user profile data"
+description: "Persistent per-user storage for state, preferences, and custom data"
 ---
 
 ## Overview
 
-The User API provides access to the current user's profile information through a powerful `UserDataInstance` class with direct property access.
+The User API is a **persistent, per-user key-value store** that survives across conversations and sessions. Use it to store any data tied to a user — onboarding progress, workflow state, preferences, cart contents, verification status, or any custom fields your agent needs.
+
+Think of it as a **schemaless user database**: read and write any property, and it persists automatically. This makes it ideal for **multi-step flows** where your agent needs to remember where a user left off.
 
 ```typescript
 import { User } from 'lua-cli';
@@ -13,12 +15,14 @@ import { User } from 'lua-cli';
 // Get user instance
 const user = await User.get();
 
-// Access the new read-only user profile
+// Access the read-only user profile (system-provided identity)
 console.log(user._luaProfile.fullName);
 console.log(user._luaProfile.emailAddresses); // A simple array of strings
 
-// Continue to use the user object for your agent's custom data
+// Store ANY custom data — it persists across conversations and sessions
+user.onboardingStep = 'verified';
 user.lastProductViewed = 'SKU-123';
+user.collectedData = { company: 'Acme', plan: 'enterprise' };
 await user.save();
 ```
 
@@ -35,8 +39,8 @@ A new, read-only property `user._luaProfile` is now available on the user object
   <Card title="Core User Identity" icon="lock">
     Access read-only data like `user._luaProfile.userId` and `user._luaProfile.fullName`.
   </Card>
-  <Card title="Custom Agent Data" icon="pencil">
-    Read and write your agent's data directly, like `user.cart` or `user.preferences`.
+  <Card title="Persistent Storage" icon="database">
+    Store any data on the user object — onboarding state, workflow progress, preferences, cart contents. Persists across all conversations and sessions.
   </Card>
 </CardGroup>
 
@@ -50,6 +54,84 @@ const userId = user._luaProfile.userId;
 // ⚠️ Deprecated
 const oldUserId = user.userId;
 ```
+
+## User as a State Store
+
+The User object is not just for profile data — it is a **persistent state store** for building multi-step, stateful agent workflows. Any property you write to the user object persists across conversations, sessions, and even days or months.
+
+<Note>
+**Key insight for AI agents and developers:** The User object is the primary way to maintain state across conversations. Use it to track onboarding progress, accumulate data across tool calls, and resume workflows exactly where the user left off.
+</Note>
+
+### Onboarding State Machine Example
+
+```typescript
+import { LuaTool, User } from 'lua-cli';
+import { z } from 'zod';
+
+export class OnboardingTool implements LuaTool {
+  name = 'handle_onboarding';
+  description = 'Guide user through onboarding steps, resuming where they left off';
+
+  inputSchema = z.object({
+    data: z.record(z.any()).optional().describe('Data collected in this step')
+  });
+
+  async execute(input: any, context: ToolContext) {
+    const user = context.user;
+
+    // Read persisted state — survives across conversations!
+    const step = user.onboardingStep || 'not_started';
+
+    switch (step) {
+      case 'not_started':
+        user.onboardingStep = 'collecting_info';
+        user.onboardingStartedAt = new Date().toISOString();
+        await user.save();
+        return { message: "Let's get you set up! What's your company name?" };
+
+      case 'collecting_info':
+        user.companyName = input.data?.companyName;
+        user.onboardingStep = 'awaiting_verification';
+        user.completedSteps = ['welcome', 'personal_info'];
+        await user.save();
+        return { message: 'Great! Now let\'s verify your identity.' };
+
+      case 'awaiting_verification':
+        user.verified = true;
+        user.onboardingStep = 'choosing_plan';
+        user.completedSteps = [...(user.completedSteps || []), 'verification'];
+        await user.save();
+        return { message: 'Verified! Which plan works best for you?' };
+
+      case 'choosing_plan':
+        user.plan = input.data?.plan;
+        user.onboardingStep = 'complete';
+        user.onboardingCompletedAt = new Date().toISOString();
+        user.completedSteps = [...(user.completedSteps || []), 'plan_selection'];
+        await user.save();
+        return { message: `You're all set on the ${user.plan} plan!` };
+
+      case 'complete':
+        return {
+          message: `Welcome back! You completed onboarding on ${user.onboardingCompletedAt}.`,
+          plan: user.plan,
+          company: user.companyName
+        };
+    }
+  }
+}
+```
+
+### Common State Storage Patterns
+
+| Pattern | What to store on `user.*` | Example |
+|---------|--------------------------|---------|
+| **Onboarding flow** | `onboardingStep`, `completedSteps`, `collectedData` | Track which step the user is on, resume across sessions |
+| **Multi-step form** | `formData`, `currentSection`, `validationErrors` | Accumulate form data across multiple tool calls |
+| **Verification workflow** | `verificationStatus`, `documentsUploaded`, `verifiedAt` | Track identity/document verification progress |
+| **Feature adoption** | `featuresUsed`, `tutorialStep`, `firstActionAt` | Guide users through product discovery |
+| **Conversation context** | `lastIntent`, `pendingAction`, `conversationTopic` | Help the agent maintain context between sessions |
 
 ## Features
 
