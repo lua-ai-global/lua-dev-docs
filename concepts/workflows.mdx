@@ -360,14 +360,16 @@ import { PreProcessor } from 'lua-cli';
 
 const profanityFilter = new PreProcessor({
   name: 'profanity-filter',
-  execute: async (message, user) => {
-    if (containsProfanity(message.content)) {
+  description: 'Filter inappropriate content',
+  execute: async (user, messages, channel) => {
+    const text = messages.map(m => m.type === 'text' ? m.text : '').join(' ');
+    if (containsProfanity(text)) {
       return {
-        block: true,
+        action: 'block',
         response: "Please keep the conversation respectful."
       };
     }
-    return { block: false };
+    return { action: 'proceed' };
   }
 });
 ```
@@ -381,6 +383,7 @@ import { PostProcessor } from 'lua-cli';
 
 const addDisclaimer = new PostProcessor({
   name: 'add-disclaimer',
+  description: 'Add legal disclaimer to responses',
   execute: async (user, message, response, channel) => {
     return {
       modifiedResponse: response + "\n\n_This is AI-generated content._"

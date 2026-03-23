@@ -65,8 +65,8 @@ export class CheckOnboardingTool implements LuaTool {
   description = "Check and advance the user's onboarding progress";
   inputSchema = z.object({});
 
-  async execute(input: any, context: ToolContext) {
-    const user = context.user;
+  async execute(input: any) {
+    const user = await User.get();
     const step = user.onboardingStep || 'not_started';
 
     if (step === 'complete') {

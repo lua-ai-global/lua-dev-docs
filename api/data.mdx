@@ -448,10 +448,10 @@ export class SearchArticlesTool implements LuaTool {
     );
     
     return {
-      articles: results.data.map(entry => ({
+      articles: results.map(entry => ({
         id: entry.id,
-        title: entry.data.title,
-        content: entry.data.content.substring(0, 200),
+        title: entry.title,
+        content: entry.content.substring(0, 200),
         relevance: Math.round(entry.score * 100) + '%'
       }))
     };
@@ -507,9 +507,12 @@ export class SearchTasksTool implements LuaTool {
     const results = await Data.search('tasks', input.query, 20, 0.6);
     
     return {
-      tasks: results.data.map(entry => ({
+      tasks: results.map(entry => ({
         id: entry.id,
-        ...entry.data,
+        title: entry.title,
+        description: entry.description,
+        status: entry.status,
+        priority: entry.priority,
         relevance: entry.score
       }))
     };
