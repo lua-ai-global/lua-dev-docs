@@ -13,7 +13,7 @@ import { User, Data, CDN, Products, Baskets, Orders, Templates } from 'lua-cli';
 
 <CardGroup cols={3}>
   <Card title="User" icon="user">
-    Access and manage user data
+    Per-user persistent storage for state, preferences, and workflow data
   </Card>
   <Card title="Data" icon="database">
     Custom data with vector search
@@ -37,28 +37,46 @@ import { User, Data, CDN, Products, Baskets, Orders, Templates } from 'lua-cli';
 
 ## User API
 
-Access current user's information.
+**Persistent per-user storage** that survives across conversations and sessions. Store any data — onboarding state, workflow progress, preferences, cart contents, verification results — as direct properties on the user object.
 
 ```typescript
 import { User } from 'lua-cli';
 
 const user = await User.get();
-// Returns: { id, email, name, ... }
+
+// Write any property — it persists across conversations
+user.onboardingStep = 'verified';
+user.plan = 'enterprise';
+user.collectedData = { company: 'Acme', role: 'admin' };
+user.lastInteraction = new Date().toISOString();
+await user.save();
+
+// Read it back anytime (even days later, in a different conversation)
+const returning = await User.get();
+console.log(returning.onboardingStep); // 'verified'
+console.log(returning.plan);           // 'enterprise'
 ```
 
-### Example Tool
+### Example: Stateful Onboarding Tool
 
 ```typescript
-export class GetUserDataTool implements LuaTool {
-  name = "get_user_data";
-  description = "Retrieve current user's information";
+export class CheckOnboardingTool implements LuaTool {
+  name = "check_onboarding";
+  description = "Check and advance the user's onboarding progress";
   inputSchema = z.object({});
 
-  async execute(input: any) {
-    const user = await User.get();
+  async execute(input: any, context: ToolContext) {
+    const user = context.user;
+    const step = user.onboardingStep || 'not_started';
+
+    if (step === 'complete') {
+      return { message: `Welcome back, ${user.name}! You're all set up.` };
+    }
+
     return {
-      name: user.name,
-      email: user.email
+      currentStep: step,
+      completedSteps: user.completedSteps || [],
+      message: `You're on step: ${step}. Let's continue!`
     };
   }
 }
@@ -444,7 +462,7 @@ export class CreateCustomerTool implements LuaTool {
 
 | API | Best For | Key Feature |
 |-----|----------|-------------|
-| **User** | Profile data | User authentication |
+| **User** | Per-user persistent state | Schemaless key-value store across sessions |
 | **Data** | Custom schemas | Vector search |
 | **CDN** | File storage | Upload/retrieve files |
 | **Products** | E-commerce | Pre-built catalog |

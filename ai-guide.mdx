@@ -627,7 +627,7 @@ These are available as **globals** in the VM sandbox (don't import from lua-cli)
 
 | API | Description |
 |-----|-------------|
-| `User` | User data management |
+| `User` | **Per-user persistent storage** — store onboarding state, preferences, workflow progress, or any custom data that persists across conversations |
 | `Data` | Custom data collections |
 | `Products` | Product catalog |
 | `Baskets` | Shopping cart |
@@ -640,6 +640,56 @@ These are available as **globals** in the VM sandbox (don't import from lua-cli)
 | `env(key)` | Environment variable access |
 | `fetch` | HTTP requests |
 | `console` | Logging (appears in `lua logs`) |
+
+### User: Per-User Persistent Storage
+
+<Note>
+**Critical for AI agents building stateful workflows.** The `User` API is the primary way to maintain state across conversations. It is a **schemaless, persistent key-value store** scoped to each end-user — not just a profile reader.
+</Note>
+
+Any property you set on the user object **persists forever** (across conversations, sessions, days, months) until you explicitly change it. This makes it the go-to primitive for:
+
+- **Onboarding flows** — track `user.onboardingStep`, `user.completedSteps`
+- **Multi-step workflows** — accumulate data across tool calls with `user.collectedData`
+- **Session state** — store `user.lastIntent`, `user.pendingAction`
+- **User preferences** — persist `user.theme`, `user.language`, `user.notificationSettings`
+
+```typescript
+// In any tool — read and write arbitrary user state
+const user = await User.get();   // or context.user in tool execute
+
+// These properties persist FOREVER until you change them
+user.onboardingStep = 'identity_verification';
+user.collectedData = { name: 'Jane', company: 'Acme' };
+user.completedSteps = ['welcome', 'personal_info'];
+await user.save();
+
+// Next conversation, next day, next month — it's still there
+const user = await User.get();
+console.log(user.onboardingStep); // 'identity_verification'
+console.log(user.completedSteps); // ['welcome', 'personal_info']
+```
+
+**State machine pattern** — use `user.onboardingStep` (or any field) to track where the user is in a multi-step flow, then resume from that point in any future conversation:
+
+```typescript
+const user = await User.get();
+const step = user.onboardingStep || 'not_started';
+
+if (step === 'not_started') {
+  user.onboardingStep = 'collecting_info';
+  await user.save();
+  return { message: "Let's get started!" };
+} else if (step === 'collecting_info') {
+  user.companyName = input.companyName;
+  user.onboardingStep = 'awaiting_verification';
+  await user.save();
+  return { message: 'Now let\'s verify your identity.' };
+}
+// ... continue for each step
+```
+
+See the full [User API reference](/api/user) for all methods (`update()`, `save()`, `send()`, `clear()`).
 
 ---
 
