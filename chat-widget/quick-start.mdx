@@ -3,38 +3,104 @@ title: "Quick Start"
 description: "Get LuaPop running on your website in 2 minutes"
 ---
 
-## 30-Second Setup
+## Before You Start: Whitelist Your Website
 
-Add AI chat to your website in 3 simple steps:
+<Warning>
+**You must whitelist your domain before the widget will load.** In the [Lua AI admin dashboard](https://admin.heylua.ai/), go to **Chat Widget** → **Customization** and add your website URL to the allowed sites list. The widget silently refuses to initialise on any domain not listed here.
+</Warning>
 
-<Steps>
-  <Step title="Add the Script">
-    Copy and paste this code right before the closing `</body>` tag:
-    
-    ```html
-    <script src="https://lua-ai-global.github.io/lua-pop/lua-pop.umd.js"></script>
-    <script>
-      window.LuaPop.init({
-        agentId: "your-agent-id",
-        position: "bottom-right",
-        buttonText: "Chat with AI"
-      });
-    </script>
-    ```
-  </Step>
+<Warning>
+**Testing on localhost?** `localhost` cannot be whitelisted — the dashboard approach will not work. You must pass your configuration inline and set `environment: "production"` explicitly:
 
-  <Step title="Replace Agent ID">
-    Get your agent ID from the [Lua AI dashboard](https://heylua.ai) and replace `"your-agent-id"`
-  </Step>
+```html
+<script src="https://lua-ai-global.github.io/lua-pop/lua-pop.umd.js"></script>
+<script>
+  window.LuaPop.init({
+    agentId: "your-agent-id",
+    environment: "production"
+  });
+</script>
+```
 
-  <Step title="Test">
-    Refresh your page - you should see a chat button in the bottom-right corner!
-  </Step>
-</Steps>
+This bypasses the domain whitelist check so you can develop and test locally against your real agent.
+</Warning>
 
-<Check>
-**That's it!** Your AI chat widget is now live. ✨
-</Check>
+## Setup Options
+
+There are two ways to get the widget running. The **dashboard approach** is recommended — it requires no code changes when you update settings.
+
+<Tabs>
+  <Tab title="Dashboard (Recommended)">
+    Configure everything from the Lua AI admin dashboard and embed a single script with no payload.
+
+    <Steps>
+      <Step title="Whitelist your site">
+        In the admin dashboard, go to **Chat Widget** → **Customization** and add your website URL(s) to the allowed sites list. The widget will only load on whitelisted domains.
+      </Step>
+
+      <Step title="Configure in the dashboard">
+        Set your agent behavior, appearance, and features directly in the dashboard UI — no code required.
+      </Step>
+
+      <Step title="Add the script">
+        Copy and paste this code right before the closing `</body>` tag:
+
+        ```html
+        <script src="https://lua-ai-global.github.io/lua-pop/lua-pop.umd.js"></script>
+        <script>
+          window.LuaPop.init();
+        </script>
+        ```
+      </Step>
+
+      <Step title="Test">
+        Refresh your page — the chat button will appear using your dashboard settings.
+      </Step>
+    </Steps>
+
+    <Check>
+    **That's it!** Update appearance or behavior any time from the dashboard — no code deploys needed. ✨
+    </Check>
+
+    <Info>
+    **Configuration priority:** If you pass options to `window.LuaPop.init({...})`, those values override the dashboard settings. To use dashboard settings exclusively, call `window.LuaPop.init()` with no arguments.
+    </Info>
+  </Tab>
+
+  <Tab title="Inline Config">
+    Pass configuration directly in the script for full programmatic control, or to override specific dashboard values. **This is also required when testing on localhost.**
+
+    <Steps>
+      <Step title="Add the Script">
+        Copy and paste this code right before the closing `</body>` tag:
+
+        ```html
+        <script src="https://lua-ai-global.github.io/lua-pop/lua-pop.umd.js"></script>
+        <script>
+          window.LuaPop.init({
+            agentId: "your-agent-id",
+            environment: "production",
+            position: "bottom-right",
+            buttonText: "Chat with AI"
+          });
+        </script>
+        ```
+      </Step>
+
+      <Step title="Replace Agent ID">
+        Get your agent ID from the [Lua AI admin dashboard](https://admin.heylua.ai/) and replace `"your-agent-id"`
+      </Step>
+
+      <Step title="Test">
+        Refresh your page — you should see a chat button in the bottom-right corner!
+      </Step>
+    </Steps>
+
+    <Check>
+    **That's it!** Your AI chat widget is now live. ✨
+    </Check>
+  </Tab>
+</Tabs>
 
 ## Common Setups
 

@@ -3,6 +3,28 @@ title: "Configuration Reference"
 description: "Complete configuration options for LuaPop"
 ---
 
+## Dashboard vs Inline Configuration
+
+All widget settings can be configured directly in the **Lua AI admin dashboard** — no code changes needed. To use dashboard settings, initialize the widget with no arguments:
+
+```javascript
+window.LuaPop.init();
+```
+
+To override specific settings in code, pass a config object:
+
+```javascript
+window.LuaPop.init({
+  sessionId: dynamicSessionId, // runtime value — overrides dashboard
+});
+```
+
+<Info>
+**Configuration priority:** Any option passed to `window.LuaPop.init({...})` takes priority over the corresponding dashboard setting. Options not passed in code fall back to dashboard values. Call `window.LuaPop.init()` with no arguments to use dashboard settings exclusively.
+</Info>
+
+---
+
 ## window.LuaPop.init(config)
 
 Initialize the LuaPop widget with the provided configuration.
