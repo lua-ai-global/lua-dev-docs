@@ -100,19 +100,33 @@ const widget = window.LuaPop.init({
 </ParamField>
 
 <ParamField path="embeddedDisplayConfig" type="object">
-  Configuration for embedded mode.
-  
+  Configuration for embedded mode. Required when `displayMode` is `"embedded"`.
+
   ```typescript
   embeddedDisplayConfig: {
-    targetContainerId: string; // ID of container element
+    targetContainerId: string;       // ID of the container element to render into
+    conversationStarters?: string[]; // Suggested prompts shown before first message
+    useContainerHeight?: boolean;    // Always use container height (100%) vs auto-detect
   }
   ```
-  
+
+  **`targetContainerId`** *(required)* — The `id` of the DOM element the widget will render into.
+
+  **`conversationStarters`** *(optional)* — An array of suggested prompts displayed to the user before they send their first message. Clicking a starter sends it as a message.
+
+  **`useContainerHeight`** *(optional, default `false`)* — When `true`, the widget always fills its container using `height: 100%`. Use this for footer or expandable layouts where the container height changes dynamically. When `false`, the widget auto-detects an explicit container height and falls back to `100dvh` if none is set.
+
   **Example:**
   ```javascript
   displayMode: "embedded",
   embeddedDisplayConfig: {
-    targetContainerId: "my-chat-container"
+    targetContainerId: "my-chat-container",
+    conversationStarters: [
+      "What can you help me with?",
+      "Show me your latest products",
+      "I need support with my order"
+    ],
+    useContainerHeight: true
   }
   ```
 </ParamField>
@@ -245,10 +259,26 @@ const widget = window.LuaPop.init({
 ## Advanced Features
 
 <ParamField path="voiceModeEnabled" type="boolean" default={false}>
-  Enable voice chat functionality.
-  
+  Enable voice chat functionality. When `true`, users can switch to a full voice interaction mode where AI responses are spoken aloud. See the [Voice Chat guide](/chat-widget/voice-chat) for details.
+
   ```javascript
   voiceModeEnabled: true
+  ```
+</ParamField>
+
+<ParamField path="microphoneEnabled" type="boolean" default={false}>
+  Show a microphone button in the chat input bar, allowing users to dictate messages via speech-to-text. Unlike `voiceModeEnabled`, this keeps the interaction in text mode — the spoken input is transcribed into the text field rather than switching to a full voice experience.
+
+  ```javascript
+  microphoneEnabled: true
+  ```
+</ParamField>
+
+<ParamField path="attachmentsEnabled" type="boolean" default={false}>
+  Allow users to upload and send file attachments (images, documents, etc.) within the chat. When `true`, a file attachment button appears in the chat input bar.
+
+  ```javascript
+  attachmentsEnabled: true
   ```
 </ParamField>
 
@@ -346,6 +376,8 @@ window.LuaPop.init({
   
   // Advanced
   voiceModeEnabled: true,
+  microphoneEnabled: true,
+  attachmentsEnabled: true,
   disablePreviewOnLinks: false,
   runtimeContext: "page:home",
   
