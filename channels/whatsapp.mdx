@@ -297,6 +297,47 @@ Before connecting WhatsApp, you need:
   </Step>
 </Steps>
 
+## Message Status Events
+
+When you send messages via WhatsApp (including template messages), Meta sends status updates back to Lua as messages progress through delivery. Lua captures these events and can forward them to your webhooks.
+
+### Status Lifecycle
+
+A typical message goes through these statuses:
+
+```
+sent → delivered → read
+```
+
+| Status | Meaning |
+|--------|---------|
+| `sent` | Message accepted by WhatsApp servers |
+| `delivered` | Message delivered to recipient's device |
+| `read` | Recipient opened and read the message |
+| `failed` | Message could not be delivered (includes error details) |
+| `played` | Recipient played a voice or video message |
+
+### Tracking Delivery with Webhooks
+
+To receive these events in your code, subscribe a webhook to the event types you need:
+
+```bash
+lua webhooks subscribe --webhook-name my-tracker --event message.sent
+lua webhooks subscribe --webhook-name my-tracker --event message.delivered
+lua webhooks subscribe --webhook-name my-tracker --event message.read
+lua webhooks subscribe --webhook-name my-tracker --event message.failed
+```
+
+Your webhook receives the full status payload including the message ID, recipient, timestamp, conversation context, and pricing information. See the [Webhooks API Reference](/api/luawebhook#event-subscriptions) for the complete payload shape.
+
+<Note>
+Status events are particularly useful when sending template messages via the [Templates API](/api/templates). After sending a campaign, subscribe to `message.delivered` and `message.read` to measure engagement, or `message.failed` to catch delivery issues.
+</Note>
+
+### Prerequisites
+
+For status events to flow through, make sure you've subscribed to `messages` **and** `message_status` in your Meta webhook configuration (see [Configure Webhook in Meta](#configure-webhook-in-meta) above).
+
 ## Status & Quality
 
 ### Connection Status

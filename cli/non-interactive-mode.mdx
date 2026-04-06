@@ -350,6 +350,11 @@ However, this still allows the command to continue (and likely fail silently). U
     lua webhooks deactivate --webhook-name myWebhook
     lua webhooks versions --webhook-name myWebhook
     lua webhooks deploy --webhook-name myWebhook --webhook-version 1.0.3
+    
+    # Event subscriptions
+    lua webhooks list-events
+    lua webhooks subscribe --webhook-name myWebhook --event message.delivered
+    lua webhooks unsubscribe --webhook-name myWebhook --event message.delivered
     ```
     
     | Action | Options Required |
@@ -359,6 +364,19 @@ However, this still allows the command to continue (and likely fail silently). U
     | `deactivate` | `--webhook-name` |
     | `versions` | `--webhook-name` |
     | `deploy` | `--webhook-name`, `--webhook-version` |
+    | `list-events` | None |
+    | `subscribe` | `--webhook-name`, `--event` |
+    | `unsubscribe` | `--webhook-name`, `--event` |
+
+    **Available event types (WhatsApp):**
+
+    | Event | Description |
+    |-------|-------------|
+    | `message.sent` | Message was sent to the recipient |
+    | `message.delivered` | Message was delivered to the recipient's device |
+    | `message.read` | Recipient read the message |
+    | `message.failed` | Message failed to send |
+    | `message.played` | Recipient played a voice/video message |
   </Tab>
   
   <Tab title="jobs">
@@ -913,6 +931,10 @@ lua deploy --skill-name order-service --skill-version latest --force
 # Activate webhooks and jobs
 lua webhooks activate --webhook-name payment-hook
 lua jobs activate --job-name daily-report
+
+# Subscribe webhook to delivery events
+lua webhooks subscribe --webhook-name payment-hook --event message.delivered
+lua webhooks subscribe --webhook-name payment-hook --event message.failed
 
 # Verify
 lua production overview

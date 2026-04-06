@@ -361,6 +361,93 @@ async function handleDelete(data: any) {
 export default genericWebhook;
 ```
 
+## Event Subscriptions
+
+Webhooks can subscribe to **platform events** — currently, message delivery status updates from WhatsApp. When subscribed, your webhook's `execute` function receives the event payload automatically.
+
+<Note>
+Event subscriptions currently support WhatsApp status events. Additional channels may emit these events in the future.
+</Note>
+
+### Available Event Types
+
+| Event | Trigger | Channel |
+|-------|---------|---------|
+| `message.sent` | Message was sent to the recipient | WhatsApp |
+| `message.delivered` | Message was delivered to the recipient's device | WhatsApp |
+| `message.read` | Recipient read the message | WhatsApp |
+| `message.failed` | Message failed to send | WhatsApp |
+| `message.played` | Recipient played a voice/video message | WhatsApp |
+
+### Subscribing via CLI
+
+```bash
+lua webhooks list-events
+lua webhooks subscribe --webhook-name my-webhook --event message.delivered
+lua webhooks subscribe --webhook-name my-webhook --event message.read
+lua webhooks unsubscribe --webhook-name my-webhook --event message.delivered
+```
+
+### Event Payload Shape
+
+When an event fires, your webhook receives a `WebhookEvent` where `body` contains:
+
+```typescript
+interface MessageStatusEvent {
+  eventType: string;
+  agentId: string;
+  messageWamid: string;
+  recipientId: string;
+  status: 'sent' | 'delivered' | 'read' | 'failed' | 'played';
+  channel: 'whatsapp';
+  phoneNumberId: string;
+  timestamp: string;
+  conversation?: {
+    id: string;
+    origin: { type: string };
+    expiration_timestamp?: string;
+  };
+  pricing?: {
+    billable: boolean;
+    pricing_model: string;
+    category: string;
+  };
+  errors?: Array<{
+    code: number;
+    title: string;
+    message?: string;
+  }>;
+}
+```
+
+### Example: Track Delivery for Analytics
+
+```typescript
+import { LuaWebhook, Data } from 'lua-cli';
+
+const analyticsWebhook = new LuaWebhook({
+  name: 'message-analytics',
+  description: 'Track message delivery for analytics',
+  
+  execute: async (event) => {
+    const { body } = event;
+    
+    await Data.create('message-analytics', {
+      messageId: body.messageWamid,
+      recipient: body.recipientId,
+      status: body.status,
+      channel: body.channel,
+      timestamp: body.timestamp,
+      billable: body.pricing?.billable
+    }, `${body.status} ${body.recipientId}`);
+    
+    return { tracked: true };
+  }
+});
+
+export default analyticsWebhook;
+```
+
 ## Using with LuaAgent
 
 Webhooks are added to your agent configuration:

@@ -164,6 +164,91 @@ const paymentWebhook = new LuaWebhook({
   </Tab>
 </Tabs>
 
+## Event Subscriptions
+
+Webhooks can also subscribe to **platform events** — real-time notifications from your messaging channels. When you send a template message via WhatsApp, for example, you can track whether it was delivered, read, or failed.
+
+<Note>
+**New in v3.6.0:** Webhook event subscriptions for message delivery tracking. Currently supports WhatsApp status events; additional channels may be added in the future.
+</Note>
+
+### Available Event Types
+
+| Event | Description | Channel |
+|-------|-------------|---------|
+| `message.sent` | Message was sent to the recipient | WhatsApp |
+| `message.delivered` | Message was delivered to the recipient's device | WhatsApp |
+| `message.read` | Recipient read the message | WhatsApp |
+| `message.failed` | Message failed to send | WhatsApp |
+| `message.played` | Recipient played a voice/video message | WhatsApp |
+
+### How It Works
+
+<Steps>
+  <Step title="Create a webhook">
+    Define a `LuaWebhook` that handles delivery status events
+  </Step>
+  
+  <Step title="Subscribe to events">
+    Use the CLI to subscribe your webhook to the event types you care about
+    
+    ```bash
+    lua webhooks subscribe --webhook-name delivery-tracker --event message.delivered
+    lua webhooks subscribe --webhook-name delivery-tracker --event message.read
+    lua webhooks subscribe --webhook-name delivery-tracker --event message.failed
+    ```
+  </Step>
+  
+  <Step title="Receive events">
+    Your webhook's `execute` function is called with the event payload whenever a status update arrives
+  </Step>
+</Steps>
+
+### Example: Delivery Tracking Webhook
+
+```typescript
+import { LuaWebhook, Data } from 'lua-cli';
+
+const deliveryTracker = new LuaWebhook({
+  name: 'delivery-tracker',
+  description: 'Track WhatsApp message delivery status',
+  
+  execute: async (event) => {
+    const { body } = event;
+    const { eventType, recipientId, status, messageWamid } = body;
+    
+    await Data.create('delivery-events', {
+      messageId: messageWamid,
+      recipient: recipientId,
+      status: status,
+      eventType: eventType,
+      trackedAt: new Date().toISOString()
+    }, `${status} - ${recipientId}`);
+    
+    if (status === 'failed') {
+      console.error(`Message ${messageWamid} failed for ${recipientId}`);
+    }
+    
+    return { received: true };
+  }
+});
+
+export default deliveryTracker;
+```
+
+### Managing Subscriptions via CLI
+
+```bash
+# List all available event types
+lua webhooks list-events
+
+# Subscribe a webhook to an event
+lua webhooks subscribe --webhook-name delivery-tracker --event message.delivered
+
+# Unsubscribe a webhook from an event
+lua webhooks unsubscribe --webhook-name delivery-tracker --event message.delivered
+```
+
 ## Adding Webhooks to Your Agent
 
 Webhooks are added to your LuaAgent configuration:

@@ -508,6 +508,55 @@ await Templates.whatsapp.send(channelId, 'otp_verification', {
 });
 ```
 
+## Tracking Delivery Status
+
+After sending template messages, you can track whether they were delivered, read, or failed using webhook event subscriptions.
+
+### Setup
+
+1. Create a webhook to handle delivery events
+2. Subscribe it to the status events you care about
+
+```bash
+lua webhooks subscribe --webhook-name campaign-tracker --event message.sent
+lua webhooks subscribe --webhook-name campaign-tracker --event message.delivered
+lua webhooks subscribe --webhook-name campaign-tracker --event message.read
+lua webhooks subscribe --webhook-name campaign-tracker --event message.failed
+```
+
+### Example: Campaign Analytics
+
+```typescript
+import { LuaWebhook, Data, Templates } from 'lua-cli';
+
+const campaignTracker = new LuaWebhook({
+  name: 'campaign-tracker',
+  description: 'Track template message delivery for campaigns',
+  
+  execute: async (event) => {
+    const { body } = event;
+    
+    await Data.create('campaign-metrics', {
+      messageId: body.messageWamid,
+      recipient: body.recipientId,
+      status: body.status,
+      timestamp: body.timestamp,
+      billable: body.pricing?.billable
+    }, `${body.status} ${body.recipientId}`);
+    
+    return { tracked: true };
+  }
+});
+
+export default campaignTracker;
+```
+
+After sending a batch of templates, your webhook receives individual status updates for each recipient as messages are sent, delivered, and read. Use this data to measure open rates, delivery rates, and catch failures.
+
+<Note>
+The `messageId` returned by `Templates.whatsapp.send()` corresponds to `messageWamid` in the status event payload, allowing you to correlate sends with delivery outcomes.
+</Note>
+
 ## Best Practices
 
 <AccordionGroup>
