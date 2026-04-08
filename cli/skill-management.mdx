@@ -752,59 +752,95 @@ lua push
 
 ## lua deploy
 
-Deploy a specific version to production (all users).
+Deploy a specific version of any primitive to production (all users).
 
 ```bash
-lua deploy
+lua deploy [type]
 ```
+
+`type` is optional — when omitted, an interactive menu lets you pick. Valid types: `skill`, `webhook`, `job`, `preprocessor`, `postprocessor`, `persona`, `all`.
 
 ### Options
 
 | Option | Description |
 |--------|-------------|
-| `--skill-name <name>` | Skill to deploy (non-interactive) |
-| `--skill-version <ver>` | Version to deploy, or 'latest' |
+| `--name <name>` | Entity name to deploy (non-interactive selection) |
+| `--set-version <ver>` | Version to deploy, or `'latest'` for the newest version |
 | `--force` | Skip confirmation prompt |
+
+<Note>
+**Deprecated flags** — still accepted for backward compatibility but prefer the generic equivalents above:
+
+| Deprecated | Use instead |
+|------------|-------------|
+| `--skill-name <name>` | `--name <name>` |
+| `--skill-version <ver>` | `--set-version <ver>` |
+</Note>
+
+### Usage
+
+```bash
+# Interactive — prompts for type, entity, and version
+lua deploy
+
+# Deploy a specific primitive type
+lua deploy skill
+lua deploy webhook
+lua deploy job
+lua deploy preprocessor
+lua deploy postprocessor
+lua deploy persona
+
+# Deploy latest version of every primitive at once
+lua deploy all --force
+```
 
 ### Non-Interactive Mode
 
 ```bash
-# Deploy specific version
-lua deploy --skill-name mySkill --skill-version 1.0.5 --force
+# Deploy a specific skill version
+lua deploy skill --name mySkill --set-version 1.0.5 --force
 
-# Deploy latest version
-lua deploy --skill-name mySkill --skill-version latest --force
+# Deploy latest webhook version
+lua deploy webhook --name myWebhook --set-version latest --force
+
+# Deploy latest of everything (CI/CD)
+lua deploy all --force
 ```
 
 ### What It Does
 
 <Steps>
+  <Step title="Select Type">
+    Choose the primitive type (or pass as argument to skip)
+  </Step>
+
+  <Step title="Select Entity">
+    Pick which skill / webhook / job / etc. to deploy (auto-selected if only one exists)
+  </Step>
+
   <Step title="Fetch Versions">
-    Lists all pushed versions from server
+    Lists all pushed versions from the server
   </Step>
   
   <Step title="Select Version">
-    Choose which version to deploy
+    Choose which version to deploy (or pass `--set-version latest`)
   </Step>
   
   <Step title="Confirm">
-    Shows warning about production deployment
+    Shows warning about production deployment (skip with `--force`)
   </Step>
   
   <Step title="Deploy">
-    Publishes selected version
-  </Step>
-  
-  <Step title="Live!">
-    Version is immediately available to all users
+    Publishes the selected version — immediately live for all users
   </Step>
 </Steps>
 
 ### Example
 
 ```bash
-$ lua deploy
-✅ Authenticated
+$ lua deploy skill
+📦 Deploying Skill: mySkill
 🔄 Fetching available versions...
 
 ? Select a version to deploy:
@@ -814,15 +850,16 @@ $ lua deploy
 
 ? ⚠️  Warning: This version will be deployed to all users. Do you want to proceed? Yes
 🔄 Publishing version...
-✅ Version 1.0.0 deployed successfully
+✅ Skill "mySkill" v1.0.0 deployed successfully
 ```
 
 ### Features
 
-- Shows all available versions
-- Indicates currently deployed version
-- Requires explicit confirmation
+- Works for all primitive types — not just skills
+- Shows all available versions with currently deployed one highlighted
+- Requires explicit confirmation (skip with `--force`)
 - Immediate deployment (no rollback delay)
+- `lua deploy all --force` deploys latest version of every primitive in one command
 
 <Warning>
 **Deployment is immediate!**

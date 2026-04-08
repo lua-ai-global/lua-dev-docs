@@ -497,10 +497,10 @@ lua push all --force --auto-deploy
 
 ```bash
 # Deploy specific version
-lua deploy --skill-name mySkill --skill-version 1.0.5 --force
+lua deploy skill --name mySkill --set-version 1.0.5 --force
 
 # Deploy latest version
-lua deploy --skill-name mySkill --skill-version latest --force
+lua deploy skill --name mySkill --set-version latest --force
 ```
 
 ### Key Difference
@@ -945,7 +945,7 @@ wait
 lua push skill --name order-service --set-version 1.0.0 --force
 
 # 9. Deploy to production
-lua deploy --skill-name order-service --skill-version latest --force
+lua deploy skill --name order-service --set-version latest --force
 
 # 10. Set production env vars
 lua env production -k OPENAI_KEY -v "sk-live-xxx"
@@ -994,7 +994,7 @@ lua logs --type skill --name order-service --limit 10 --json
 | List integration MCP status | `lua integrations mcp list` |
 | Push all | `lua push all --force` |
 | Push and deploy | `lua push all --force --auto-deploy` |
-| Deploy specific version | `lua deploy --skill-name <name> --skill-version <ver> --force` |
+| Deploy specific version | `lua deploy skill --name <name> --set-version <ver> --force` |
 | Set env variable | `lua env <sandbox\|production> -k <key> -v <value>` |
 | View logs | `lua logs --type <type> --name <name> --limit <n>` |
 
