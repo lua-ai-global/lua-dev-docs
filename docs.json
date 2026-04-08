@@ -23,7 +23,7 @@
           },
           {
             "group": "Build with AI",
-            "pages": ["ai-guide"]
+            "pages": ["ai-guide", "mcp-for-builders"]
           },
           {
             "group": "Key Concepts",

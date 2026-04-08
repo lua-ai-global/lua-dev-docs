@@ -1,0 +1,170 @@
+---
+title: "Use Lua with Claude, Cursor & AI IDEs"
+description: "Connect Lua's documentation to your AI coding assistant in minutes via MCP"
+---
+
+## Overview
+
+Lua publishes an MCP (Model Context Protocol) server at `https://docs.heylua.ai/mcp`. Add it to any MCP-compatible AI tool — Claude Desktop, Cursor, Windsurf, and others — and your assistant gains direct, always-up-to-date access to the full Lua CLI documentation.
+
+Once connected, you can ask questions like _"How do I create a scheduled job?"_ or _"Show me the LuaJob API"_ and get answers grounded in the real docs, not stale training data.
+
+<Note>
+  The MCP server is hosted and maintained by Mintlify. It auto-updates whenever the Lua docs are published, so it is always current.
+</Note>
+
+## What you get
+
+Two tools become available inside your AI tool the moment it connects:
+
+| Tool | What it does |
+|------|-------------|
+| `search_lua_cli` | Semantic search across all Lua CLI documentation |
+| `get_page_lua_cli` | Fetch the full content of any specific doc page by path |
+
+Your AI assistant will use these automatically when you ask Lua-related questions.
+
+---
+
+## Claude Desktop
+
+<Steps>
+  <Step title="Open your Claude Desktop config">
+    On **macOS**: `~/Library/Application Support/Claude/claude_desktop_config.json`
+
+    On **Windows**: `%APPDATA%\Claude\claude_desktop_config.json`
+
+    Create the file if it does not exist.
+  </Step>
+
+  <Step title="Add the Lua MCP server">
+    ```json
+    {
+      "mcpServers": {
+        "lua-docs": {
+          "type": "http",
+          "url": "https://docs.heylua.ai/mcp"
+        }
+      }
+    }
+    ```
+  </Step>
+
+  <Step title="Restart Claude Desktop">
+    Quit and reopen the app. You should see the Lua tools listed in the MCP tools panel.
+  </Step>
+</Steps>
+
+---
+
+## Cursor
+
+<Steps>
+  <Step title="Create or open your MCP config">
+    **Project-level** (only active in this project):
+    ```
+    .cursor/mcp.json
+    ```
+
+    **Global** (active in all projects):
+    ```
+    ~/.cursor/mcp.json
+    ```
+  </Step>
+
+  <Step title="Add the Lua MCP server">
+    ```json
+    {
+      "mcpServers": {
+        "lua-docs": {
+          "url": "https://docs.heylua.ai/mcp"
+        }
+      }
+    }
+    ```
+  </Step>
+
+  <Step title="Reload Cursor">
+    Open the Command Palette (`Cmd/Ctrl + Shift + P`) and run **Reload Window**, or restart Cursor. The Lua tools will appear in the MCP section of your Cursor settings.
+  </Step>
+</Steps>
+
+---
+
+## Windsurf
+
+<Steps>
+  <Step title="Open your Windsurf MCP config">
+    ```
+    ~/.codeium/windsurf/mcp_config.json
+    ```
+  </Step>
+
+  <Step title="Add the Lua MCP server">
+    ```json
+    {
+      "mcpServers": {
+        "lua-docs": {
+          "serverUrl": "https://docs.heylua.ai/mcp"
+        }
+      }
+    }
+    ```
+  </Step>
+
+  <Step title="Restart Windsurf">
+    Restart the editor to pick up the new server.
+  </Step>
+</Steps>
+
+---
+
+## Other tools (mcp-remote fallback)
+
+For AI tools that only support the **stdio** transport (rather than HTTP), use the [`mcp-remote`](https://www.npmjs.com/package/mcp-remote) bridge:
+
+```json
+{
+  "mcpServers": {
+    "lua-docs": {
+      "command": "npx",
+      "args": ["-y", "mcp-remote", "https://docs.heylua.ai/mcp"]
+    }
+  }
+}
+```
+
+This works with any tool that accepts an `npx`-style stdio MCP server definition.
+
+---
+
+## What to ask
+
+Once connected, your AI assistant can answer questions like:
+
+- _"How do I define a LuaJob with a cron schedule?"_
+- _"What flags does `lua jobs deploy` accept?"_
+- _"Show me the full Jobs API reference."_
+- _"How do I test a webhook locally?"_
+- _"What's the difference between a preprocessor and a postprocessor?"_
+
+The assistant will call `search_lua_cli` to find the relevant pages and `get_page_lua_cli` to pull their full content — so answers come from the actual documentation, not guesswork.
+
+---
+
+## Related
+
+<CardGroup cols={2}>
+  <Card title="AI Agent Building Guide" icon="wand-magic-sparkles" href="/ai-guide">
+    Complete workflow for building Lua agents with Cursor, Windsurf, or GitHub Copilot
+  </Card>
+  <Card title="MCP Servers Overview" icon="plug" href="/overview/mcp-servers">
+    Connect external MCP servers to your Lua agent
+  </Card>
+  <Card title="CLI Overview" icon="terminal" href="/cli/overview">
+    All available Lua CLI commands
+  </Card>
+  <Card title="LuaMCPServer API" icon="book" href="/api/luamcpserver">
+    Connect external tools to your agent via MCP
+  </Card>
+</CardGroup>

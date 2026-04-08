@@ -222,14 +222,18 @@ However, this still allows the command to continue (and likely fail silently). U
     # Check for drift (exit code 1 if found)
     lua sync --check
     
-    # Auto-accept server state
+    # Auto-accept server state (pull server → local)
     lua sync --accept
+
+    # Push local state to server without prompting
+    lua sync --push
     ```
     
     | Option | Description |
     |--------|-------------|
     | `--check` | Check only, exit 1 if drift |
-    | `--accept` | Auto-sync from server |
+    | `--accept` | Pull server state to local |
+    | `--push` | Push local state to server |
   </Tab>
   
   <Tab title="chat">
@@ -253,6 +257,12 @@ However, this still allows the command to continue (and likely fail silently). U
     
     # Isolated test with auto-clear after response
     lua chat -m "Run test" -t my-test --clear
+
+    # Send multiple messages concurrently (load / batch testing)
+    lua chat -b "Message 1" "Message 2" "Message 3"
+
+    # Batch with delay between messages (ms)
+    lua chat -b "Msg 1" "Msg 2" "Msg 3" -d 500
     ```
     
     | Option | Description |
@@ -261,6 +271,8 @@ However, this still allows the command to continue (and likely fail silently). U
     | `-m, --message <text>` | Message to send |
     | `-t, --thread [id]` | Scope to a thread (omit ID to auto-generate UUID) |
     | `--clear`, `--clear-thread` | Clear thread history after response (requires `--thread`) |
+    | `-b, --batch <messages...>` | Send multiple messages concurrently |
+    | `-d, --delay <ms>` | Delay between batch messages in ms (default: 100) |
   </Tab>
 </Tabs>
 
@@ -384,13 +396,20 @@ However, this still allows the command to continue (and likely fail silently). U
     
     ```bash
     lua jobs view
-    lua jobs trigger --job-name healthCheck
-    lua jobs activate --job-name myJob
-    lua jobs deactivate --job-name myJob
-    lua jobs versions --job-name myJob
-    lua jobs deploy --job-name myJob --job-version 1.0.3
-    lua jobs history --job-name myJob
+    lua jobs trigger -i healthCheck
+    lua jobs activate -i myJob
+    lua jobs deactivate -i myJob
+    lua jobs versions -i myJob
+    lua jobs deploy -i myJob -v 1.0.3
+    lua jobs deploy -i myJob -v latest
+    lua jobs history -i myJob
+    lua jobs delete -i oldJob
     ```
+
+    | Option | Description |
+    |--------|-------------|
+    | `-i, --job-name <name>` | Job name |
+    | `-v, --job-version <version>` | Version or 'latest' (deploy only) |
     
     | Action | Options Required |
     |--------|------------------|
@@ -401,6 +420,7 @@ However, this still allows the command to continue (and likely fail silently). U
     | `versions` | `--job-name` |
     | `deploy` | `--job-name`, `--job-version` |
     | `history` | `--job-name` |
+    | `delete` | `--job-name` |
   </Tab>
   
   <Tab title="preprocessors">
