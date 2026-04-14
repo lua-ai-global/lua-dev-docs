@@ -4,11 +4,58 @@ All notable changes to the Lua documentation will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
-## [3.7.1] - 2026-03-22
+## [3.9.0] - 2026-04-13
+
+### Improvements
+
+- **CI/CD-friendly authentication (LUA-258)** — `keytar` (OS keychain) removed. API keys now resolved from `LUA_API_KEY` env var, `~/.lua-cli/credentials` file, or `.env` file. Works on headless Debian, Docker, and VMs without any system dependencies. Run `lua auth configure` once to re-authenticate.
+
+## [3.8.0] - 2026-04-08
 
 ### Features
 
-- **Isolated AI text generation (`AI.generate`)** — New API for running text generation from within tools, aligned with Vercel AI SDK `generateText`. Two call patterns: simplified `AI.generate(prompt, content?)` returns plain text; full-options `AI.generate({ model, system, prompt, ... })` returns a rich result with `text`, `finishReason`, `usage`, `sources` (Google Search grounding), `reasoning`, and more. Supports `google/*`, `openai/*`, and `anthropic/*` providers (BAC-14).
+- **Webhook event subscriptions (BAC-131)** — Subscribe webhooks to WhatsApp message lifecycle events (`sent`, `delivered`, `read`, `failed`, `played`). New commands: `lua webhooks events list-events`, `subscribe`, `unsubscribe`.
+- **Generic multi-primitive deploy (BAC-137)** — `lua deploy` now works for any primitive type: `lua deploy skill|webhook|job|preprocessor|postprocessor|persona`. Interactive type menu when no type is given. `lua deploy all --force` deploys latest versions of everything. Generic `--name` and `--set-version` flags replace the old `--skill-name`/`--skill-version` (deprecated aliases kept).
+
+### Bug Fixes
+
+- **Jobs short flags (BAC-94)** — `lua jobs` now accepts `-i` (`--job-name`) and `-v` (`--job-version`) short flags. Activate/deactivate list now shows live server status.
+- **Active version display** — Fixed incorrect active version comparison for jobs, preprocessors, and postprocessors in deploy and push workflows.
+- **Webhook unsubscribe validation** — Invalid event types now show a clear error instead of a misleading "not subscribed" message.
+
+## [3.7.5] - 2026-03-30
+
+### Features
+
+- **Per-agent message batching (BAC-113)** — Agents can have individual batching configuration for message debouncing. New `--batch` and `--delay` flags for `lua chat` to test batching behavior.
+
+## [3.7.4] - 2026-03-27
+
+### Bug Fixes
+
+- **Keychain authentication reliability** — Fixed several issues that could cause API key saves to silently fail on macOS. Auth flow now correctly reports errors and clears stale data on re-authentication.
+- **Inline comment stripping** — `.env` parsing now strips inline comments correctly.
+
+## [3.7.3] - 2026-03-24
+
+### Improvements
+
+- **HTTP retry with exponential backoff** — Automatic retries with backoff for transient server failures (429, 500–504). Max 3 retries, never retries client errors.
+- **Reduced package size** — Removed the `lua dev` web UI command and unused dependencies, significantly reducing install size.
+
+### Bug Fixes
+
+- **Chat stream timeout** — Chat sessions now have a 5-minute timeout instead of hanging indefinitely on unresponsive connections.
+
+## [3.7.2] - 2026-03-24
+
+### Features
+
+- **Isolated AI text generation (`AI.generate`) (BAC-14)** — New API for running text generation from within tools, aligned with Vercel AI SDK `generateText`. Two call patterns: simplified `AI.generate(prompt, content?)` returns plain text; full-options `AI.generate({ model, system, prompt, ... })` returns a rich result with `text`, `finishReason`, `usage`, `sources` (Google Search grounding), `reasoning`, and more. Supports `google/*`, `openai/*`, and `anthropic/*` providers.
+
+### Improvements
+
+- **Lazy keytar loading** — Keytar loaded on demand and skipped when `LUA_SKIP_KEYCHAIN` is set, fixing `MODULE_NOT_FOUND` errors in WebContainers and browser sandboxes.
 
 ## [3.7.0] - 2026-03-20
 

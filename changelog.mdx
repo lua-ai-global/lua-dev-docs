@@ -3,9 +3,164 @@ title: "Changelog"
 description: "Release notes and version history for lua-cli"
 ---
 
-## v3.7.1
+## v3.9.0
 
-**Released:** March 22, 2026
+**Released:** April 13, 2026
+
+### 🔧 Improvements
+
+<AccordionGroup>
+  <Accordion title="CI/CD-friendly authentication — no keychain required (LUA-258)">
+    `keytar` (OS keychain) has been removed. The CLI now works on headless Debian, Docker, and VMs without any native system dependencies.
+
+    API key resolution order:
+
+    1. `LUA_API_KEY` environment variable
+    2. `~/.lua-cli/credentials` file (written by `lua auth configure`)
+    3. `.env` file values
+
+    ```bash
+    # Option 1 — environment variable (CI/CD, Docker)
+    export LUA_API_KEY=your-api-key
+
+    # Option 2 — interactive setup (local dev)
+    lua auth configure
+
+    # Option 3 — .env file
+    echo "LUA_API_KEY=your-api-key" >> .env
+    ```
+
+    <Note>
+      **Upgrading from v3.8.x or earlier?** Run `lua auth configure` once to store your key in the new location. Your previous key stored in the OS keychain is not migrated automatically.
+    </Note>
+  </Accordion>
+</AccordionGroup>
+
+---
+
+## v3.8.0
+
+**Released:** April 8, 2026
+
+### ✨ New Features
+
+<AccordionGroup>
+  <Accordion title="Webhook event subscriptions (BAC-131)">
+    Subscribe your webhooks to WhatsApp message lifecycle events dispatched when Meta sends status callbacks.
+
+    ```bash
+    lua webhooks events list-events               # See all subscribable event types
+    lua webhooks events subscribe <webhook-id>    # Subscribe to events
+    lua webhooks events unsubscribe <webhook-id>  # Remove subscriptions
+    ```
+
+    Supported events: `sent`, `delivered`, `read`, `failed`, `played`.
+  </Accordion>
+
+  <Accordion title="Generic multi-primitive deploy (BAC-137)">
+    `lua deploy` now mirrors `lua push [type]` — deploy any primitive interactively or directly:
+
+    ```bash
+    lua deploy                    # Interactive type selection
+    lua deploy skill              # Deploy a skill version
+    lua deploy webhook            # Deploy a webhook version
+    lua deploy job                # Deploy a job version
+    lua deploy preprocessor       # Deploy a preprocessor version
+    lua deploy postprocessor      # Deploy a postprocessor version
+    lua deploy persona            # Deploy a persona version
+    lua deploy all --force        # Deploy latest of everything
+    ```
+
+    New generic flags: `--name` (replaces `--skill-name`) and `--set-version` (replaces `--skill-version`). Deprecated aliases kept for backwards compatibility.
+  </Accordion>
+</AccordionGroup>
+
+### 🐛 Bug Fixes
+
+<AccordionGroup>
+  <Accordion title="Jobs short flags and live status (BAC-94)">
+    `lua jobs deploy -i myJob -v latest` now works correctly — `-i` and `-v` are registered as short flags for `--job-name` and `--job-version`. The activate/deactivate selection list now shows the live server status badge next to each job.
+  </Accordion>
+
+  <Accordion title="Active version comparison for all primitives">
+    Jobs, preprocessors, and postprocessors were comparing the wrong ID against `activeVersionId`, causing the active version to not be highlighted correctly. Fixed to use the version's own ID in all cases.
+  </Accordion>
+
+  <Accordion title="Webhook unsubscribe event type validation">
+    Invalid event types passed to `lua webhooks events unsubscribe` now show a clear validation error instead of a misleading "not subscribed" message.
+  </Accordion>
+</AccordionGroup>
+
+---
+
+## v3.7.5
+
+**Released:** March 30, 2026
+
+### ✨ New Features
+
+<AccordionGroup>
+  <Accordion title="Per-agent message batching (BAC-113)">
+    Agents can now have individual batching configuration for message debouncing. New `lua chat` flags for testing:
+
+    ```bash
+    lua chat --batch           # Enable message batching in chat session
+    lua chat --delay 2000      # Set first-message delay (ms)
+    ```
+
+    Batching config is set per-agent with fallback to environment variables.
+  </Accordion>
+</AccordionGroup>
+
+---
+
+## v3.7.4
+
+**Released:** March 27, 2026
+
+### 🐛 Bug Fixes
+
+<AccordionGroup>
+  <Accordion title="Keychain authentication reliability">
+    Fixed several issues that could cause API key saves to silently fail on macOS. The auth flow now correctly reports errors and clears stale data on re-authentication.
+  </Accordion>
+
+  <Accordion title="Inline comment stripping in .env files">
+    `.env` parsing now correctly strips inline comments: `LUA_API_KEY=abc # my comment` resolves to `abc`.
+  </Accordion>
+</AccordionGroup>
+
+---
+
+## v3.7.3
+
+**Released:** March 24, 2026
+
+### 🔧 Improvements
+
+<AccordionGroup>
+  <Accordion title="HTTP retry with exponential backoff">
+    Automatic retries with backoff for transient server failures (429, 500–504). Max 3 retries, never retries client errors. Improves reliability for flaky network conditions.
+  </Accordion>
+
+  <Accordion title="Reduced package size">
+    Removed the `lua dev` web UI command and unused dependencies, significantly reducing install size.
+  </Accordion>
+</AccordionGroup>
+
+### 🐛 Bug Fixes
+
+<AccordionGroup>
+  <Accordion title="Chat stream timeout">
+    Chat sessions now have a 5-minute timeout instead of hanging indefinitely on unresponsive connections.
+  </Accordion>
+</AccordionGroup>
+
+---
+
+## v3.7.2
+
+**Released:** March 24, 2026
 
 ### ✨ New Features
 
@@ -44,6 +199,19 @@ description: "Release notes and version history for lua-cli"
     **Supported providers:** `google/*` (Vertex AI), `openai/*`, `anthropic/*` — with automatic fallback if the requested provider's API key is missing.
 
     Google Search grounding is automatically attached for Google models.
+  </Accordion>
+</AccordionGroup>
+
+### 🔧 Improvements
+
+<AccordionGroup>
+  <Accordion title="Lazy keytar loading for WebContainer support">
+    Keytar is now loaded on demand and skipped entirely when `LUA_SKIP_KEYCHAIN` is set. Fixes `MODULE_NOT_FOUND` errors in StackBlitz WebContainers and browser sandboxes.
+
+    ```bash
+    export LUA_SKIP_KEYCHAIN=1
+    lua --version    # Now works without keytar.node
+    ```
   </Accordion>
 </AccordionGroup>
 
