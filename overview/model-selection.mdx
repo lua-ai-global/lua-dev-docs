@@ -30,13 +30,69 @@ export const agent = new LuaAgent({
 |---|---|---|
 | `google/gemini-2.5-flash` | Google (Vertex AI) | 1M tokens **(default)** |
 | `google/gemini-2.5-pro` | Google (Vertex AI) | 1M tokens |
+| `google/gemini-2.5-flash-lite` | Google (Vertex AI) | 1M tokens |
 | `google/gemini-2.0-flash` | Google (Vertex AI) | 1M tokens |
-| `openai/gpt-4o` | OpenAI | 128K tokens |
-| `openai/gpt-4o-mini` | OpenAI | 128K tokens |
+| `google/gemini-2.0-flash-lite` | Google (Vertex AI) | 1M tokens |
+| `google/gemini-1.5-pro` | Google (Vertex AI) | 1M tokens |
+| `google/gemini-1.5-flash` | Google (Vertex AI) | 1M tokens |
+| `google/gemini-3.1-pro-preview` | Google (Vertex AI) | 1M tokens |
+| `google/gemini-3-flash-preview` | Google (Vertex AI) | 1M tokens |
+| `google/gemini-3.1-flash-lite-preview` | Google (Vertex AI) | 1M tokens |
+| `openai/gpt-5.4` | OpenAI | — |
+| `openai/gpt-5.4-mini` | OpenAI | — |
+| `openai/gpt-5.4-nano` | OpenAI | — |
+| `openai/gpt-5` | OpenAI | — |
+| `openai/gpt-5-mini` | OpenAI | — |
 | `openai/gpt-4.1` | OpenAI | 1M tokens |
 | `openai/gpt-4.1-mini` | OpenAI | 1M tokens |
-| `anthropic/claude-3.5-sonnet` | Anthropic | 200K tokens |
+| `openai/gpt-4.1-nano` | OpenAI | 1M tokens |
+| `openai/gpt-4o` | OpenAI | 128K tokens |
+| `openai/gpt-4o-mini` | OpenAI | 128K tokens |
+| `openai/gpt-4-turbo` | OpenAI | 128K tokens |
+| `openai/o3` | OpenAI | 200K tokens |
+| `openai/o3-mini` | OpenAI | 200K tokens |
+| `openai/o3-pro` | OpenAI | 200K tokens |
+| `openai/o4-mini` | OpenAI | 200K tokens |
+| `openai/o1` | OpenAI | 200K tokens |
+| `openai/o1-mini` | OpenAI | 128K tokens |
+| `anthropic/claude-opus-4-6` | Anthropic | 200K tokens |
+| `anthropic/claude-sonnet-4-6` | Anthropic | 200K tokens |
+| `anthropic/claude-haiku-4-5` | Anthropic | 200K tokens |
+| `anthropic/claude-opus-4-5` | Anthropic | 200K tokens |
+| `anthropic/claude-sonnet-4-5` | Anthropic | 200K tokens |
+| `anthropic/claude-opus-4-1` | Anthropic | 200K tokens |
 | `anthropic/claude-3.7-sonnet` | Anthropic | 200K tokens |
+| `deepseek/deepseek-chat` | DeepSeek | 131K tokens |
+| `deepseek/deepseek-reasoner` | DeepSeek | 128K tokens |
+| `groq/llama-3.1-8b-instant` | Groq | 131K tokens |
+| `groq/llama-3.3-70b-versatile` | Groq | 131K tokens |
+| `groq/meta-llama/llama-4-scout-17b-16e-instruct` | Groq | 131K tokens |
+| `groq/groq/compound` | Groq | 131K tokens |
+| `groq/openai/gpt-oss-120b` | Groq | 131K tokens |
+| `groq/moonshotai/kimi-k2-instruct-0905` | Groq | 262K tokens |
+| `xai/grok-4` | xAI | 256K tokens |
+| `xai/grok-4-fast` | xAI | 2M tokens |
+| `xai/grok-3` | xAI | 131K tokens |
+| `xai/grok-3-mini` | xAI | 131K tokens |
+| `xai/grok-3-mini-fast` | xAI | 131K tokens |
+| `alibaba/qwen3-max` | Alibaba (Qwen) | 262K tokens |
+| `alibaba/qwen3.6-plus` | Alibaba (Qwen) | 1M tokens |
+| `alibaba/qwen3-235b-a22b` | Alibaba (Qwen) | 131K tokens |
+| `alibaba/qwen3-32b` | Alibaba (Qwen) | 131K tokens |
+| `alibaba/qwen-turbo` | Alibaba (Qwen) | 1M tokens |
+| `alibaba/qwq-plus` | Alibaba (Qwen) | 131K tokens |
+| `openrouter/z-ai/glm-5.1` | OpenRouter (ZhipuAI) | 203K tokens |
+| `openrouter/z-ai/glm-5` | OpenRouter (ZhipuAI) | 80K tokens |
+| `openrouter/z-ai/glm-5-turbo` | OpenRouter (ZhipuAI) | 203K tokens |
+| `openrouter/z-ai/glm-4.7` | OpenRouter (ZhipuAI) | 203K tokens |
+| `openrouter/z-ai/glm-4.7-flash` | OpenRouter (ZhipuAI) | 203K tokens |
+| `openrouter/z-ai/glm-4.6` | OpenRouter (ZhipuAI) | 205K tokens |
+| `openrouter/z-ai/glm-4.5` | OpenRouter (ZhipuAI) | 131K tokens |
+| `openrouter/z-ai/glm-4.5-air` | OpenRouter (ZhipuAI) | 131K tokens |
+
+<Note>
+  **OpenRouter fallback.** If a provider's API key is not configured, Lua automatically routes the request through [OpenRouter](https://openrouter.ai) instead (when available). This means you can use any model above even if the direct provider isn't set up — OpenRouter acts as a universal gateway. If OpenRouter is also unavailable, the request falls back to the default model.
+</Note>
 
 ---
 
