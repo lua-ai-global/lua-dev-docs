@@ -168,6 +168,9 @@ However, this still allows the command to continue (and likely fail silently). U
     # Create agent + new organization
     lua init --agent-name "My Bot" --org-name "Acme Corp"
     
+    # Create agent with a specific model
+    lua init --agent-name "My Bot" --org-id org456 --model openai/gpt-4o
+    
     # Override existing project
     lua init --agent-id abc123 --force
     
@@ -181,6 +184,7 @@ However, this still allows the command to continue (and likely fail silently). U
     | `--agent-name <name>` | Name for new agent |
     | `--org-id <id>` | Existing organization ID |
     | `--org-name <name>` | New organization name |
+    | `--model <model>` | LLM model for the agent (e.g. `openai/gpt-4o`) |
     | `--force` | Override existing `lua.skill.yaml` |
     | `--with-examples` | Include example code |
   </Tab>

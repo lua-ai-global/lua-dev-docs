@@ -3,6 +3,51 @@ title: "Changelog"
 description: "Release notes and version history for lua-cli"
 ---
 
+## v3.9.3
+
+**Released:** April 15, 2026
+
+### ✨ New Features
+
+<AccordionGroup>
+  <Accordion title="Model selection in lua init (LUA-262)">
+    Choose your agent's LLM model during `lua init`.
+
+    **Interactive mode:** a searchable, provider-grouped model list appears after org and name selection. Select a model or skip to use the server default.
+
+    **Non-interactive mode:**
+
+    ```bash
+    lua init --model openai/gpt-4o
+    lua init --agent-name "My Bot" --org-id org123 --model anthropic/claude-3-5-sonnet
+    ```
+
+    The selected model is written into your generated `src/index.ts` and synced to the server. Works correctly across fresh init, re-init, backup restore, and agent-switch flows.
+  </Accordion>
+</AccordionGroup>
+
+### 🐛 Bug Fixes
+
+<AccordionGroup>
+  <Accordion title="MCP sync pull now works">
+    `lua sync --accept` and interactive pull for MCP servers were silently no-ops — servers created via the dashboard were never written to local YAML even when drift was detected. Fixed: MCP servers missing locally are now correctly added to YAML on pull.
+  </Accordion>
+
+  <Accordion title="lua push mcp suggestion fix">
+    During `lua sync`, the push suggestion for MCP servers was `lua push mcpServer --name "X"` (invalid command). Fixed to `lua push mcp --name "X"`.
+  </Accordion>
+</AccordionGroup>
+
+### 🔧 Improvements
+
+<AccordionGroup>
+  <Accordion title="lua init wording clarity">
+    The option to use an existing agent now reads "Use one of your existing agents" instead of "Extend one of your existing agents". The word "extend" implied inheritance; the actual behavior is source restore or template scaffold.
+  </Accordion>
+</AccordionGroup>
+
+---
+
 ## v3.9.0
 
 **Released:** April 13, 2026

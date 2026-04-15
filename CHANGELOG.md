@@ -4,6 +4,21 @@ All notable changes to the Lua documentation will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
+## [3.9.3] - 2026-04-15
+
+### Features
+
+- **Model selection in `lua init` (LUA-262)** — Choose your agent's LLM model during `lua init`. Interactive mode shows a searchable, provider-grouped list with a skip option to use the server default. Non-interactive: `lua init --model openai/gpt-4o`. The model is written into your `src/index.ts` and synced to the server. Works across fresh init, re-init, backup restore, and agent-switch flows.
+
+### Bug Fixes
+
+- **MCP sync pull now works** — `lua sync --accept` and interactive pull for MCP servers were silently no-ops: servers missing locally were never written to YAML. Fixed — MCP servers created via the dashboard are now correctly added to local YAML on pull.
+- **`lua push mcp` suggestion** — The push suggestion shown during sync was `lua push mcpServer` (invalid command). Fixed to `lua push mcp`.
+
+### Improvements
+
+- **`lua init` wording** — "Use one of your existing agents" replaces "Extend one of your existing agents" for clarity. The parent question was also updated from "create" to "set up".
+
 ## [3.9.0] - 2026-04-13
 
 ### Improvements
