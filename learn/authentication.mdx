@@ -1,0 +1,92 @@
+---
+title: "Lesson 1: Authentication"
+description: "Set up the Lua CLI and authenticate your account"
+---
+
+<Info>
+**Beginner** | 5 min | Lesson 1 of 18
+</Info>
+
+## What you'll learn
+
+- Run the Lua CLI
+- Authenticate your account interactively
+- Verify your setup works
+
+## Interactive Terminal
+
+Use the terminal below to follow along. `lua-cli` is pre-installed and ready to use.
+
+<iframe
+  src="https://stackblitz.com/edit/ssyfrbnq?embed=1&view=terminal&hideExplorer=1&hideNavigation=1"
+  allow="cross-origin-isolated"
+  style={{
+    width: '100%',
+    height: '400px',
+    border: '1px solid #2a2a2a',
+    borderRadius: '8px',
+    overflow: 'hidden'
+  }}
+/>
+
+## Step 1: Check the CLI
+
+The Lua CLI is pre-installed in the terminal above. Verify it's working:
+
+```bash
+lua --version
+```
+
+You should see the version number printed.
+
+## Step 2: Authenticate
+
+Run the authentication command — the CLI will guide you through the process interactively:
+
+```bash
+lua auth configure
+```
+
+The CLI will ask you to choose between:
+- **API Key** — paste your key when prompted
+- **Email OTP** — enter your email, check your inbox for the code, then enter it
+
+<Tip>
+**Don't have an API key?** No worries — choose the email option. The CLI will send a one-time code to your inbox.
+</Tip>
+
+## Step 3: Verify
+
+Once authenticated, check that everything is connected:
+
+```bash
+lua agents
+```
+
+You should see your organizations and agents listed. If you're brand new, the list may be empty — that's fine! We'll create an agent in the next lesson.
+
+## Knowledge Check
+
+<AccordionGroup>
+  <Accordion title="What command starts the authentication flow?">
+    `lua auth configure` — this launches the interactive authentication wizard where you choose between API key or email OTP.
+  </Accordion>
+  <Accordion title="What are the two ways to authenticate?">
+    1. **API Key** — if you already have one, paste it when prompted
+    2. **Email OTP** — the CLI sends a 6-digit code to your email
+  </Accordion>
+  <Accordion title="How do you verify authentication worked?">
+    Run `lua agents` to list your organizations and agents. If it returns results (or an empty list without errors), you're authenticated.
+  </Accordion>
+</AccordionGroup>
+
+## Next Steps
+
+<CardGroup cols={2}>
+  <Card title="Next: Your First Agent" icon="rocket" href="/learn/your-first-agent">
+    Create and configure your first AI agent
+  </Card>
+  <Card title="CLI Reference" icon="terminal" href="/cli/authentication">
+    Full authentication command reference
+  </Card>
+</CardGroup>
