@@ -11,7 +11,7 @@ By default, every Lua agent uses **Google Gemini 2.5 Flash**. The `model` proper
 export const agent = new LuaAgent({
   name: 'my-agent',
   persona: '...',
-  model: 'openai/gpt-4o',  // ← add this
+  model: 'openai/gpt-5.4',  // ← add this
   skills: [mySkill]
 });
 ```
@@ -26,72 +26,97 @@ export const agent = new LuaAgent({
 
 ## Available Models
 
-| Model string | Provider | Context window |
+### Google (Vertex AI)
+
+| Model string | Context window | Notes |
 |---|---|---|
-| `google/gemini-2.5-flash` | Google (Vertex AI) | 1M tokens **(default)** |
-| `google/gemini-2.5-pro` | Google (Vertex AI) | 1M tokens |
-| `google/gemini-2.5-flash-lite` | Google (Vertex AI) | 1M tokens |
-| `google/gemini-2.0-flash` | Google (Vertex AI) | 1M tokens |
-| `google/gemini-2.0-flash-lite` | Google (Vertex AI) | 1M tokens |
-| `google/gemini-1.5-pro` | Google (Vertex AI) | 1M tokens |
-| `google/gemini-1.5-flash` | Google (Vertex AI) | 1M tokens |
-| `google/gemini-3.1-pro-preview` | Google (Vertex AI) | 1M tokens |
-| `google/gemini-3-flash-preview` | Google (Vertex AI) | 1M tokens |
-| `google/gemini-3.1-flash-lite-preview` | Google (Vertex AI) | 1M tokens |
-| `openai/gpt-5.4` | OpenAI | — |
-| `openai/gpt-5.4-mini` | OpenAI | — |
-| `openai/gpt-5.4-nano` | OpenAI | — |
-| `openai/gpt-5` | OpenAI | — |
-| `openai/gpt-5-mini` | OpenAI | — |
-| `openai/gpt-4.1` | OpenAI | 1M tokens |
-| `openai/gpt-4.1-mini` | OpenAI | 1M tokens |
-| `openai/gpt-4.1-nano` | OpenAI | 1M tokens |
-| `openai/gpt-4o` | OpenAI | 128K tokens |
-| `openai/gpt-4o-mini` | OpenAI | 128K tokens |
-| `openai/gpt-4-turbo` | OpenAI | 128K tokens |
-| `openai/o3` | OpenAI | 200K tokens |
-| `openai/o3-mini` | OpenAI | 200K tokens |
-| `openai/o3-pro` | OpenAI | 200K tokens |
-| `openai/o4-mini` | OpenAI | 200K tokens |
-| `openai/o1` | OpenAI | 200K tokens |
-| `openai/o1-mini` | OpenAI | 128K tokens |
-| `anthropic/claude-opus-4-6` | Anthropic | 200K tokens |
-| `anthropic/claude-sonnet-4-6` | Anthropic | 200K tokens |
-| `anthropic/claude-haiku-4-5` | Anthropic | 200K tokens |
-| `anthropic/claude-opus-4-5` | Anthropic | 200K tokens |
-| `anthropic/claude-sonnet-4-5` | Anthropic | 200K tokens |
-| `anthropic/claude-opus-4-1` | Anthropic | 200K tokens |
-| `anthropic/claude-3.7-sonnet` | Anthropic | 200K tokens |
-| `deepseek/deepseek-chat` | DeepSeek | 131K tokens |
-| `deepseek/deepseek-reasoner` | DeepSeek | 128K tokens |
-| `groq/llama-3.1-8b-instant` | Groq | 131K tokens |
-| `groq/llama-3.3-70b-versatile` | Groq | 131K tokens |
-| `groq/meta-llama/llama-4-scout-17b-16e-instruct` | Groq | 131K tokens |
-| `groq/groq/compound` | Groq | 131K tokens |
-| `groq/openai/gpt-oss-120b` | Groq | 131K tokens |
-| `groq/moonshotai/kimi-k2-instruct-0905` | Groq | 262K tokens |
-| `xai/grok-4` | xAI | 256K tokens |
-| `xai/grok-4-fast` | xAI | 2M tokens |
-| `xai/grok-3` | xAI | 131K tokens |
-| `xai/grok-3-mini` | xAI | 131K tokens |
-| `xai/grok-3-mini-fast` | xAI | 131K tokens |
-| `alibaba/qwen3-max` | Alibaba (Qwen) | 262K tokens |
-| `alibaba/qwen3.6-plus` | Alibaba (Qwen) | 1M tokens |
-| `alibaba/qwen3-235b-a22b` | Alibaba (Qwen) | 131K tokens |
-| `alibaba/qwen3-32b` | Alibaba (Qwen) | 131K tokens |
-| `alibaba/qwen-turbo` | Alibaba (Qwen) | 1M tokens |
-| `alibaba/qwq-plus` | Alibaba (Qwen) | 131K tokens |
-| `openrouter/z-ai/glm-5.1` | OpenRouter (ZhipuAI) | 203K tokens |
-| `openrouter/z-ai/glm-5` | OpenRouter (ZhipuAI) | 80K tokens |
-| `openrouter/z-ai/glm-5-turbo` | OpenRouter (ZhipuAI) | 203K tokens |
-| `openrouter/z-ai/glm-4.7` | OpenRouter (ZhipuAI) | 203K tokens |
-| `openrouter/z-ai/glm-4.7-flash` | OpenRouter (ZhipuAI) | 203K tokens |
-| `openrouter/z-ai/glm-4.6` | OpenRouter (ZhipuAI) | 205K tokens |
-| `openrouter/z-ai/glm-4.5` | OpenRouter (ZhipuAI) | 131K tokens |
-| `openrouter/z-ai/glm-4.5-air` | OpenRouter (ZhipuAI) | 131K tokens |
+| `google/gemini-2.5-flash` | 1M tokens | **Default** — fast reasoning, best price-performance |
+| `google/gemini-2.5-pro` | 1M tokens | Advanced reasoning for complex analysis |
+| `google/gemini-2.5-flash-lite` | 1M tokens | Budget-friendly in the 2.5 family |
+| `google/gemini-3.1-pro-preview` | 1M tokens | Most capable Gemini (preview) |
+| `google/gemini-3-flash-preview` | 1M tokens | Next-gen frontier flash (preview) |
+| `google/gemini-3.1-flash-lite-preview` | 1M tokens | Next-gen lite (preview) |
+
+### OpenAI
+
+| Model string | Context window | Notes |
+|---|---|---|
+| `openai/gpt-5.4` | 1.1M tokens | Current flagship |
+| `openai/gpt-5.4-mini` | 400K tokens | Fast flagship variant |
+| `openai/gpt-5.4-nano` | 400K tokens | Ultra-low-latency |
+| `openai/gpt-5` | 400K tokens | Strong general-purpose |
+| `openai/gpt-5-mini` | 400K tokens | Compact GPT-5 |
+| `openai/gpt-4.1` | 1M tokens | Stable, previous gen |
+| `openai/gpt-4.1-mini` | 1M tokens | Budget variant of 4.1 |
+| `openai/gpt-4.1-nano` | 1M tokens | Fastest 4.1 variant |
+| `openai/o3` | 200K tokens | Most powerful reasoning |
+| `openai/o3-mini` | 200K tokens | Fast reasoning |
+| `openai/o3-pro` | 200K tokens | Premium reasoning |
+| `openai/o4-mini` | 200K tokens | Latest cost-efficient reasoning |
+
+### Anthropic
+
+| Model string | Context window | Notes |
+|---|---|---|
+| `anthropic/claude-opus-4-6` | 1M tokens | Most intelligent |
+| `anthropic/claude-sonnet-4-6` | 1M tokens | Best speed/intelligence balance |
+| `anthropic/claude-haiku-4-5` | 200K tokens | Fastest model |
+| `anthropic/claude-opus-4-5` | 200K tokens | Previous gen, still active |
+| `anthropic/claude-sonnet-4-5` | 200K tokens | Previous gen, still active |
+| `anthropic/claude-opus-4-1` | 200K tokens | Older gen, still active |
+
+### DeepSeek
+
+| Model string | Context window | Notes |
+|---|---|---|
+| `deepseek/deepseek-chat` | 131K tokens | DeepSeek-V3, general purpose |
+| `deepseek/deepseek-reasoner` | 128K tokens | DeepSeek-R1, reasoning |
+
+### Groq
+
+| Model string | Context window | Notes |
+|---|---|---|
+| `groq/llama-3.3-70b-versatile` | 131K tokens | Production, tool use capable |
+| `groq/meta-llama/llama-4-scout-17b-16e-instruct` | 131K tokens | Latest Llama 4 |
+| `groq/openai/gpt-oss-120b` | 131K tokens | GPT-OSS on Groq LPU hardware |
+| `groq/groq/compound` | 131K tokens | Groq Compound agentic system |
+| `groq/llama-3.1-8b-instant` | 131K tokens | Fast, budget-friendly |
+
+### xAI (Grok)
+
+| Model string | Context window | Notes |
+|---|---|---|
+| `xai/grok-4` | 256K tokens | Current flagship |
+| `xai/grok-4-fast` | 2M tokens | Fast variant |
+| `xai/grok-3` | 131K tokens | Previous gen, still active |
+| `xai/grok-3-mini` | 131K tokens | Previous gen mini |
+| `xai/grok-3-mini-fast` | 131K tokens | Previous gen fast |
+
+### Alibaba (Qwen)
+
+| Model string | Context window | Notes |
+|---|---|---|
+| `alibaba/qwen3.6-plus` | 1M tokens | Latest flagship (Apr 2026) |
+| `alibaba/qwen3-max` | 262K tokens | Flagship |
+| `alibaba/qwen3-235b-a22b` | 131K tokens | Large MoE model |
+| `alibaba/qwen3-32b` | 131K tokens | Mid-size, fast |
+| `alibaba/qwq-plus` | 131K tokens | Reasoning model |
+
+### ZhipuAI (GLM)
+
+| Model string | Context window | Notes |
+|---|---|---|
+| `zhipuai/glm-5.1` | 203K tokens | Latest |
+| `zhipuai/glm-5` | 80K tokens | Flagship (Feb 2026) |
+| `zhipuai/glm-5-turbo` | 203K tokens | Fast variant |
+| `zhipuai/glm-4.7` | 203K tokens | Previous gen |
+| `zhipuai/glm-4.7-flash` | 203K tokens | Previous gen flash |
+| `zhipuai/glm-4.6` | 205K tokens | Previous gen |
+| `zhipuai/glm-4.5` | 131K tokens | Previous gen |
+| `zhipuai/glm-4.5-air` | 131K tokens | Previous gen lite |
 
 <Note>
-  **OpenRouter fallback.** If a provider's API key is not configured, Lua automatically routes the request through [OpenRouter](https://openrouter.ai) instead (when available). This means you can use any model above even if the direct provider isn't set up — OpenRouter acts as a universal gateway. If OpenRouter is also unavailable, the request falls back to the default model.
+  **Fallback routing.** If a model is not in Lua's approved list, the request is automatically routed through OpenRouter as a best-effort fallback. If that also isn't available, the request falls back to the default model (`google/gemini-2.5-flash`).
 </Note>
 
 ---
@@ -104,7 +129,7 @@ The simplest form — one model for all requests:
 export const agent = new LuaAgent({
   name: 'support-agent',
   persona: '...',
-  model: 'openai/gpt-4o',
+  model: 'openai/gpt-5.4',
   skills: [supportSkill]
 });
 ```
@@ -123,7 +148,7 @@ export const agent = new LuaAgent({
   persona: '...',
   model: async (request) => {
     const user = await User.get();
-    return user.data?.isPremium ? 'openai/gpt-4o' : 'google/gemini-2.5-flash';
+    return user.data?.isPremium ? 'openai/gpt-5.4' : 'google/gemini-2.5-flash';
   },
   skills: [mySkill]
 });
@@ -142,9 +167,9 @@ model: async (request) => {
   const user = await User.get();
   const tier = user.data?.subscriptionTier;
 
-  if (tier === 'pro') return 'openai/gpt-4.1';        // large context
-  if (tier === 'standard') return 'openai/gpt-4o';     // balanced
-  return 'google/gemini-2.5-flash';                    // default
+  if (tier === 'pro') return 'openai/gpt-5.4';          // flagship
+  if (tier === 'standard') return 'openai/gpt-4.1';     // 1M context, balanced
+  return 'google/gemini-2.5-flash';                      // default
 }
 ```
 
@@ -153,9 +178,9 @@ model: async (request) => {
 ```typescript
 model: (request) => {
   // Use a faster/cheaper model for voice channels
-  if (request.channel === 'voice') return 'google/gemini-2.0-flash';
+  if (request.channel === 'voice') return 'google/gemini-2.5-flash-lite';
   // Use a more capable model for complex web requests
-  return 'openai/gpt-4o';
+  return 'openai/gpt-5.4';
 }
 ```
 
@@ -166,7 +191,7 @@ model: async (request) => {
   // Use a model with large context for document-heavy workflows
   const basketCount = await Baskets.getCount();
   if (basketCount > 50) return 'openai/gpt-4.1';  // 1M context
-  return 'openai/gpt-4o';
+  return 'openai/gpt-5.4-mini';
 }
 ```
 
