@@ -4,6 +4,28 @@ All notable changes to the Lua documentation will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
+## [3.10.0] - 2026-04-16
+
+### Features
+
+- **`lua models` command (LUA-268)** — Manage your agent's LLM model directly from the CLI. `lua models list` shows all approved models grouped by provider, highlighting the current one. `lua models set` opens an interactive picker or accepts `--model <code>` for scripted use. `lua models unset` removes the model and reverts to the platform default. Changes are written to `src/index.ts` and synced to the server.
+
+- **`lua devices` command** — Full CLI for bidirectional agent-device communication. Supports `list`, `status`, `enable`, `disable`, `remove`, `test`, and `test-trigger` actions. Devices are a new first-class primitive type: define them in your project, push with `lua push device`, and use `Device.sendCommand()` / `Device.listDevices()` from within tools. Connect hardware or virtual devices using `@lua/device-client`.
+
+- **Sync pull conflict guard** — `lua sync --accept` (and `--pull`) now detects files you have modified locally since the last `lua push backup` and refuses to overwrite them. Use `--force` to bypass. After every successful `lua push backup`, a local cache of file hashes is stored so the guard can detect changes without requiring a server round-trip.
+
+- **Persona guide template (LUA-271)** — New agents created via `lua init` now receive a structured persona template with suggested sections (identity, tone, audience, capabilities, boundaries, guidelines) instead of the `"Placeholder persona"` placeholder.
+
+### Bug Fixes
+
+- **Sync conflict detection was always triggering** — The backup conflict detector used a different hash format (64-char) than the backup manifest (16-char), causing every file to appear as a conflict even when nothing had changed. Fixed: the detector now uses the same 16-char truncated hash as the manifest.
+
+- **`lua sync --pull` failure was silently swallowed in CI** — When a backup restore failed, the CLI printed "Sync complete" and exited 0. Likewise, when drift included source-bearing primitives but no backup was available, the missing count was never reported. Both paths now correctly propagate the failure so `lua sync --accept` exits non-zero in CI when it cannot fully restore.
+
+### Improvements
+
+- `lua sync --force` flag added to bypass the conflict guard when intentional overwrite is needed.
+
 ## [3.9.3] - 2026-04-15
 
 ### Features

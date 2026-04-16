@@ -3,6 +3,85 @@ title: "Changelog"
 description: "Release notes and version history for lua-cli"
 ---
 
+## v3.10.0
+
+**Released:** April 16, 2026
+
+### ✨ New Features
+
+<AccordionGroup>
+  <Accordion title="lua models command — manage your agent's LLM model (LUA-268)">
+    Manage the LLM model for your agent directly from the CLI.
+
+    ```bash
+    lua models                           # list all approved models
+    lua models set                       # interactive model picker
+    lua models set --model openai/gpt-4o # non-interactive
+    lua models unset                     # revert to platform default
+    lua models list --json               # machine-readable output
+    ```
+
+    `lua models list` shows all approved models grouped by provider, with the current model highlighted. `lua models set` writes the chosen model into your `src/index.ts` and syncs it to the server. `lua models unset` removes the model property and clears it on the server.
+  </Accordion>
+
+  <Accordion title="lua devices command — bidirectional agent-device communication">
+    Full CLI for managing devices connected to your agent. Devices are a new first-class primitive type that enables your agent to send commands to physical or virtual hardware and receive trigger payloads from them.
+
+    ```bash
+    lua devices list [--group <name>]
+    lua devices status --device-name <name>
+    lua devices enable --device-name <name>
+    lua devices disable --device-name <name>
+    lua devices remove --device-name <name> [--force]
+    lua devices test --device-name <name> [--payload <json>] [--timeout <ms>]
+    lua devices test-trigger --device-name <name> [--payload <json>]
+    ```
+
+    Push device definitions with `lua push device` or include them in `lua push all`. Connect hardware or virtual devices using `@lua/device-client`.
+
+    All actions support interactive mode — omit `--device-name` to choose from a picker.
+  </Accordion>
+
+  <Accordion title="Sync pull conflict guard">
+    `lua sync --accept` now detects files you have modified locally since the last `lua push backup` and refuses to overwrite them.
+
+    ```bash
+    lua sync --accept          # guarded pull — fails if local changes detected
+    lua sync --accept --force  # bypass the guard and overwrite local changes
+    ```
+
+    After every successful `lua push backup`, a local cache of file hashes is stored in `.lua/backup-manifest.json`. The guard compares this cache against your current files and only flags files that were actually modified.
+
+    If no backup has been run yet, the pull proceeds with a warning rather than failing.
+  </Accordion>
+
+  <Accordion title="Persona guide template for new agents (LUA-271)">
+    New agents created via `lua init` now receive a structured persona template instead of `"Placeholder persona"`. The template includes suggested sections — identity, tone, audience, capabilities, boundaries, and guidelines — each with guidance notes to help you write an effective persona. It is designed to be reshaped or replaced entirely.
+  </Accordion>
+</AccordionGroup>
+
+### 🐛 Bug Fixes
+
+<AccordionGroup>
+  <Accordion title="Sync conflict detection always triggered even with no local changes">
+    The backup conflict detector used full 64-character SHA-256 hashes when reading files from disk, while the backup manifest stored 16-character truncated hashes (matching the compiler format). Every comparison failed, so every file appeared as a conflict regardless of whether anything had actually changed. Fixed by aligning the detector to use the same 16-char hash as the manifest.
+  </Accordion>
+
+  <Accordion title="lua sync --accept exited 0 in CI even when restore failed">
+    When a backup restore failed (network error, missing manifest), the CLI printed "Sync complete" and exited with code 0 — silently masking the failure. When drift included source-bearing primitives but no backup was available, the missing count was also never incremented. Both failure paths now correctly propagate the error so CI/CD pipelines can detect a failed pull.
+  </Accordion>
+</AccordionGroup>
+
+### 🔧 Improvements
+
+<AccordionGroup>
+  <Accordion title="--force flag for lua sync to bypass conflict guard">
+    Use `lua sync --accept --force` (or `lua sync --force`) to intentionally overwrite local changes when pulling from the server.
+  </Accordion>
+</AccordionGroup>
+
+---
+
 ## v3.9.3
 
 **Released:** April 15, 2026
